@@ -24,6 +24,8 @@ test: fmtcheck
 testacc_compute: fmtcheck
 	TF_ACC=1 go test -run=TestAccCompute $(TEST) -v $(TESTARGS) -timeout 120m
 
+testacc_image: fmtcheck
+	TF_ACC=1 go test -run=TestAccImagesImage $(TEST) -v $(TESTARGS) -timeout 120m
 
 vet:
 	@echo "go vet ."
