@@ -19,12 +19,12 @@ import (
 // )
 
 var (
-	osFlavorID = os.Getenv("OS_FLAVOR_ID")
-	// osFlavorName = os.Getenv("OS_FLAVOR_NAME")
+	osFlavorID   = os.Getenv("OS_FLAVOR_ID")
 	osImageID    = os.Getenv("OS_IMAGE_ID")
 	osNetworkID  = os.Getenv("OS_NETWORK_ID")
 	osRegionName = os.Getenv("OS_REGION_NAME")
 	osProjectID  = os.Getenv("OS_PROJECT_ID")
+	osAuthUrl    = os.Getenv("OS_AUTH_URL")
 )
 
 var testAccProviders map[string]func() (*schema.Provider, error)
@@ -49,6 +49,20 @@ func testAccPreCheckCompute(t *testing.T) {
 		// "OS_FLAVOR_NAME": osFlavorName,
 		"OS_NETWORK_ID":  osNetworkID,
 		"OS_REGION_NAME": osRegionName,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckImage(t *testing.T) {
+	vars := map[string]interface{}{
+		"OS_AUTH_URL":   osAuthUrl,
+		"OS_IMAGE_ID":   osImageID,
+		"OS_FLAVOR_ID":  osFlavorID,
+		"OS_NETWORK_ID": osNetworkID,
 	}
 	for k, v := range vars {
 		if v == "" {

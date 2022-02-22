@@ -192,6 +192,7 @@ func Provider() *schema.Provider {
 			"vkcs_compute_availability_zones": dataSourceComputeAvailabilityZones(),
 			"vkcs_compute_flavor":             dataSourceComputeFlavor(),
 			"vkcs_compute_quotaset":           dataSourceComputeQuotaset(),
+			"vkcs_images_image":               dataSourceImagesImage(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -201,6 +202,7 @@ func Provider() *schema.Provider {
 			"vkcs_compute_volume_attach":        resourceComputeVolumeAttach(),
 			"vkcs_compute_floatingip_associate": resourceComputeFloatingIPAssociate(),
 			"vkcs_compute_servergroup":          resourceComputeServerGroup(),
+			"vkcs_images_image":                 resourceImagesImage(),
 		},
 	}
 
