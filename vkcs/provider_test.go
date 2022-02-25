@@ -4,6 +4,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gophercloud/utils/terraform/auth"
+	"github.com/gophercloud/utils/terraform/mutexkv"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -19,12 +21,15 @@ import (
 // )
 
 var (
-	osFlavorID   = os.Getenv("OS_FLAVOR_ID")
-	osImageID    = os.Getenv("OS_IMAGE_ID")
-	osNetworkID  = os.Getenv("OS_NETWORK_ID")
-	osRegionName = os.Getenv("OS_REGION_NAME")
-	osProjectID  = os.Getenv("OS_PROJECT_ID")
-	osAuthUrl    = os.Getenv("OS_AUTH_URL")
+	osFlavorID         = os.Getenv("OS_FLAVOR_ID")
+	osImageID          = os.Getenv("OS_IMAGE_ID")
+	osNetworkID        = os.Getenv("OS_NETWORK_ID")
+	osRegionName       = os.Getenv("OS_REGION_NAME")
+	osProjectID        = os.Getenv("OS_PROJECT_ID")
+	osAuthUrl          = os.Getenv("OS_AUTH_URL")
+	osPoolName         = os.Getenv("OS_POOL_NAME")
+	osExtGwID          = os.Getenv("OS_EXTGW_ID")
+	osPrivateDNSDomain = os.Getenv("OS_PRIVATE_DNS_DOMAIN")
 )
 
 var testAccProviders map[string]func() (*schema.Provider, error)
@@ -69,6 +74,64 @@ func testAccPreCheckImage(t *testing.T) {
 			t.Fatalf("'%s' must be set for acceptance test", k)
 		}
 	}
+}
+
+func testAccPreCheckNetworking(t *testing.T) {
+	vars := map[string]interface{}{
+		"OS_REGION_NAME":        osRegionName,
+		"OS_POOL_NAME":          osPoolName,
+		"OS_EXTGW_ID":           osExtGwID,
+		"OS_PRIVATE_DNS_DOMAIN": osPrivateDNSDomain,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccAuthFromEnv() (configer, error) {
+	tenantID := os.Getenv("OS_TENANT_ID")
+	if tenantID == "" {
+		tenantID = os.Getenv("OS_PROJECT_ID")
+	}
+
+	tenantName := os.Getenv("OS_TENANT_NAME")
+	if tenantName == "" {
+		tenantName = os.Getenv("OS_PROJECT_NAME")
+	}
+
+	config := &config{
+		auth.Config{
+			CACertFile:        os.Getenv("OS_CACERT"),
+			ClientCertFile:    os.Getenv("OS_CERT"),
+			ClientKeyFile:     os.Getenv("OS_KEY"),
+			Cloud:             os.Getenv("OS_CLOUD"),
+			DefaultDomain:     os.Getenv("OS_DEFAULT_DOMAIN"),
+			DomainID:          os.Getenv("OS_DOMAIN_ID"),
+			DomainName:        os.Getenv("OS_DOMAIN_NAME"),
+			EndpointType:      os.Getenv("OS_ENDPOINT_TYPE"),
+			IdentityEndpoint:  os.Getenv("OS_AUTH_URL"),
+			Password:          os.Getenv("OS_PASSWORD"),
+			ProjectDomainID:   os.Getenv("OS_PROJECT_DOMAIN_ID"),
+			ProjectDomainName: os.Getenv("OS_PROJECT_DOMAIN_NAME"),
+			Region:            os.Getenv("OS_REGION"),
+			Token:             os.Getenv("OS_TOKEN"),
+			TenantID:          tenantID,
+			TenantName:        tenantName,
+			UserDomainID:      os.Getenv("OS_USER_DOMAIN_ID"),
+			UserDomainName:    os.Getenv("OS_USER_DOMAIN_NAME"),
+			Username:          os.Getenv("OS_USERNAME"),
+			UserID:            os.Getenv("OS_USER_ID"),
+			MutexKV:           mutexkv.NewMutexKV(),
+		},
+	}
+
+	if err := config.LoadAndValidate(); err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
 
 // func TestProvider(t *testing.T) {

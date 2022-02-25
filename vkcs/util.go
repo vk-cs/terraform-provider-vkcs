@@ -1,6 +1,7 @@
 package vkcs
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -181,4 +182,54 @@ func expandToStringSlice(v []interface{}) []string {
 	}
 
 	return s
+}
+
+// strSliceContains checks if a given string is contained in a slice
+// When anybody asks why Go needs generics, here you go.
+func strSliceContains(haystack []string, needle string) bool {
+	for _, s := range haystack {
+		if s == needle {
+			return true
+		}
+	}
+	return false
+}
+
+func sliceUnion(a, b []string) []string {
+	var res []string
+	for _, i := range a {
+		if !strSliceContains(res, i) {
+			res = append(res, i)
+		}
+	}
+	for _, k := range b {
+		if !strSliceContains(res, k) {
+			res = append(res, k)
+		}
+	}
+	return res
+}
+
+func validateJSONObject(v interface{}, k string) ([]string, []error) {
+	if v == nil || v.(string) == "" {
+		return nil, []error{fmt.Errorf("%q value must not be empty", k)}
+	}
+
+	var j map[string]interface{}
+	s := v.(string)
+
+	err := json.Unmarshal([]byte(s), &j)
+	if err != nil {
+		return nil, []error{fmt.Errorf("%q must be a JSON object: %s", k, err)}
+	}
+
+	return nil, nil
+}
+
+func diffSuppressJSONObject(k, old, new string, d *schema.ResourceData) bool {
+	if strSliceContains([]string{"{}", ""}, old) &&
+		strSliceContains([]string{"{}", ""}, new) {
+		return true
+	}
+	return false
 }

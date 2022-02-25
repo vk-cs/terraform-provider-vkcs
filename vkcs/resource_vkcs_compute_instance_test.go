@@ -2,10 +2,14 @@ package vkcs
 
 import (
 	"fmt"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -29,7 +33,7 @@ func TestAccComputeInstance_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"vkcs_compute_instance.instance_1", "all_metadata.foo", "bar"),
 					resource.TestCheckResourceAttr(
-						"vkcs_compute_instance.instance_1", "availability_zone", "nova"),
+						"vkcs_compute_instance.instance_1", "availability_zone", "MS1"),
 				),
 			},
 		},
@@ -165,7 +169,7 @@ func TestAccComputeInstance_initialShelve(t *testing.T) {
 // 			{
 // 				Config: testAccComputeInstanceSecgroupMulti(),
 // 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeV2SecGroupExists(
+// 					testAccCheckComputeSecGroupExists(
 // 						"vkcs_compute_secgroup.secgroup_1", &secgroup1),
 // 					testAccCheckComputeInstanceExists(
 // 						"vkcs_compute_instance.instance_1", &instance1),
@@ -187,9 +191,9 @@ func TestAccComputeInstance_initialShelve(t *testing.T) {
 // 			{
 // 				Config: testAccComputeInstanceSecgroupMultiUpdate1(),
 // 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeV2SecGroupExists(
+// 					testAccCheckComputeSecGroupExists(
 // 						"vkcs_compute_secgroup.secgroup_1", &secgroup1),
-// 					testAccCheckComputeV2SecGroupExists(
+// 					testAccCheckComputeSecGroupExists(
 // 						"vkcs_compute_secgroup.secgroup_2", &secgroup2),
 // 					testAccCheckComputeInstanceExists(
 // 						"vkcs_compute_instance.instance_1", &instance1),
@@ -198,9 +202,9 @@ func TestAccComputeInstance_initialShelve(t *testing.T) {
 // 			{
 // 				Config: testAccComputeInstanceSecgroupMultiUpdate2(),
 // 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeV2SecGroupExists(
+// 					testAccCheckComputeSecGroupExists(
 // 						"vkcs_compute_secgroup.secgroup_1", &secgroup1),
-// 					testAccCheckComputeV2SecGroupExists(
+// 					testAccCheckComputeSecGroupExists(
 // 						"vkcs_compute_secgroup.secgroup_2", &secgroup2),
 // 					testAccCheckComputeInstanceExists(
 // 						"vkcs_compute_instance.instance_1", &instance1),
@@ -374,28 +378,25 @@ func TestAccComputeInstance_personality(t *testing.T) {
 // 	})
 // }
 
-// func TestAccComputeInstance_accessIPv4(t *testing.T) {
-// 	var instance servers.Server
+func TestAccComputeInstance_accessIPv4(t *testing.T) {
+	var instance servers.Server
 
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck: func() {
-// 			testAccPreCheck(t)
-// 			testAccPreCheckNonAdminOnly(t)
-// 		},
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccComputeInstanceAccessIPv4(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "access_ip_v4", "192.168.1.100"),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheckCompute(t) },
+		ProviderFactories: testAccProviders,
+		CheckDestroy:      testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccComputeInstanceAccessIPv4(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "access_ip_v4", "192.168.1.100"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccComputeInstance_changeFixedIP(t *testing.T) {
 	var instance1 servers.Server
@@ -549,154 +550,148 @@ func TestAccComputeInstance_networkModeNone(t *testing.T) {
 	})
 }
 
-// func TestAccComputeInstance_networkNameToID(t *testing.T) {
-// 	var instance servers.Server
-// 	var network networks.Network
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckCompute(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccComputeInstanceNetworkNameToID(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
-// 					testAccCheckNetworkingV2NetworkExists("openstack_networking_network_v2.network_1", &network),
-// 					resource.TestCheckResourceAttrPtr(
-// 						"vkcs_compute_instance.instance_1", "network.1.uuid", &network.ID),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
+func TestAccComputeInstance_networkNameToID(t *testing.T) {
+	var instance servers.Server
+	var network networks.Network
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheckCompute(t) },
+		ProviderFactories: testAccProviders,
+		CheckDestroy:      testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccComputeInstanceNetworkNameToID(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_compute_instance.instance_1", "network.1.uuid", &network.ID),
+				),
+			},
+		},
+	})
+}
 
-// func TestAccComputeInstance_crazyNICs(t *testing.T) {
-// 	var instance servers.Server
-// 	var network1 networks.Network
-// 	var network2 networks.Network
-// 	var port1 ports.Port
-// 	var port2 ports.Port
-// 	var port3 ports.Port
-// 	var port4 ports.Port
+func TestAccComputeInstance_crazyNICs(t *testing.T) {
+	var instance servers.Server
+	var network1 networks.Network
+	var network2 networks.Network
+	var port1 ports.Port
+	var port2 ports.Port
+	var port3 ports.Port
+	var port4 ports.Port
 
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck: func() {
-// 			testAccPreCheck(t)
-// 			testAccPreCheckNonAdminOnly(t)
-// 		},
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccComputeInstanceCrazyNICs(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
-// 					testAccCheckNetworkingV2NetworkExists(
-// 						"openstack_networking_network_v2.network_1", &network1),
-// 					testAccCheckNetworkingV2NetworkExists(
-// 						"openstack_networking_network_v2.network_2", &network2),
-// 					testAccCheckNetworkingV2PortExists(
-// 						"openstack_networking_port_v2.port_1", &port1),
-// 					testAccCheckNetworkingV2PortExists(
-// 						"openstack_networking_port_v2.port_2", &port2),
-// 					testAccCheckNetworkingV2PortExists(
-// 						"openstack_networking_port_v2.port_3", &port3),
-// 					testAccCheckNetworkingV2PortExists(
-// 						"openstack_networking_port_v2.port_4", &port4),
-// 					resource.TestCheckResourceAttrPtr(
-// 						"vkcs_compute_instance.instance_1", "network.1.uuid", &network1.ID),
-// 					resource.TestCheckResourceAttrPtr(
-// 						"vkcs_compute_instance.instance_1", "network.2.uuid", &network2.ID),
-// 					resource.TestCheckResourceAttrPtr(
-// 						"vkcs_compute_instance.instance_1", "network.3.uuid", &network1.ID),
-// 					resource.TestCheckResourceAttrPtr(
-// 						"vkcs_compute_instance.instance_1", "network.4.uuid", &network2.ID),
-// 					resource.TestCheckResourceAttrPtr(
-// 						"vkcs_compute_instance.instance_1", "network.5.uuid", &network1.ID),
-// 					resource.TestCheckResourceAttrPtr(
-// 						"vkcs_compute_instance.instance_1", "network.6.uuid", &network2.ID),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "network.1.name", "network_1"),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "network.2.name", "network_2"),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "network.3.name", "network_1"),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "network.4.name", "network_2"),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "network.5.name", "network_1"),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "network.6.name", "network_2"),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "network.7.name", "network_1"),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "network.8.name", "network_2"),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "network.1.fixed_ip_v4", "192.168.1.100"),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "network.2.fixed_ip_v4", "192.168.2.100"),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "network.3.fixed_ip_v4", "192.168.1.101"),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_compute_instance.instance_1", "network.4.fixed_ip_v4", "192.168.2.101"),
-// 					resource.TestCheckResourceAttrPtr(
-// 						"vkcs_compute_instance.instance_1", "network.5.port", &port1.ID),
-// 					resource.TestCheckResourceAttrPtr(
-// 						"vkcs_compute_instance.instance_1", "network.6.port", &port2.ID),
-// 					resource.TestCheckResourceAttrPtr(
-// 						"vkcs_compute_instance.instance_1", "network.7.port", &port3.ID),
-// 					resource.TestCheckResourceAttrPtr(
-// 						"vkcs_compute_instance.instance_1", "network.8.port", &port4.ID),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheckCompute(t) },
+		ProviderFactories: testAccProviders,
+		CheckDestroy:      testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccComputeInstanceCrazyNICs(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					testAccCheckNetworkingNetworkExists(
+						"vkcs_networking_network.network_1", &network1),
+					testAccCheckNetworkingNetworkExists(
+						"vkcs_networking_network.network_2", &network2),
+					testAccCheckNetworkingPortExists(
+						"vkcs_networking_port.port_1", &port1),
+					testAccCheckNetworkingPortExists(
+						"vkcs_networking_port.port_2", &port2),
+					testAccCheckNetworkingPortExists(
+						"vkcs_networking_port.port_3", &port3),
+					testAccCheckNetworkingPortExists(
+						"vkcs_networking_port.port_4", &port4),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_compute_instance.instance_1", "network.1.uuid", &network1.ID),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_compute_instance.instance_1", "network.2.uuid", &network2.ID),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_compute_instance.instance_1", "network.3.uuid", &network1.ID),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_compute_instance.instance_1", "network.4.uuid", &network2.ID),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_compute_instance.instance_1", "network.5.uuid", &network1.ID),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_compute_instance.instance_1", "network.6.uuid", &network2.ID),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "network.1.name", "network_1"),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "network.2.name", "network_2"),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "network.3.name", "network_1"),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "network.4.name", "network_2"),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "network.5.name", "network_1"),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "network.6.name", "network_2"),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "network.7.name", "network_1"),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "network.8.name", "network_2"),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "network.1.fixed_ip_v4", "192.168.1.100"),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "network.2.fixed_ip_v4", "192.168.2.100"),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "network.3.fixed_ip_v4", "192.168.1.101"),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "network.4.fixed_ip_v4", "192.168.2.101"),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_compute_instance.instance_1", "network.5.port", &port1.ID),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_compute_instance.instance_1", "network.6.port", &port2.ID),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_compute_instance.instance_1", "network.7.port", &port3.ID),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_compute_instance.instance_1", "network.8.port", &port4.ID),
+				),
+			},
+		},
+	})
+}
 
-// func TestAccComputeInstance_tags(t *testing.T) {
-// 	var instance servers.Server
+func TestAccComputeInstance_tags(t *testing.T) {
+	var instance servers.Server
 
-// 	resourceName := "vkcs_compute_instance.instance_1"
+	resourceName := "vkcs_compute_instance.instance_1"
 
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck: func() {
-// 			testAccPreCheck(t)
-// 			testAccPreCheckNonAdminOnly(t)
-// 		},
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckNetworkingV2NetworkDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccComputeInstanceTagsCreate(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeInstanceExists(resourceName, &instance),
-// 					testAccCheckComputeInstanceTags(resourceName, []string{"tag1", "tag2", "tag3"}),
-// 				),
-// 			},
-// 			{
-// 				Config: testAccComputeInstanceTagsAdd(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeInstanceExists(resourceName, &instance),
-// 					testAccCheckComputeInstanceTags(resourceName, []string{"tag1", "tag2", "tag3", "tag4"}),
-// 				),
-// 			},
-// 			{
-// 				Config: testAccComputeInstanceTagsDelete(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeInstanceExists(resourceName, &instance),
-// 					testAccCheckComputeInstanceTags(resourceName, []string{"tag2", "tag3"}),
-// 				),
-// 			},
-// 			{
-// 				Config: testAccComputeInstanceTagsClear(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeInstanceExists(resourceName, &instance),
-// 					testAccCheckComputeInstanceTags(resourceName, nil),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheckCompute(t) },
+		ProviderFactories: testAccProviders,
+		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccComputeInstanceTagsCreate(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists(resourceName, &instance),
+					testAccCheckComputeInstanceTags(resourceName, []string{"tag1", "tag2", "tag3"}),
+				),
+			},
+			{
+				Config: testAccComputeInstanceTagsAdd(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists(resourceName, &instance),
+					testAccCheckComputeInstanceTags(resourceName, []string{"tag1", "tag2", "tag3", "tag4"}),
+				),
+			},
+			{
+				Config: testAccComputeInstanceTagsDelete(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists(resourceName, &instance),
+					testAccCheckComputeInstanceTags(resourceName, []string{"tag2", "tag3"}),
+				),
+			},
+			{
+				Config: testAccComputeInstanceTagsClear(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists(resourceName, &instance),
+					testAccCheckComputeInstanceTags(resourceName, nil),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckComputeInstanceDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
@@ -848,40 +843,40 @@ func testAccCheckComputeInstanceState(
 	}
 }
 
-// func testAccCheckComputeInstanceTags(name string, tags []string) resource.TestCheckFunc {
-// 	return func(s *terraform.State) error {
-// 		rs, ok := s.RootModule().Resources[name]
+func testAccCheckComputeInstanceTags(name string, tags []string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
 
-// 		if !ok {
-// 			return fmt.Errorf("resource not found: %s", name)
-// 		}
+		if !ok {
+			return fmt.Errorf("resource not found: %s", name)
+		}
 
-// 		if _, ok := rs.Primary.Attributes["tags.#"]; !ok {
-// 			return fmt.Errorf("resource tags not found: %s.tags", name)
-// 		}
+		if _, ok := rs.Primary.Attributes["tags.#"]; !ok {
+			return fmt.Errorf("resource tags not found: %s.tags", name)
+		}
 
-// 		var rtags []string
-// 		for key, val := range rs.Primary.Attributes {
-// 			if !strings.HasPrefix(key, "tags.") {
-// 				continue
-// 			}
+		var rtags []string
+		for key, val := range rs.Primary.Attributes {
+			if !strings.HasPrefix(key, "tags.") {
+				continue
+			}
 
-// 			if key == "tags.#" {
-// 				continue
-// 			}
+			if key == "tags.#" {
+				continue
+			}
 
-// 			rtags = append(rtags, val)
-// 		}
+			rtags = append(rtags, val)
+		}
 
-// 		sort.Strings(rtags)
-// 		sort.Strings(tags)
-// 		if !reflect.DeepEqual(rtags, tags) {
-// 			return fmt.Errorf(
-// 				"%s.tags: expected: %#v, got %#v", name, tags, rtags)
-// 		}
-// 		return nil
-// 	}
-// }
+		sort.Strings(rtags)
+		sort.Strings(tags)
+		if !reflect.DeepEqual(rtags, tags) {
+			return fmt.Errorf(
+				"%s.tags: expected: %#v, got %#v", name, tags, rtags)
+		}
+		return nil
+	}
+}
 
 func testAccCheckComputeInstanceNetworkExists(n string, _ *servers.Server) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -931,7 +926,7 @@ func testAccComputeInstanceBasic() string {
 	return fmt.Sprintf(`
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
-  availability_zone = "nova
+  availability_zone = "MS1"
   security_groups = ["default"]
   metadata = {
     foo = "bar"
@@ -1260,39 +1255,39 @@ resource "vkcs_compute_instance" "instance_1" {
 // `, osImageID, osNetworkID)
 // }
 
-// func testAccComputeInstanceAccessIPv4() string {
-// 	return fmt.Sprintf(`
-// resource "openstack_networking_network_v2" "network_1" {
-//   name = "network_1"
-// }
+func testAccComputeInstanceAccessIPv4() string {
+	return fmt.Sprintf(`
+resource "vkcs_networking_network" "network_1" {
+  name = "network_1"
+}
 
-// resource "openstack_networking_subnet_v2" "subnet_1" {
-//   name = "subnet_1"
-//   network_id = "${openstack_networking_network_v2.network_1.id}"
-//   cidr = "192.168.1.0/24"
-//   ip_version = 4
-//   enable_dhcp = true
-//   no_gateway = true
-// }
+resource "vkcs_networking_subnet" "subnet_1" {
+  name = "subnet_1"
+  network_id = "${vkcs_networking_network.network_1.id}"
+  cidr = "192.168.1.0/24"
+  ip_version = 4
+  enable_dhcp = true
+  no_gateway = true
+}
 
-// resource "vkcs_compute_instance" "instance_1" {
-//   depends_on = ["openstack_networking_subnet_v2.subnet_1"]
+resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.subnet_1"]
 
-//   name = "instance_1"
-//   security_groups = ["default"]
+  name = "instance_1"
+  security_groups = ["default"]
 
-//   network {
-//     uuid = "%s"
-//   }
+  network {
+    uuid = "%s"
+  }
 
-//   network {
-//     uuid = "${openstack_networking_network_v2.network_1.id}"
-//     fixed_ip_v4 = "192.168.1.100"
-//     access_network = true
-//   }
-// }
-// `, osNetworkID)
-// }
+  network {
+    uuid = "${vkcs_networking_network.network_1.id}"
+    fixed_ip_v4 = "192.168.1.100"
+    access_network = true
+  }
+}
+`, osNetworkID)
+}
 
 func testAccComputeInstanceChangeFixedIP1() string {
 	return fmt.Sprintf(`
@@ -1333,27 +1328,27 @@ resource "vkcs_compute_instance" "instance_1" {
 `, osNetworkID)
 }
 
-// func testAccComputeInstanceDetachPortsBeforeDestroy() string {
-// 	return fmt.Sprintf(`
+func testAccComputeInstanceDetachPortsBeforeDestroy() string {
+	return fmt.Sprintf(`
 
-// resource "openstack_networking_port_v2" "port_1" {
-//   name = "port_1"
-//   network_id = "%s"
-//   admin_state_up = "true"
-// }
+resource "vkcs_networking_port" "port_1" {
+  name = "port_1"
+  network_id = "%s"
+  admin_state_up = "true"
+}
 
-// resource "vkcs_compute_instance" "instance_1" {
-//   name = "instance_1"
-//   security_groups = ["default"]
-//   vendor_options {
-//     detach_ports_before_destroy = true
-//   }
-//   network {
-//     port = "${openstack_networking_port_v2.port_1.id}"
-//   }
-// }
-// `, osNetworkID)
-// }
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_1"
+  security_groups = ["default"]
+  vendor_options {
+    detach_ports_before_destroy = true
+  }
+  network {
+    port = "${vkcs_networking_port.port_1.id}"
+  }
+}
+`, osNetworkID)
+}
 
 func testAccComputeInstanceMetadataRemove1() string {
 	return fmt.Sprintf(`
@@ -1436,164 +1431,164 @@ resource "vkcs_compute_instance" "instance_1" {
 `)
 }
 
-// func testAccComputeInstanceNetworkNameToID() string {
-// 	return fmt.Sprintf(`
-// resource "openstack_networking_network_v2" "network_1" {
-//   name = "network_1"
-// }
+func testAccComputeInstanceNetworkNameToID() string {
+	return fmt.Sprintf(`
+resource "vkcs_networking_network" "network_1" {
+  name = "network_1"
+}
 
-// resource "openstack_networking_subnet_v2" "subnet_1" {
-//   name = "subnet_1"
-//   network_id = "${openstack_networking_network_v2.network_1.id}"
-//   cidr = "192.168.1.0/24"
-//   ip_version = 4
-//   enable_dhcp = true
-//   no_gateway = true
-// }
+resource "vkcs_networking_subnet" "subnet_1" {
+  name = "subnet_1"
+  network_id = "${vkcs_networking_network.network_1.id}"
+  cidr = "192.168.1.0/24"
+  ip_version = 4
+  enable_dhcp = true
+  no_gateway = true
+}
 
-// resource "vkcs_compute_instance" "instance_1" {
-//   depends_on = ["openstack_networking_subnet_v2.subnet_1"]
+resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.subnet_1"]
 
-//   name = "instance_1"
-//   security_groups = ["default"]
+  name = "instance_1"
+  security_groups = ["default"]
 
-//   network {
-//     uuid = "%s"
-//   }
+  network {
+    uuid = "%s"
+  }
 
-//   network {
-//     name = "${openstack_networking_network_v2.network_1.name}"
-//   }
+  network {
+    name = "${vkcs_networking_network.network_1.name}"
+  }
 
-// }
-// `, osNetworkID)
-// }
+}
+`, osNetworkID)
+}
 
-// func testAccComputeInstanceCrazyNICs() string {
-// 	return fmt.Sprintf(`
-// resource "openstack_networking_network_v2" "network_1" {
-//   name = "network_1"
-// }
+func testAccComputeInstanceCrazyNICs() string {
+	return fmt.Sprintf(`
+resource "vkcs_networking_network" "network_1" {
+  name = "network_1"
+}
 
-// resource "openstack_networking_subnet_v2" "subnet_1" {
-//   name = "subnet_1"
-//   network_id = "${openstack_networking_network_v2.network_1.id}"
-//   cidr = "192.168.1.0/24"
-//   ip_version = 4
-//   enable_dhcp = true
-//   no_gateway = true
-// }
+resource "vkcs_networking_subnet" "subnet_1" {
+  name = "subnet_1"
+  network_id = "${vkcs_networking_network.network_1.id}"
+  cidr = "192.168.1.0/24"
+  ip_version = 4
+  enable_dhcp = true
+  no_gateway = true
+}
 
-// resource "openstack_networking_network_v2" "network_2" {
-//   name = "network_2"
-// }
+resource "vkcs_networking_network" "network_2" {
+  name = "network_2"
+}
 
-// resource "openstack_networking_subnet_v2" "subnet_2" {
-//   name = "subnet_2"
-//   network_id = "${openstack_networking_network_v2.network_2.id}"
-//   cidr = "192.168.2.0/24"
-//   ip_version = 4
-//   enable_dhcp = true
-//   no_gateway = true
-// }
+resource "vkcs_networking_subnet" "subnet_2" {
+  name = "subnet_2"
+  network_id = "${vkcs_networking_network.network_2.id}"
+  cidr = "192.168.2.0/24"
+  ip_version = 4
+  enable_dhcp = true
+  no_gateway = true
+}
 
-// resource "openstack_networking_port_v2" "port_1" {
-//   name = "port_1"
-//   network_id = "${openstack_networking_network_v2.network_1.id}"
-//   admin_state_up = "true"
+resource "vkcs_networking_port" "port_1" {
+  name = "port_1"
+  network_id = "${vkcs_networking_network.network_1.id}"
+  admin_state_up = "true"
 
-//   fixed_ip {
-//     subnet_id = "${openstack_networking_subnet_v2.subnet_1.id}"
-//     ip_address = "192.168.1.103"
-//   }
-// }
+  fixed_ip {
+    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    ip_address = "192.168.1.103"
+  }
+}
 
-// resource "openstack_networking_port_v2" "port_2" {
-//   name = "port_2"
-//   network_id = "${openstack_networking_network_v2.network_2.id}"
-//   admin_state_up = "true"
+resource "vkcs_networking_port" "port_2" {
+  name = "port_2"
+  network_id = "${vkcs_networking_network.network_2.id}"
+  admin_state_up = "true"
 
-//   fixed_ip {
-//     subnet_id = "${openstack_networking_subnet_v2.subnet_2.id}"
-//     ip_address = "192.168.2.103"
-//   }
-// }
+  fixed_ip {
+    subnet_id = "${vkcs_networking_subnet.subnet_2.id}"
+    ip_address = "192.168.2.103"
+  }
+}
 
-// resource "openstack_networking_port_v2" "port_3" {
-//   name = "port_3"
-//   network_id = "${openstack_networking_network_v2.network_1.id}"
-//   admin_state_up = "true"
+resource "vkcs_networking_port" "port_3" {
+  name = "port_3"
+  network_id = "${vkcs_networking_network.network_1.id}"
+  admin_state_up = "true"
 
-//   fixed_ip {
-//     subnet_id = "${openstack_networking_subnet_v2.subnet_1.id}"
-//     ip_address = "192.168.1.104"
-//   }
-// }
+  fixed_ip {
+    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    ip_address = "192.168.1.104"
+  }
+}
 
-// resource "openstack_networking_port_v2" "port_4" {
-//   name = "port_4"
-//   network_id = "${openstack_networking_network_v2.network_2.id}"
-//   admin_state_up = "true"
+resource "vkcs_networking_port" "port_4" {
+  name = "port_4"
+  network_id = "${vkcs_networking_network.network_2.id}"
+  admin_state_up = "true"
 
-//   fixed_ip {
-//     subnet_id = "${openstack_networking_subnet_v2.subnet_2.id}"
-//     ip_address = "192.168.2.104"
-//   }
-// }
+  fixed_ip {
+    subnet_id = "${vkcs_networking_subnet.subnet_2.id}"
+    ip_address = "192.168.2.104"
+  }
+}
 
-// resource "vkcs_compute_instance" "instance_1" {
-//   depends_on = [
-//     "openstack_networking_subnet_v2.subnet_1",
-//     "openstack_networking_subnet_v2.subnet_2",
-//     "openstack_networking_port_v2.port_1",
-//     "openstack_networking_port_v2.port_2",
-//   ]
+resource "vkcs_compute_instance" "instance_1" {
+  depends_on = [
+    "vkcs_networking_subnet.subnet_1",
+    "vkcs_networking_subnet.subnet_2",
+    "vkcs_networking_port.port_1",
+    "vkcs_networking_port.port_2",
+  ]
 
-//   name = "instance_1"
-//   security_groups = ["default"]
+  name = "instance_1"
+  security_groups = ["default"]
 
-//   network {
-//     uuid = "%s"
-//   }
+  network {
+    uuid = "%s"
+  }
 
-//   network {
-//     uuid = "${openstack_networking_network_v2.network_1.id}"
-//     fixed_ip_v4 = "192.168.1.100"
-//   }
+  network {
+    uuid = "${vkcs_networking_network.network_1.id}"
+    fixed_ip_v4 = "192.168.1.100"
+  }
 
-//   network {
-//     uuid = "${openstack_networking_network_v2.network_2.id}"
-//     fixed_ip_v4 = "192.168.2.100"
-//   }
+  network {
+    uuid = "${vkcs_networking_network.network_2.id}"
+    fixed_ip_v4 = "192.168.2.100"
+  }
 
-//   network {
-//     uuid = "${openstack_networking_network_v2.network_1.id}"
-//     fixed_ip_v4 = "192.168.1.101"
-//   }
+  network {
+    uuid = "${vkcs_networking_network.network_1.id}"
+    fixed_ip_v4 = "192.168.1.101"
+  }
 
-//   network {
-//     uuid = "${openstack_networking_network_v2.network_2.id}"
-//     fixed_ip_v4 = "192.168.2.101"
-//   }
+  network {
+    uuid = "${vkcs_networking_network.network_2.id}"
+    fixed_ip_v4 = "192.168.2.101"
+  }
 
-//   network {
-//     port = "${openstack_networking_port_v2.port_1.id}"
-//   }
+  network {
+    port = "${vkcs_networking_port.port_1.id}"
+  }
 
-//   network {
-//     port = "${openstack_networking_port_v2.port_2.id}"
-//   }
+  network {
+    port = "${vkcs_networking_port.port_2.id}"
+  }
 
-//   network {
-//     port = "${openstack_networking_port_v2.port_3.id}"
-//   }
+  network {
+    port = "${vkcs_networking_port.port_3.id}"
+  }
 
-//   network {
-//     port = "${openstack_networking_port_v2.port_4.id}"
-//   }
-// }
-// `, osNetworkID)
-// }
+  network {
+    port = "${vkcs_networking_port.port_4.id}"
+  }
+}
+`, osNetworkID)
+}
 
 func testAccComputeInstanceStateActive() string {
 	return fmt.Sprintf(`
@@ -1634,53 +1629,53 @@ resource "vkcs_compute_instance" "instance_1" {
 `, osNetworkID)
 }
 
-// func testAccComputeInstanceTagsCreate() string {
-// 	return fmt.Sprintf(`
-// resource "vkcs_compute_instance" "instance_1" {
-//   name = "instance_1"
-//   security_groups = ["default"]
-//   network {
-//     uuid = "%s"
-//   }
-//   tags = ["tag1", "tag2", "tag3"]
-// }
-// `, osNetworkID)
-// }
+func testAccComputeInstanceTagsCreate() string {
+	return fmt.Sprintf(`
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_1"
+  security_groups = ["default"]
+  network {
+    uuid = "%s"
+  }
+  tags = ["tag1", "tag2", "tag3"]
+}
+`, osNetworkID)
+}
 
-// func testAccComputeInstanceTagsAdd() string {
-// 	return fmt.Sprintf(`
-// resource "vkcs_compute_instance" "instance_1" {
-//   name = "instance_1"
-//   security_groups = ["default"]
-//   network {
-//     uuid = "%s"
-//   }
-//   tags = ["tag1", "tag2", "tag3", "tag4"]
-// }
-// `, osNetworkID)
-// }
+func testAccComputeInstanceTagsAdd() string {
+	return fmt.Sprintf(`
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_1"
+  security_groups = ["default"]
+  network {
+    uuid = "%s"
+  }
+  tags = ["tag1", "tag2", "tag3", "tag4"]
+}
+`, osNetworkID)
+}
 
-// func testAccComputeInstanceTagsDelete() string {
-// 	return fmt.Sprintf(`
-// resource "vkcs_compute_instance" "instance_1" {
-//   name = "instance_1"
-//   security_groups = ["default"]
-//   network {
-//     uuid = "%s"
-//   }
-//   tags = ["tag2", "tag3"]
-// }
-// `, osNetworkID)
-// }
+func testAccComputeInstanceTagsDelete() string {
+	return fmt.Sprintf(`
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_1"
+  security_groups = ["default"]
+  network {
+    uuid = "%s"
+  }
+  tags = ["tag2", "tag3"]
+}
+`, osNetworkID)
+}
 
-// func testAccComputeInstanceTagsClear() string {
-// 	return fmt.Sprintf(`
-// resource "vkcs_compute_instance" "instance_1" {
-//   name = "instance_1"
-//   security_groups = ["default"]
-//   network {
-//     uuid = "%s"
-//   }
-// }
-// `, osNetworkID)
-// }
+func testAccComputeInstanceTagsClear() string {
+	return fmt.Sprintf(`
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_1"
+  security_groups = ["default"]
+  network {
+    uuid = "%s"
+  }
+}
+`, osNetworkID)
+}

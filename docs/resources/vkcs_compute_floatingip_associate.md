@@ -22,12 +22,12 @@ resource "vkcs_compute_instance" "instance_1" {
   security_groups = ["default"]
 }
 
-resource "openstack_networking_floatingip_v2" "fip_1" {
+resource "vkcs_networking_floatingip" "fip_1" {
   pool = "my_pool"
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
-  floating_ip = "${openstack_networking_floatingip_v2.fip_1.address}"
+  floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
   instance_id = "${vkcs_compute_instance.instance_1.id}"
 }
 ```
@@ -51,12 +51,12 @@ resource "vkcs_compute_instance" "instance_1" {
   }
 }
 
-resource "openstack_networking_floatingip_v2" "fip_1" {
+resource "vkcs_networking_floatingip" "fip_1" {
   pool = "my_pool"
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
-  floating_ip = "${openstack_networking_floatingip_v2.fip_1.address}"
+  floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
   instance_id = "${vkcs_compute_instance.instance_1.id}"
   fixed_ip    = "${vkcs_compute_instance.instance_1.network.1.fixed_ip_v4}"
 }

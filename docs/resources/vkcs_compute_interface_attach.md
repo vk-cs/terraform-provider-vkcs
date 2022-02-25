@@ -15,7 +15,7 @@ Compute (Nova) v2 API.
 ### Basic Attachment
 
 ```hcl
-resource "openstack_networking_network_v2" "network_1" {
+resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
 }
@@ -27,7 +27,7 @@ resource "vkcs_compute_instance" "instance_1" {
 
 resource "vkcs_compute_interface_attach" "ai_1" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
-  network_id  = "${openstack_networking_port_v2.network_1.id}"
+  network_id  = "${vkcs_networking_port.network_1.id}"
 }
 
 ```
@@ -35,7 +35,7 @@ resource "vkcs_compute_interface_attach" "ai_1" {
 ### Attachment Specifying a Fixed IP
 
 ```hcl
-resource "openstack_networking_network_v2" "network_1" {
+resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
 }
@@ -47,7 +47,7 @@ resource "vkcs_compute_instance" "instance_1" {
 
 resource "vkcs_compute_interface_attach" "ai_1" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
-  network_id  = "${openstack_networking_port_v2.network_1.id}"
+  network_id  = "${vkcs_networking_port.network_1.id}"
   fixed_ip    = "10.0.10.10"
 }
 
@@ -57,14 +57,14 @@ resource "vkcs_compute_interface_attach" "ai_1" {
 ### Attachment Using an Existing Port
 
 ```hcl
-resource "openstack_networking_network_v2" "network_1" {
+resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
 }
 
-resource "openstack_networking_port_v2" "port_1" {
+resource "vkcs_networking_port" "port_1" {
   name           = "port_1"
-  network_id     = "${openstack_networking_network_v2.network_1.id}"
+  network_id     = "${vkcs_networking_network.network_1.id}"
   admin_state_up = "true"
 }
 
@@ -76,7 +76,7 @@ resource "vkcs_compute_instance" "instance_1" {
 
 resource "vkcs_compute_interface_attach" "ai_1" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
-  port_id     = "${openstack_networking_port_v2.port_1.id}"
+  port_id     = "${vkcs_networking_port.port_1.id}"
 }
 
 ```
@@ -84,15 +84,15 @@ resource "vkcs_compute_interface_attach" "ai_1" {
 ### Attaching Multiple Interfaces
 
 ```hcl
-resource "openstack_networking_network_v2" "network_1" {
+resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
 }
 
-resource "openstack_networking_port_v2" "ports" {
+resource "vkcs_networking_port" "ports" {
   count          = 2
   name           = "${format("port-%02d", count.index + 1)}"
-  network_id     = "${openstack_networking_network_v2.network_1.id}"
+  network_id     = "${vkcs_networking_network.network_1.id}"
   admin_state_up = "true"
 }
 
@@ -104,7 +104,7 @@ resource "vkcs_compute_instance" "instance_1" {
 resource "vkcs_compute_interface_attach" "attachments" {
   count       = 2
   instance_id = "${vkcs_compute_instance.instance_1.id}"
-  port_id     = "${openstack_networking_port_v2.ports.*.id[count.index]}"
+  port_id     = "${vkcs_networking_port.ports.*.id[count.index]}"
 }
 ```
 
@@ -116,15 +116,15 @@ If you want to ensure that the ports are attached in a given order, create
 explicit dependencies between the ports, such as:
 
 ```hcl
-resource "openstack_networking_network_v2" "network_1" {
+resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
 }
 
-resource "openstack_networking_port_v2" "ports" {
+resource "vkcs_networking_port" "ports" {
   count          = 2
   name           = "${format("port-%02d", count.index + 1)}"
-  network_id     = "${openstack_networking_network_v2.network_1.id}"
+  network_id     = "${vkcs_networking_network.network_1.id}"
   admin_state_up = "true"
 }
 
@@ -135,12 +135,12 @@ resource "vkcs_compute_instance_v2" "instance_1" {
 
 resource "vkcs_compute_interface_attach" "ai_1" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
-  port_id     = "${openstack_networking_port_v2.ports.*.id[0]}"
+  port_id     = "${vkcs_networking_port.ports.*.id[0]}"
 }
 
 resource "vkcs_compute_interface_attach" "ai_2" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
-  port_id     = "${openstack_networking_port_v2.ports.*.id[1]}"
+  port_id     = "${vkcs_networking_port.ports.*.id[1]}"
 }
 ```
 

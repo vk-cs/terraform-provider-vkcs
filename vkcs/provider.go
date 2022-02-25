@@ -8,6 +8,7 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/utils/terraform/auth"
+	"github.com/gophercloud/utils/terraform/mutexkv"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
@@ -29,6 +30,7 @@ type configer interface {
 	ImageV2Client(region string) (*gophercloud.ServiceClient, error)
 	NetworkingV2Client(region string) (*gophercloud.ServiceClient, error)
 	BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error)
+	GetMutex() *mutexkv.MutexKV
 }
 
 // config uses openstackbase.Config as the base/foundation of this provider's
@@ -59,6 +61,10 @@ func (c *config) BlockStorageV3Client(region string) (*gophercloud.ServiceClient
 	return c.Config.BlockStorageV3Client(region)
 }
 
+func (c *config) GetMutex() *mutexkv.MutexKV {
+	return c.Config.MutexKV
+}
+
 func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.Diagnostics) {
 	config := &config{
 		auth.Config{
@@ -72,6 +78,7 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 			MaxRetries:       maxRetriesCount,
 			TerraformVersion: terraformVersion,
 			SDKVersion:       meta.SDKVersionString(),
+			MutexKV:          mutexkv.NewMutexKV(),
 		},
 	}
 
@@ -193,16 +200,34 @@ func Provider() *schema.Provider {
 			"vkcs_compute_flavor":             dataSourceComputeFlavor(),
 			"vkcs_compute_quotaset":           dataSourceComputeQuotaset(),
 			"vkcs_images_image":               dataSourceImagesImage(),
+			"vkcs_networking_network":         dataSourceNetworkingNetwork(),
+			"vkcs_networking_subnet":          dataSourceNetworkingSubnet(),
+			"vkcs_networking_router":          dataSourceNetworkingRouter(),
+			"vkcs_networking_port":            dataSourceNetworkingPort(),
+			"vkcs_networking_secgroup":        dataSourceNetworkingSecGroup(),
+			"vkcs_networking_floatingip":      dataSourceNetworkingFloatingIP(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"vkcs_compute_instance":             resourceComputeInstance(),
-			"vkcs_compute_interface_attach":     resourceComputeInterfaceAttach(),
-			"vkcs_compute_keypair":              resourceComputeKeypair(),
-			"vkcs_compute_volume_attach":        resourceComputeVolumeAttach(),
-			"vkcs_compute_floatingip_associate": resourceComputeFloatingIPAssociate(),
-			"vkcs_compute_servergroup":          resourceComputeServerGroup(),
-			"vkcs_images_image":                 resourceImagesImage(),
+			"vkcs_compute_instance":                   resourceComputeInstance(),
+			"vkcs_compute_interface_attach":           resourceComputeInterfaceAttach(),
+			"vkcs_compute_keypair":                    resourceComputeKeypair(),
+			"vkcs_compute_volume_attach":              resourceComputeVolumeAttach(),
+			"vkcs_compute_floatingip_associate":       resourceComputeFloatingIPAssociate(),
+			"vkcs_compute_servergroup":                resourceComputeServerGroup(),
+			"vkcs_images_image":                       resourceImagesImage(),
+			"vkcs_networking_network":                 resourceNetworkingNetwork(),
+			"vkcs_networking_subnet":                  resourceNetworkingSubnet(),
+			"vkcs_networking_subnet_route":            resourceNetworkingSubnetRoute(),
+			"vkcs_networking_router":                  resourceNetworkingRouter(),
+			"vkcs_networking_router_interface":        resourceNetworkingRouterInterface(),
+			"vkcs_networking_router_route":            resourceNetworkingRouterRoute(),
+			"vkcs_networking_port":                    resourceNetworkingPort(),
+			"vkcs_networking_port_secgroup_associate": resourceNetworkingPortSecGroupAssociate(),
+			"vkcs_networking_secgroup":                resourceNetworkingSecGroup(),
+			"vkcs_networking_secgroup_rule":           resourceNetworkingSecGroupRule(),
+			"vkcs_networking_floatingip":              resourceNetworkingFloating(),
+			"vkcs_networking_floatingip_associate":    resourceNetworkingFloatingIPAssociate(),
 		},
 	}
 

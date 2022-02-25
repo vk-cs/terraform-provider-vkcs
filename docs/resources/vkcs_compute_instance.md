@@ -178,7 +178,7 @@ resource "vkcs_compute_instance" "instance_1" {
 ### Instance With Multiple Networks
 
 ```hcl
-resource "openstack_networking_floatingip_v2" "myip" {
+resource "vkcs_networking_floatingip" "myip" {
   pool = "my_pool"
 }
 
@@ -199,7 +199,7 @@ resource "vkcs_compute_instance" "multi-net" {
 }
 
 resource "vkcs_compute_floatingip_associate" "myip" {
-  floating_ip = "${openstack_networking_floatingip_v2.myip.address}"
+  floating_ip = "${vkcs_networking_floatingip.myip.address}"
   instance_id = "${vkcs_compute_instance.multi-net.id}"
   fixed_ip    = "${vkcs_compute_instance.multi-net.network.1.fixed_ip_v4}"
 }
@@ -599,13 +599,13 @@ security groups and not their IDs.
 Note the following example:
 
 ```hcl
-resource "openstack_networking_secgroup_v2" "sg_1" {
+resource "vkcs_networking_secgroup" "sg_1" {
   name = "sg_1"
 }
 
 resource "vkcs_compute_instance" "foo" {
   name            = "terraform-test"
-  security_groups = ["${openstack_networking_secgroup_v2.sg_1.name}"]
+  security_groups = ["${vkcs_networking_secgroup.sg_1.name}"]
 }
 ```
 
@@ -633,7 +633,7 @@ information. Therefore, in order for a Provisioner to connect to an Instance
 via it's network Port, customize the `connection` information:
 
 ```hcl
-resource "openstack_networking_port_v2" "port_1" {
+resource "vkcs_networking_port" "port_1" {
   name           = "port_1"
   admin_state_up = "true"
 
@@ -649,12 +649,12 @@ resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
 
   network {
-    port = "${openstack_networking_port_v2.port_1.id}"
+    port = "${vkcs_networking_port.port_1.id}"
   }
 
   connection {
     user        = "root"
-    host        = "${openstack_networking_port_v2.port_1.fixed_ip.0.ip_address}"
+    host        = "${vkcs_networking_port.port_1.fixed_ip.0.ip_address}"
     private_key = "~/path/to/key"
   }
 
