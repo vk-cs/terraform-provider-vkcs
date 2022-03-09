@@ -505,8 +505,8 @@ func resourceImagesImageDelete(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func validateStoreInProperties(v map[string]interface{}, k string) (ws []string, errors []error) {
-	if _, ok := v["store"]; ok {
+func validateStoreInProperties(v interface{}, k string) (ws []string, errors []error) {
+	if _, ok := v.(map[string]interface{})["store"]; ok {
 		errors = append(errors, fmt.Errorf("Error creating Image: set up store disabled"))
 	}
 	return
