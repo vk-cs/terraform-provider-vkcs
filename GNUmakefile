@@ -30,6 +30,9 @@ testacc_image: fmtcheck
 testacc_keymanager: fmtcheck
 	TF_ACC=1 go test -run=TestAccKeyManager $(TEST) -v $(TESTARGS) -timeout 120m
 
+testacc_blockstorage: fmtcheck
+	TF_ACC=1 go test -run=TestAccBlockStorage $(TEST) -v $(TESTARGS) -timeout 120m
+
 vet:
 	@echo "go vet ."
 	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \

@@ -213,6 +213,8 @@ func Provider() *schema.Provider {
 			"vkcs_networking_floatingip":      dataSourceNetworkingFloatingIP(),
 			"vkcs_keymanager_secret":          dataSourceKeyManagerSecret(),
 			"vkcs_keymanager_container":       dataSourceKeyManagerContainer(),
+			"vkcs_blockstorage_volume":        dataSourceBlockStorageVolume(),
+			"vkcs_blockstorage_snapshot":      dataSourceBlockStorageSnapshot(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -237,6 +239,8 @@ func Provider() *schema.Provider {
 			"vkcs_networking_floatingip_associate":    resourceNetworkingFloatingIPAssociate(),
 			"vkcs_keymanager_secret":                  resourceKeyManagerSecret(),
 			"vkcs_keymanager_container":               resourceKeyManagerContainer(),
+			"vkcs_blockstorage_volume":                resourceBlockStorageVolume(),
+			"vkcs_blockstorage_snapshot":              resourceBlockStorageSnapshot(),
 		},
 	}
 

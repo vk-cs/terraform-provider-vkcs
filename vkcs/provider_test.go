@@ -22,6 +22,7 @@ import (
 
 var (
 	osFlavorID         = os.Getenv("OS_FLAVOR_ID")
+	osFlavorName       = os.Getenv("OS_FLAVOR_NAME")
 	osImageID          = os.Getenv("OS_IMAGE_ID")
 	osNetworkID        = os.Getenv("OS_NETWORK_ID")
 	osRegionName       = os.Getenv("OS_REGION_NAME")
@@ -30,6 +31,7 @@ var (
 	osPoolName         = os.Getenv("OS_POOL_NAME")
 	osExtGwID          = os.Getenv("OS_EXTGW_ID")
 	osPrivateDNSDomain = os.Getenv("OS_PRIVATE_DNS_DOMAIN")
+	osVolumeType       = os.Getenv("OS_VOLUME_TYPE")
 )
 
 var testAccProviders map[string]func() (*schema.Provider, error)
@@ -82,6 +84,20 @@ func testAccPreCheckNetworking(t *testing.T) {
 		"OS_POOL_NAME":          osPoolName,
 		"OS_EXTGW_ID":           osExtGwID,
 		"OS_PRIVATE_DNS_DOMAIN": osPrivateDNSDomain,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckBlockStorage(t *testing.T) {
+	vars := map[string]interface{}{
+		"OS_REGION_NAME": osRegionName,
+		"OS_VOLUME_TYPE": osVolumeType,
+		"OS_FLAVOR_NAME": osFlavorName,
+		"OS_IMAGE_ID":    osImageID,
 	}
 	for k, v := range vars {
 		if v == "" {

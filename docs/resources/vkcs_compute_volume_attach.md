@@ -15,7 +15,7 @@ Compute (Nova) v2 API.
 ### Basic attachment of a single volume to a single instance
 
 ```hcl
-resource "openstack_blockstorage_volume_v2" "volume_1" {
+resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   size = 1
 }
@@ -27,14 +27,14 @@ resource "vkcs_compute_instance" "instance_1" {
 
 resource "vkcs_compute_volume_attach" "va_1" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
-  volume_id   = "${openstack_blockstorage_volume_v2.volume_1.id}"
+  volume_id   = "${vkcs_blockstorage_volume.volume_1.id}"
 }
 ```
 
 ### Attaching multiple volumes to a single instance
 
 ```hcl
-resource "openstack_blockstorage_volume_v2" "volumes" {
+resource "vkcs_blockstorage_volume" "volumes" {
   count = 2
   name  = "${format("vol-%02d", count.index + 1)}"
   size  = 1
@@ -48,7 +48,7 @@ resource "vkcs_compute_instance" "instance_1" {
 resource "vkcs_compute_volume_attach" "attachments" {
   count       = 2
   instance_id = "${vkcs_compute_instance.instance_1.id}"
-  volume_id   = "${openstack_blockstorage_volume_v2.volumes.*.id[count.index]}"
+  volume_id   = "${vkcs_blockstorage_volume.volumes.*.id[count.index]}"
 }
 
 output "volume_devices" {
@@ -64,7 +64,7 @@ If you want to ensure that the volumes are attached in a given order, create
 explicit dependencies between the volumes, such as:
 
 ```hcl
-resource "openstack_blockstorage_volume_v2" "volumes" {
+resource "vkcs_blockstorage_volume" "volumes" {
   count = 2
   name  = "${format("vol-%02d", count.index + 1)}"
   size  = 1
@@ -77,12 +77,12 @@ resource "vkcs_compute_instance" "instance_1" {
 
 resource "vkcs_compute_volume_attach" "attach_1" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
-  volume_id   = "${openstack_blockstorage_volume_v2.volumes.0.id}"
+  volume_id   = "${vkcs_blockstorage_volume.volumes.0.id}"
 }
 
 resource "vkcs_compute_volume_attach" "attach_2" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
-  volume_id   = "${openstack_blockstorage_volume_v2.volumes.1.id}"
+  volume_id   = "${vkcs_blockstorage_volume.volumes.1.id}"
 
   depends_on = ["vkcs_compute_volume_attach.attach_1"]
 }

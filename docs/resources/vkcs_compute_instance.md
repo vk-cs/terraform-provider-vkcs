@@ -38,7 +38,7 @@ resource "vkcs_compute_instance" "basic" {
 ### Instance With Attached Volume
 
 ```hcl
-resource "openstack_blockstorage_volume_v2" "myvol" {
+resource "vkcs_blockstorage_volume" "myvol" {
   name = "myvol"
   size = 1
 }
@@ -57,7 +57,7 @@ resource "vkcs_compute_instance" "myinstance" {
 
 resource "vkcs_compute_volume_attach" "attached" {
   instance_id = "${vkcs_compute_instance.myinstance.id}"
-  volume_id   = "${openstack_blockstorage_volume_v2.myvol.id}"
+  volume_id   = "${vkcs_blockstorage_volume.myvol.id}"
 }
 ```
 
@@ -88,7 +88,7 @@ resource "vkcs_compute_instance" "boot-from-volume" {
 ### Boot From an Existing Volume
 
 ```hcl
-resource "openstack_blockstorage_volume_v1" "myvol" {
+resource "vkcs_blockstorage_volume" "myvol" {
   name     = "myvol"
   size     = 5
   image_id = "<image-id>"
@@ -101,7 +101,7 @@ resource "vkcs_compute_instance" "boot-from-volume" {
   security_groups = ["default"]
 
   block_device {
-    uuid                  = "${openstack_blockstorage_volume_v1.myvol.id}"
+    uuid                  = "${vkcs_blockstorage_volume.myvol.id}"
     source_type           = "volume"
     boot_index            = 0
     destination_type      = "volume"
@@ -145,7 +145,7 @@ resource "vkcs_compute_instance" "instance_1" {
 ### Boot Instance and Attach Existing Volume as a Block Device
 
 ```hcl
-resource "openstack_blockstorage_volume_v2" "volume_1" {
+resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   size = 1
 }
@@ -166,7 +166,7 @@ resource "vkcs_compute_instance" "instance_1" {
   }
 
   block_device {
-    uuid                  = "${openstack_blockstorage_volume_v2.volume_1.id}"
+    uuid                  = "${vkcs_blockstorage_volume.volume_1.id}"
     source_type           = "volume"
     destination_type      = "volume"
     boot_index            = 1
@@ -783,7 +783,7 @@ configuration accordingly.
 We have an instance with two block storage volumes, one bootable and one
 non-bootable.
 Note that we only configure the bootable device as block_device.
-The other volumes can be specified as `openstack_blockstorage_volume_v2`
+The other volumes can be specified as `vkcs_blockstorage_volume`
 
 ```hcl
 resource "vkcs_compute_instance" "instance_2" {
@@ -805,12 +805,12 @@ resource "vkcs_compute_instance" "instance_2" {
     name = "<network_name>"
   }
 }
-resource "openstack_blockstorage_volume_v2" "volume_1" {
+resource "vkcs_blockstorage_volume" "volume_1" {
   size = 1
   name = "<vol_name>"
 }
 resource "vkcs_compute_volume_attach" "va_1" {
-  volume_id   = "${openstack_blockstorage_volume_v2.volume_1.id}"
+  volume_id   = "${vkcs_blockstorage_volume.volume_1.id}"
   instance_id = "${vkcs_compute_instance.instance_2.id}"
 }
 ```
@@ -819,7 +819,7 @@ do the following:
 
 ```
 terraform import vkcs_compute_instance.instance_2 <instance_id>
-import openstack_blockstorage_volume_v2.volume_1 <volume_id>
+import vkcs_blockstorage_volume.volume_1 <volume_id>
 terraform import vkcs_compute_volume_attach.va_1
 <instance_id>/<volume_id>
 ```

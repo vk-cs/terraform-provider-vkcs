@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
@@ -233,24 +234,24 @@ func TestAccComputeInstance_bootFromVolumeImage(t *testing.T) {
 	})
 }
 
-// func TestAccComputeInstance_bootFromVolumeVolume(t *testing.T) {
-// 	var instance servers.Server
+func TestAccComputeInstance_bootFromVolumeVolume(t *testing.T) {
+	var instance servers.Server
 
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckCompute(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccComputeInstanceBootFromVolumeVolume(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
-// 					testAccCheckComputeInstanceBootVolumeAttachment(&instance),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheckCompute(t) },
+		ProviderFactories: testAccProviders,
+		CheckDestroy:      testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccComputeInstanceBootFromVolumeVolume(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					testAccCheckComputeInstanceBootVolumeAttachment(&instance),
+				),
+			},
+		},
+	})
+}
 
 func TestAccComputeInstance_bootFromVolumeForceNew(t *testing.T) {
 	var instance1 servers.Server
@@ -316,26 +317,26 @@ func TestAccComputeInstance_blockDeviceNewVolumeTypeAndBus(t *testing.T) {
 	})
 }
 
-// func TestAccComputeInstance_blockDeviceExistingVolume(t *testing.T) {
-// 	var instance servers.Server
-// 	var volume volumes.Volume
+func TestAccComputeInstance_blockDeviceExistingVolume(t *testing.T) {
+	var instance servers.Server
+	var volume volumes.Volume
 
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckCompute(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccComputeInstanceBlockDeviceExistingVolume(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
-// 					testAccCheckBlockStorageV3VolumeExists(
-// 						"openstack_blockstorage_volume_v3.volume_1", &volume),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheckCompute(t) },
+		ProviderFactories: testAccProviders,
+		CheckDestroy:      testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccComputeInstanceBlockDeviceExistingVolume(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					testAccCheckBlockStorageVolumeExists(
+						"vkcs_blockstorage_volume.volume_1", &volume),
+				),
+			},
+		},
+	})
+}
 
 //TODO: verify the personality really exists on the instance.
 func TestAccComputeInstance_personality(t *testing.T) {
@@ -360,10 +361,7 @@ func TestAccComputeInstance_personality(t *testing.T) {
 // 	var instance servers.Server
 
 // 	resource.Test(t, resource.TestCase{
-// 		PreCheck: func() {
-// 			testAccPreCheck(t)
-// 			testAccPreCheckNonAdminOnly(t)
-// 		},
+// 		PreCheck:          func() { testAccPreCheckCompute(t) },
 // 		ProviderFactories: testAccProviders,
 // 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 // 		Steps: []resource.TestStep{
@@ -1049,31 +1047,33 @@ resource "vkcs_compute_instance" "instance_1" {
 `, osImageID, osNetworkID)
 }
 
-// func testAccComputeInstanceBootFromVolumeVolume() string {
-// 	return fmt.Sprintf(`
-// resource "openstack_blockstorage_volume_v3" "vol_1" {
-//   name = "vol_1"
-//   size = 5
-//   image_id = "%s"
-// }
+func testAccComputeInstanceBootFromVolumeVolume() string {
+	return fmt.Sprintf(`
+resource "vkcs_blockstorage_volume" "vol_1" {
+  name = "vol_1"
+  size = 5
+  image_id = "%s"
+  availability_zone = "nova"
+  volume_type = "%s"
+}
 
-// // resource "vkcs_compute_instance" "instance_1" {
-// //   name = "instance_1"
-// //  // security_groups = ["default"]
-// //   block_device {
-// //     uuid = "${openstack_blockstorage_volume_v3.vol_1.id}"
-// //     source_type = "volume"
-// //     boot_index = 0
-// //     destination_type = "volume"
-// //     delete_on_termination = true
-// //   }
-// //   network {
-// //     uuid = "%s"
-// //   }
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_1"
+  security_groups = ["default"]
+  block_device {
+    uuid = "${vkcs_blockstorage_volume.vol_1.id}"
+    source_type = "volume"
+    boot_index = 0
+    destination_type = "volume"
+    delete_on_termination = true
+  }
+  network {
+    uuid = "%s"
+  }
 
-// // }
-// // `, osImageID, osNetworkID)
-// }
+}
+`, osImageID, osVolumeType, osNetworkID)
+}
 
 func testAccComputeInstanceBootFromVolumeForceNew1() string {
 	return fmt.Sprintf(`
@@ -1171,36 +1171,38 @@ resource "vkcs_compute_instance" "instance_1" {
 `, osImageID, osNetworkID)
 }
 
-// func testAccComputeInstanceBlockDeviceExistingVolume() string {
-// 	return fmt.Sprintf(`
-// resource "openstack_blockstorage_volume_v3" "volume_1" {
-//   name = "volume_1"
-//   size = 1
-// }
+func testAccComputeInstanceBlockDeviceExistingVolume() string {
+	return fmt.Sprintf(`
+resource "vkcs_blockstorage_volume" "volume_1" {
+  name = "volume_1"
+  size = 1
+  availability_zone = "nova"
+  volume_type = "%s"
+}
 
-// resource "vkcs_compute_instance" "instance_1" {
-//   name = "instance_1"
-//   security_groups = ["default"]
-//   block_device {
-//     uuid = "%s"
-//     source_type = "image"
-//     destination_type = "local"
-//     boot_index = 0
-//     delete_on_termination = true
-//   }
-//   block_device {
-//     uuid = "${openstack_blockstorage_volume_v3.volume_1.id}"
-//     source_type = "volume"
-//     destination_type = "volume"
-//     boot_index = 1
-//     delete_on_termination = true
-//   }
-//   network {
-//     uuid = "%s"
-//   }
-// }
-// `, osImageID, osNetworkID)
-// }
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_1"
+  security_groups = ["default"]
+  block_device {
+    uuid = "%s"
+    source_type = "image"
+    destination_type = "local"
+    boot_index = 0
+    delete_on_termination = true
+  }
+  block_device {
+    uuid = "${vkcs_blockstorage_volume.volume_1.id}"
+    source_type = "volume"
+    destination_type = "volume"
+    boot_index = 1
+    delete_on_termination = true
+  }
+  network {
+    uuid = "%s"
+  }
+}
+`, osVolumeType, osImageID, osNetworkID)
+}
 
 func testAccComputeInstancePersonality() string {
 	return fmt.Sprintf(`
