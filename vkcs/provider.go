@@ -30,6 +30,7 @@ type configer interface {
 	ImageV2Client(region string) (*gophercloud.ServiceClient, error)
 	NetworkingV2Client(region string) (*gophercloud.ServiceClient, error)
 	BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error)
+	KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error)
 	GetMutex() *mutexkv.MutexKV
 }
 
@@ -59,6 +60,10 @@ func (c *config) NetworkingV2Client(region string) (*gophercloud.ServiceClient, 
 
 func (c *config) BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error) {
 	return c.Config.BlockStorageV3Client(region)
+}
+
+func (c *config) KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.Config.KeyManagerV1Client(region)
 }
 
 func (c *config) GetMutex() *mutexkv.MutexKV {
@@ -206,6 +211,8 @@ func Provider() *schema.Provider {
 			"vkcs_networking_port":            dataSourceNetworkingPort(),
 			"vkcs_networking_secgroup":        dataSourceNetworkingSecGroup(),
 			"vkcs_networking_floatingip":      dataSourceNetworkingFloatingIP(),
+			"vkcs_keymanager_secret":          dataSourceKeyManagerSecret(),
+			"vkcs_keymanager_container":       dataSourceKeyManagerContainer(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -228,6 +235,8 @@ func Provider() *schema.Provider {
 			"vkcs_networking_secgroup_rule":           resourceNetworkingSecGroupRule(),
 			"vkcs_networking_floatingip":              resourceNetworkingFloating(),
 			"vkcs_networking_floatingip_associate":    resourceNetworkingFloatingIPAssociate(),
+			"vkcs_keymanager_secret":                  resourceKeyManagerSecret(),
+			"vkcs_keymanager_container":               resourceKeyManagerContainer(),
 		},
 	}
 
