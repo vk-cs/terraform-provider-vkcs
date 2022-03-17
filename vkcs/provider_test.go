@@ -193,6 +193,23 @@ func testAccPreCheckDeprecated(t *testing.T) {
 	}
 }
 
+func testAccPreCheckVPN(t *testing.T) {
+	vars := map[string]interface{}{
+		"OS_AUTH_URL":    osAuthUrl,
+		"OS_IMAGE_ID":    osImageID,
+		"OS_FLAVOR_ID":   osFlavorID,
+		"OS_NETWORK_ID":  osNetworkID,
+		"OS_REGION_NAME": osRegionName,
+		"OS_POOL_NAME":   osPoolName,
+		"OS_EXTGW_ID":    osExtGwID,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
 // func TestProvider(t *testing.T) {
 // 	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
 // 		t.Fatalf("err: %s", err)

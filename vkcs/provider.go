@@ -249,6 +249,11 @@ func Provider() *schema.Provider {
 			"vkcs_lb_members":                         resourceMembers(),
 			"vkcs_lb_monitor":                         resourceMonitor(),
 			"vkcs_lb_pool":                            resourcePool(),
+			"vkcs_vpnaas_endpoint_group":              resourceEndpointGroup(),
+			"vkcs_vpnaas_ike_policy":                  resourceIKEPolicy(),
+			"vkcs_vpnaas_ipsec_policy":                resourceIPSecPolicy(),
+			"vkcs_vpnaas_service":                     resourceService(),
+			"vkcs_vpnaas_site_connection":             resourceSiteConnection(),
 		},
 	}
 

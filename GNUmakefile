@@ -36,6 +36,9 @@ testacc_blockstorage: fmtcheck
 testacc_lb: fmtcheck
 	TF_ACC=1 go test -run=TestAccLB $(TEST) -v $(TESTARGS) -timeout 120m
 
+testacc_vpnaas: fmtcheck
+	TF_ACC=1 go test -run=TestAccVPNaaS $(TEST) -v $(TESTARGS) -timeout 120m
+
 vet:
 	@echo "go vet ."
 	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
