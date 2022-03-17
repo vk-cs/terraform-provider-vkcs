@@ -241,6 +241,14 @@ func Provider() *schema.Provider {
 			"vkcs_keymanager_container":               resourceKeyManagerContainer(),
 			"vkcs_blockstorage_volume":                resourceBlockStorageVolume(),
 			"vkcs_blockstorage_snapshot":              resourceBlockStorageSnapshot(),
+			"vkcs_lb_l7policy":                        resourceL7Policy(),
+			"vkcs_lb_l7rule":                          resourceL7Rule(),
+			"vkcs_lb_listener":                        resourceListener(),
+			"vkcs_lb_loadbalancer":                    resourceLoadBalancer(),
+			"vkcs_lb_member":                          resourceMember(),
+			"vkcs_lb_members":                         resourceMembers(),
+			"vkcs_lb_monitor":                         resourceMonitor(),
+			"vkcs_lb_pool":                            resourcePool(),
 		},
 	}
 

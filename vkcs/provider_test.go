@@ -21,17 +21,20 @@ import (
 // )
 
 var (
-	osFlavorID         = os.Getenv("OS_FLAVOR_ID")
-	osFlavorName       = os.Getenv("OS_FLAVOR_NAME")
-	osImageID          = os.Getenv("OS_IMAGE_ID")
-	osNetworkID        = os.Getenv("OS_NETWORK_ID")
-	osRegionName       = os.Getenv("OS_REGION_NAME")
-	osProjectID        = os.Getenv("OS_PROJECT_ID")
-	osAuthUrl          = os.Getenv("OS_AUTH_URL")
-	osPoolName         = os.Getenv("OS_POOL_NAME")
-	osExtGwID          = os.Getenv("OS_EXTGW_ID")
-	osPrivateDNSDomain = os.Getenv("OS_PRIVATE_DNS_DOMAIN")
-	osVolumeType       = os.Getenv("OS_VOLUME_TYPE")
+	osFlavorID                       = os.Getenv("OS_FLAVOR_ID")
+	osFlavorName                     = os.Getenv("OS_FLAVOR_NAME")
+	osImageID                        = os.Getenv("OS_IMAGE_ID")
+	osNetworkID                      = os.Getenv("OS_NETWORK_ID")
+	osRegionName                     = os.Getenv("OS_REGION_NAME")
+	osProjectID                      = os.Getenv("OS_PROJECT_ID")
+	osAuthUrl                        = os.Getenv("OS_AUTH_URL")
+	osPoolName                       = os.Getenv("OS_POOL_NAME")
+	osExtGwID                        = os.Getenv("OS_EXTGW_ID")
+	osPrivateDNSDomain               = os.Getenv("OS_PRIVATE_DNS_DOMAIN")
+	osVolumeType                     = os.Getenv("OS_VOLUME_TYPE")
+	osLbEnvironment                  = os.Getenv("OS_LB_ENVIRONMENT")
+	osOctaviaBatchMembersEnvironment = os.Getenv("OS_OCTAVIA_BATCH_MEMBERS_ENVIRONMENT")
+	osDeprecatedEnvironment          = os.Getenv("OS_DEPRECATED_ENVIRONMENT")
 )
 
 var testAccProviders map[string]func() (*schema.Provider, error)
@@ -70,6 +73,22 @@ func testAccPreCheckImage(t *testing.T) {
 		"OS_IMAGE_ID":   osImageID,
 		"OS_FLAVOR_ID":  osFlavorID,
 		"OS_NETWORK_ID": osNetworkID,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckLB(t *testing.T) {
+	vars := map[string]interface{}{
+		"OS_AUTH_URL":       osAuthUrl,
+		"OS_IMAGE_ID":       osImageID,
+		"OS_FLAVOR_ID":      osFlavorID,
+		"OS_NETWORK_ID":     osNetworkID,
+		"OS_EXTGW_ID":       osExtGwID,
+		"OS_LB_ENVIRONMENT": osLbEnvironment,
 	}
 	for k, v := range vars {
 		if v == "" {
@@ -148,6 +167,30 @@ func testAccAuthFromEnv() (configer, error) {
 	}
 
 	return config, nil
+}
+
+func testAccPreCheckOctaviaBatchMembersEnv(t *testing.T) {
+	testAccPreCheckLB(t)
+	vars := map[string]interface{}{
+		"OS_OCTAVIA_BATCH_MEMBERS_ENVIRONMENT": osOctaviaBatchMembersEnvironment,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckDeprecated(t *testing.T) {
+	testAccPreCheckLB(t)
+	vars := map[string]interface{}{
+		"OS_DEPRECATED_ENVIRONMENT": osDeprecatedEnvironment,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
 }
 
 // func TestProvider(t *testing.T) {
