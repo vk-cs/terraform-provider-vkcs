@@ -125,6 +125,20 @@ func testAccPreCheckBlockStorage(t *testing.T) {
 	}
 }
 
+func testAccPreCheckSFS(t *testing.T) {
+	vars := map[string]interface{}{
+		"OS_AUTH_URL":   osAuthUrl,
+		"OS_IMAGE_ID":   osImageID,
+		"OS_FLAVOR_ID":  osFlavorID,
+		"OS_NETWORK_ID": osNetworkID,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
 func testAccAuthFromEnv() (configer, error) {
 	tenantID := os.Getenv("OS_TENANT_ID")
 	if tenantID == "" {
