@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/utils/terraform/auth"
@@ -18,8 +17,6 @@ const (
 	maxRetriesCount         = 3
 	defaultIdentityEndpoint = "https://infra.mail.ru/identity/v3/"
 	defaultUsersDomainName  = "users"
-	requestsMaxRetriesCount = 3
-	requestsRetryDelay      = 30 * time.Millisecond
 )
 
 // configer is interface to work with gophercloud.Config calls

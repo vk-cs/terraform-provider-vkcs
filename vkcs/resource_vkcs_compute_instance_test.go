@@ -512,24 +512,6 @@ func TestAccComputeInstance_timeout(t *testing.T) {
 	})
 }
 
-// func TestAccComputeInstance_networkModeAuto(t *testing.T) {
-// 	var instance servers.Server
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckCompute(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccComputeInstanceNetworkModeAuto(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
-// 					testAccCheckComputeInstanceNetworkExists("vkcs_compute_instance.instance_1", &instance),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
-
 func TestAccComputeInstance_networkModeNone(t *testing.T) {
 	var instance servers.Server
 	resource.Test(t, resource.TestCase{
@@ -872,28 +854,6 @@ func testAccCheckComputeInstanceTags(name string, tags []string) resource.TestCh
 			return fmt.Errorf(
 				"%s.tags: expected: %#v, got %#v", name, tags, rtags)
 		}
-		return nil
-	}
-}
-
-func testAccCheckComputeInstanceNetworkExists(n string, _ *servers.Server) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-
-		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
-		}
-
-		networkCount, ok := rs.Primary.Attributes["network.#"]
-
-		if !ok {
-			return fmt.Errorf("network attributes not found: %s", n)
-		}
-
-		if networkCount != "1" {
-			return fmt.Errorf("network should be exists when network mode 'auto': %s", n)
-		}
-
 		return nil
 	}
 }
@@ -1330,28 +1290,6 @@ resource "vkcs_compute_instance" "instance_1" {
 `, osNetworkID)
 }
 
-func testAccComputeInstanceDetachPortsBeforeDestroy() string {
-	return fmt.Sprintf(`
-
-resource "vkcs_networking_port" "port_1" {
-  name = "port_1"
-  network_id = "%s"
-  admin_state_up = "true"
-}
-
-resource "vkcs_compute_instance" "instance_1" {
-  name = "instance_1"
-  security_groups = ["default"]
-  vendor_options {
-    detach_ports_before_destroy = true
-  }
-  network {
-    port = "${vkcs_networking_port.port_1.id}"
-  }
-}
-`, osNetworkID)
-}
-
 func testAccComputeInstanceMetadataRemove1() string {
 	return fmt.Sprintf(`
 resource "vkcs_compute_instance" "instance_1" {
@@ -1411,16 +1349,6 @@ resource "vkcs_compute_instance" "instance_1" {
   }
 }
 `, osNetworkID)
-}
-
-func testAccComputeInstanceNetworkModeAuto() string {
-	return fmt.Sprintf(`
-resource "vkcs_compute_instance" "instance_1" {
-  name = "instance_1"
-
-  network_mode = "auto"
-}
-`)
 }
 
 func testAccComputeInstanceNetworkModeNone() string {

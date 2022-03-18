@@ -27,14 +27,13 @@ var (
 	osNetworkID                      = os.Getenv("OS_NETWORK_ID")
 	osRegionName                     = os.Getenv("OS_REGION_NAME")
 	osProjectID                      = os.Getenv("OS_PROJECT_ID")
-	osAuthUrl                        = os.Getenv("OS_AUTH_URL")
+	osAuthURL                        = os.Getenv("OS_AUTH_URL")
 	osPoolName                       = os.Getenv("OS_POOL_NAME")
 	osExtGwID                        = os.Getenv("OS_EXTGW_ID")
 	osPrivateDNSDomain               = os.Getenv("OS_PRIVATE_DNS_DOMAIN")
 	osVolumeType                     = os.Getenv("OS_VOLUME_TYPE")
 	osLbEnvironment                  = os.Getenv("OS_LB_ENVIRONMENT")
 	osOctaviaBatchMembersEnvironment = os.Getenv("OS_OCTAVIA_BATCH_MEMBERS_ENVIRONMENT")
-	osDeprecatedEnvironment          = os.Getenv("OS_DEPRECATED_ENVIRONMENT")
 )
 
 var testAccProviders map[string]func() (*schema.Provider, error)
@@ -69,7 +68,7 @@ func testAccPreCheckCompute(t *testing.T) {
 
 func testAccPreCheckImage(t *testing.T) {
 	vars := map[string]interface{}{
-		"OS_AUTH_URL":   osAuthUrl,
+		"OS_AUTH_URL":   osAuthURL,
 		"OS_IMAGE_ID":   osImageID,
 		"OS_FLAVOR_ID":  osFlavorID,
 		"OS_NETWORK_ID": osNetworkID,
@@ -83,7 +82,7 @@ func testAccPreCheckImage(t *testing.T) {
 
 func testAccPreCheckLB(t *testing.T) {
 	vars := map[string]interface{}{
-		"OS_AUTH_URL":       osAuthUrl,
+		"OS_AUTH_URL":       osAuthURL,
 		"OS_IMAGE_ID":       osImageID,
 		"OS_FLAVOR_ID":      osFlavorID,
 		"OS_NETWORK_ID":     osNetworkID,
@@ -127,7 +126,7 @@ func testAccPreCheckBlockStorage(t *testing.T) {
 
 func testAccPreCheckSFS(t *testing.T) {
 	vars := map[string]interface{}{
-		"OS_AUTH_URL":   osAuthUrl,
+		"OS_AUTH_URL":   osAuthURL,
 		"OS_IMAGE_ID":   osImageID,
 		"OS_FLAVOR_ID":  osFlavorID,
 		"OS_NETWORK_ID": osNetworkID,
@@ -195,21 +194,9 @@ func testAccPreCheckOctaviaBatchMembersEnv(t *testing.T) {
 	}
 }
 
-func testAccPreCheckDeprecated(t *testing.T) {
-	testAccPreCheckLB(t)
-	vars := map[string]interface{}{
-		"OS_DEPRECATED_ENVIRONMENT": osDeprecatedEnvironment,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
 func testAccPreCheckVPN(t *testing.T) {
 	vars := map[string]interface{}{
-		"OS_AUTH_URL":    osAuthUrl,
+		"OS_AUTH_URL":    osAuthURL,
 		"OS_IMAGE_ID":    osImageID,
 		"OS_FLAVOR_ID":   osFlavorID,
 		"OS_NETWORK_ID":  osNetworkID,

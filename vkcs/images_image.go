@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -18,7 +17,6 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
-	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/members"
 )
 
 func resourceImagesImageMemberStatusFromString(v string) images.ImageMemberStatus {
@@ -206,58 +204,6 @@ func resourceImagesImageUpdateComputedAttributes(_ context.Context, diff *schema
 	}
 
 	return nil
-}
-
-func resourceImagesImageAccessParseID(id string) (string, string, error) {
-	idParts := strings.Split(id, "/")
-	if len(idParts) < 2 {
-		return "", "", fmt.Errorf("Unable to determine image share access ID")
-	}
-
-	imageID := idParts[0]
-	memberID := idParts[1]
-
-	return imageID, memberID, nil
-}
-
-func resourceImagesImageAccessDetectMemberID(client *gophercloud.ServiceClient, imageID string) (string, error) {
-	allPages, err := members.List(client, imageID).AllPages()
-	if err != nil {
-		return "", fmt.Errorf("Unable to list image members: %s", err)
-	}
-	allMembers, err := members.ExtractMembers(allPages)
-	if err != nil {
-		return "", fmt.Errorf("Unable to extract image members: %s", err)
-	}
-	if len(allMembers) == 0 {
-		return "", fmt.Errorf("No members found for the %q image", imageID)
-	}
-	if len(allMembers) > 1 {
-		return "", fmt.Errorf("Too many members found for the %q image, please specify the member_id explicitly", imageID)
-	}
-	return allMembers[0].MemberID, nil
-}
-
-func imagesFilterByRegex(imageArr []images.Image, nameRegex string) []images.Image {
-	var result []images.Image
-	r := regexp.MustCompile(nameRegex)
-
-	for _, image := range imageArr {
-		// Check for a very rare case where the response would include no
-		// image name. No name means nothing to attempt a match against,
-		// therefore we are skipping such image.
-		if image.Name == "" {
-			log.Printf("[WARN] Unable to find image name to match against "+
-				"for image ID %q owned by %q, nothing to do.",
-				image.ID, image.Owner)
-			continue
-		}
-		if r.MatchString(image.Name) {
-			result = append(result, image)
-		}
-	}
-
-	return result
 }
 
 // v - slice of images to filter

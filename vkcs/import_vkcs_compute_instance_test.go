@@ -31,27 +31,6 @@ func TestAccComputeInstance_importBasic(t *testing.T) {
 	})
 }
 
-// func TestAccComputeInstance_DetachPortsBeforeDelete(t *testing.T) {
-// 	resourceName := "vkcs_compute_instance.instance_1"
-
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckCompute(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccComputeInstanceDetachPortsBeforeDestroy(),
-// 			},
-
-// 			{
-// 				ResourceName:            resourceName,
-// 				ImportState:             true,
-// 				ImportStateVerify:       false,
-// 				ImportStateVerifyIgnore: []string{},
-// 			},
-// 		},
-// 	})
-// }
 func TestAccComputeInstance_importbootFromVolumeForceNew_1(t *testing.T) {
 	resourceName := "vkcs_compute_instance.instance_1"
 

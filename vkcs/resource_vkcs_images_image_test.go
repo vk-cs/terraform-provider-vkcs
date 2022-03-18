@@ -444,24 +444,6 @@ const testAccImagesImageTags3 = `
       tags = ["foo","baz"]
   }`
 
-const testAccImagesImageVisibility1 = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "Rancher TerraformAccTest"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
-      container_format = "bare"
-      disk_format = "qcow2"
-      visibility = "private"
-  }`
-
-const testAccImagesImageVisibility2 = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "Rancher TerraformAccTest"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
-      container_format = "bare"
-      disk_format = "qcow2"
-      visibility = "public"
-  }`
-
 const testAccImagesImageProperties1 = `
   resource "vkcs_images_image" "image_1" {
       name   = "Rancher TerraformAccTest"

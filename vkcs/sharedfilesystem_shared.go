@@ -5,5 +5,4 @@ const (
 
 	sharedFilesystemSecurityServiceOUMicroversion = "2.32"
 	sharedFilesystemSharedAccessCephXMicroversion = "2.13"
-	sharedFilesystemSharedAccessMinMicroversion   = "2.21"
 )

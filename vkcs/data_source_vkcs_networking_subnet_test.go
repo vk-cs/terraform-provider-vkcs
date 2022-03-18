@@ -134,21 +134,6 @@ func testAccCheckNetworkingSubnetDataSourceID(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckNetworkingPortID(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Can't find port resource: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("Port resource ID not set")
-		}
-
-		return nil
-	}
-}
-
 func testAccCheckNetworkingSubnetDataSourceGoodNetwork(n1, n2 string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ds1, ok := s.RootModule().Resources[n1]

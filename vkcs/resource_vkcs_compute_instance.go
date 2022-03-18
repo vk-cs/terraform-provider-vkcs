@@ -875,7 +875,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChange("flavor_id") || d.HasChange("flavor_name") {
-		//Get vendor_options
+		// Get vendor_options
 		vendorOptionsRaw := d.Get("vendor_options").(*schema.Set)
 		var ignoreResizeConfirmation bool
 		if vendorOptionsRaw.Len() > 0 {

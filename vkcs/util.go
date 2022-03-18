@@ -1,34 +1,12 @@
 package vkcs
 
 import (
-	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/mitchellh/mapstructure"
 )
-
-var decoderConfig = &mapstructure.DecoderConfig{
-	TagName: "json",
-}
-
-// mapStructureDecoder ...
-func mapStructureDecoder(strct interface{}, v *map[string]interface{}, config *mapstructure.DecoderConfig) error {
-	config.Result = strct
-	decoder, _ := mapstructure.NewDecoder(config)
-	return decoder.Decode(*v)
-}
-
-// getTimestamp ...
-func getTimestamp(t *time.Time) string {
-	if t != nil {
-		return t.Format(time.RFC3339)
-	}
-	return ""
-}
 
 // BuildRequest takes an opts struct and builds a request body for
 // Gophercloud to execute.
@@ -85,29 +63,6 @@ func MapValueSpecs(d *schema.ResourceData) map[string]string {
 		m[key] = val.(string)
 	}
 	return m
-}
-
-func ensureOnlyOnePresented(d *schema.ResourceData, keys ...string) (string, error) {
-	var isPresented bool
-	var keyPresented string
-	for _, key := range keys {
-		_, ok := d.GetOk(key)
-
-		if ok {
-			if isPresented {
-				return "", fmt.Errorf("only one of %v keys can be presented", keys)
-			}
-
-			isPresented = true
-			keyPresented = key
-		}
-	}
-
-	if !isPresented {
-		return "", fmt.Errorf("no one of %v keys are presented", keys)
-	}
-
-	return keyPresented, nil
 }
 
 func checkForRetryableError(err error) *resource.RetryError {
@@ -219,28 +174,4 @@ func sliceUnion(a, b []string) []string {
 		}
 	}
 	return res
-}
-
-func validateJSONObject(v interface{}, k string) ([]string, []error) {
-	if v == nil || v.(string) == "" {
-		return nil, []error{fmt.Errorf("%q value must not be empty", k)}
-	}
-
-	var j map[string]interface{}
-	s := v.(string)
-
-	err := json.Unmarshal([]byte(s), &j)
-	if err != nil {
-		return nil, []error{fmt.Errorf("%q must be a JSON object: %s", k, err)}
-	}
-
-	return nil, nil
-}
-
-func diffSuppressJSONObject(k, old, new string, d *schema.ResourceData) bool {
-	if strSliceContains([]string{"{}", ""}, old) &&
-		strSliceContains([]string{"{}", ""}, new) {
-		return true
-	}
-	return false
 }

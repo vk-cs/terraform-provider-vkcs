@@ -283,7 +283,7 @@ func resourceImagesImageCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("Error while uploading file %q: %s", imgFilePath, res.Err)
 	}
 
-	//wait for active
+	// wait for active
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{string(images.ImageStatusQueued), string(images.ImageStatusSaving), string(images.ImageStatusImporting)},
 		Target:     []string{string(images.ImageStatusActive)},
