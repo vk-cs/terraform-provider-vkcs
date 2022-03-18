@@ -74,7 +74,7 @@ func TestAccNetworkingFloatingIPAssociate_twoFixedIPs(t *testing.T) {
 
 func testAccCheckNetworkingFloatingIPAssociateDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
-	networkClient, err := config.NetworkingV2Client(osRegionName)
+	networkClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating OpenStack network client: %s", err)
 	}

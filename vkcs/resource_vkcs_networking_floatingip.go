@@ -115,13 +115,21 @@ func resourceNetworkingFloating() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^$|\.$`), "fully-qualified (unambiguous) DNS domain names must have a dot at the end"),
 			},
+
+			"sdn": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				ValidateFunc: validateSDN(),
+			},
 		},
 	}
 }
 
 func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack network client: %s", err)
 	}
@@ -242,7 +250,7 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 
 func resourceNetworkFloatingIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack network client: %s", err)
 	}
@@ -263,6 +271,7 @@ func resourceNetworkFloatingIPRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("dns_name", fip.DNSName)
 	d.Set("dns_domain", fip.DNSDomain)
 	d.Set("region", getRegion(d, config))
+	d.Set("sdn", getSDN(d))
 
 	networkingReadAttributesTags(d, fip.Tags)
 
@@ -277,7 +286,7 @@ func resourceNetworkFloatingIPRead(ctx context.Context, d *schema.ResourceData, 
 
 func resourceNetworkFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack network client: %s", err)
 	}
@@ -327,7 +336,7 @@ func resourceNetworkFloatingIPUpdate(ctx context.Context, d *schema.ResourceData
 
 func resourceNetworkFloatingIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack network client: %s", err)
 	}

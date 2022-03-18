@@ -214,13 +214,21 @@ func resourceNetworkingPort() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeMap},
 			},
+
+			"sdn": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				ValidateFunc: validateSDN(),
+			},
 		},
 	}
 }
 
 func resourceNetworkingPortCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -336,7 +344,7 @@ func resourceNetworkingPortCreate(ctx context.Context, d *schema.ResourceData, m
 
 func resourceNetworkingPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -376,13 +384,14 @@ func resourceNetworkingPortRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("dns_assignment", port.DNSAssignment)
 
 	d.Set("region", getRegion(d, config))
+	d.Set("sdn", getSDN(d))
 
 	return nil
 }
 
 func resourceNetworkingPortUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -521,7 +530,7 @@ func resourceNetworkingPortUpdate(ctx context.Context, d *schema.ResourceData, m
 
 func resourceNetworkingPortDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}

@@ -25,7 +25,7 @@ type configer interface {
 	GetRegion() string
 	ComputeV2Client(region string) (*gophercloud.ServiceClient, error)
 	ImageV2Client(region string) (*gophercloud.ServiceClient, error)
-	NetworkingV2Client(region string) (*gophercloud.ServiceClient, error)
+	NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error)
 	BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error)
 	KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error)
 	GetMutex() *mutexkv.MutexKV
@@ -51,8 +51,15 @@ func (c *config) ImageV2Client(region string) (*gophercloud.ServiceClient, error
 	return c.Config.ImageV2Client(region)
 }
 
-func (c *config) NetworkingV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.NetworkingV2Client(region)
+func (c *config) NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error) {
+	client, err := c.Config.NetworkingV2Client(region)
+	if err != nil {
+		return client, err
+	}
+	client.MoreHeaders = map[string]string{
+		"X-SDN": sdn,
+	}
+	return client, err
 }
 
 func (c *config) BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error) {

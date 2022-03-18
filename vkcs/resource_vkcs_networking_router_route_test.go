@@ -62,7 +62,7 @@ func testAccCheckNetworkingRouterRouteEmpty(n string) resource.TestCheckFunc {
 		}
 
 		config := testAccProvider.Meta().(configer)
-		networkingClient, err := config.NetworkingV2Client(osRegionName)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 		}
@@ -96,7 +96,7 @@ func testAccCheckNetworkingRouterRouteExists(n string) resource.TestCheckFunc {
 		}
 
 		config := testAccProvider.Meta().(configer)
-		networkingClient, err := config.NetworkingV2Client(osRegionName)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 		}
@@ -126,7 +126,7 @@ func testAccCheckNetworkingRouterRouteExists(n string) resource.TestCheckFunc {
 
 func testAccCheckNetworkingRouterRouteDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
-	networkingClient, err := config.NetworkingV2Client(osRegionName)
+	networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 	}

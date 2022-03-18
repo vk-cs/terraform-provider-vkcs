@@ -63,13 +63,19 @@ func dataSourceNetworkingRouter() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+
+			"sdn": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateSDN(),
+			},
 		},
 	}
 }
 
 func dataSourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -138,6 +144,7 @@ func dataSourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("enable_snat", router.GatewayInfo.EnableSNAT)
 	d.Set("all_tags", router.Tags)
 	d.Set("region", getRegion(d, config))
+	d.Set("sdn", getSDN(d))
 
 	externalFixedIPs := make([]map[string]string, 0, len(router.GatewayInfo.ExternalFixedIPs))
 	for _, v := range router.GatewayInfo.ExternalFixedIPs {

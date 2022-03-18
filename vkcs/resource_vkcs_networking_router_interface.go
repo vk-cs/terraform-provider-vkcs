@@ -55,13 +55,21 @@ func resourceNetworkingRouterInterface() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
+
+			"sdn": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				ValidateFunc: validateSDN(),
+			},
 		},
 	}
 }
 
 func resourceNetworkingRouterInterfaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -101,7 +109,7 @@ func resourceNetworkingRouterInterfaceCreate(ctx context.Context, d *schema.Reso
 
 func resourceNetworkingRouterInterfaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -121,6 +129,7 @@ func resourceNetworkingRouterInterfaceRead(ctx context.Context, d *schema.Resour
 	d.Set("router_id", r.DeviceID)
 	d.Set("port_id", r.ID)
 	d.Set("region", getRegion(d, config))
+	d.Set("sdn", getSDN(d))
 
 	// Set the subnet ID by looking at the port's FixedIPs.
 	// If there's more than one FixedIP, do not set the subnet
@@ -138,7 +147,7 @@ func resourceNetworkingRouterInterfaceRead(ctx context.Context, d *schema.Resour
 
 func resourceNetworkingRouterInterfaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}

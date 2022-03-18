@@ -166,13 +166,19 @@ func dataSourceNetworkingPort() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeMap},
 			},
+
+			"sdn": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateSDN(),
+			},
 		},
 	}
 }
 
 func dataSourceNetworkingPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -318,6 +324,7 @@ func dataSourceNetworkingPortRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("extra_dhcp_option", flattenNetworkingPortDHCPOpts(port.ExtraDHCPOptsExt))
 	d.Set("dns_name", port.DNSName)
 	d.Set("dns_assignment", port.DNSAssignment)
+	d.Set("sdn", getSDN(d))
 
 	return nil
 }

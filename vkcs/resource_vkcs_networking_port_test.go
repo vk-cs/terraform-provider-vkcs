@@ -757,7 +757,7 @@ func TestAccNetworkingPort_portSecurity_enabled(t *testing.T) {
 
 func testAccCheckNetworkingPortDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
-	networkingClient, err := config.NetworkingV2Client(osRegionName)
+	networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -788,7 +788,7 @@ func testAccCheckNetworkingPortExists(n string, port *ports.Port) resource.TestC
 		}
 
 		config := testAccProvider.Meta().(configer)
-		networkingClient, err := config.NetworkingV2Client(osRegionName)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 		}
@@ -821,7 +821,7 @@ func testAccCheckNetworkingPortWithExtensionsExists(
 		}
 
 		config := testAccProvider.Meta().(configer)
-		networkingClient, err := config.NetworkingV2Client(osRegionName)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 		}

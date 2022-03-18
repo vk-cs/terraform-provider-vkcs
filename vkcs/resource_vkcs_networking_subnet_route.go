@@ -45,13 +45,21 @@ func resourceNetworkingSubnetRoute() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+
+			"sdn": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				ValidateFunc: validateSDN(),
+			},
 		},
 	}
 }
 
 func resourceNetworkingSubnetRouteCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -113,7 +121,7 @@ func resourceNetworkingSubnetRouteCreate(ctx context.Context, d *schema.Resource
 
 func resourceNetworkingSubnetRouteRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -152,13 +160,14 @@ func resourceNetworkingSubnetRouteRead(ctx context.Context, d *schema.ResourceDa
 	d.Set("next_hop", nextHop)
 	d.Set("destination_cidr", destCIDR)
 	d.Set("region", getRegion(d, config))
+	d.Set("sdn", getSDN(d))
 
 	return nil
 }
 
 func resourceNetworkingSubnetRouteDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}

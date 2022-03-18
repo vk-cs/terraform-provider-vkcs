@@ -257,7 +257,7 @@ func testAccCheckLBLoadBalancerTagCount(n string, expected int) resource.TestChe
 func testAccCheckLBLoadBalancerHasSecGroup(lb *loadbalancers.LoadBalancer, sg *groups.SecGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		config := testAccProvider.Meta().(*config)
-		networkingClient, err := config.NetworkingV2Client(osRegionName)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 		}

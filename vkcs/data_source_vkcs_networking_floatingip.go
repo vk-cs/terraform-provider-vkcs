@@ -67,13 +67,19 @@ func dataSourceNetworkingFloatingIP() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+
+			"sdn": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateSDN(),
+			},
 		},
 	}
 }
 
 func dataSourceNetworkingFloatingIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -147,6 +153,7 @@ func dataSourceNetworkingFloatingIPRead(ctx context.Context, d *schema.ResourceD
 	d.Set("status", fip.Status)
 	d.Set("all_tags", fip.Tags)
 	d.Set("region", getRegion(d, config))
+	d.Set("sdn", getSDN(d))
 
 	return nil
 }

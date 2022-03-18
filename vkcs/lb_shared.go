@@ -53,7 +53,7 @@ func chooseLBClient(d *schema.ResourceData, config *config) (*gophercloud.Servic
 	if config.UseOctavia {
 		return config.LoadBalancerV2Client(getRegion(d, config))
 	}
-	return config.NetworkingV2Client(getRegion(d, config))
+	return config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 }
 
 // chooseLBAccTestClient will determine which load balacing client to use:
@@ -64,7 +64,7 @@ func chooseLBAccTestClient(config *config, region string) (*gophercloud.ServiceC
 	if config.UseOctavia {
 		return config.LoadBalancerV2Client(region)
 	}
-	return config.NetworkingV2Client(region)
+	return config.NetworkingV2Client(region, defaultSDN)
 }
 
 // chooseLBLoadbalancerUpdateOpts will determine which load balancer update options to use:

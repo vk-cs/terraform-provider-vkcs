@@ -68,7 +68,7 @@ func TestAccVPNaaSGroup_update(t *testing.T) {
 
 func testAccCheckEndpointGroupDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
-	networkingClient, err := config.NetworkingV2Client(osRegionName)
+	networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -99,7 +99,7 @@ func testAccCheckEndpointGroupExists(n string, group *endpointgroups.EndpointGro
 		}
 
 		config := testAccProvider.Meta().(*config)
-		networkingClient, err := config.NetworkingV2Client(osRegionName)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 		}

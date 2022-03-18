@@ -163,13 +163,19 @@ func dataSourceNetworkingSubnet() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+
+			"sdn": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateSDN(),
+			},
 		},
 	}
 }
 
 func dataSourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -268,6 +274,7 @@ func dataSourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("subnetpool_id", subnet.SubnetPoolID)
 	d.Set("all_tags", subnet.Tags)
 	d.Set("region", getRegion(d, config))
+	d.Set("sdn", getSDN(d))
 
 	if err := d.Set("dns_nameservers", subnet.DNSNameservers); err != nil {
 		log.Printf("[DEBUG] Unable to set vkcs_networking_subnet dns_nameservers: %s", err)

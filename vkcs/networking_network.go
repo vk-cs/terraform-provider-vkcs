@@ -33,7 +33,7 @@ type networkExtended struct {
 // networkingNetworkID retrieves network ID by the provided name.
 func networkingNetworkID(d *schema.ResourceData, meta interface{}, networkName string) (string, error) {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return "", fmt.Errorf("Error creating OpenStack network client: %s", err)
 	}
@@ -64,7 +64,7 @@ func networkingNetworkID(d *schema.ResourceData, meta interface{}, networkName s
 // networkingNetworkName retrieves network name by the provided ID.
 func networkingNetworkName(d *schema.ResourceData, meta interface{}, networkID string) (string, error) {
 	config := meta.(configer)
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config))
+	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return "", fmt.Errorf("Error creating OpenStack network client: %s", err)
 	}

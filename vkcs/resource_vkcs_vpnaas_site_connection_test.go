@@ -45,7 +45,7 @@ func TestAccVPNaaSSiteConnection_basic(t *testing.T) {
 
 func testAccCheckSiteConnectionDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
-	networkingClient, err := config.NetworkingV2Client(osRegionName)
+	networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -76,7 +76,7 @@ func testAccCheckSiteConnectionExists(n string, conn *siteconnections.Connection
 		}
 
 		config := testAccProvider.Meta().(*config)
-		networkingClient, err := config.NetworkingV2Client(osRegionName)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}

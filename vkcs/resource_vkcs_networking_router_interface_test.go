@@ -119,7 +119,7 @@ func TestAccNetworkingRouterInterface_timeout(t *testing.T) {
 
 func testAccCheckNetworkingRouterInterfaceDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
-	networkingClient, err := config.NetworkingV2Client(osRegionName)
+	networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -150,7 +150,7 @@ func testAccCheckNetworkingRouterInterfaceExists(n string) resource.TestCheckFun
 		}
 
 		config := testAccProvider.Meta().(configer)
-		networkingClient, err := config.NetworkingV2Client(osRegionName)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 		}

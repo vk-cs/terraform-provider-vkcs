@@ -342,7 +342,7 @@ func TestAccNetworkingNetwork_privateDnsDomain(t *testing.T) {
 
 func testAccCheckNetworkingNetworkDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
-	networkingClient, err := config.NetworkingV2Client(osRegionName)
+	networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -373,7 +373,7 @@ func testAccCheckNetworkingNetworkExists(n string, network *networks.Network) re
 		}
 
 		config := testAccProvider.Meta().(configer)
-		networkingClient, err := config.NetworkingV2Client(osRegionName)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 		}
@@ -405,7 +405,7 @@ func testAccCheckNetworkingNetworkWithExtensionsExists(n string, network *testNe
 		}
 
 		config := testAccProvider.Meta().(configer)
-		networkingClient, err := config.NetworkingV2Client(osRegionName)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
 		}
