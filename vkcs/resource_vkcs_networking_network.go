@@ -93,6 +93,11 @@ func resourceNetworkingNetwork() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validateSDN(),
 			},
+
+			"vkcs_services_access": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -111,6 +116,7 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 		},
 		MapValueSpecs(d),
 		d.Get("private_dns_domain").(string),
+		d.Get("vkcs_services_access").(bool),
 	}
 
 	if v, ok := d.GetOkExists("admin_state_up"); ok {
@@ -192,6 +198,7 @@ func resourceNetworkingNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("region", getRegion(d, config))
 	d.Set("private_dns_domain", network.PrivateDNSDomain)
 	d.Set("sdn", getSDN(d))
+	d.Set("vkcs_services_access", network.ServicesAccess)
 
 	networkingReadAttributesTags(d, network.Tags)
 
@@ -208,7 +215,7 @@ func resourceNetworkingNetworkUpdate(ctx context.Context, d *schema.ResourceData
 	// Declare finalUpdateOpts interface and basic updateOpts structure.
 	var (
 		finalUpdateOpts networks.UpdateOptsBuilder
-		updateOpts      networks.UpdateOpts
+		updateOpts      NetworkUpdateOpts
 	)
 
 	// Populate basic updateOpts.
@@ -234,6 +241,14 @@ func resourceNetworkingNetworkUpdate(ctx context.Context, d *schema.ResourceData
 			return diag.Errorf("Error setting tags on vkcs_networking_network %s: %s", d.Id(), err)
 		}
 		log.Printf("[DEBUG] Set tags %s on vkcs_networking_network %s", tags, d.Id())
+	}
+
+	if d.HasChange("vkcs_services_access") {
+		servicesAccess := d.Get("vkcs_services_access").(bool)
+		if !servicesAccess {
+			return diag.Errorf("services_access cannot be disabled")
+		}
+		updateOpts.ServicesAccess = &servicesAccess
 	}
 
 	// Save basic updateOpts into finalUpdateOpts.

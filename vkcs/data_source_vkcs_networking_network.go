@@ -212,6 +212,7 @@ func dataSourceNetworkingNetworkRead(ctx context.Context, d *schema.ResourceData
 	d.Set("region", getRegion(d, config))
 	d.Set("private_dns_domain", network.PrivateDNSDomain)
 	d.Set("sdn", getSDN(d))
+	d.Set("vkcs_services_access", network.ServicesAccess)
 
 	return nil
 }

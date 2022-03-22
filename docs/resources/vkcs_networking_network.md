@@ -91,6 +91,11 @@ The following arguments are supported:
 
 * `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
+* `vkcs_services_access` - (Optional) Whether VKCS services access is enabled.
+  This feature should be enabled globally for your project. Access can be enabled
+  for new or existing networks, but cannot be disabled for existing networks. Valid
+  values are `true` and `false`.
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -105,6 +110,7 @@ The following attributes are exported:
 * `port_security_enabled` - See Argument Reference above.
 * `private_dns_domain` - See Argument Reference above.
 * `sdn` - See Argument Reference above.
+* `vkcs_services_access` - See Argument Reference above.
 
 ## Import
 

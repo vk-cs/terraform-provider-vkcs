@@ -58,3 +58,4 @@ are exported:
 * `all_tags` - The set of string tags applied on the network.
 * `private_dns_domain` - See Argument Reference above.
 * `sdn` - See Argument Reference above.
+* `vkcs_services_access` - Specifies whether VKCS services access is enabled.

@@ -30,11 +30,24 @@ type NetworkCreateOpts struct {
 	networks.CreateOpts
 	ValueSpecs       map[string]string `json:"value_specs,omitempty"`
 	PrivateDNSDomain string            `json:"private_dns_domain,omitempty"`
+	ServicesAccess   bool              `json:"enable_shadow_port,omitempty"`
 }
 
 // ToNetworkCreateMap casts a CreateOpts struct to a map.
 // It overrides networks.ToNetworkCreateMap to add the ValueSpecs field.
 func (opts NetworkCreateOpts) ToNetworkCreateMap() (map[string]interface{}, error) {
+	return BuildRequest(opts, "network")
+}
+
+// NetworkUpdateOpts represents the attributes used when updating a network.
+type NetworkUpdateOpts struct {
+	networks.UpdateOpts
+	ServicesAccess *bool `json:"enable_shadow_port,omitempty"`
+}
+
+// ToNetworkUpdateMap casts a UpdateOpts struct to a map.
+// It overrides networks.ToNetworkUpdateMap to add the ServicesAccess field.
+func (opts NetworkUpdateOpts) ToNetworkUpdateMap() (map[string]interface{}, error) {
 	return BuildRequest(opts, "network")
 }
 

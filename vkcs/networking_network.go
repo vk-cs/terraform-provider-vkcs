@@ -28,6 +28,7 @@ type networkExtended struct {
 	policies.QoSPolicyExt
 	provider.NetworkProviderExt
 	PrivateDNSDomainExt
+	ServicesAccess bool `json:"enable_shadow_port,omitempty"`
 }
 
 // networkingNetworkID retrieves network ID by the provided name.
