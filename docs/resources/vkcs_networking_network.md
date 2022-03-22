@@ -89,6 +89,8 @@ The following arguments are supported:
 
 * `private_dns_domain` - (Optional) Private dns domain name
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -102,6 +104,7 @@ The following attributes are exported:
   explicitly and implicitly added.
 * `port_security_enabled` - See Argument Reference above.
 * `private_dns_domain` - See Argument Reference above.
+* `sdn` - See Argument Reference above.
 
 ## Import
 

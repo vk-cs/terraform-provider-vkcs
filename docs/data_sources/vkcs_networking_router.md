@@ -37,6 +37,8 @@ data "vkcs_networking_router" "router" {
 
 * `tenant_id` - (Optional) The owner of the router.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 ## Attributes Reference
 
 `id` is set to the ID of the found router. In addition, the following attributes
@@ -47,3 +49,5 @@ are exported:
 * `external_network_id` - The network UUID of an external gateway for the router.
 
 * `all_tags` - The set of string tags applied on the router.
+
+* `sdn` - See Argument Reference above.

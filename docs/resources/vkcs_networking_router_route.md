@@ -59,6 +59,8 @@ The following arguments are supported:
 * `next_hop` - (Required) IP address of the next hop gateway.  Changing
     this creates a new routing entry.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -67,6 +69,7 @@ The following attributes are exported:
 * `router_id` - See Argument Reference above.
 * `destination_cidr` - See Argument Reference above.
 * `next_hop` - See Argument Reference above.
+* `sdn` - See Argument Reference above.
 
 ## Notes
 

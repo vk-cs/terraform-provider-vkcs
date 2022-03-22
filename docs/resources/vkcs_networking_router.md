@@ -49,6 +49,8 @@ The following arguments are supported:
 * `vendor_options` - (Optional) Map of additional vendor-specific options.
   Supported options are described below.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 The `vendor_options` block supports:
 
 * `set_router_gateway_after_create` - (Optional) Boolean to control whether
@@ -68,6 +70,7 @@ The following attributes are exported:
 * `tags` - See Argument Reference above.
 * `all_tags` - The collection of tags assigned on the router, which have been
   explicitly and implicitly added.
+* `sdn` - See Argument Reference above.
 
 ## Import
 

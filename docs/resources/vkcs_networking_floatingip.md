@@ -75,6 +75,8 @@ The following arguments are supported:
 
 * `tags` - (Optional) A set of string tags for the floating IP.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -89,6 +91,7 @@ The following attributes are exported:
 * `tags` - See Argument Reference above.
 * `all_tags` - The collection of tags assigned on the floating IP, which have
   been explicitly and implicitly added.
+* `sdn` - See Argument Reference above.
 
 ## Import
 

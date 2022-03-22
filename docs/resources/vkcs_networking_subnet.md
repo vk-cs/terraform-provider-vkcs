@@ -88,6 +88,8 @@ The following arguments are supported:
 
 * `tags` - (Optional) A set of string tags for the subnet.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 The `allocation_pool` block supports:
 
 * `start` - (Required) The starting address.
@@ -111,6 +113,7 @@ The following attributes are exported:
 * `tags` - See Argument Reference above.
 * `all_tags` - The collection of ags assigned on the subnet, which have been
   explicitly and implicitly added.
+* `sdn` - See Argument Reference above.
 
 ## Import
 

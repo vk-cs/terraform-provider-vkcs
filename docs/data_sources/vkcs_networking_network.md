@@ -39,6 +39,8 @@ data "vkcs_networking_network" "network" {
 
 * `tags` - (Optional) The list of network tags to filter.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 ## Attributes Reference
 
 `id` is set to the ID of the found network. In addition, the following attributes
@@ -55,3 +57,4 @@ are exported:
 * `subnets` - A list of subnet IDs belonging to the network.
 * `all_tags` - The set of string tags applied on the network.
 * `private_dns_domain` - See Argument Reference above.
+* `sdn` - See Argument Reference above.

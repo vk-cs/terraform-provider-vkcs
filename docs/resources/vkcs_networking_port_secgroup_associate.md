@@ -89,6 +89,8 @@ The following arguments are supported:
 * `enforce` - (Optional) Whether to replace or append the list of security
     groups, specified in the `security_group_ids`. Defaults to `false`.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -98,3 +100,4 @@ The following attributes are exported:
 * `security_group_ids` - See Argument Reference above.
 * `all_security_group_ids` - The collection of Security Group IDs on the port
   which have been explicitly and implicitly added.
+* `sdn` - See Argument Reference above.

@@ -52,6 +52,8 @@ The following arguments are supported:
 * `port_id` - ID of the port this interface connects to. Changing
     this creates a new router interface.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -60,6 +62,7 @@ The following attributes are exported:
 * `router_id` - See Argument Reference above.
 * `subnet_id` - See Argument Reference above.
 * `port_id` - See Argument Reference above.
+* `sdn` - See Argument Reference above.
 
 ## Import
 

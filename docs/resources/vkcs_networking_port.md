@@ -97,6 +97,8 @@ The following arguments are supported:
 * `dns_name` - (Optional) The port DNS name. Available, when Neutron DNS extension
     is enabled.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 The `fixed_ip` block supports:
 
 * `subnet_id` - (Required) Subnet in which to allocate IP address for
@@ -144,6 +146,7 @@ The following attributes are exported:
   explicitly and implicitly added.
 * `dns_name` - See Argument Reference above.
 * `dns_assignment` - The list of maps representing port DNS assignments.
+* `sdn` - See Argument Reference above.
 
 ## Import
 

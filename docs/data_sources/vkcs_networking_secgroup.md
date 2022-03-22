@@ -33,6 +33,8 @@ data "vkcs_networking_secgroup" "secgroup" {
 
 * `tenant_id` - (Optional) The owner of the security group.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 ## Attributes Reference
 
 `id` is set to the ID of the found security group. In addition, the following
@@ -42,3 +44,4 @@ attributes are exported:
 * `description`- See Argument Reference above.
 * `all_tags` - The set of string tags applied on the security group.
 * `region` - See Argument Reference above.
+* `sdn` - See Argument Reference above.

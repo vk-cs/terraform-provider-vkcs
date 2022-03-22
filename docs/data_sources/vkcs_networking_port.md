@@ -52,6 +52,8 @@ data "vkcs_networking_port" "port_1" {
 * `dns_name` - (Optional) The port DNS name to filter. Available, when Neutron
     DNS extension is enabled.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 ## Attributes Reference
 
 `id` is set to the ID of the found port. In addition, the following attributes
@@ -94,6 +96,8 @@ are exported:
 * `dns_name` - See Argument Reference above.
 
 * `dns_assignment` - The list of maps representing port DNS assignments.
+
+* `sdn` - See Argument Reference above.
 
 The `allowed_address_pairs` attribute has fields below:
 

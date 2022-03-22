@@ -88,6 +88,8 @@ The following arguments are supported:
     to, the value needs to be an Openstack ID of a security group in the same
     tenant. Changing this creates a new security group rule.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -102,6 +104,7 @@ The following attributes are exported:
 * `remote_ip_prefix` - See Argument Reference above.
 * `remote_group_id` - See Argument Reference above.
 * `security_group_id` - See Argument Reference above.
+* `sdn` - See Argument Reference above.
 
 ## Import
 

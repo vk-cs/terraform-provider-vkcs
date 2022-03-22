@@ -39,6 +39,8 @@ The following arguments are supported:
 * `port_id` - (Required) ID of an existing port with at least one IP address to
     associate with this floating IP.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -46,6 +48,7 @@ The following attributes are exported:
 * `region` - See Argument Reference above.
 * `floating_ip` - See Argument Reference above.
 * `port_id` - See Argument Reference above.
+* `sdn` - See Argument Reference above.
 
 ## Import
 

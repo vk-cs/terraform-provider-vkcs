@@ -39,9 +39,12 @@ data "vkcs_networking_floatingip" "floatingip_1" {
 
 * `tenant_id` - (Optional) The owner of the floating IP.
 
+* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+
 ## Attributes Reference
 
 `id` is set to the ID of the found floating IP. In addition, the following attributes
 are exported:
 
 * `all_tags` - A set of string tags applied on the floating IP.
+* `sdn` - See Argument Reference above.
