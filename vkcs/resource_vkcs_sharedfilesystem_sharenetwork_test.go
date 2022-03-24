@@ -277,7 +277,6 @@ resource "vkcs_sharedfilesystem_securityservice" "securityservice_1" {
   server      = "192.168.199.10"
   dns_ip      = "192.168.199.10"
   domain      = "example.com"
-  ou          = "CN=Computers,DC=example,DC=com"
   user        = "joinDomainUser"
   password    = "s8cret"
 }

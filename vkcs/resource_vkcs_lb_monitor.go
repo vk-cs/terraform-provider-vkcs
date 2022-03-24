@@ -13,8 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	octaviamonitors "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
-	neutronmonitors "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/monitors"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/pools"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 )
 
 func resourceMonitor() *schema.Resource {
@@ -111,13 +110,26 @@ func resourceMonitor() *schema.Resource {
 
 func resourceMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
-	// Choose either the Octavia or Neutron create options.
-	createOpts := chooseLBMonitorCreateOpts(d, config)
+	adminStateUp := d.Get("admin_state_up").(bool)
+
+	createOpts := octaviamonitors.CreateOpts{
+		PoolID:         d.Get("pool_id").(string),
+		Type:           d.Get("type").(string),
+		Delay:          d.Get("delay").(int),
+		Timeout:        d.Get("timeout").(int),
+		MaxRetries:     d.Get("max_retries").(int),
+		MaxRetriesDown: d.Get("max_retries_down").(int),
+		URLPath:        d.Get("url_path").(string),
+		HTTPMethod:     d.Get("http_method").(string),
+		ExpectedCodes:  d.Get("expected_codes").(string),
+		Name:           d.Get("name").(string),
+		AdminStateUp:   &adminStateUp,
+	}
 
 	// Get a clean copy of the parent pool.
 	poolID := d.Get("pool_id").(string)
@@ -134,9 +146,9 @@ func resourceMonitorCreate(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	log.Printf("[DEBUG] vkcs_lb_monitor create options: %#v", createOpts)
-	var monitor *neutronmonitors.Monitor
+	var monitor *octaviamonitors.Monitor
 	err = resource.Retry(timeout, func() *resource.RetryError {
-		monitor, err = neutronmonitors.Create(lbClient, createOpts).Extract()
+		monitor, err = octaviamonitors.Create(lbClient, createOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
 		}
@@ -160,57 +172,23 @@ func resourceMonitorCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 func resourceMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
-	// Use Octavia monitor body if Octavia/LBaaS is enabled.
-	if config.UseOctavia {
-		monitor, err := octaviamonitors.Get(lbClient, d.Id()).Extract()
-		if err != nil {
-			return diag.FromErr(checkDeleted(d, err, "monitor"))
-		}
-
-		log.Printf("[DEBUG] Retrieved vkcs_lb_monitor %s: %#v", d.Id(), monitor)
-
-		d.Set("type", monitor.Type)
-		d.Set("delay", monitor.Delay)
-		d.Set("timeout", monitor.Timeout)
-		d.Set("max_retries", monitor.MaxRetries)
-		d.Set("max_retries_down", monitor.MaxRetriesDown)
-		d.Set("url_path", monitor.URLPath)
-		d.Set("http_method", monitor.HTTPMethod)
-		d.Set("expected_codes", monitor.ExpectedCodes)
-		d.Set("admin_state_up", monitor.AdminStateUp)
-		d.Set("name", monitor.Name)
-		d.Set("region", getRegion(d, config))
-
-		// OpenContrail workaround (https://github.com/terraform-provider-openstack/terraform-provider-openstack/issues/762)
-		if len(monitor.Pools) > 0 && monitor.Pools[0].ID != "" {
-			d.Set("pool_id", monitor.Pools[0].ID)
-		}
-
-		return nil
-	}
-
-	// Use Neutron/Networking in other case.
-	monitor, err := neutronmonitors.Get(lbClient, d.Id()).Extract()
+	monitor, err := octaviamonitors.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "monitor"))
 	}
 
 	log.Printf("[DEBUG] Retrieved vkcs_lb_monitor %s: %#v", d.Id(), monitor)
 
-	// OpenContrail workaround (https://github.com/terraform-provider-openstack/terraform-provider-openstack/issues/762)
-	if len(monitor.Pools) > 0 && monitor.Pools[0].ID != "" {
-		d.Set("pool_id", monitor.Pools[0].ID)
-	}
-
 	d.Set("type", monitor.Type)
 	d.Set("delay", monitor.Delay)
 	d.Set("timeout", monitor.Timeout)
 	d.Set("max_retries", monitor.MaxRetries)
+	d.Set("max_retries_down", monitor.MaxRetriesDown)
 	d.Set("url_path", monitor.URLPath)
 	d.Set("http_method", monitor.HTTPMethod)
 	d.Set("expected_codes", monitor.ExpectedCodes)
@@ -218,18 +196,64 @@ func resourceMonitorRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("name", monitor.Name)
 	d.Set("region", getRegion(d, config))
 
+	// OpenContrail workaround (https://github.com/terraform-provider-openstack/terraform-provider-openstack/issues/762)
+	if len(monitor.Pools) > 0 && monitor.Pools[0].ID != "" {
+		d.Set("pool_id", monitor.Pools[0].ID)
+	}
+
 	return nil
+
 }
 
 func resourceMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
-	updateOpts := chooseLBMonitorUpdateOpts(d, config)
-	if updateOpts == nil {
+	var hasChange bool
+	var updateOpts octaviamonitors.UpdateOpts
+	if d.HasChange("url_path") {
+		hasChange = true
+		updateOpts.URLPath = d.Get("url_path").(string)
+	}
+	if d.HasChange("expected_codes") {
+		hasChange = true
+		updateOpts.ExpectedCodes = d.Get("expected_codes").(string)
+	}
+	if d.HasChange("delay") {
+		hasChange = true
+		updateOpts.Delay = d.Get("delay").(int)
+	}
+	if d.HasChange("timeout") {
+		hasChange = true
+		updateOpts.Timeout = d.Get("timeout").(int)
+	}
+	if d.HasChange("max_retries") {
+		hasChange = true
+		updateOpts.MaxRetries = d.Get("max_retries").(int)
+	}
+	if d.HasChange("max_retries_down") {
+		hasChange = true
+		updateOpts.MaxRetriesDown = d.Get("max_retries_down").(int)
+	}
+	if d.HasChange("admin_state_up") {
+		hasChange = true
+		asu := d.Get("admin_state_up").(bool)
+		updateOpts.AdminStateUp = &asu
+	}
+	if d.HasChange("name") {
+		hasChange = true
+		name := d.Get("name").(string)
+		updateOpts.Name = &name
+	}
+	if d.HasChange("http_method") {
+		hasChange = true
+		updateOpts.HTTPMethod = d.Get("http_method").(string)
+	}
+
+	if !hasChange {
 		log.Printf("[DEBUG] vkcs_lb_monitor %s: nothing to update", d.Id())
 		return resourceMonitorRead(ctx, d, meta)
 	}
@@ -242,7 +266,7 @@ func resourceMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	// Get a clean copy of the monitor.
-	monitor, err := neutronmonitors.Get(lbClient, d.Id()).Extract()
+	monitor, err := octaviamonitors.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve vkcs_lb_monitor %s: %s", d.Id(), err)
 	}
@@ -262,7 +286,7 @@ func resourceMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	log.Printf("[DEBUG] vkcs_lb_monitor %s update options: %#v", d.Id(), updateOpts)
 	err = resource.Retry(timeout, func() *resource.RetryError {
-		_, err = neutronmonitors.Update(lbClient, d.Id(), updateOpts).Extract()
+		_, err = octaviamonitors.Update(lbClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
 		}
@@ -284,9 +308,9 @@ func resourceMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 func resourceMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	// Get a clean copy of the parent pool.
@@ -298,7 +322,7 @@ func resourceMonitorDelete(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	// Get a clean copy of the monitor.
-	monitor, err := neutronmonitors.Get(lbClient, d.Id()).Extract()
+	monitor, err := octaviamonitors.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Unable to retrieve vkcs_lb_monitor"))
 	}
@@ -312,7 +336,7 @@ func resourceMonitorDelete(ctx context.Context, d *schema.ResourceData, meta int
 
 	log.Printf("[DEBUG] Deleting vkcs_lb_monitor %s", d.Id())
 	err = resource.Retry(timeout, func() *resource.RetryError {
-		err = neutronmonitors.Delete(lbClient, d.Id()).ExtractErr()
+		err = octaviamonitors.Delete(lbClient, d.Id()).ExtractErr()
 		if err != nil {
 			return checkForRetryableError(err)
 		}

@@ -30,7 +30,6 @@ resource "vkcs_sharedfilesystem_securityservice" "securityservice_1" {
   server      = "192.168.199.10"
   dns_ip      = "192.168.199.10"
   domain      = "example.com"
-  ou          = "CN=Computers,DC=example,DC=com"
   user        = "joinDomainUser"
   password    = "s8cret"
 }
@@ -54,9 +53,6 @@ The following arguments are supported:
 * `name` - (Optional) The name of the security service. Changing this updates the name
 	of the existing security service.
 
-* `ou` - (Optional) The security service ou. An organizational unit can be added to
-	specify where the share ends up. New in Manila microversion 2.44.
-
 * `password` - (Optional) The user password, if you specify a user.
 
 * `region` - (Optional) The region in which to obtain the V2 Shared File System client.
@@ -78,7 +74,6 @@ The following arguments are supported:
 * `description` - See Argument Reference above.
 * `type` - See Argument Reference above.
 * `dns_ip` - See Argument Reference above.
-* `ou` - See Argument Reference above.
 * `user` - See Argument Reference above.
 * `password` - See Argument Reference above.
 * `domain` - See Argument Reference above.

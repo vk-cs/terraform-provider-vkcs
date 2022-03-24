@@ -2,7 +2,6 @@ package vkcs
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -26,7 +25,7 @@ func TestAccVPNaaSSiteConnection_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSiteConnectionExists("vkcs_vpnaas_site_connection.conn_1", &conn),
 					resource.TestCheckResourceAttrPtr("vkcs_vpnaas_site_connection.conn_1", "ikepolicy_id", &conn.IKEPolicyID),
-					resource.TestCheckResourceAttr("vkcs_vpnaas_site_connection.conn_1", "admin_state_up", strconv.FormatBool(conn.AdminStateUp)),
+					resource.TestCheckResourceAttr("vkcs_vpnaas_site_connection.conn_1", "admin_state_up", "true"),
 					resource.TestCheckResourceAttrPtr("vkcs_vpnaas_site_connection.conn_1", "psk", &conn.PSK),
 					resource.TestCheckResourceAttrPtr("vkcs_vpnaas_site_connection.conn_1", "ipsecpolicy_id", &conn.IPSecPolicyID),
 					resource.TestCheckResourceAttrPtr("vkcs_vpnaas_site_connection.conn_1", "vpnservice_id", &conn.VPNServiceID),
@@ -35,8 +34,8 @@ func TestAccVPNaaSSiteConnection_basic(t *testing.T) {
 					resource.TestCheckResourceAttrPtr("vkcs_vpnaas_site_connection.conn_1", "peer_ep_group_id", &conn.PeerEPGroupID),
 					resource.TestCheckResourceAttrPtr("vkcs_vpnaas_site_connection.conn_1", "name", &conn.Name),
 					resource.TestCheckResourceAttrPtr("vkcs_vpnaas_site_connection.conn_1", "dpd.0.action", &conn.DPD.Action),
-					resource.TestCheckResourceAttr("vkcs_vpnaas_site_connection.conn_1", "dpd.0.timeout", strconv.Itoa(conn.DPD.Timeout)),
-					resource.TestCheckResourceAttr("vkcs_vpnaas_site_connection.conn_1", "dpd.0.interval", strconv.Itoa(conn.DPD.Interval)),
+					resource.TestCheckResourceAttr("vkcs_vpnaas_site_connection.conn_1", "dpd.0.timeout", "42"),
+					resource.TestCheckResourceAttr("vkcs_vpnaas_site_connection.conn_1", "dpd.0.interval", "21"),
 				),
 			},
 		},
@@ -117,7 +116,7 @@ func testAccSiteConnectionBasic() string {
 	}
 
 	resource "vkcs_vpnaas_service" "service_1" {
-		router_id = "${vkcs_networking_router.router_1.id}",
+		router_id = "${vkcs_networking_router.router_1.id}"
 		admin_state_up = "false"
 	}
 

@@ -28,7 +28,6 @@ func TestAccSFSSecurityService_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_securityservice.securityservice_1", "server", "192.168.199.10"),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_securityservice.securityservice_1", "dns_ip", "192.168.199.10"),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_securityservice.securityservice_1", "domain", "example.com"),
-					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_securityservice.securityservice_1", "ou", "CN=Computers,DC=example,DC=com"),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_securityservice.securityservice_1", "user", "joinDomainUser"),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_securityservice.securityservice_1", "password", "s8cret"),
 				),
@@ -43,7 +42,6 @@ func TestAccSFSSecurityService_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_securityservice.securityservice_1", "server", "192.168.199.11"),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_securityservice.securityservice_1", "dns_ip", "192.168.199.11"),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_securityservice.securityservice_1", "domain", ""),
-					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_securityservice.securityservice_1", "ou", ""),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_securityservice.securityservice_1", "user", ""),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_securityservice.securityservice_1", "password", ""),
 				),
@@ -113,7 +111,6 @@ resource "vkcs_sharedfilesystem_securityservice" "securityservice_1" {
   server      = "192.168.199.10"
   dns_ip      = "192.168.199.10"
   domain      = "example.com"
-  ou          = "CN=Computers,DC=example,DC=com"
   user        = "joinDomainUser"
   password    = "s8cret"
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/pools"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 )
 
 func resourceMember() *schema.Resource {
@@ -87,9 +87,9 @@ func resourceMember() *schema.Resource {
 
 func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	adminStateUp := d.Get("admin_state_up").(bool)
@@ -155,9 +155,9 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, meta inte
 
 func resourceMemberRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	poolID := d.Get("pool_id").(string)
@@ -182,7 +182,7 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -251,9 +251,9 @@ func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	// Get a clean copy of the parent pool.

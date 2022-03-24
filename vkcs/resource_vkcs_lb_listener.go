@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	octavialisteners "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
-	neutronlisteners "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/listeners"
 )
 
 func resourceListener() *schema.Resource {
@@ -140,9 +139,9 @@ func resourceListener() *schema.Resource {
 
 func resourceListenerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	timeout := d.Timeout(schema.TimeoutCreate)
@@ -153,16 +152,77 @@ func resourceListenerCreate(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	// Choose either the Octavia or Neutron create options.
-	createOpts, err := chooseLBListenerCreateOpts(d, config)
-	if err != nil {
-		return diag.Errorf("Error building vkcs_lb_listener create options: %s", err)
+	adminStateUp := d.Get("admin_state_up").(bool)
+
+	var sniContainerRefs []string
+	if raw, ok := d.GetOk("sni_container_refs"); ok {
+		for _, v := range raw.([]interface{}) {
+			sniContainerRefs = append(sniContainerRefs, v.(string))
+		}
 	}
 
+	var createOpts octavialisteners.CreateOptsBuilder
+	opts := octavialisteners.CreateOpts{
+		// Protocol SCTP requires octavia minor version 2.23
+		Protocol:               octavialisteners.Protocol(d.Get("protocol").(string)),
+		ProtocolPort:           d.Get("protocol_port").(int),
+		LoadbalancerID:         d.Get("loadbalancer_id").(string),
+		Name:                   d.Get("name").(string),
+		DefaultPoolID:          d.Get("default_pool_id").(string),
+		Description:            d.Get("description").(string),
+		DefaultTlsContainerRef: d.Get("default_tls_container_ref").(string),
+		SniContainerRefs:       sniContainerRefs,
+		AdminStateUp:           &adminStateUp,
+	}
+
+	if v, ok := d.GetOk("connection_limit"); ok {
+		connectionLimit := v.(int)
+		opts.ConnLimit = &connectionLimit
+	}
+
+	if v, ok := d.GetOk("timeout_client_data"); ok {
+		timeoutClientData := v.(int)
+		opts.TimeoutClientData = &timeoutClientData
+	}
+
+	if v, ok := d.GetOk("timeout_member_connect"); ok {
+		timeoutMemberConnect := v.(int)
+		opts.TimeoutMemberConnect = &timeoutMemberConnect
+	}
+
+	if v, ok := d.GetOk("timeout_member_data"); ok {
+		timeoutMemberData := v.(int)
+		opts.TimeoutMemberData = &timeoutMemberData
+	}
+
+	if v, ok := d.GetOk("timeout_tcp_inspect"); ok {
+		timeoutTCPInspect := v.(int)
+		opts.TimeoutTCPInspect = &timeoutTCPInspect
+	}
+
+	// Get and check insert  headers map.
+	rawHeaders := d.Get("insert_headers").(map[string]interface{})
+	headers, err := expandLBListenerHeadersMap(rawHeaders)
+	if err != nil {
+		return diag.Errorf("unable to parse insert_headers argument: %s", err)
+	}
+
+	opts.InsertHeaders = headers
+
+	if raw, ok := d.GetOk("allowed_cidrs"); ok {
+		allowedCidrs := make([]string, len(raw.([]interface{})))
+		for i, v := range raw.([]interface{}) {
+			allowedCidrs[i] = v.(string)
+		}
+		opts.AllowedCIDRs = allowedCidrs
+	}
+
+	createOpts = opts
+
 	log.Printf("[DEBUG] vkcs_lb_listener create options: %#v", createOpts)
-	var listener *neutronlisteners.Listener
+	var listener *octavialisteners.Listener
 	err = resource.Retry(timeout, func() *resource.RetryError {
-		listener, err = neutronlisteners.Create(lbClient, createOpts).Extract()
+		listener, err = octavialisteners.Create(lbClient, createOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
 		}
@@ -186,60 +246,17 @@ func resourceListenerCreate(ctx context.Context, d *schema.ResourceData, meta in
 
 func resourceListenerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
-	// Use Octavia listener body if Octavia/LBaaS is enabled.
-	if config.UseOctavia {
-		listener, err := octavialisteners.Get(lbClient, d.Id()).Extract()
-		if err != nil {
-			return diag.FromErr(checkDeleted(d, err, "vkcs_lb_listener"))
-		}
-
-		log.Printf("[DEBUG] Retrieved vkcs_lb_listener %s: %#v", d.Id(), listener)
-
-		d.Set("name", listener.Name)
-		d.Set("protocol", listener.Protocol)
-		d.Set("description", listener.Description)
-		d.Set("protocol_port", listener.ProtocolPort)
-		d.Set("admin_state_up", listener.AdminStateUp)
-		d.Set("default_pool_id", listener.DefaultPoolID)
-		d.Set("connection_limit", listener.ConnLimit)
-		d.Set("timeout_client_data", listener.TimeoutClientData)
-		d.Set("timeout_member_connect", listener.TimeoutMemberConnect)
-		d.Set("timeout_member_data", listener.TimeoutMemberData)
-		d.Set("timeout_tcp_inspect", listener.TimeoutTCPInspect)
-		d.Set("sni_container_refs", listener.SniContainerRefs)
-		d.Set("default_tls_container_ref", listener.DefaultTlsContainerRef)
-		d.Set("allowed_cidrs", listener.AllowedCIDRs)
-		d.Set("region", getRegion(d, config))
-
-		// Required by import.
-		if len(listener.Loadbalancers) > 0 {
-			d.Set("loadbalancer_id", listener.Loadbalancers[0].ID)
-		}
-
-		if err := d.Set("insert_headers", listener.InsertHeaders); err != nil {
-			return diag.Errorf("Unable to set vkcs_lb_listener insert_headers: %s", err)
-		}
-
-		return nil
-	}
-
-	// Use Neutron/Networking in other case.
-	listener, err := neutronlisteners.Get(lbClient, d.Id()).Extract()
+	listener, err := octavialisteners.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "vkcs_lb_listener"))
 	}
 
 	log.Printf("[DEBUG] Retrieved vkcs_lb_listener %s: %#v", d.Id(), listener)
-
-	// Required by import.
-	if len(listener.Loadbalancers) > 0 {
-		d.Set("loadbalancer_id", listener.Loadbalancers[0].ID)
-	}
 
 	d.Set("name", listener.Name)
 	d.Set("protocol", listener.Protocol)
@@ -248,22 +265,37 @@ func resourceListenerRead(ctx context.Context, d *schema.ResourceData, meta inte
 	d.Set("admin_state_up", listener.AdminStateUp)
 	d.Set("default_pool_id", listener.DefaultPoolID)
 	d.Set("connection_limit", listener.ConnLimit)
+	d.Set("timeout_client_data", listener.TimeoutClientData)
+	d.Set("timeout_member_connect", listener.TimeoutMemberConnect)
+	d.Set("timeout_member_data", listener.TimeoutMemberData)
+	d.Set("timeout_tcp_inspect", listener.TimeoutTCPInspect)
 	d.Set("sni_container_refs", listener.SniContainerRefs)
 	d.Set("default_tls_container_ref", listener.DefaultTlsContainerRef)
+	d.Set("allowed_cidrs", listener.AllowedCIDRs)
 	d.Set("region", getRegion(d, config))
 
+	// Required by import.
+	if len(listener.Loadbalancers) > 0 {
+		d.Set("loadbalancer_id", listener.Loadbalancers[0].ID)
+	}
+
+	if err := d.Set("insert_headers", listener.InsertHeaders); err != nil {
+		return diag.Errorf("Unable to set vkcs_lb_listener insert_headers: %s", err)
+	}
+
 	return nil
+
 }
 
 func resourceListenerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	// Get a clean copy of the listener.
-	listener, err := neutronlisteners.Get(lbClient, d.Id()).Extract()
+	listener, err := octavialisteners.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve vkcs_lb_listener %s: %s", d.Id(), err)
 	}
@@ -274,19 +306,111 @@ func resourceListenerUpdate(ctx context.Context, d *schema.ResourceData, meta in
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	updateOpts, err := chooseLBListenerUpdateOpts(d, config)
-	if err != nil {
-		return diag.Errorf("Error building vkcs_lb_listener update options: %s", err)
+	var hasChange bool
+	var opts octavialisteners.UpdateOpts
+	if d.HasChange("name") {
+		hasChange = true
+		name := d.Get("name").(string)
+		opts.Name = &name
 	}
-	if updateOpts == nil {
+
+	if d.HasChange("description") {
+		hasChange = true
+		description := d.Get("description").(string)
+		opts.Description = &description
+	}
+
+	if d.HasChange("connection_limit") {
+		hasChange = true
+		connLimit := d.Get("connection_limit").(int)
+		opts.ConnLimit = &connLimit
+	}
+
+	if d.HasChange("timeout_client_data") {
+		hasChange = true
+		timeoutClientData := d.Get("timeout_client_data").(int)
+		opts.TimeoutClientData = &timeoutClientData
+	}
+
+	if d.HasChange("timeout_member_connect") {
+		hasChange = true
+		timeoutMemberConnect := d.Get("timeout_member_connect").(int)
+		opts.TimeoutMemberConnect = &timeoutMemberConnect
+	}
+
+	if d.HasChange("timeout_member_data") {
+		hasChange = true
+		timeoutMemberData := d.Get("timeout_member_data").(int)
+		opts.TimeoutMemberData = &timeoutMemberData
+	}
+
+	if d.HasChange("timeout_tcp_inspect") {
+		hasChange = true
+		timeoutTCPInspect := d.Get("timeout_tcp_inspect").(int)
+		opts.TimeoutTCPInspect = &timeoutTCPInspect
+	}
+
+	if d.HasChange("default_pool_id") {
+		hasChange = true
+		defaultPoolID := d.Get("default_pool_id").(string)
+		opts.DefaultPoolID = &defaultPoolID
+	}
+
+	if d.HasChange("default_tls_container_ref") {
+		hasChange = true
+		defaultTLSContainerRef := d.Get("default_tls_container_ref").(string)
+		opts.DefaultTlsContainerRef = &defaultTLSContainerRef
+	}
+
+	if d.HasChange("sni_container_refs") {
+		hasChange = true
+		var sniContainerRefs []string
+		if raw, ok := d.GetOk("sni_container_refs"); ok {
+			for _, v := range raw.([]interface{}) {
+				sniContainerRefs = append(sniContainerRefs, v.(string))
+			}
+		}
+		opts.SniContainerRefs = &sniContainerRefs
+	}
+
+	if d.HasChange("admin_state_up") {
+		hasChange = true
+		asu := d.Get("admin_state_up").(bool)
+		opts.AdminStateUp = &asu
+	}
+
+	if d.HasChange("insert_headers") {
+		hasChange = true
+
+		// Get and check insert headers map.
+		rawHeaders := d.Get("insert_headers").(map[string]interface{})
+		headers, err := expandLBListenerHeadersMap(rawHeaders)
+		if err != nil {
+			return diag.Errorf("unable to parse insert_headers argument: %s", err)
+		}
+
+		opts.InsertHeaders = &headers
+	}
+
+	if d.HasChange("allowed_cidrs") {
+		hasChange = true
+		var allowedCidrs []string
+		if raw, ok := d.GetOk("allowed_cidrs"); ok {
+			for _, v := range raw.([]interface{}) {
+				allowedCidrs = append(allowedCidrs, v.(string))
+			}
+		}
+		opts.AllowedCIDRs = &allowedCidrs
+	}
+	updateOpts := opts
+	if !hasChange {
 		log.Printf("[DEBUG] vkcs_lb_listener %s: nothing to update", d.Id())
 		return resourceListenerRead(ctx, d, meta)
 	}
 
 	log.Printf("[DEBUG] vkcs_lb_listener %s update options: %#v", d.Id(), updateOpts)
 	err = resource.Retry(timeout, func() *resource.RetryError {
-		_, err = neutronlisteners.Update(lbClient, d.Id(), updateOpts).Extract()
+		_, err = octavialisteners.Update(lbClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
 		}
@@ -308,13 +432,13 @@ func resourceListenerUpdate(ctx context.Context, d *schema.ResourceData, meta in
 
 func resourceListenerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	// Get a clean copy of the listener.
-	listener, err := neutronlisteners.Get(lbClient, d.Id()).Extract()
+	listener, err := octavialisteners.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Unable to retrieve vkcs_lb_listener"))
 	}
@@ -323,7 +447,7 @@ func resourceListenerDelete(ctx context.Context, d *schema.ResourceData, meta in
 
 	log.Printf("[DEBUG] Deleting vkcs_lb_listener %s", d.Id())
 	err = resource.Retry(timeout, func() *resource.RetryError {
-		err = neutronlisteners.Delete(lbClient, d.Id()).ExtractErr()
+		err = octavialisteners.Delete(lbClient, d.Id()).ExtractErr()
 		if err != nil {
 			return checkForRetryableError(err)
 		}

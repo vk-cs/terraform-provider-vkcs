@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/listeners"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 )
 
 func TestAccLBListener_basic(t *testing.T) {
@@ -154,7 +154,7 @@ func TestAccLBListenerConfig_octavia_insert_headers(t *testing.T) {
 
 func testAccCheckLBListenerDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
-	lbClient, err := chooseLBAccTestClient(config, osRegionName)
+	lbClient, err := config.LoadBalancerV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
 	}
@@ -185,7 +185,7 @@ func testAccCheckLBListenerExists(n string, listener *listeners.Listener) resour
 		}
 
 		config := testAccProvider.Meta().(*config)
-		lbClient, err := chooseLBAccTestClient(config, osRegionName)
+		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
 		}

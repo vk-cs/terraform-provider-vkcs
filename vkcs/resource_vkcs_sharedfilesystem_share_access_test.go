@@ -158,8 +158,9 @@ resource "vkcs_sharedfilesystem_share" "share_1" {
   name             = "nfs_share"
   description      = "test share description"
   share_proto      = "NFS"
-  share_type       = "dhss_false"
+  share_type       = "default_share_type"
   size             = 1
+  share_network_id = "${vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id}"
 }
 `
 
@@ -167,6 +168,8 @@ func testAccSFSShareAccessConfigBasic() string {
 	return fmt.Sprintf(`
 %s
 
+%s
+
 resource "vkcs_sharedfilesystem_share_access" "share_access_1" {
   share_id     = "${vkcs_sharedfilesystem_share.share_1.id}"
   access_type  = "ip"
@@ -180,11 +183,13 @@ resource "vkcs_sharedfilesystem_share_access" "share_access_2" {
   access_to    = "192.168.199.11"
   access_level = "rw"
 }
-`, testAccSFSShareAccessConfig)
+`, testAccSFSShareNetworkConfigBasic(), testAccSFSShareAccessConfig)
 }
 
 func testAccSFSShareAccessConfigUpdate() string {
 	return fmt.Sprintf(`
+%s
+
 %s
 
 resource "vkcs_sharedfilesystem_share_access" "share_access_1" {
@@ -200,5 +205,5 @@ resource "vkcs_sharedfilesystem_share_access" "share_access_2" {
   access_to    = "192.168.199.11"
   access_level = "ro"
 }
-`, testAccSFSShareAccessConfig)
+`, testAccSFSShareNetworkConfigBasic(), testAccSFSShareAccessConfig)
 }

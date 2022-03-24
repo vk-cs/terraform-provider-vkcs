@@ -65,11 +65,6 @@ func resourceSharedFilesystemSecurityService() *schema.Resource {
 				Optional: true,
 			},
 
-			"ou": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-
 			"user": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -113,12 +108,6 @@ func resourceSharedFilesystemSecurityServiceCreate(ctx context.Context, d *schem
 		Server:      d.Get("server").(string),
 	}
 
-	if v, ok := d.GetOkExists("ou"); ok {
-		createOpts.OU = v.(string)
-
-		sfsClient.Microversion = sharedFilesystemSecurityServiceOUMicroversion
-	}
-
 	log.Printf("[DEBUG] vkcs_sharedfilesystem_securityservice create options: %#v", createOpts)
 	createOpts.Password = d.Get("password").(string)
 	securityservice, err := securityservices.Create(sfsClient, createOpts).Extract()
@@ -140,22 +129,10 @@ func resourceSharedFilesystemSecurityServiceRead(ctx context.Context, d *schema.
 
 	// Select microversion to use.
 	sfsClient.Microversion = sharedFilesystemMinMicroversion
-	if _, ok := d.GetOkExists("ou"); ok {
-		sfsClient.Microversion = sharedFilesystemSecurityServiceOUMicroversion
-	}
 
 	securityservice, err := securityservices.Get(sfsClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error getting vkcs_sharedfilesystem_securityservice"))
-	}
-
-	// Workaround for resource import.
-	if securityservice.OU == "" {
-		sfsClient.Microversion = sharedFilesystemSecurityServiceOUMicroversion
-		securityserviceOU, err := securityservices.Get(sfsClient, d.Id()).Extract()
-		if err == nil {
-			d.Set("ou", securityserviceOU.OU)
-		}
 	}
 
 	nopassword := securityservice
@@ -204,13 +181,6 @@ func resourceSharedFilesystemSecurityServiceUpdate(ctx context.Context, d *schem
 	if d.HasChange("dns_ip") {
 		dnsIP := d.Get("dns_ip").(string)
 		updateOpts.DNSIP = &dnsIP
-	}
-
-	if d.HasChange("ou") {
-		ou := d.Get("ou").(string)
-		updateOpts.OU = &ou
-
-		sfsClient.Microversion = sharedFilesystemSecurityServiceOUMicroversion
 	}
 
 	if d.HasChange("user") {

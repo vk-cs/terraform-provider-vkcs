@@ -11,7 +11,7 @@ func TestAccLBMembers_importBasic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			testAccPreCheckOctaviaBatchMembersEnv(t)
+			testAccPreCheckLB(t)
 		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBMembersDestroy,

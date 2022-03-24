@@ -1,8 +1,6 @@
 package vkcs
 
 const (
-	sharedFilesystemMinMicroversion = "2.7"
-
-	sharedFilesystemSecurityServiceOUMicroversion = "2.32"
+	sharedFilesystemMinMicroversion               = "2.7"
 	sharedFilesystemSharedAccessCephXMicroversion = "2.13"
 )

@@ -2,7 +2,6 @@ package vkcs
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -26,7 +25,7 @@ func TestAccVPNaaSService_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckServiceExists("vkcs_vpnaas_service.service_1", &service),
 					resource.TestCheckResourceAttrPtr("vkcs_vpnaas_service.service_1", "router_id", &service.RouterID),
-					resource.TestCheckResourceAttr("vkcs_vpnaas_service.service_1", "admin_state_up", strconv.FormatBool(service.AdminStateUp)),
+					resource.TestCheckResourceAttr("vkcs_vpnaas_service.service_1", "admin_state_up", "false"),
 				),
 			},
 		},

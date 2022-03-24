@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/pools"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 )
 
 func TestAccLBMember_basic(t *testing.T) {
@@ -39,7 +39,7 @@ func TestAccLBMember_basic(t *testing.T) {
 
 func testAccCheckLBMemberDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
-	lbClient, err := chooseLBAccTestClient(config, osRegionName)
+	lbClient, err := config.LoadBalancerV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
 	}
@@ -71,7 +71,7 @@ func testAccCheckLBMemberExists(n string, member *pools.Member) resource.TestChe
 		}
 
 		config := testAccProvider.Meta().(*config)
-		lbClient, err := chooseLBAccTestClient(config, osRegionName)
+		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
 		}

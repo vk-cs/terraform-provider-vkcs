@@ -15,7 +15,7 @@ func TestAccSFSShareDataSource_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckSFSShareDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSFSShareDataSourceBasic,
+				Config: testAccSFSShareDataSourceBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSFSShareDataSourceID("data.vkcs_sharedfilesystem_share.share_1"),
 					resource.TestCheckResourceAttr("data.vkcs_sharedfilesystem_share.share_1", "name", "nfs_share"),
@@ -43,17 +43,23 @@ func testAccCheckSFSShareDataSourceID(n string) resource.TestCheckFunc {
 	}
 }
 
-const testAccSFSShareDataSourceBasic = `
+func testAccSFSShareDataSourceBasic() string {
+	return fmt.Sprintf(`
+%s
+
 resource "vkcs_sharedfilesystem_share" "share_1" {
   name        = "nfs_share"
   description = "test share description"
   share_proto = "NFS"
-  share_type  = "dhss_false"
+  share_type  = "default_share_type"
   size        = 1
+  share_network_id = "${vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id}"
 }
 
 data "vkcs_sharedfilesystem_share" "share_1" {
   name        = "${vkcs_sharedfilesystem_share.share_1.name}"
   description = "${vkcs_sharedfilesystem_share.share_1.description}"
+  share_network_id = "${vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id}"
 }
-`
+`, testAccSFSShareNetworkConfigBasic())
+}

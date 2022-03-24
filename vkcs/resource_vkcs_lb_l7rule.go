@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/l7policies"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/listeners"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 )
 
 func resourceL7Rule() *schema.Resource {
@@ -100,9 +100,9 @@ func resourceL7Rule() *schema.Resource {
 
 func resourceL7RuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	// Assign some required variables for use in creation.
@@ -188,9 +188,9 @@ func resourceL7RuleCreate(ctx context.Context, d *schema.ResourceData, meta inte
 
 func resourceL7RuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	l7policyID := d.Get("l7policy_id").(string)
@@ -215,7 +215,7 @@ func resourceL7RuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 func resourceL7RuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -307,9 +307,9 @@ func resourceL7RuleUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 func resourceL7RuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	timeout := d.Timeout(schema.TimeoutDelete)
@@ -370,9 +370,9 @@ func resourceL7RuleImport(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating OpenStack networking client: %s", err)
+		return nil, fmt.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	listenerID := ""

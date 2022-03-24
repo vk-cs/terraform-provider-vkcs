@@ -21,19 +21,17 @@ import (
 // )
 
 var (
-	osFlavorID                       = os.Getenv("OS_FLAVOR_ID")
-	osFlavorName                     = os.Getenv("OS_FLAVOR_NAME")
-	osImageID                        = os.Getenv("OS_IMAGE_ID")
-	osNetworkID                      = os.Getenv("OS_NETWORK_ID")
-	osRegionName                     = os.Getenv("OS_REGION_NAME")
-	osProjectID                      = os.Getenv("OS_PROJECT_ID")
-	osAuthURL                        = os.Getenv("OS_AUTH_URL")
-	osPoolName                       = os.Getenv("OS_POOL_NAME")
-	osExtGwID                        = os.Getenv("OS_EXTGW_ID")
-	osPrivateDNSDomain               = os.Getenv("OS_PRIVATE_DNS_DOMAIN")
-	osVolumeType                     = os.Getenv("OS_VOLUME_TYPE")
-	osLbEnvironment                  = os.Getenv("OS_LB_ENVIRONMENT")
-	osOctaviaBatchMembersEnvironment = os.Getenv("OS_OCTAVIA_BATCH_MEMBERS_ENVIRONMENT")
+	osFlavorID         = os.Getenv("OS_FLAVOR_ID")
+	osFlavorName       = os.Getenv("OS_FLAVOR_NAME")
+	osImageID          = os.Getenv("OS_IMAGE_ID")
+	osNetworkID        = os.Getenv("OS_NETWORK_ID")
+	osRegionName       = os.Getenv("OS_REGION_NAME")
+	osProjectID        = os.Getenv("OS_PROJECT_ID")
+	osAuthURL          = os.Getenv("OS_AUTH_URL")
+	osPoolName         = os.Getenv("OS_POOL_NAME")
+	osExtGwID          = os.Getenv("OS_EXTGW_ID")
+	osPrivateDNSDomain = os.Getenv("OS_PRIVATE_DNS_DOMAIN")
+	osVolumeType       = os.Getenv("OS_VOLUME_TYPE")
 )
 
 var testAccProviders map[string]func() (*schema.Provider, error)
@@ -82,12 +80,11 @@ func testAccPreCheckImage(t *testing.T) {
 
 func testAccPreCheckLB(t *testing.T) {
 	vars := map[string]interface{}{
-		"OS_AUTH_URL":       osAuthURL,
-		"OS_IMAGE_ID":       osImageID,
-		"OS_FLAVOR_ID":      osFlavorID,
-		"OS_NETWORK_ID":     osNetworkID,
-		"OS_EXTGW_ID":       osExtGwID,
-		"OS_LB_ENVIRONMENT": osLbEnvironment,
+		"OS_AUTH_URL":   osAuthURL,
+		"OS_IMAGE_ID":   osImageID,
+		"OS_FLAVOR_ID":  osFlavorID,
+		"OS_NETWORK_ID": osNetworkID,
+		"OS_EXTGW_ID":   osExtGwID,
 	}
 	for k, v := range vars {
 		if v == "" {
@@ -180,18 +177,6 @@ func testAccAuthFromEnv() (configer, error) {
 	}
 
 	return config, nil
-}
-
-func testAccPreCheckOctaviaBatchMembersEnv(t *testing.T) {
-	testAccPreCheckLB(t)
-	vars := map[string]interface{}{
-		"OS_OCTAVIA_BATCH_MEMBERS_ENVIRONMENT": osOctaviaBatchMembersEnvironment,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
 }
 
 func testAccPreCheckVPN(t *testing.T) {

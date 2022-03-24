@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/monitors"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
 )
 
 func TestAccLBMonitor_basic(t *testing.T) {
@@ -89,7 +89,7 @@ func TestAccLBMonitor_octavia_udp(t *testing.T) {
 
 func testAccCheckLBMonitorDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
-	lbClient, err := chooseLBAccTestClient(config, osRegionName)
+	lbClient, err := config.LoadBalancerV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
 	}
@@ -120,7 +120,7 @@ func testAccCheckLBMonitorExists(t *testing.T, n string, monitor *monitors.Monit
 		}
 
 		config := testAccProvider.Meta().(*config)
-		lbClient, err := chooseLBAccTestClient(config, osRegionName)
+		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
 		}

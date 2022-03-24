@@ -8,8 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	octavialoadbalancers "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 )
@@ -133,7 +132,7 @@ func TestAccLBLoadBalancer_vip_port_id(t *testing.T) {
 
 func testAccCheckLBLoadBalancerDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
-	lbClient, err := chooseLBAccTestClient(config, osRegionName)
+	lbClient, err := config.LoadBalancerV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
 	}
@@ -165,7 +164,7 @@ func testAccCheckLBLoadBalancerExists(
 		}
 
 		config := testAccProvider.Meta().(*config)
-		lbClient, err := chooseLBAccTestClient(config, osRegionName)
+		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
 		}
@@ -196,12 +195,12 @@ func testAccCheckLBLoadBalancerHasTag(n, tag string) resource.TestCheckFunc {
 		}
 
 		config := testAccProvider.Meta().(*config)
-		lbClient, err := chooseLBAccTestClient(config, osRegionName)
+		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
 		}
 
-		found, err := octavialoadbalancers.Get(lbClient, rs.Primary.ID).Extract()
+		found, err := loadbalancers.Get(lbClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
@@ -232,12 +231,12 @@ func testAccCheckLBLoadBalancerTagCount(n string, expected int) resource.TestChe
 		}
 
 		config := testAccProvider.Meta().(*config)
-		lbClient, err := chooseLBAccTestClient(config, osRegionName)
+		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
 		}
 
-		found, err := octavialoadbalancers.Get(lbClient, rs.Primary.ID).Extract()
+		found, err := loadbalancers.Get(lbClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

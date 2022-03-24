@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	octavialoadbalancers "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	neutronloadbalancers "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
 )
 
 func resourceLoadBalancer() *schema.Resource {
@@ -106,9 +105,9 @@ func resourceLoadBalancer() *schema.Resource {
 
 func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	var (
@@ -118,52 +117,34 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, met
 
 	adminStateUp := d.Get("admin_state_up").(bool)
 
-	if lbClient.Type == octaviaLBClientType {
-		createOpts := octavialoadbalancers.CreateOpts{
-			Name:         d.Get("name").(string),
-			Description:  d.Get("description").(string),
-			VipNetworkID: d.Get("vip_network_id").(string),
-			VipSubnetID:  d.Get("vip_subnet_id").(string),
-			VipPortID:    d.Get("vip_port_id").(string),
-			VipAddress:   d.Get("vip_address").(string),
-			AdminStateUp: &adminStateUp,
-		}
-
-		// availability_zone requires octavia minor version 2.14. Only set when specified.
-		if v, ok := d.GetOk("availability_zone"); ok {
-			aZ := v.(string)
-			createOpts.AvailabilityZone = aZ
-		}
-
-		if v, ok := d.GetOk("tags"); ok {
-			tags := v.(*schema.Set).List()
-			createOpts.Tags = expandToStringSlice(tags)
-		}
-
-		log.Printf("[DEBUG][Octavia] vkcs_lb_loadbalancer create options: %#v", createOpts)
-		lb, err := octavialoadbalancers.Create(lbClient, createOpts).Extract()
-		if err != nil {
-			return diag.Errorf("Error creating vkcs_lb_loadbalancer: %s", err)
-		}
-		lbID = lb.ID
-		vipPortID = lb.VipPortID
-	} else {
-		createOpts := neutronloadbalancers.CreateOpts{
-			Name:         d.Get("name").(string),
-			Description:  d.Get("description").(string),
-			VipSubnetID:  d.Get("vip_subnet_id").(string),
-			VipAddress:   d.Get("vip_address").(string),
-			AdminStateUp: &adminStateUp,
-		}
-
-		log.Printf("[DEBUG][Neutron] vkcs_lb_loadbalancer create options: %#v", createOpts)
-		lb, err := neutronloadbalancers.Create(lbClient, createOpts).Extract()
-		if err != nil {
-			return diag.Errorf("Error creating vkcs_lb_loadbalancer: %s", err)
-		}
-		lbID = lb.ID
-		vipPortID = lb.VipPortID
+	createOpts := octavialoadbalancers.CreateOpts{
+		Name:         d.Get("name").(string),
+		Description:  d.Get("description").(string),
+		VipNetworkID: d.Get("vip_network_id").(string),
+		VipSubnetID:  d.Get("vip_subnet_id").(string),
+		VipPortID:    d.Get("vip_port_id").(string),
+		VipAddress:   d.Get("vip_address").(string),
+		AdminStateUp: &adminStateUp,
 	}
+
+	// availability_zone requires octavia minor version 2.14. Only set when specified.
+	if v, ok := d.GetOk("availability_zone"); ok {
+		aZ := v.(string)
+		createOpts.AvailabilityZone = aZ
+	}
+
+	if v, ok := d.GetOk("tags"); ok {
+		tags := v.(*schema.Set).List()
+		createOpts.Tags = expandToStringSlice(tags)
+	}
+
+	log.Printf("[DEBUG][Octavia] vkcs_lb_loadbalancer create options: %#v", createOpts)
+	lb, err := octavialoadbalancers.Create(lbClient, createOpts).Extract()
+	if err != nil {
+		return diag.Errorf("Error creating vkcs_lb_loadbalancer: %s", err)
+	}
+	lbID = lb.ID
+	vipPortID = lb.VipPortID
 
 	// Wait for load-balancer to become active before continuing.
 	timeout := d.Timeout(schema.TimeoutCreate)
@@ -189,49 +170,31 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, met
 
 func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
 	}
 
 	var vipPortID string
 
-	if lbClient.Type == octaviaLBClientType {
-		lb, err := octavialoadbalancers.Get(lbClient, d.Id()).Extract()
-		if err != nil {
-			return diag.FromErr(checkDeleted(d, err, "Unable to retrieve vkcs_lb_loadbalancer"))
-		}
-
-		log.Printf("[DEBUG][Octavia] Retrieved vkcs_lb_loadbalancer %s: %#v", d.Id(), lb)
-
-		d.Set("name", lb.Name)
-		d.Set("description", lb.Description)
-		d.Set("vip_subnet_id", lb.VipSubnetID)
-		d.Set("vip_network_id", lb.VipNetworkID)
-		d.Set("vip_port_id", lb.VipPortID)
-		d.Set("vip_address", lb.VipAddress)
-		d.Set("admin_state_up", lb.AdminStateUp)
-		d.Set("availability_zone", lb.AvailabilityZone)
-		d.Set("region", getRegion(d, config))
-		d.Set("tags", lb.Tags)
-		vipPortID = lb.VipPortID
-	} else {
-		lb, err := neutronloadbalancers.Get(lbClient, d.Id()).Extract()
-		if err != nil {
-			return diag.FromErr(checkDeleted(d, err, "Unable to retrieve vkcs_lb_loadbalancer"))
-		}
-
-		log.Printf("[DEBUG][Neutron] Retrieved vkcs_lb_loadbalancer %s: %#v", d.Id(), lb)
-
-		d.Set("name", lb.Name)
-		d.Set("description", lb.Description)
-		d.Set("vip_subnet_id", lb.VipSubnetID)
-		d.Set("vip_port_id", lb.VipPortID)
-		d.Set("vip_address", lb.VipAddress)
-		d.Set("admin_state_up", lb.AdminStateUp)
-		d.Set("region", getRegion(d, config))
-		vipPortID = lb.VipPortID
+	lb, err := octavialoadbalancers.Get(lbClient, d.Id()).Extract()
+	if err != nil {
+		return diag.FromErr(checkDeleted(d, err, "Unable to retrieve vkcs_lb_loadbalancer"))
 	}
+
+	log.Printf("[DEBUG][Octavia] Retrieved vkcs_lb_loadbalancer %s: %#v", d.Id(), lb)
+
+	d.Set("name", lb.Name)
+	d.Set("description", lb.Description)
+	d.Set("vip_subnet_id", lb.VipSubnetID)
+	d.Set("vip_network_id", lb.VipNetworkID)
+	d.Set("vip_port_id", lb.VipPortID)
+	d.Set("vip_address", lb.VipAddress)
+	d.Set("admin_state_up", lb.AdminStateUp)
+	d.Set("availability_zone", lb.AvailabilityZone)
+	d.Set("region", getRegion(d, config))
+	d.Set("tags", lb.Tags)
+	vipPortID = lb.VipPortID
 
 	// Get any security groups on the VIP Port.
 	if vipPortID != "" {
@@ -249,17 +212,40 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, meta 
 
 func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+	}
+	var updateOpts octavialoadbalancers.UpdateOpts
+	var hasChange bool
+	if d.HasChange("name") {
+		hasChange = true
+		name := d.Get("name").(string)
+		updateOpts.Name = &name
+	}
+	if d.HasChange("description") {
+		hasChange = true
+		description := d.Get("description").(string)
+		updateOpts.Description = &description
+	}
+	if d.HasChange("admin_state_up") {
+		hasChange = true
+		asu := d.Get("admin_state_up").(bool)
+		updateOpts.AdminStateUp = &asu
 	}
 
-	updateOpts, err := chooseLBLoadbalancerUpdateOpts(d, config)
-	if err != nil {
-		return diag.Errorf("Error building vkcs_lb_loadbalancer update options: %s", err)
+	if d.HasChange("tags") {
+		hasChange = true
+		if v, ok := d.GetOk("tags"); ok {
+			tags := v.(*schema.Set).List()
+			tagsToUpdate := expandToStringSlice(tags)
+			updateOpts.Tags = &tagsToUpdate
+		} else {
+			updateOpts.Tags = &[]string{}
+		}
 	}
 
-	if updateOpts != nil {
+	if hasChange {
 		// Wait for load-balancer to become active before continuing.
 		timeout := d.Timeout(schema.TimeoutUpdate)
 		err = waitForLBLoadBalancer(ctx, lbClient, d.Id(), "ACTIVE", getLbPendingStatuses(), timeout)
@@ -269,7 +255,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, met
 
 		log.Printf("[DEBUG] Updating vkcs_lb_loadbalancer %s with options: %#v", d.Id(), updateOpts)
 		err = resource.Retry(timeout, func() *resource.RetryError {
-			_, err = neutronloadbalancers.Update(lbClient, d.Id(), updateOpts).Extract()
+			_, err = octavialoadbalancers.Update(lbClient, d.Id(), updateOpts).Extract()
 			if err != nil {
 				return checkForRetryableError(err)
 			}
@@ -304,7 +290,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, met
 
 func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*config)
-	lbClient, err := chooseLBClient(d, config)
+	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating OpenStack networking client: %s", err)
 	}
@@ -312,7 +298,7 @@ func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, met
 	log.Printf("[DEBUG] Deleting vkcs_lb_loadbalancer %s", d.Id())
 	timeout := d.Timeout(schema.TimeoutDelete)
 	err = resource.Retry(timeout, func() *resource.RetryError {
-		err = neutronloadbalancers.Delete(lbClient, d.Id()).ExtractErr()
+		err = octavialoadbalancers.Delete(lbClient, d.Id(), nil).ExtractErr()
 		if err != nil {
 			return checkForRetryableError(err)
 		}

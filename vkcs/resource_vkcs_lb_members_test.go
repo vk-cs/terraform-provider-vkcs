@@ -28,17 +28,17 @@ func testAccCheckLBMembersComputeHash(members *[]pools.Member, weight int, addre
 	}
 }
 
-func testCheckResourceAttrWithIndexesAddr(name, format string, idx *int, value string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		return resource.TestCheckResourceAttr(name, fmt.Sprintf(format, *idx), value)(s)
-	}
-}
+// func testCheckResourceAttrWithIndexesAddr(name, format string, idx *int, value string) resource.TestCheckFunc {
+// 	return func(s *terraform.State) error {
+// 		return resource.TestCheckResourceAttr(name, fmt.Sprintf(format, *idx), value)(s)
+// 	}
+// }
 
-func testCheckResourceAttrSetWithIndexesAddr(name, format string, idx *int) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		return resource.TestCheckResourceAttrSet(name, fmt.Sprintf(format, *idx))(s)
-	}
-}
+// func testCheckResourceAttrSetWithIndexesAddr(name, format string, idx *int) resource.TestCheckFunc {
+// 	return func(s *terraform.State) error {
+// 		return resource.TestCheckResourceAttrSet(name, fmt.Sprintf(format, *idx))(s)
+// 	}
+// }
 
 func TestAccLBMembers_basic(t *testing.T) {
 	var members []pools.Member
@@ -48,7 +48,6 @@ func TestAccLBMembers_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheckLB(t)
-			testAccPreCheckOctaviaBatchMembersEnv(t)
 		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBMembersDestroy,
@@ -60,12 +59,13 @@ func TestAccLBMembers_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_lb_members.members_1", "member.#", "2"),
 					testAccCheckLBMembersComputeHash(&members, 0, "192.168.199.110", &idx1),
 					testAccCheckLBMembersComputeHash(&members, 1, "192.168.199.111", &idx2),
-					testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx1, "0"),
-					testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx2, "1"),
-					testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.backup", &idx1, "false"),
-					testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.backup", &idx2, "true"),
-					testCheckResourceAttrSetWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx1),
-					testCheckResourceAttrSetWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx2),
+					// checks for TypeSet are currently not supported by SDK2
+					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx1, "0"),
+					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx2, "1"),
+					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.backup", &idx1, "false"),
+					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.backup", &idx2, "true"),
+					// testCheckResourceAttrSetWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx1),
+					// testCheckResourceAttrSetWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx2),
 				),
 			},
 			{
@@ -75,12 +75,13 @@ func TestAccLBMembers_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_lb_members.members_1", "member.#", "2"),
 					testAccCheckLBMembersComputeHash(&members, 10, "192.168.199.110", &idx1),
 					testAccCheckLBMembersComputeHash(&members, 15, "192.168.199.111", &idx2),
-					testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx1, "10"),
-					testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx2, "15"),
-					testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.backup", &idx1, "true"),
-					testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.backup", &idx2, "false"),
-					testCheckResourceAttrSetWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx1),
-					testCheckResourceAttrSetWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx2),
+					// checks for TypeSet are currently not supported by SDK2
+					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx1, "10"),
+					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx2, "15"),
+					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.backup", &idx1, "true"),
+					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.backup", &idx2, "false"),
+					// testCheckResourceAttrSetWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx1),
+					// testCheckResourceAttrSetWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx2),
 				),
 			},
 			{
@@ -90,10 +91,11 @@ func TestAccLBMembers_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_lb_members.members_1", "member.#", "2"),
 					testAccCheckLBMembersComputeHash(&members, 10, "192.168.199.110", &idx1),
 					testAccCheckLBMembersComputeHash(&members, 15, "192.168.199.111", &idx2),
-					testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx1, "10"),
-					testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx2, "15"),
-					testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx1, ""),
-					testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx2, ""),
+					// checks for TypeSet are currently not supported by SDK2
+					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx1, "10"),
+					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx2, "15"),
+					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx1, ""),
+					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx2, ""),
 				),
 			},
 			{
@@ -109,7 +111,7 @@ func TestAccLBMembers_basic(t *testing.T) {
 
 func testAccCheckLBMembersDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
-	lbClient, err := chooseLBAccTestClient(config, osRegionName)
+	lbClient, err := config.LoadBalancerV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
 	}
@@ -154,7 +156,7 @@ func testAccCheckLBMembersExists(n string, members *[]pools.Member) resource.Tes
 		}
 
 		config := testAccProvider.Meta().(*config)
-		lbClient, err := chooseLBAccTestClient(config, osRegionName)
+		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
 		}

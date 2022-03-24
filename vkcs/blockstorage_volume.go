@@ -2,7 +2,6 @@ package vkcs
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/volumeactions"
@@ -20,7 +19,6 @@ func blockStorageVolumeStateRefreshFunc(client *gophercloud.ServiceClient, volum
 		v, err := volumes.Get(client, volumeID).Extract()
 		if err != nil {
 			if _, ok := err.(gophercloud.ErrDefault404); ok {
-				log.Printf("[sch] status deleted")
 				return v, bsVolumeStatusDeleted, nil
 			}
 			return nil, "", err
