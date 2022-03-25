@@ -7,8 +7,8 @@ description: |-
 
 # vkcs\_compute\_volume\_attach
 
-Attaches a Block Storage Volume to an Instance using the OpenStack
-Compute (Nova) v2 API.
+Attaches a Block Storage Volume to an Instance using the VKCS
+Compute API.
 
 ## Example Usage
 
@@ -96,7 +96,7 @@ output "volume_devices" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 Compute client.
+* `region` - (Optional) The region in which to obtain the Compute client.
     A Compute client is needed to create a volume attachment. If omitted, the
     `region` argument of the provider is used. Changing this creates a
     new volume attachment.

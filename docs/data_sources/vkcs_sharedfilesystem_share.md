@@ -1,6 +1,6 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: sharedfilesystem_share"
+page_title: "vkcs: sharedfilesystem_share"
 description: |-
   Get information on an Shared File System share.
 ---
@@ -29,8 +29,7 @@ data "vkcs_sharedfilesystem_share" "share_1" {
 
 * `snapshot_id` - (Optional) The UUID of the share's base snapshot.
 
-* `export_location_path` - (Optional) The export location path of the share. Available
-    since Manila API version 2.35.
+* `export_location_path` - (Optional) The export location path of the share.
 
 * `status` - (Optional) A share status filter. A valid value is `creating`,
     `error`, `available`, `deleting`, `error_deleting`, `manage_starting`,
@@ -50,7 +49,7 @@ are exported:
 * `share_network_id` - See Argument Reference above.
 * `export_location_path` - See Argument Reference above.
 * `status` - See Argument Reference above.
-* `region` - The region in which to obtain the V2 Shared File System client.
+* `region` - The region in which to obtain the Shared File System client.
 * `availability_zone` - The share availability zone.
 * `share_proto` - The share protocol.
 * `size` - The share size, in GBs.

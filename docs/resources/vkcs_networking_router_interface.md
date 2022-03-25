@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_router_interface"
+page_title: "vkcs: networking_router_interface"
 description: |-
-  Manages a V2 router interface resource within OpenStack.
+  Manages a router interface resource within VKCS.
 ---
 
 # vkcs\_networking\_router\_interface
 
-Manages a V2 router interface resource within OpenStack.
+Manages a router interface resource within VKCS.
 
 ## Example Usage
 
@@ -38,7 +38,7 @@ resource "vkcs_networking_router_interface" "router_interface_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 networking client.
+* `region` - (Optional) The region in which to obtain the networking client.
     A networking client is needed to create a router. If omitted, the
     `region` argument of the provider is used. Changing this creates a new
     router interface.

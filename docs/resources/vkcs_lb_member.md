@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: lb_member"
+page_title: "vkcs: lb_member"
 description: |-
-	Manages a member resource within OpenStack.
+	Manages a member resource within VKCS.
 ---
 
 # vkcs\_lb\_member
 
-Manages a member resource within OpenStack.
+Manages a member resource within VKCS.
 
 ## Example Usage
 
@@ -37,9 +37,8 @@ The following arguments are supported:
 
 * `name` - (Optional) Human-readable name for the member.
 
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
-	A Networking client is needed to create a member. If omitted, the `region`
-	argument of the provider is used. Changing this creates a new member.
+* `region` - (Optional) The region in which to obtain the Loadbalancer client.
+	If omitted, the `region` argument of the provider is used. Changing this creates a new member.
 
 * `subnet_id` - (Optional) The subnet in which to access the member. Changing
 	this creates a new member.

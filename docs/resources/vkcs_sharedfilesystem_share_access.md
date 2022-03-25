@@ -1,6 +1,6 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: sharedfilesystem_share_access"
+page_title: "vkcs: sharedfilesystem_share_access"
 description: |-
   Configure a Shared File System share access list.
 ---
@@ -123,12 +123,11 @@ The following arguments are supported:
 	address or a username verified by configured Security Service of the Share Network.
 
 * `access_type` - (Required) The access rule type. Can either be an ip, user,
-	cert, or cephx. cephx support requires an OpenStack environment that supports
-	Shared Filesystem microversion 2.13 (Mitaka) or later.
+	cert, or cephx.
 
 * `share_id` - (Required) The UUID of the share to which you are granted access.
 
-* `region` - The region in which to obtain the V2 Shared File System client.
+* `region` - The region in which to obtain the Shared File System client.
 	A Shared File System client is needed to create a share access. Changing this
 	creates a new share access.
 

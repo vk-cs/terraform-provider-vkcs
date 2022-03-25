@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_port"
+page_title: "vkcs: networking_port"
 description: |-
-  Get information of an OpenStack Port.
+  Get information of an VKCS Port.
 ---
 
 # vkcs\_networking\_port
 
-Use this data source to get the ID of an available OpenStack port.
+Use this data source to get the ID of an available VKCS port.
 
 ## Example Usage
 
@@ -19,8 +19,8 @@ data "vkcs_networking_port" "port_1" {
 
 ## Argument Reference
 
-* `region` - (Optional) The region in which to obtain the V2 Neutron client.
-  A Neutron client is needed to retrieve port ids. If omitted, the
+* `region` - (Optional) The region in which to obtain the Network client.
+  A Network client is needed to retrieve port ids. If omitted, the
   `region` argument of the provider is used.
 
 * `project_id` - (Optional) The owner of the port.

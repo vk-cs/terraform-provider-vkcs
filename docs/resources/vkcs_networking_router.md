@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_router"
+page_title: "vkcs: networking_router"
 description: |-
-  Manages a V2 router resource within OpenStack.
+  Manages a router resource within VKCS.
 ---
 
 # vkcs\_networking\_router
 
-Manages a V2 router resource within OpenStack.
+Manages a router resource within VKCS.
 
 ## Example Usage
 
@@ -23,7 +23,7 @@ resource "vkcs_networking_router" "router_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 networking client.
+* `region` - (Optional) The region in which to obtain the networking client.
   A networking client is needed to create a router. If omitted, the
   `region` argument of the provider is used. Changing this creates a new
   router.

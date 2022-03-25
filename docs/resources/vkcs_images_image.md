@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: vkcs_images_image"
+page_title: "vkcs: images_image"
 description: |-
-  Manages an Image resource within OpenStack Glance.
+  Manages an Image resource within VKCS.
 ---
 
 # vkcs\_images\_image
 
-Manages an Image resource within OpenStack Glance.
+Manages an Image resource within VKCS.
 
 ~> **Note:** All arguments including the source image URL password will be
 stored in the raw state as plain-text. [Read more about sensitive data in
@@ -41,14 +41,14 @@ The following arguments are supported:
     "raw", "iso".
 
 * `local_file_path` - (Optional) This is the filepath of the raw image file
-    that will be uploaded to Glance. Conflicts with `image_source_url`
+    that will be uploaded to VKCS. Conflicts with `image_source_url`
 
 * `image_cache_path` - (Optional) This is the directory where the images will
     be downloaded. Images will be stored with a filename corresponding to
     the url's md5 hash. Defaults to "$HOME/.terraform/image_cache"
 
 * `image_source_url` - (Optional) This is the url of the raw image. The image will 
-    be downloaded in the `image_cache_path` before being uploaded to Glance.
+    be downloaded in the `image_cache_path` before being uploaded to VKCS.
     Conflicts with `local_file_path`.
 
 * `image_source_username` - (Optional) The username of basic auth to download `image_source_url`.
@@ -74,8 +74,8 @@ The following arguments are supported:
 * `hidden` - (Optional) If true, image will be hidden from public list.
     Defaults to false.
 
-* `region` - (Optional) The region in which to obtain the V2 Glance client.
-    A Glance client is needed to create an Image that can be used with
+* `region` - (Optional) The region in which to obtain the Image client.
+    An Image client is needed to create an Image that can be used with
     a compute instance. If omitted, the `region` argument of the provider
     is used. Changing this creates a new Image.
 
@@ -97,8 +97,8 @@ The following attributes are exported:
 * `container_format` - See Argument Reference above.
 * `created_at` - The date the image was created.
 * `disk_format` - See Argument Reference above.
-* `file` - the trailing path after the glance endpoint that represent the location of the image or the path to retrieve it.
-* `id` - A unique ID assigned by Glance.
+* `file` - the trailing path after the image endpoint that represent the location of the image or the path to retrieve it.
+* `id` - A unique ID assigned by VKCS.
 * `metadata` - The metadata associated with the image.
     Image metadata allow for meaningfully define the image properties and tags.
     See https://docs.openstack.org/glance/latest/user/metadefs-concepts.html.
@@ -124,13 +124,6 @@ The following attributes are exported:
 This resource supports the ability to add properties to a resource during
 creation as well as add, update, and delete properties during an update of this
 resource.
-
-Newer versions of OpenStack are adding some read-only properties to each image.
-These properties start with the prefix `os_`. If these properties are detected,
-this resource will automatically reconcile these with the user-provided
-properties.
-
-In addition, the `direct_url`, `store`, `locations` properties are automatically reconciled
 
 ## Import
 

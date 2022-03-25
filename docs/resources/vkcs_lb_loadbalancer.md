@@ -1,16 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: lb_loadbalancer"
+page_title: "vkcs: lb_loadbalancer"
 description: |-
-	Manages a loadbalancer resource within OpenStack.
+	Manages a loadbalancer resource within VKCS.
 ---
 
 # vkcs\_lb\_loadbalancer
 
-Manages a loadbalancer resource within OpenStack.
-
-~> **Note:** This resource has attributes that depend on octavia minor versions.
-Please ensure your Openstack cloud supports the required [minor version](../#octavia-api-versioning).
+Manages a loadbalancer resource within VKCS.
 
 ## Example Usage
 
@@ -28,15 +25,13 @@ The following arguments are supported:
 	A valid value is true (UP) or false (DOWN).
 
 * `availability_zone` - (Optional) The availability zone of the Loadbalancer.
-  Changing this creates a new loadbalancer. Available only for Octavia
-  **minor version 2.14 or later**.
+  Changing this creates a new loadbalancer.
 
 * `description` - (Optional) Human-readable description for the Loadbalancer.
 
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
-	A Networking client is needed to create an LB member. If omitted, the
-	`region` argument of the provider is used. Changing this creates a new
-	LB member.
+* `region` - (Optional) The region in which to obtain the Loadbalancer client.
+	If omitted, the	`region` argument of the provider is used. Changing this creates a new
+	LB loadbalancer.
 
 * `name` - (Optional) Human-readable name for the Loadbalancer. Does not have
 	to be unique.
@@ -46,7 +41,6 @@ The following arguments are supported:
 	opposed to how they are configured with the Compute Instance).
 
 * `tags` - (Optional) A list of simple strings assigned to the loadbalancer.
-	Available only for Octavia **minor version 2.5 or later**.
 
 * `vip_address` - (Optional) The ip address of the load balancer.
 	Changing this creates a new loadbalancer.
@@ -55,16 +49,14 @@ The following arguments are supported:
 	Loadbalancer's address. A tenant can only create Loadbalancers on networks
 	authorized by policy (e.g. networks that belong to them or networks that
 	are shared).  Changing this creates a new loadbalancer.
-	It is available only for Octavia.
 
 * `vip_port_id` - (Optional) The port UUID that the loadbalancer will use.
-  Changing this creates a new loadbalancer. It is available only for Octavia.
+  Changing this creates a new loadbalancer.
 
 * `vip_subnet_id` - (Optional) The subnet on which to allocate the
 	Loadbalancer's address. A tenant can only create Loadbalancers on networks
 	authorized by policy (e.g. networks that belong to them or networks that
 	are shared).  Changing this creates a new loadbalancer.
-	It is required to Neutron LBaaS but optional for Octavia.
 
 ## Attributes Reference
 

@@ -7,8 +7,8 @@ description: |-
 
 # vkcs\_compute\_interface\_attach
 
-Attaches a Network Interface (a Port) to an Instance using the OpenStack
-Compute (Nova) v2 API.
+Attaches a Network Interface (a Port) to an Instance using the VKCS
+Compute API.
 
 ## Example Usage
 

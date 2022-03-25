@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_subnet"
+page_title: "vkcs: networking_subnet"
 description: |-
-  Manages a V2 Neutron subnet resource within OpenStack.
+  Manages a subnet resource within VKCS.
 ---
 
 # vkcs\_networking\_subnet
 
-Manages a V2 Neutron subnet resource within OpenStack.
+Manages a subnet resource within VKCS.
 
 ## Example Usage
 
@@ -27,8 +27,8 @@ resource "vkcs_networking_subnet" "subnet_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
-    A Networking client is needed to create a Neutron subnet. If omitted, the
+* `region` - (Optional) The region in which to obtain the Networking client.
+    A Networking client is needed to create a subnet. If omitted, the
     `region` argument of the provider is used. Changing this creates a new
     subnet.
 

@@ -1,21 +1,20 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_secgroup_rule"
+page_title: "vkcs: networking_secgroup_rule"
 description: |-
-  Manages a V2 Neutron security group rule resource within OpenStack.
+  Manages a security group rule resource within VKCS.
 ---
 
 # vkcs\_networking\_secgroup\_rule
 
-Manages a V2 neutron security group rule resource within OpenStack.
-Unlike Nova security groups, neutron separates the group from the rules.
+Manages a security group rule resource within VKCS.
 
 ## Example Usage
 
 ```hcl
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name        = "secgroup_1"
-  description = "My neutron security group"
+  description = "My security group"
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
@@ -33,7 +32,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 networking client.
+* `region` - (Optional) The region in which to obtain the networking client.
     A networking client is needed to create a port. If omitted, the
     `region` argument of the provider is used. Changing this creates a new
     security group rule.
@@ -81,11 +80,11 @@ The following arguments are supported:
     CIDR (i.e. 192.168.0.0/16). Changing this creates a new security group rule.
 
 * `remote_group_id` - (Optional) The remote group id, the value needs to be an
-    Openstack ID of a security group in the same tenant. Changing this creates
+    ID of a security group in the same tenant. Changing this creates
     a new security group rule.
 
 * `security_group_id` - (Required) The security group id the rule should belong
-    to, the value needs to be an Openstack ID of a security group in the same
+    to, the value needs to be an ID of a security group in the same
     tenant. Changing this creates a new security group rule.
 
 * `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".

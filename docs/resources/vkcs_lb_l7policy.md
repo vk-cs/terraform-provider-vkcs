@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: lb_l7policy"
+page_title: "vkcs: lb_l7policy"
 description: |-
-	Manages a L7 Policy resource within OpenStack.
+	Manages a L7 Policy resource within VKCS.
 ---
 
 # vkcs\_lb\_l7policy
 
-Manages a Load Balancer L7 Policy resource within OpenStack.
+Manages a Load Balancer L7 Policy resource within VKCS.
 
 ## Example Usage
 
@@ -79,9 +79,8 @@ The following arguments are supported:
 * `redirect_url` - (Optional) Requests matching this policy will be redirected to this URL.
 	Only valid if action is REDIRECT\_TO\_URL.
 
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
-	A Networking client is needed to create an . If omitted, the
-	`region` argument of the provider is used. Changing this creates a new
+* `region` - (Optional) The region in which to obtain the Loadbalancer client.
+	If omitted, the	`region` argument of the provider is used. Changing this creates a new
 	L7 Policy.
 
 ## Attributes Reference

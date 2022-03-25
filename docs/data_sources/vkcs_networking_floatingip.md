@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_floatingip"
+page_title: "vkcs: networking_floatingip"
 description: |-
-  Get information on an OpenStack Floating IP.
+  Get information on an VKCS Floating IP.
 ---
 
 # vkcs\_networking\_floatingip
 
-Use this data source to get the ID of an available OpenStack floating IP.
+Use this data source to get the ID of an available VKCS floating IP.
 
 ## Example Usage
 
@@ -19,8 +19,8 @@ data "vkcs_networking_floatingip" "floatingip_1" {
 
 ## Argument Reference
 
-* `region` - (Optional) The region in which to obtain the V2 Neutron client.
-  A Neutron client is needed to retrieve floating IP ids. If omitted, the
+* `region` - (Optional) The region in which to obtain the Network client.
+  A Network client is needed to retrieve floating IP ids. If omitted, the
   `region` argument of the provider is used.
 
 * `description` - (Optional) Human-readable description of the floating IP.

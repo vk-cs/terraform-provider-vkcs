@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_network"
+page_title: "vkcs: networking_network"
 description: |-
-  Manages a V2 Neutron network resource within OpenStack.
+  Manages a network resource within VKCS.
 ---
 
 # vkcs\_networking\_network
 
-Manages a V2 Neutron network resource within OpenStack.
+Manages a network resource within VKCS.
 
 ## Example Usage
 
@@ -62,8 +62,8 @@ resource "vkcs_compute_instance" "instance_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
-    A Networking client is needed to create a Neutron network. If omitted, the
+* `region` - (Optional) The region in which to obtain the Networking client.
+    A Networking client is needed to create a network. If omitted, the
     `region` argument of the provider is used. Changing this creates a new
     network.
 

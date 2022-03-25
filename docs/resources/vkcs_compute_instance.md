@@ -139,6 +139,9 @@ resource "vkcs_compute_instance" "instance_1" {
     boot_index            = 1
     delete_on_termination = true
   }
+  network {
+    name = "my_network"
+  }
 }
 ```
 
@@ -171,6 +174,9 @@ resource "vkcs_compute_instance" "instance_1" {
     destination_type      = "volume"
     boot_index            = 1
     delete_on_termination = true
+  }
+  network {
+    name = "my_network"
   }
 }
 ```
@@ -225,7 +231,6 @@ resource "vkcs_compute_instance" "personality" {
   }
 }
 ```
-
 ### Instance with Multiple Ephemeral Disks
 
 ```hcl
@@ -235,7 +240,6 @@ resource "vkcs_compute_instance" "multi-eph" {
   flavor_id       = "3"
   key_pair        = "my_key_pair_name"
   security_groups = ["default"]
-
   block_device {
     boot_index            = 0
     delete_on_termination = true
@@ -243,7 +247,6 @@ resource "vkcs_compute_instance" "multi-eph" {
     source_type           = "image"
     uuid                  = "<image-id>"
   }
-
   block_device {
     boot_index            = -1
     delete_on_termination = true
@@ -252,13 +255,15 @@ resource "vkcs_compute_instance" "multi-eph" {
     volume_size           = 1
     guest_format          = "ext4"
   }
-
   block_device {
     boot_index            = -1
     delete_on_termination = true
     destination_type      = "local"
     source_type           = "blank"
     volume_size           = 1
+  }
+  network {
+    name = "my_network"
   }
 }
 ```
@@ -273,13 +278,11 @@ resource "vkcs_compute_flavor" "flavor-with-swap" {
   disk  = "20"
   swap  = "4096"
 }
-
 resource "vkcs_compute_instance" "vm-swap" {
   name            = "vm_swap"
   flavor_id       = "${vkcs_compute_flavor.flavor-with-swap.id}"
   key_pair        = "my_key_pair_name"
   security_groups = ["default"]
-
   block_device {
     boot_index            = 0
     delete_on_termination = true
@@ -287,7 +290,6 @@ resource "vkcs_compute_instance" "vm-swap" {
     source_type           = "image"
     uuid                  = "<image-id>"
   }
-
   block_device {
     boot_index            = -1
     delete_on_termination = true
@@ -296,9 +298,11 @@ resource "vkcs_compute_instance" "vm-swap" {
     guest_format          = "swap"
     volume_size           = 4
   }
+  network {
+    name = "my_network"
+  }
 }
 ```
-
 ### Instance with User Data (cloud-init)
 
 ```hcl
@@ -396,7 +400,7 @@ The following arguments are supported:
     before destroying it, thus giving chance for guest OS daemons to stop correctly.
     If instance doesn't stop within timeout, it will be destroyed anyway.
 
-* `force_delete` - (Optional) Whether to force the OpenStack instance to be
+* `force_delete` - (Optional) Whether to force the compute instance to be
     forcefully deleted. This is useful for environments that have reclaim / soft
     deletion enabled.
 
@@ -459,9 +463,7 @@ The `block_device` block supports:
     termination of the instance. Defaults to false. Changing this creates a
     new server.
 
-* `volume_type` - (Optional) The volume type that will be used, for example SSD
-    or HDD storage. The available options depend on how your specific OpenStack
-    cloud is configured and what classes of storage are provided. Changing this
+* `volume_type` - (Optional) The volume type that will be used. Changing this
     creates a new server.
 
 * `device_type` - (Optional) The low-level device type that will be used. Most
@@ -511,9 +513,7 @@ The `personality` block supports:
 The `vendor_options` block supports:
 
 * `ignore_resize_confirmation` - (Optional) Boolean to control whether
-    to ignore manual confirmation of the instance resizing. This can be helpful
-    to work with some OpenStack clouds which automatically confirm resizing of
-    instances after some timeout.
+    to ignore manual confirmation of the instance resizing.
 
 * `detach_ports_before_destroy` - (Optional) Whether to try to detach all attached
     ports to the vm before destroying it to make sure the port state is correct
@@ -546,54 +546,12 @@ The following attributes are exported:
     been explicitly and implicitly added.
 
 ## Notes
-
-### Multiple Ephemeral Disks
-
-It's possible to specify multiple `block_device` entries to create an instance
-with multiple ephemeral (local) disks. In order to create multiple ephemeral
-disks, the sum of the total amount of ephemeral space must be less than or
-equal to what the chosen flavor supports.
-
-The following example shows how to create an instance with multiple ephemeral
-disks:
-
-```hcl
-resource "vkcs_compute_instance" "foo" {
-  name            = "terraform-test"
-  security_groups = ["default"]
-
-  block_device {
-    boot_index            = 0
-    delete_on_termination = true
-    destination_type      = "local"
-    source_type           = "image"
-    uuid                  = "<image uuid>"
-  }
-
-  block_device {
-    boot_index            = -1
-    delete_on_termination = true
-    destination_type      = "local"
-    source_type           = "blank"
-    volume_size           = 1
-  }
-
-  block_device {
-    boot_index            = -1
-    delete_on_termination = true
-    destination_type      = "local"
-    source_type           = "blank"
-    volume_size           = 1
-  }
-}
-```
-
 ### Instances and Security Groups
 
 When referencing a security group resource in an instance resource, always
 use the _name_ of the security group. If you specify the ID of the security
 group, Terraform will remove and reapply the security group upon each call.
-This is because the OpenStack Compute API returns the names of the associated
+This is because the VKCS Compute API returns the names of the associated
 security groups and not their IDs.
 
 Note the following example:
@@ -614,15 +572,10 @@ resource "vkcs_compute_instance" "foo" {
 Neutron Ports are a great feature and provide a lot of functionality. However,
 there are some notes to be aware of when mixing Instances and Ports:
 
-* In OpenStack environments prior to the Kilo release, deleting or recreating
-an Instance will cause the Instance's Port(s) to be deleted. One way of working
-around this is to taint any Port(s) used in Instances which are to be recreated.
-See [here](https://review.openstack.org/#/c/126309/) for further information.
-
 * When attaching an Instance to one or more networks using Ports, place the
 security groups on the Port and not the Instance. If you place the security
 groups on the Instance, the security groups will not be applied upon creation,
-but they will be applied upon a refresh. This is a known OpenStack bug.
+but they will be applied upon a refresh.
 
 * Network IP information is not available within an instance for networks that
 are attached with Ports. This is mostly due to the flexibility Neutron Ports
@@ -672,7 +625,7 @@ Instances almost always require a network. Here are some notes to be aware of
 with how Instances and Networks relate:
 
 * In scenarios where you only have one network available, you can create an
-instance without specifying a `network` block. OpenStack will automatically
+instance without specifying a `network` block. VKCS will automatically
 launch the instance on this network.
 
 * If you have access to more than one network, you will need to specify a network
@@ -680,7 +633,7 @@ with a `network` block. Not specifying a network will result in the following
 error:
 
 ```
-* vkcs_compute_instance.instance: Error creating OpenStack server:
+* vkcs_compute_instance.instance: Error creating VKCS server:
 Expected HTTP response code [201 202] when accessing [POST https://example.com:8774/v2.1/servers], but got 409 instead
 {"conflictingRequest": {"message": "Multiple possible networks found, use a Network ID to be more specific.", "code": 409}}
 ```
@@ -722,15 +675,9 @@ Then you execute
 terraform import vkcs_compute_instance.basic_instance <instance_id>
 ```
 
-### Importing an instance with multiple emphemeral disks
-
-The importer cannot read the emphemeral disk configuration
-of an instance, so just specify image_id as in the configuration
-of the basic instance example.
-
 ### Importing instance with multiple network interfaces.
 
-Nova returns the network interfaces grouped by network, thus not in creation
+Compute returns the network interfaces grouped by network, thus not in creation
 order.
 That means that if you have multiple network interfaces you must take
 care of the order of networks in your configuration.
@@ -771,7 +718,7 @@ So either with care check the plan and modify configuration, or read the
 network order in the state file after import and modify your
 configuration accordingly.
 
- * A note on ports. If you have created a neutron port independent of an
+ * A note on ports. If you have created a networking port independent of an
  instance, then the import code has no way to detect that the port is created
  idenpendently, and therefore on deletion of imported instances you might have
  port resources in your project, which you expected to be created by the

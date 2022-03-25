@@ -1,21 +1,20 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_secgroup"
+page_title: "vkcs: networking_secgroup"
 description: |-
-  Manages a V2 Neutron security group resource within OpenStack.
+  Manages a security group resource within VKCS.
 ---
 
 # vkcs\_networking\_secgroup
 
-Manages a V2 neutron security group resource within OpenStack.
-Unlike Nova security groups, neutron separates the group from the rules.
+Manages a security group resource within VKCS.
 
 ## Example Usage
 
 ```hcl
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name        = "secgroup_1"
-  description = "My neutron security group"
+  description = "My security group"
 }
 ```
 
@@ -23,7 +22,7 @@ resource "vkcs_networking_secgroup" "secgroup_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 networking client.
+* `region` - (Optional) The region in which to obtain the networking client.
     A networking client is needed to create a port. If omitted, the
     `region` argument of the provider is used. Changing this creates a new
     security group.
@@ -54,7 +53,7 @@ The following attributes are exported:
 
 ## Default Security Group Rules
 
-In most cases, OpenStack will create some egress security group rules for each
+In most cases, VKCS will create some egress security group rules for each
 new security group. These security group rules will not be managed by
 Terraform, so if you prefer to have *all* aspects of your infrastructure
 managed by Terraform, set `delete_default_rules` to `true` and then create
@@ -73,12 +72,6 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_v6" {
   security_group_id = "${vkcs_networking_secgroup.secgroup.id}"
 }
 ```
-
-Please note that this behavior may differ depending on the configuration of
-the OpenStack cloud. The above illustrates the current default Neutron
-behavior. Some OpenStack clouds might provide additional rules and some might
-not provide any rules at all (in which case the `delete_default_rules` setting
-is moot).
 
 ## Import
 

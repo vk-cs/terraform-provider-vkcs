@@ -1,6 +1,6 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: compute_floatingip_associate"
+page_title: "vkcs: compute_floatingip_associate"
 description: |-
   Associate a floating IP to an instance
 ---
@@ -77,7 +77,7 @@ The following arguments are supported:
 
 * `fixed_ip` - (Optional) The specific IP address to direct traffic to.
 
-* `wait_until_associated` - (Optional) In cases where the OpenStack environment
+* `wait_until_associated` - (Optional) In cases where the VKCS environment
     does not automatically wait until the association has finished, set this
     option to have Terraform poll the instance until the floating IP has been
     associated. Defaults to false.

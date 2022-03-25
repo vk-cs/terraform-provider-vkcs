@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: lb_l7rule"
+page_title: "vkcs: lb_l7rule"
 description: |-
-	Manages a l7rule resource within OpenStack.
+	Manages a L7 rule resource within VKCS.
 ---
 
 # vkcs\_lb\_l7rule
 
-Manages a L7 Rule resource within OpenStack.
+Manages a L7 Rule resource within VKCS.
 
 ## Example Usage
 
@@ -86,9 +86,8 @@ The following arguments are supported:
 
 * `key` - (Optional) The key to use for the comparison. For example, the name of the cookie to
 	evaluate. Valid when `type` is set to COOKIE or HEADER.
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
-	A Networking client is needed to create an . If omitted, the
-	`region` argument of the provider is used. Changing this creates a new
+* `region` - (Optional) The region in which to obtain the Loadbalancer client.
+	If omitted, the `region` argument of the provider is used. Changing this creates a new
 	L7 Rule.
 
 ## Attributes Reference

@@ -2,12 +2,12 @@
 layout: "vkcs"
 page_title: "VKCS: vpnaas_site_connection"
 description: |-
-  Manages a Neutron IPSec site connection resource within OpenStack.
+  Manages a IPSec site connection resource within VKCS.
 ---
 
 # vkcs\_vpnaas\_site\_connection
 
-Manages a Neutron IPSec site connection resource within OpenStack.
+Manages a IPSec site connection resource within VKCS.
 
 ## Example Usage
 

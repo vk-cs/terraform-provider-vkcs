@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: keymanager_container"
+page_title: "vkcs: keymanager_container"
 description: |-
-  Get information on a V1 Barbican container resource within OpenStack.
+  Get information on a Key container resource within VKCS.
 ---
 
 # vkcs\_keymanager\_container
 
-Use this data source to get the ID of an available Barbican container.
+Use this data source to get the ID of an available Key container.
 
 ## Example Usage
 
@@ -21,7 +21,7 @@ data "vkcs_keymanager_container" "example" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V1 KeyManager client.
+* `region` - (Optional) The region in which to obtain the KeyManager client.
   A KeyManager client is needed to fetch a container. If omitted, the `region`
   argument of the provider is used.
 
@@ -49,8 +49,7 @@ The following attributes are exported:
 The `secret_refs` block supports:
 
 * `name` - The name of the secret reference. The reference names must correspond
-  the container type, more details are available
-  [here](https://docs.openstack.org/barbican/stein/api/reference/containers.html).
+  the container type.
 
 * `secret_ref` - The secret reference / where to find the secret, URL.
 

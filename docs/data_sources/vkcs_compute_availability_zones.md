@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: compute_availability_zones"
+page_title: "vkcs: compute_availability_zones"
 description: |-
-  Get a list of availability zones from OpenStack
+  Get a list of availability zones from VKCS
 ---
 
 # vkcs\_compute\_availability\_zones
 
-Use this data source to get a list of availability zones from OpenStack
+Use this data source to get a list of availability zones from VKCS
 
 ## Example Usage
 

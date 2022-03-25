@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: keymanager_secret_v1"
+page_title: "vkcs: keymanager_secret"
 description: |-
-  Manages a V1 Barbican secret resource within OpenStack.
+  Manages a key secret resource within VKCS.
 ---
 
 # vkcs\_keymanager\_secret
 
-Manages a V1 Barbican secret resource within OpenStack.
+Manages a key secret resource within VKCS.
 
 ~> **Important Security Notice** The payload of this resource will be stored
 *unencrypted* in your Terraform state file. **Use of this resource for production
@@ -91,7 +91,7 @@ resource "vkcs_keymanager_secret" "secret_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V1 KeyManager client.
+* `region` - (Optional) The region in which to obtain the KeyManager client.
     A KeyManager client is needed to create a secret. If omitted, the
     `region` argument of the provider is used. Changing this creates a new
     V1 secret.

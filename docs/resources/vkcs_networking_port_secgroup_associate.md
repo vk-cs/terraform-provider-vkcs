@@ -1,14 +1,14 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: vkcs_networking_port_secgroup_associate"
+page_title: "vkcs: networking_port_secgroup_associate"
 description: |-
-  Manages a V2 port's security groups within OpenStack.
+  Manages a port's security groups within VKCS.
 ---
 
 # vkcs\_networking\_port\_secgroup\_associate
 
-Manages a V2 port's security groups within OpenStack. Useful, when the port was
-created not by Terraform (e.g. Manila or LBaaS). It should not be used, when the
+Manages a port's security groups within VKCS. Useful, when the port was
+created not by Terraform. It should not be used, when the
 port was created directly within Terraform.
 
 When the resource is deleted, Terraform doesn't delete the port, but unsets the
@@ -75,7 +75,7 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 networking client.
+* `region` - (Optional) The region in which to obtain the networking client.
     A networking client is needed to manage a port. If omitted, the
     `region` argument of the provider is used. Changing this creates a new
     resource.

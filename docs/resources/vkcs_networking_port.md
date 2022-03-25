@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_port"
+page_title: "vkcs: networking_port"
 description: |-
-  Manages a V2 port resource within OpenStack.
+  Manages a port resource within VKCS.
 ---
 
 # vkcs\_networking\_port
 
-Manages a V2 port resource within OpenStack.
+Manages a port resource within VKCS.
 
 ## Example Usage
 
@@ -30,7 +30,7 @@ resource "vkcs_networking_port" "port_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
+* `region` - (Optional) The region in which to obtain the Networking client.
     A Networking client is needed to create a port. If omitted, the
     `region` argument of the provider is used. Changing this creates a new
     port.
@@ -94,8 +94,7 @@ The following arguments are supported:
 
 * `tags` - (Optional) A set of string tags for the port.
 
-* `dns_name` - (Optional) The port DNS name. Available, when Neutron DNS extension
-    is enabled.
+* `dns_name` - (Optional) The port DNS name.
 
 * `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 

@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_router_route"
+page_title: "vkcs: networking_router_route"
 description: |-
-  Creates a routing entry on a OpenStack V2 router.
+  Creates a routing entry on a VKCS router.
 ---
 
 # vkcs\_networking\_router\_route
 
-Creates a routing entry on a OpenStack V2 router.
+Creates a routing entry on a VKCS router.
 
 ## Example Usage
 
@@ -45,7 +45,7 @@ resource "vkcs_networking_router_route" "router_route_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 networking client.
+* `region` - (Optional) The region in which to obtain the networking client.
     A networking client is needed to configure a routing entry on a router. If omitted, the
     `region` argument of the provider is used. Changing this creates a new
     routing entry.

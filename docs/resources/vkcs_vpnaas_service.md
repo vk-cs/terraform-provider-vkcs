@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: vpnaas_service"
+page_title: "vkcs: vpnaas_service"
 description: |-
-	Manages a Neutron VPN service resource within OpenStack.
+	Manages a VPN service resource within VKCS.
 ---
 
 # vkcs\_vpnaas\_service
 
-Manages a Neutron VPN service resource within OpenStack.
+Manages a VPN service resource within VKCS.
 
 ## Example Usage
 

@@ -1,6 +1,6 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_floatingip_associate"
+page_title: "vkcs: networking_floatingip_associate"
 description: |-
   Associates a Floating IP to a Port
 ---
@@ -28,7 +28,7 @@ resource "vkcs_networking_floatingip_associate" "fip_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
+* `region` - (Optional) The region in which to obtain the Networking client.
     A Networking client is needed to create a floating IP that can be used with
     another networking resource, such as a load balancer. If omitted, the
     `region` argument of the provider is used. Changing this creates a new

@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: compute_flavor_v2"
+page_title: "vkcs: compute_flavor"
 description: |-
-  Get information on an OpenStack Flavor.
+  Get information on an VKCS Flavor.
 ---
 
 # vkcs\_compute\_flavor
 
-Use this data source to get the ID of an available OpenStack flavor.
+Use this data source to get the ID of an available VKCS flavor.
 
 ## Example Usage
 
@@ -20,7 +20,7 @@ data "vkcs_compute_flavor" "small" {
 
 ## Argument Reference
 
-* `region` - (Optional) The region in which to obtain the V2 Compute client.
+* `region` - (Optional) The region in which to obtain the Compute client.
     If omitted, the `region` argument of the provider is used.
 
 * `flavor_id` - (Optional) The ID of the flavor. Conflicts with the `name`,

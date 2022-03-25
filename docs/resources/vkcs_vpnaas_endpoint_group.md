@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: vpnaas_endpoint_group"
+page_title: "vkcs: vpnaas_endpoint_group"
 description: |-
-  Manages a Neutron Endpoint Group resource within OpenStack.
+  Manages an Endpoint Group resource within VKCS.
 ---
 
 # vkcs\_vpnaas\_endpoint\_group
 
-Manages a Neutron Endpoint Group resource within OpenStack.
+Manages an Endpoint Group resource within VKCS.
 
 ## Example Usage
 

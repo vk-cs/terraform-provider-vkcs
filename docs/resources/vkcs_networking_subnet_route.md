@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_subnet_route"
+page_title: "vkcs: networking_subnet_route"
 description: |-
-  Creates a routing entry on a OpenStack V2 subnet.
+  Creates a routing entry on a VKCS subnet.
 ---
 
 # vkcs\_networking\_subnet\_route
 
-Creates a routing entry on a OpenStack V2 subnet.
+Creates a routing entry on a VKCS subnet.
 
 ## Example Usage
 
@@ -39,7 +39,7 @@ resource "vkcs_networking_subnet_route" "subnet_route_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 networking client.
+* `region` - (Optional) The region in which to obtain the networking client.
     A networking client is needed to configure a routing entry on a subnet. If omitted, the
     `region` argument of the provider is used. Changing this creates a new
     routing entry.

@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS keymanager_secret"
+page_title: "vkcs keymanager_secret"
 description: |-
-  Get information on a V1 Barbican secret resource within OpenStack.
+  Get information on a Key secret resource within VKCS.
 ---
 
 # vkcs\_keymanager\_secret
 
-Use this data source to get the ID and the payload of an available Barbican
+Use this data source to get the ID and the payload of an available Key
 secret
 
 ~> **Important Security Notice** The payload of this data source will be stored
@@ -28,7 +28,7 @@ data "vkcs_keymanager_secret" "example" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V1 KeyManager client.
+* `region` - (Optional) The region in which to obtain the KeyManager client.
   A KeyManager client is needed to fetch a secret. If omitted, the `region`
   argument of the provider is used.
 

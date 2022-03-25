@@ -1,8 +1,8 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: compute_instance_v2"
+page_title: "vkcs: compute_instance"
 description: |-
-  Get information on an OpenStack Instance
+  Get information on an VKCS Instance
 ---
 
 # vkcs\_compute\_instance

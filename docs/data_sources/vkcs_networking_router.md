@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_router"
+page_title: "vkcs: networking_router"
 description: |-
-  Get information on an OpenStack Floating IP.
+  Get information on a VKCS Floating IP.
 ---
 
 # vkcs\_networking\_router
 
-Use this data source to get the ID of an available OpenStack router.
+Use this data source to get the ID of an available VKCS router.
 
 ## Example Usage
 
@@ -19,8 +19,8 @@ data "vkcs_networking_router" "router" {
 
 ## Argument Reference
 
-* `region` - (Optional) The region in which to obtain the V2 Neutron client.
-  A Neutron client is needed to retrieve router ids. If omitted, the
+* `region` - (Optional) The region in which to obtain the Network client.
+  A Network client is needed to retrieve router ids. If omitted, the
   `region` argument of the provider is used.
 
 * `router_id` - (Optional) The UUID of the router resource.

@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_subnet"
+page_title: "vkcs: networking_subnet"
 description: |-
-  Get information on an OpenStack Subnet.
+  Get information on an VKCS Subnet.
 ---
 
 # vkcs\_networking\_subnet
 
-Use this data source to get the ID of an available OpenStack subnet.
+Use this data source to get the ID of an available VKCS subnet.
 
 ## Example Usage
 
@@ -19,8 +19,8 @@ data "vkcs_networking_subnet" "subnet_1" {
 
 ## Argument Reference
 
-* `region` - (Optional) The region in which to obtain the V2 Neutron client.
-  A Neutron client is needed to retrieve subnet ids. If omitted, the
+* `region` - (Optional) The region in which to obtain the Network client.
+  A Network client is needed to retrieve subnet ids. If omitted, the
   `region` argument of the provider is used.
 
 * `name` - (Optional) The name of the subnet.

@@ -1,16 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: lb_listener"
+page_title: "vkcs: lb_listener"
 description: |-
-	Manages a listener resource within OpenStack.
+	Manages a listener resource within VKCS.
 ---
 
 # vkcs\_lb\_listener
 
-Manages a listener resource within OpenStack.
-
-~> **Note:** This resource has attributes that depend on octavia minor versions.
-Please ensure your Openstack cloud supports the required [minor version](../#octavia-api-versioning).
+Manages a listener resource within VKCS.
 
 ## Example Usage
 
@@ -34,8 +31,7 @@ The following arguments are supported:
 	Listener. Changing this creates a new Listener.
 
 * `protocol` - (Required) The protocol - can either be TCP, HTTP, HTTPS,
-	TERMINATED_HTTPS, UDP (supported only in Octavia) or SCTP (supported only
-	in **Octavia minor version >= 2.23**). Changing this creates a new Listener.
+	TERMINATED_HTTPS, UDP. Changing this creates a new Listener.
 
 * `protocol_port` - (Required) The port on which to listen for client traffic.
 	Changing this creates a new Listener.
@@ -52,11 +48,9 @@ The following arguments are supported:
 * `default_pool_id` - (Optional) The ID of the default pool with which the
 	Listener is associated.
 
-* `default_tls_container_ref` - (Optional) A reference to a Barbican Secrets
+* `default_tls_container_ref` - (Optional) A reference to a Keymanager Secrets
 	container which stores TLS information. This is required if the protocol
-	is `TERMINATED_HTTPS`. See
-	[here](https://wiki.openstack.org/wiki/Network/LBaaS/docs/how-to-create-tls-loadbalancer)
-	for more information.
+	is `TERMINATED_HTTPS`.
 
 * `description` - (Optional) Human-readable description for the Listener.
 
@@ -66,15 +60,12 @@ The following arguments are supported:
 
 * `name` - (Optional) Human-readable name for the Listener. Does not have
 	to be unique.
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
-	A Networking client is needed to create an . If omitted, the
-	`region` argument of the provider is used. Changing this creates a new
+* `region` - (Optional) The region in which to obtain the Loadbalancer client.
+	If omitted, the `region` argument of the provider is used. Changing this creates a new
 	Listener.
 
-* `sni_container_refs` - (Optional) A list of references to Barbican Secrets
-	containers which store SNI information. See
-	[here](https://wiki.openstack.org/wiki/Network/LBaaS/docs/how-to-create-tls-loadbalancer)
-	for more information.
+* `sni_container_refs` - (Optional) A list of references to Keymanager Secrets
+	containers which store SNI information.
 
 * `timeout_client_data` - (Optional) The client inactivity timeout in milliseconds.
 

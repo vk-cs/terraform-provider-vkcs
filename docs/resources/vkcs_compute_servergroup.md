@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: compute_servergroup"
+page_title: "vkcs: compute_servergroup"
 description: |-
-  Manages a Server Group resource within OpenStack.
+  Manages a Server Group resource within VKCS.
 ---
 
 # vkcs\_compute\_servergroup
 
-Manages a Server Group resource within OpenStack.
+Manages a Server Group resource within VKCS.
 
 ## Example Usage
 
@@ -22,7 +22,7 @@ resource "vkcs_compute_servergroup" "test-sg" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 Compute client.
+* `region` - (Optional) The region in which to obtain the Compute client.
     If omitted, the `region` argument of the provider is used. Changing
     this creates a new server group.
 
@@ -45,13 +45,11 @@ The following arguments are supported:
 
 * `soft-affinity` - All instances/servers launched in this group will be hosted
     on the same compute node if possible, but if not possible they
-    still will be scheduled instead of failure. To use this policy your
-    OpenStack environment should support Compute service API 2.15 or above.
+    still will be scheduled instead of failure.
 
 * `soft-anti-affinity` - All instances/servers launched in this group will be
     hosted on different compute nodes if possible, but if not possible they
-    still will be scheduled instead of failure. To use this policy your
-    OpenStack environment should support Compute service API 2.15 or above.
+    still will be scheduled instead of failure.
 
 ## Attributes Reference
 

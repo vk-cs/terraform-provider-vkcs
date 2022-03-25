@@ -1,6 +1,6 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: vkcs_images_image"
+page_title: "vkcs: images_image"
 description: |-
   Get information on an VKCS Image.
 ---
@@ -24,8 +24,8 @@ data "vkcs_images_image" "ubuntu" {
 
 ## Argument Reference
 
-* `region` - (Optional) The region in which to obtain the V2 Glance client.
-    A Glance client is needed to create an Image that can be used with
+* `region` - (Optional) The region in which to obtain the Image client.
+    An Image client is needed to create an Image that can be used with
     a compute instance. If omitted, the `region` argument of the provider
     is used.
 
@@ -38,7 +38,7 @@ data "vkcs_images_image" "ubuntu" {
 
 * `properties` - (Optional) a map of key/value pairs to match an image with.
     All specified properties must be matched. Unlike other options filtering
-    by `properties` does by client on the result of OpenStack search query.
+    by `properties` does by client on the result of search query.
     Filtering is applied if server responce contains at least 2 images. In
     case there is only one image the `properties` ignores.
 
@@ -66,7 +66,7 @@ are exported:
 * `created_at` - The date the image was created.
 * `container_format`: The format of the image's container.
 * `disk_format`: The format of the image's disk.
-* `file` - the trailing path after the glance endpoint that represent the
+* `file` - the trailing path after the endpoint that represent the
 location of the image or the path to retrieve it.
 * `metadata` - The metadata associated with the image.
    Image metadata allow for meaningfully define the image properties

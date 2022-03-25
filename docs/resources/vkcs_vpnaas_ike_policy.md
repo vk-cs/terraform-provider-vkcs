@@ -2,12 +2,12 @@
 layout: "vkcs"
 page_title: "VKCS: vpnaas_ike_policy"
 description: |-
-	Manages a Neutron IKE policy resource within OpenStack.
+	Manages a IKE policy resource within VKCS.
 ---
 
 # vkcs\_vpnaas\_ike\_policy
 
-Manages a Neutron IKE policy resource within OpenStack.
+Manages a IKE policy resource within VKCS.
 
 ## Example Usage
 

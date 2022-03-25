@@ -2,15 +2,12 @@
 layout: "vkcs"
 page_title: "VKCS: lb_pool"
 description: |-
-	Manages a pool resource within OpenStack.
+	Manages a pool resource within VKCS.
 ---
 
 # vkcs\_lb\_pool
 
-Manages a pool resource within OpenStack.
-
-~> **Note:** This resource has attributes that depend on octavia minor versions.
-Please ensure your Openstack cloud supports the required [minor version](../#octavia-api-versioning).
+Manages a pool resource within VKCS.
 
 ## Example Usage
 
@@ -30,18 +27,15 @@ resource "vkcs_lb_pool" "pool_1" {
 ## Argument Reference
 
 The following arguments are supported:
-* `protocol` - (Required) The protocol - can either be TCP, HTTP, HTTPS, PROXY,
-	UDP (supported only in Octavia), PROXYV2 (**Octavia minor version >= 2.22**)
-	or SCTP (**Octavia minor version >= 2.23**). Changing this creates a new pool.
+* `protocol` - (Required) The protocol - can either be TCP, HTTP, HTTPS, PROXY, or
+	UDP. Changing this creates a new pool.
 
 * `lb_method` - (Required) The load balancing algorithm to
 	distribute traffic to the pool's members. Must be one of
-	ROUND_ROBIN, LEAST_CONNECTIONS, SOURCE_IP, or SOURCE_IP_PORT (supported only
-	in Octavia).
+	ROUND_ROBIN, LEAST_CONNECTIONS, SOURCE_IP, or SOURCE_IP_PORT.
 
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
-	A Networking client is needed to create an . If omitted, the
-	`region` argument of the provider is used. Changing this creates a new
+* `region` - (Optional) The region in which to obtain the Loadbalancer client.
+	If omitted, the	`region` argument of the provider is used. Changing this creates a new
 	pool.
 
 * `name` - (Optional) Human-readable name for the pool.

@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: lb_monitor"
+page_title: "vkcs: lb_monitor"
 description: |-
-	Manages a monitor resource within OpenStack.
+	Manages a monitor resource within VKCS.
 ---
 
 # vkcs\_lb\_monitor
 
-Manages a monitor resource within OpenStack.
+Manages a monitor resource within VKCS.
 
 ## Example Usage
 
@@ -28,7 +28,7 @@ The following arguments are supported:
 * `pool_id` - (Required) The id of the pool that this monitor will be assigned to.
 
 * `type` - (Required) The type of probe, which is PING, TCP, HTTP, HTTPS,
-	TLS-HELLO or UDP-CONNECT (supported only in Octavia), that is sent by the load
+	TLS-HELLO or UDP-CONNECT, that is sent by the load
 	balancer to verify the member state. Changing this creates a new monitor.
 
 * `delay` - (Required) The time, in seconds, between sending probes to members.
@@ -41,15 +41,14 @@ The following arguments are supported:
 	changing the member's status to INACTIVE. Must be a number between 1
 	and 10.
 
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
-	A Networking client is needed to create an . If omitted, the
-	`region` argument of the provider is used. Changing this creates a new
+* `region` - (Optional) The region in which to obtain the Loadbalancer client.
+	If omitted, the	`region` argument of the provider is used. Changing this creates a new
 	monitor.
 
 * `name` - (Optional) The Name of the Monitor. 
 	
 * `max_retries_down` - (Optional) Number of permissible ping failures befor changing the member's
-	status to ERROR. Must be a number between 1 and 10 (supported only in Octavia).
+	status to ERROR. Must be a number between 1 and 10.
 	Changing this updates the max_retries_down of the existing monitor.
 
 * `url_path` - (Optional) Required for HTTP(S) types. URI path that will be
@@ -87,10 +86,4 @@ Load Balancer Pool Monitor can be imported using the Monitor ID, e.g.:
 
 ```
 $ terraform import vkcs_lb_monitor.monitor_1 47c26fc3-2403-427a-8c79-1589bd0533c2
-```
-
-In case of using OpenContrail, the import may not work properly. If you face an issue, try to import the monitor providing its parent pool ID:
-
-```
-$ terraform import vkcs_lb_monitor.monitor_1 47c26fc3-2403-427a-8c79-1589bd0533c2/708bc224-0f8c-4981-ac82-97095fe051b6
 ```

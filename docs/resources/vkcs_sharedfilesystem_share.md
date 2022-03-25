@@ -1,6 +1,6 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: sharedfilesystem_share"
+page_title: "vkcs: sharedfilesystem_share"
 description: |-
   Configure a Shared File System share.
 ---
@@ -56,7 +56,7 @@ The following arguments are supported:
 
 * `name` - (Optional) The name of the share. Changing this updates the name of the existing share.
 
-* `region` - The region in which to obtain the V2 Shared File System client.
+* `region` - The region in which to obtain the Shared File System client.
 	A Shared File System client is needed to create a share. Changing this creates a new share.
 
 * `share_type` - (Optional) The share type name. If you omit this parameter, the default

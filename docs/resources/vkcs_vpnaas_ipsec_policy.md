@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: vpnaas_ipsec_policy"
+page_title: "vkcs: vpnaas_ipsec_policy"
 description: |-
-	Manages a Neutron IPSec policy resource within OpenStack.
+	Manages a IPSec policy resource within VKCS.
 ---
 
 # vkcs\_vpnaas\_ipsec\_policy
 
-Manages a Neutron IPSec policy resource within OpenStack.
+Manages a IPSec policy resource within VKCS.
 
 ## Example Usage
 

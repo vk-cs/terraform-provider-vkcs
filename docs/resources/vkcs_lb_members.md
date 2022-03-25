@@ -1,16 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: lb_members"
+page_title: "vkcs: lb_members"
 description: |-
-	Manages a members resource within OpenStack (batch members update).
+	Manages a members resource within VKCS.
 ---
 
 # vkcs\_lb\_members
 
-Manages a members resource within OpenStack (batch members update).
-
-~> **Note:** This resource has attributes that depend on octavia minor versions.
-Please ensure your Openstack cloud supports the required [minor version](../#octavia-api-versioning).
+Manages a members resource within VKCS.
 
 ## Example Usage
 
@@ -37,9 +34,8 @@ The following arguments are supported:
 * `pool_id` - (Required) The id of the pool that members will be assigned to.
 	Changing this creates a new members resource.
 
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
-	A Networking client is needed to create pool members. If omitted, the
-	`region` argument of the provider is used. Changing this creates a new
+* `region` - (Optional) The region in which to obtain the Loadbalancer client.
+	If omitted, the `region` argument of the provider is used. Changing this creates a new
 	members resource.
 
 * `member` - (Optional) A set of dictionaries containing member parameters. The
@@ -65,7 +61,7 @@ The `member` block supports:
 	A valid value is true (UP) or false (DOWN). Defaults to true.
 
 * `backup` - (Optional) A bool that indicates whether the member is
-	backup. **Requires octavia minor version 2.1 or later**.
+	backup.
 
 ## Attributes Reference
 

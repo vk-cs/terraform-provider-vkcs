@@ -1,6 +1,6 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: sharedfilesystem_securityservice"
+page_title: "vkcs: sharedfilesystem_securityservice"
 description: |-
   Configure a Shared File System security service.
 ---
@@ -17,8 +17,6 @@ A security service stores configuration information for clients for
 authentication and authorization (AuthN/AuthZ). For example, a share server
 will be the client for an existing service such as LDAP, Kerberos, or
 Microsoft Active Directory.
-
-Minimum supported Manila microversion is 2.7.
 
 ## Example Usage
 
@@ -55,7 +53,7 @@ The following arguments are supported:
 
 * `password` - (Optional) The user password, if you specify a user.
 
-* `region` - (Optional) The region in which to obtain the V2 Shared File System client.
+* `region` - (Optional) The region in which to obtain the Shared File System client.
 	A Shared File System client is needed to create a security service. If omitted, the
 	`region` argument of the provider is used. Changing this creates a new
 	security service.

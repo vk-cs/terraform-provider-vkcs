@@ -1,16 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: networking_floatingip"
+page_title: "vkcs: networking_floatingip"
 description: |-
-  Manages a V2 floating IP resource within OpenStack Neutron (networking).
+  Manages a floating IP resource within VKCS.
 ---
 
 # vkcs\_networking\_floatingip
 
-Manages a V2 floating IP resource within OpenStack Neutron (networking)
-that can be used for load balancers.
-These are similar to Nova (compute) floating IP resources,
-but only compute floating IPs can be used with compute instances.
+Manages a floating IP resource within VKCS that can be used for load balancers.
 
 ## Example Usage
 
@@ -32,13 +29,9 @@ data "vkcs_networking_network" "ext_network" {
   name = "public"
 }
 
-data "openstack_networking_subnet_ids_v2" "ext_subnets" {
-  network_id = data.vkcs_networking_network.ext_network.id
-}
-
 resource "vkcs_networking_floatingip" "floatip_1" {
   pool       = data.vkcs_networking_network.ext_network.name
-  subnet_ids = data.openstack_networking_subnet_ids_v2.ext_subnets.ids
+  subnet_ids = [<subnet1_id>, <subnet2_id>, <subnet3_id>]
 }
 ```
 
@@ -46,7 +39,7 @@ resource "vkcs_networking_floatingip" "floatip_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V2 Networking client.
+* `region` - (Optional) The region in which to obtain the Networking client.
   A Networking client is needed to create a floating IP that can be used with
   another networking resource, such as a load balancer. If omitted, the
   `region` argument of the provider is used. Changing this creates a new

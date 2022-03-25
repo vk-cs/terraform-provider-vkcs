@@ -1,6 +1,6 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: sharedfilesystem_sharenetwork"
+page_title: "vkcs: sharedfilesystem_sharenetwork"
 description: |-
   Configure a Shared File System share network.
 ---
@@ -88,7 +88,7 @@ The following arguments are supported:
 
 * `name` - (Optional) The name for the share network. Changing this updates the name of the existing share network.
 
-* `region` - (Optional) The region in which to obtain the V2 Shared File System client.
+* `region` - (Optional) The region in which to obtain the Shared File System client.
 	A Shared File System client is needed to create a share network. If omitted, the
 	`region` argument of the provider is used. Changing this creates a new share network.
 

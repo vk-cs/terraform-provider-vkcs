@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: keymanager_container_v1"
+page_title: "vkcs: keymanager_container"
 description: |-
-  Manages a V1 Barbican container resource within OpenStack.
+  Manages a key container resource within VKCS.
 ---
 
 # vkcs\_keymanager\_container
 
-Manages a V1 Barbican container resource within OpenStack.
+Manages a key container resource within VKCS.
 
 ## Example Usage
 
@@ -57,20 +57,20 @@ resource "vkcs_keymanager_container" "tls_1" {
   }
 }
 
-data "openstack_networking_subnet_v2" "subnet_1" {
+data "vkcs_networking_subnet" "subnet_1" {
   name = "my-subnet"
 }
 
-resource "openstack_lb_loadbalancer_v2" "lb_1" {
+resource "vkcs_lb_loadbalancer" "lb_1" {
   name          = "loadbalancer"
-  vip_subnet_id = "${data.openstack_networking_subnet_v2.subnet_1.id}"
+  vip_subnet_id = "${data.vkcs_networking_subnet.subnet_1.id}"
 }
 
-resource "openstack_lb_listener_v2" "listener_1" {
+resource "vkcs_lb_listener" "listener_1" {
   name                      = "https"
   protocol                  = "TERMINATED_HTTPS"
   protocol_port             = 443
-  loadbalancer_id           = "${openstack_lb_loadbalancer_v2.lb_1.id}"
+  loadbalancer_id           = "${vkcs_lb_loadbalancer.lb_1.id}"
   default_tls_container_ref = "${vkcs_keymanager_container.tls_1.container_ref}"
 }
 ```
@@ -115,10 +115,10 @@ resource "vkcs_keymanager_container" "tls_1" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to obtain the V1 KeyManager client.
+* `region` - (Optional) The region in which to obtain the KeyManager client.
     A KeyManager client is needed to create a container. If omitted, the
     `region` argument of the provider is used. Changing this creates a new
-    V1 container.
+    container.
 
 * `name` - (Optional) Human-readable name for the Container. Does not have
     to be unique.

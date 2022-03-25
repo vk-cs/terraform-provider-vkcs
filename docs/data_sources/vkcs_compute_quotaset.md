@@ -1,13 +1,13 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: compute_quotaset"
+page_title: "vkcs: compute_quotaset"
 description: |-
   Get information on a Compute Quotaset of a project.
 ---
 
 # vkcs\_compute\_quotaset
 
-Use this data source to get the compute quotaset of an OpenStack project.
+Use this data source to get the compute quotaset of an VKCS project.
 
 ## Example Usage
 
@@ -19,7 +19,7 @@ data "vkcs_compute_quotaset" "quota" {
 
 ## Argument Reference
 
-* `region` - (Optional) The region in which to obtain the V2 Compute client.
+* `region` - (Optional) The region in which to obtain the Compute client.
     If omitted, the `region` argument of the provider is used.
 
 * `project_id` - (Required) The id of the project to retrieve the quotaset.

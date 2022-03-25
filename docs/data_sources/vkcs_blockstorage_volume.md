@@ -1,8 +1,8 @@
 ---
 layout: "vkcs"
-page_title: "VKCS: blockstorage_volume"
+page_title: "vkcs: blockstorage_volume"
 description: |-
-  Get information on an OpenStack Volume.
+  Get information on an VKCS Volume.
 ---
 
 # vkcs\_blockstorage\_volume
@@ -19,7 +19,7 @@ data "vkcs_blockstorage_volume" "volume_1" {
 
 ## Argument Reference
 
-* `region` - (Optional) The region in which to obtain the V3 Block Storage
+* `region` - (Optional) The region in which to obtain the Block Storage
     client. If omitted, the `region` argument of the provider is used.
 
 * `name` - (Optional) The name of the volume.
