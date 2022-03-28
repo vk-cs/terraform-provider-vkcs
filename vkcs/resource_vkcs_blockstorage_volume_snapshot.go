@@ -86,7 +86,7 @@ func resourceBlockStorageSnapshotCreate(ctx context.Context, d *schema.ResourceD
 	config := meta.(configer)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("error creating OpenStack block storage client: %s", err)
+		return diag.Errorf("error creating VKCS block storage client: %s", err)
 	}
 
 	metadata := d.Get("metadata").(map[string]interface{})
@@ -132,7 +132,7 @@ func resourceBlockStorageSnapshotRead(ctx context.Context, d *schema.ResourceDat
 	config := meta.(configer)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("error creating OpenStack block storage client: %s", err)
+		return diag.Errorf("error creating VKCS block storage client: %s", err)
 	}
 
 	snapshot, err := snapshots.Get(blockStorageClient, d.Id()).Extract()
@@ -154,7 +154,7 @@ func resourceBlockStorageSnapshotUpdate(ctx context.Context, d *schema.ResourceD
 	config := meta.(configer)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("error creating OpenStack block storage client: %s", err)
+		return diag.Errorf("error creating VKCS block storage client: %s", err)
 	}
 
 	name := d.Get("name").(string)
@@ -212,7 +212,7 @@ func resourceBlockStorageSnapshotDelete(ctx context.Context, d *schema.ResourceD
 	config := meta.(configer)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("error creating OpenStack block storage client: %s", err)
+		return diag.Errorf("error creating VKCS block storage client: %s", err)
 	}
 	err = snapshots.Delete(blockStorageClient, d.Id()).ExtractErr()
 	if err != nil {

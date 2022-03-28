@@ -118,7 +118,7 @@ func resourceSharedFilesystemShareCreate(ctx context.Context, d *schema.Resource
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	sfsClient.Microversion = minManilaShareMicroversion
@@ -177,7 +177,7 @@ func resourceSharedFilesystemShareRead(ctx context.Context, d *schema.ResourceDa
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	sfsClient.Microversion = minManilaShareMicroversion
@@ -210,7 +210,7 @@ func resourceSharedFilesystemShareUpdate(ctx context.Context, d *schema.Resource
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	sfsClient.Microversion = minManilaShareMicroversion
@@ -316,7 +316,7 @@ func resourceSharedFilesystemShareDelete(ctx context.Context, d *schema.Resource
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	timeout := d.Timeout(schema.TimeoutDelete)

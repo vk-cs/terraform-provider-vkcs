@@ -86,7 +86,7 @@ func dataSourceComputeQuotasetRead(ctx context.Context, d *schema.ResourceData, 
 	region := getRegion(d, config)
 	computeClient, err := config.ComputeV2Client(region)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	projectID := d.Get("project_id").(string)

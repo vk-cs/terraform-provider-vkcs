@@ -180,7 +180,7 @@ func dataSourceNetworkingPortRead(ctx context.Context, d *schema.ResourceData, m
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	listOpts := ports.ListOpts{}

@@ -54,7 +54,7 @@ func testAccCheckSFSSecurityServiceDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
@@ -85,7 +85,7 @@ func testAccCheckSFSSecurityServiceExists(n string, securityservice *securityser
 		config := testAccProvider.Meta().(*config)
 		sfsClient, err := config.SharedfilesystemV2Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+			return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 		}
 
 		found, err := securityservices.Get(sfsClient, rs.Primary.ID).Extract()

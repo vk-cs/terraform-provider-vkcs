@@ -40,7 +40,7 @@ func resourceNetworkingRouterInterfaceDeleteRefreshFunc(networkingClient *gopher
 
 		if removeOpts.SubnetID != "" {
 			// We need to make sure to only send subnet_id, because the port may have multiple
-			// vkcs_networking_router_interface attached. Otherwise openstack would delete them too.
+			// vkcs_networking_router_interface attached.
 			removeOpts.PortID = ""
 		}
 

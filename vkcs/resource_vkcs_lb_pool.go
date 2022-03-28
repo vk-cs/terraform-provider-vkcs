@@ -119,7 +119,7 @@ func resourcePoolCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	adminStateUp := d.Get("admin_state_up").(bool)
@@ -216,7 +216,7 @@ func resourcePoolRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	pool, err := pools.Get(lbClient, d.Id()).Extract()
@@ -241,7 +241,7 @@ func resourcePoolUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	var updateOpts pools.UpdateOpts
@@ -301,7 +301,7 @@ func resourcePoolDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	timeout := d.Timeout(schema.TimeoutDelete)
@@ -338,7 +338,7 @@ func resourcePoolImport(ctx context.Context, d *schema.ResourceData, meta interf
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating OpenStack networking client: %s", err)
+		return nil, fmt.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	pool, err := pools.Get(lbClient, d.Id()).Extract()

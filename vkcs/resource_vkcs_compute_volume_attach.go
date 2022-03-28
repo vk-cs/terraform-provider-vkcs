@@ -55,7 +55,7 @@ func resourceComputeVolumeAttachCreate(ctx context.Context, d *schema.ResourceDa
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	var (
@@ -64,7 +64,7 @@ func resourceComputeVolumeAttachCreate(ctx context.Context, d *schema.ResourceDa
 
 	blockStorageClient, err = config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack block storage client: %s", err)
+		return diag.Errorf("Error creating VKCS block storage client: %s", err)
 	}
 
 	instanceID := d.Get("instance_id").(string)
@@ -121,7 +121,7 @@ func resourceComputeVolumeAttachRead(_ context.Context, d *schema.ResourceData, 
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	instanceID, attachmentID, err := computeVolumeAttachParseID(d.Id())
@@ -147,7 +147,7 @@ func resourceComputeVolumeAttachDelete(ctx context.Context, d *schema.ResourceDa
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	instanceID, attachmentID, err := computeVolumeAttachParseID(d.Id())

@@ -136,7 +136,7 @@ func resourceSiteConnectionCreate(ctx context.Context, d *schema.ResourceData, m
 	config := meta.(*config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	var createOpts siteconnections.CreateOptsBuilder
@@ -207,7 +207,7 @@ func resourceSiteConnectionRead(ctx context.Context, d *schema.ResourceData, met
 	config := meta.(*config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	conn, err := siteconnections.Get(networkingClient, d.Id()).Extract()
@@ -215,7 +215,7 @@ func resourceSiteConnectionRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(checkDeleted(d, err, "site_connection"))
 	}
 
-	log.Printf("[DEBUG] Read OpenStack SiteConnection %s: %#v", d.Id(), conn)
+	log.Printf("[DEBUG] Read VKCS SiteConnection %s: %#v", d.Id(), conn)
 
 	d.Set("name", conn.Name)
 	d.Set("description", conn.Description)
@@ -253,7 +253,7 @@ func resourceSiteConnectionUpdate(ctx context.Context, d *schema.ResourceData, m
 	config := meta.(*config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	opts := siteconnections.UpdateOpts{}
@@ -366,7 +366,7 @@ func resourceSiteConnectionDelete(ctx context.Context, d *schema.ResourceData, m
 	config := meta.(*config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	err = siteconnections.Delete(networkingClient, d.Id()).Err

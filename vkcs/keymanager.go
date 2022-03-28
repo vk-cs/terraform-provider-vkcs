@@ -15,7 +15,7 @@ func getSupportedACLOperations() [1]string {
 
 func getACLSchema() *schema.Schema {
 	return &schema.Schema{
-		Type:     schema.TypeList, // the list, returned by Barbican, is always ordered
+		Type:     schema.TypeList, // the list, returned by Keymanager, is always ordered
 		Optional: true,
 		Computed: true,
 		MaxItems: 1,
@@ -24,7 +24,7 @@ func getACLSchema() *schema.Schema {
 				"project_access": {
 					Type:     schema.TypeBool,
 					Optional: true,
-					Default:  true, // defaults to true in OpenStack Barbican code
+					Default:  true, // defaults to true in VKCS Keymanager code
 				},
 				"users": {
 					Type:     schema.TypeSet,

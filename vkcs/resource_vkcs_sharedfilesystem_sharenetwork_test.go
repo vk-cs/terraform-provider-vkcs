@@ -109,7 +109,7 @@ func testAccCheckSFSShareNetworkDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
@@ -140,7 +140,7 @@ func testAccCheckSFSShareNetworkExists(n string, sharenetwork *sharenetworks.Sha
 		config := testAccProvider.Meta().(*config)
 		sfsClient, err := config.SharedfilesystemV2Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+			return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 		}
 
 		found, err := sharenetworks.Get(sfsClient, rs.Primary.ID).Extract()
@@ -172,7 +172,7 @@ func testAccCheckSFSShareNetworkSecSvcExists(n string) resource.TestCheckFunc {
 		config := testAccProvider.Meta().(*config)
 		sfsClient, err := config.SharedfilesystemV2Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+			return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 		}
 
 		securityServiceListOpts := securityservices.ListOpts{ShareNetworkID: rs.Primary.ID}

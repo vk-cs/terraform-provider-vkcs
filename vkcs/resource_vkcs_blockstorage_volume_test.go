@@ -92,7 +92,7 @@ func testAccCheckBlockStorageVolumeDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
 	blockStorageClient, err := config.BlockStorageV3Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack block storage client: %s", err)
+		return fmt.Errorf("Error creating VKCS block storage client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
@@ -123,7 +123,7 @@ func testAccCheckBlockStorageVolumeExists(n string, volume *volumes.Volume) reso
 		config := testAccProvider.Meta().(configer)
 		blockStorageClient, err := config.BlockStorageV3Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack block storage client: %s", err)
+			return fmt.Errorf("Error creating VKCS block storage client: %s", err)
 		}
 
 		found, err := volumes.Get(blockStorageClient, rs.Primary.ID).Extract()

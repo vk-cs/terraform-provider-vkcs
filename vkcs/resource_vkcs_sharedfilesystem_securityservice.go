@@ -93,7 +93,7 @@ func resourceSharedFilesystemSecurityServiceCreate(ctx context.Context, d *schem
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	sfsClient.Microversion = sharedFilesystemMinMicroversion
@@ -124,7 +124,7 @@ func resourceSharedFilesystemSecurityServiceRead(ctx context.Context, d *schema.
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	// Select microversion to use.
@@ -158,7 +158,7 @@ func resourceSharedFilesystemSecurityServiceUpdate(ctx context.Context, d *schem
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	sfsClient.Microversion = sharedFilesystemMinMicroversion
@@ -217,7 +217,7 @@ func resourceSharedFilesystemSecurityServiceDelete(ctx context.Context, d *schem
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	if err := securityservices.Delete(sfsClient, d.Id()).ExtractErr(); err != nil {

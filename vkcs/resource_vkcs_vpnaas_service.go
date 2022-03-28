@@ -81,7 +81,7 @@ func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, meta int
 	config := meta.(*config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	var createOpts services.CreateOptsBuilder
@@ -131,7 +131,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 	config := meta.(*config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	service, err := services.Get(networkingClient, d.Id()).Extract()
@@ -139,7 +139,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(checkDeleted(d, err, "service"))
 	}
 
-	log.Printf("[DEBUG] Read OpenStack Service %s: %#v", d.Id(), service)
+	log.Printf("[DEBUG] Read VKCS Service %s: %#v", d.Id(), service)
 
 	d.Set("name", service.Name)
 	d.Set("description", service.Description)
@@ -158,7 +158,7 @@ func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	config := meta.(*config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	opts := services.UpdateOpts{}
@@ -219,7 +219,7 @@ func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta int
 	config := meta.(*config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	err = services.Delete(networkingClient, d.Id()).Err

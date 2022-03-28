@@ -67,7 +67,7 @@ func resourceComputeFloatingIPAssociateCreate(ctx context.Context, d *schema.Res
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	floatingIP := d.Get("floating_ip").(string)
@@ -123,7 +123,7 @@ func resourceComputeFloatingIPAssociateRead(_ context.Context, d *schema.Resourc
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	// Obtain relevant info from parsing the ID
@@ -193,7 +193,7 @@ func resourceComputeFloatingIPAssociateDelete(_ context.Context, d *schema.Resou
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	floatingIP := d.Get("floating_ip").(string)

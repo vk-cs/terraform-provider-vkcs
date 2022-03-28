@@ -45,7 +45,7 @@ func dataSourceComputeAvailabilityZonesRead(ctx context.Context, d *schema.Resou
 	region := getRegion(d, config)
 	computeClient, err := config.ComputeV2Client(region)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	allPages, err := availabilityzones.List(computeClient).AllPages()

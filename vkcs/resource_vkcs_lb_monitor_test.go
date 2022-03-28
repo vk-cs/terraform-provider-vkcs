@@ -91,7 +91,7 @@ func testAccCheckLBMonitorDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
 	lbClient, err := config.LoadBalancerV2Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
+		return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
@@ -122,7 +122,7 @@ func testAccCheckLBMonitorExists(t *testing.T, n string, monitor *monitors.Monit
 		config := testAccProvider.Meta().(*config)
 		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
+			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
 
 		found, err := monitors.Get(lbClient, rs.Primary.ID).Extract()

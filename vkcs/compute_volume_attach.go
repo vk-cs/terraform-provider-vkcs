@@ -51,7 +51,7 @@ func computeVolumeAttachAttachFunc(computeClient *gophercloud.ServiceClient, blo
 
 func computeVolumeAttachDetachFunc(computeClient *gophercloud.ServiceClient, instanceID, attachmentID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		log.Printf("[DEBUG] vkcs_compute_volume_attach attempting to detach OpenStack volume %s from instance %s",
+		log.Printf("[DEBUG] vkcs_compute_volume_attach attempting to detach volume %s from instance %s",
 			attachmentID, instanceID)
 
 		va, err := volumeattach.Get(computeClient, instanceID, attachmentID).Extract()

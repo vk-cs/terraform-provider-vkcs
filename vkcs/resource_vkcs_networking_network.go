@@ -106,7 +106,7 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	createOpts := NetworkCreateOpts{
@@ -179,7 +179,7 @@ func resourceNetworkingNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	var network networkExtended
@@ -209,7 +209,7 @@ func resourceNetworkingNetworkUpdate(ctx context.Context, d *schema.ResourceData
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	// Declare finalUpdateOpts interface and basic updateOpts structure.
@@ -276,7 +276,7 @@ func resourceNetworkingNetworkDelete(ctx context.Context, d *schema.ResourceData
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	if err := networks.Delete(networkingClient, d.Id()).ExtractErr(); err != nil {

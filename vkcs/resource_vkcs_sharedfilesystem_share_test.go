@@ -53,7 +53,7 @@ func testAccCheckSFSShareDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
@@ -84,7 +84,7 @@ func testAccCheckSFSShareExists(n string, share *shares.Share) resource.TestChec
 		config := testAccProvider.Meta().(*config)
 		sfsClient, err := config.SharedfilesystemV2Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+			return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 		}
 
 		found, err := shares.Get(sfsClient, rs.Primary.ID).Extract()

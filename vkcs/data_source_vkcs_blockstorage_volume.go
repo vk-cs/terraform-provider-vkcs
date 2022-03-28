@@ -74,7 +74,7 @@ func dataSourceBlockStorageVolumeRead(ctx context.Context, d *schema.ResourceDat
 	config := meta.(configer)
 	client, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack block storage client: %s", err)
+		return diag.Errorf("Error creating VKCS block storage client: %s", err)
 	}
 
 	listOpts := volumes.ListOpts{

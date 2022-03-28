@@ -103,7 +103,7 @@ func resourceMembersCreate(ctx context.Context, d *schema.ResourceData, meta int
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	createOpts := expandLBMembers(d.Get("member").(*schema.Set), lbClient)
@@ -151,7 +151,7 @@ func resourceMembersRead(ctx context.Context, d *schema.ResourceData, meta inter
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	allPages, err := octaviapools.ListMembers(lbClient, d.Id(), octaviapools.ListMembersOpts{}).AllPages()
@@ -177,7 +177,7 @@ func resourceMembersUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	if d.HasChange("member") {
@@ -223,7 +223,7 @@ func resourceMembersDelete(ctx context.Context, d *schema.ResourceData, meta int
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	// Get a clean copy of the parent pool.

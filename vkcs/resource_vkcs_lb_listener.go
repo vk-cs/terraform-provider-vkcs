@@ -141,7 +141,7 @@ func resourceListenerCreate(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	timeout := d.Timeout(schema.TimeoutCreate)
@@ -247,7 +247,7 @@ func resourceListenerRead(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	listener, err := octavialisteners.Get(lbClient, d.Id()).Extract()
@@ -290,7 +290,7 @@ func resourceListenerUpdate(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	// Get a clean copy of the listener.
@@ -433,7 +433,7 @@ func resourceListenerDelete(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	// Get a clean copy of the listener.
