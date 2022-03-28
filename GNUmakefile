@@ -76,7 +76,3 @@ lint:
 	golangci-lint run ./...
 
 .PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test lint
-
-deploy_linux: build_linux
-	cp terraform-provider-vkcs_linux ~/.terraform.d/plugins/hub.vkcs.mail.ru/repository/vkcs/0.6.0/linux_amd64/terraform-provider-vkcs_0.6.0
-

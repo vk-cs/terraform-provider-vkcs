@@ -14,6 +14,10 @@ type volumeChangeTypeOpts struct {
 	AvailabilityZone string `json:"availability_zone,omitempty"`
 }
 
+func (opts volumeChangeTypeOpts) ToVolumeChangeTypeMap() (map[string]interface{}, error) {
+	return BuildRequest(opts, "os-retype")
+}
+
 func blockStorageVolumeStateRefreshFunc(client *gophercloud.ServiceClient, volumeID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		v, err := volumes.Get(client, volumeID).Extract()
