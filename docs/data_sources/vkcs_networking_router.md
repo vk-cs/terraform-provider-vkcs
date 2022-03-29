@@ -2,7 +2,7 @@
 layout: "vkcs"
 page_title: "vkcs: networking_router"
 description: |-
-  Get information on a VKCS Floating IP.
+  Get information on a VKCS router.
 ---
 
 # vkcs\_networking\_router

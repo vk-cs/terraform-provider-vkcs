@@ -9,7 +9,7 @@ description: |-
 # VKCS Provider
 
 The VKCS provider is used to interact with
-[VKCS services](https://vkcs.mail.ru/). The provider needs
+[VKCS services](https://mcs.mail.ru/). The provider needs
 to be configured with the proper credentials before it can be used.
 
 Use the navigation to the left to read about the available resources.
@@ -38,7 +38,7 @@ resource "vkcs_compute_instance" "myinstance"{
 
 ## Authentication
 
-The VKCS provider supports username/password authentication. Preconfigured provider file with `username` and `project_id` can be downloaded from [https://vkcs.mail.ru/app/project](https://vkcs.mail.ru/app/project) portal. Go to `Terraform` tab -> click on the "Download VKCS provider file".
+The VKCS provider supports username/password authentication. Preconfigured provider file with `username` and `project_id` can be downloaded from [https://mcs.mail.ru/app/project](https://mcs.mail.ru/app/project) portal. Go to `Terraform` tab -> click on the "Download VKCS provider file".
 
 ```terraform
 provider "vkcs" {
