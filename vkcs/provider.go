@@ -83,6 +83,7 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 			Password:         d.Get("password").(string),
 			TenantID:         d.Get("project_id").(string),
 			Region:           d.Get("region").(string),
+			IdentityEndpoint: d.Get("auth_url").(string),
 			AllowReauth:      true,
 			MaxRetries:       maxRetriesCount,
 			TerraformVersion: terraformVersion,
@@ -91,20 +92,8 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 		},
 	}
 
-	if config.TenantID == "" {
-		config.TenantID = os.Getenv("OS_PROJECT_ID")
-	}
 	if config.UserDomainID == "" {
 		config.UserDomainID = os.Getenv("OS_USER_DOMAIN_ID")
-	}
-	if config.Password == "" {
-		config.Password = os.Getenv("OS_PASSWORD")
-	}
-	if config.Username == "" {
-		config.Username = os.Getenv("OS_USERNAME")
-	}
-	if config.Region == "" {
-		config.Region = os.Getenv("OS_REGION")
 	}
 
 	v, ok := d.GetOk("insecure")
@@ -112,12 +101,7 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 		insecure := v.(bool)
 		config.Insecure = &insecure
 	}
-	v, ok = d.GetOk("auth_url")
-	if ok {
-		config.IdentityEndpoint = v.(string)
-	} else {
-		config.IdentityEndpoint = defaultIdentityEndpoint
-	}
+
 	if err := initWithUsername(d, config); err != nil {
 		return nil, diag.FromErr(err)
 	}
@@ -148,32 +132,32 @@ func Provider() *schema.Provider {
 			"auth_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("AUTH_URL", ""),
+				DefaultFunc: schema.EnvDefaultFunc("OS_AUTH_URL", defaultIdentityEndpoint),
 				Description: "The Identity authentication URL.",
 			},
 			"project_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("PROJECT_ID", ""),
+				DefaultFunc: schema.EnvDefaultFunc("OS_PROJECT_ID", ""),
 				Description: "The ID of Project to login with.",
 			},
 			"password": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("PASSWORD", ""),
+				DefaultFunc: schema.EnvDefaultFunc("OS_PASSWORD", ""),
 				Description: "Password to login with.",
 			},
 			"username": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("USER_NAME", ""),
+				DefaultFunc: schema.EnvDefaultFunc("OS_USER_NAME", ""),
 				Description: "User name to login with.",
 			},
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("REGION", "RegionOne"),
+				DefaultFunc: schema.EnvDefaultFunc("OS_REGION", "RegionOne"),
 				Description: "A region to use.",
 			},
 			"insecure": {
