@@ -73,6 +73,10 @@ func resourceService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"restart": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -150,6 +154,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("external_v6_ip", service.ExternalV6IP)
 	d.Set("external_v4_ip", service.ExternalV4IP)
 	d.Set("region", getRegion(d, config))
+	d.Set("restart", false)
 
 	return nil
 }
@@ -208,6 +213,14 @@ func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, meta int
 		}
 
 		log.Printf("[DEBUG] Updated service with id %s", d.Id())
+	}
+
+	if d.HasChange("restart") {
+		err := VPNAASServiceRestart(networkingClient, d.Id()).ExtractErr()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		log.Printf("[DEBUG] Restarted service with id %s", d.Id())
 	}
 
 	return resourceServiceRead(ctx, d, meta)
