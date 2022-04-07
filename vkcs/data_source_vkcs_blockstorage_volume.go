@@ -61,6 +61,11 @@ func dataSourceBlockStorageVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			"availability_zone": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -109,6 +114,7 @@ func dataSourceBlockStorageVolumeAttributes(d *schema.ResourceData, volume volum
 	d.Set("volume_type", volume.VolumeType)
 	d.Set("size", volume.Size)
 	d.Set("source_volume_id", volume.SourceVolID)
+	d.Set("availability_zone", volume.AvailabilityZone)
 
 	if err := d.Set("metadata", volume.Metadata); err != nil {
 		log.Printf("[DEBUG] Unable to set metadata for vkcs_blockstorage_volume %s: %s", volume.ID, err)

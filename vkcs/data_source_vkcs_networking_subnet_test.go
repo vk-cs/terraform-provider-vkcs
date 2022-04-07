@@ -14,10 +14,10 @@ func TestAccNetworkingSubnetDataSource_basic(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOpenStackNetworkingSubnetDataSourceSubnet,
+				Config: testAccNetworkingSubnetDataSourceSubnet,
 			},
 			{
-				Config: testAccOpenStackNetworkingSubnetDataSourceBasic(),
+				Config: testAccNetworkingSubnetDataSourceBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
 					testAccCheckNetworkingSubnetDataSourceGoodNetwork("data.vkcs_networking_subnet.subnet_1", "vkcs_networking_network.network_1"),
@@ -37,10 +37,10 @@ func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOpenStackNetworkingSubnetDataSourceSubnet,
+				Config: testAccNetworkingSubnetDataSourceSubnet,
 			},
 			{
-				Config: testAccOpenStackNetworkingSubnetDataSourceCidr(),
+				Config: testAccNetworkingSubnetDataSourceCidr(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
 					resource.TestCheckResourceAttr(
@@ -50,7 +50,7 @@ func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOpenStackNetworkingSubnetDataSourceDhcpEnabled(),
+				Config: testAccNetworkingSubnetDataSourceDhcpEnabled(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
 					resource.TestCheckResourceAttr(
@@ -60,7 +60,7 @@ func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOpenStackNetworkingSubnetDataSourceIPVersion(),
+				Config: testAccNetworkingSubnetDataSourceIPVersion(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
 					resource.TestCheckResourceAttr(
@@ -68,7 +68,7 @@ func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOpenStackNetworkingSubnetDataSourceGatewayIP(),
+				Config: testAccNetworkingSubnetDataSourceGatewayIP(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
 					resource.TestCheckResourceAttr(
@@ -78,46 +78,6 @@ func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 		},
 	})
 }
-
-// func TestAccNetworkingSubnetDataSource_networkIdAttribute(t *testing.T) {
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckNetworking(t) },
-// 		ProviderFactories: testAccProviders,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccOpenStackNetworkingSubnetDataSourceNetworkIDAttribute(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
-// 					testAccCheckNetworkingSubnetDataSourceGoodNetwork("data.vkcs_networking_subnet.subnet_1", "vkcs_networking_network.network_1"),
-// 					resource.TestCheckResourceAttr(
-// 						"data.vkcs_networking_subnet.subnet_1", "tags.#", "1"),
-// 					resource.TestCheckResourceAttr(
-// 						"data.vkcs_networking_subnet.subnet_1", "all_tags.#", "2"),
-// 					testAccCheckNetworkingPortV2ID("openstack_networking_port_v2.port_1"),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
-
-// func TestAccNetworkingSubnetDataSource_subnetPoolIdAttribute(t *testing.T) {
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckNetworking(t) },
-// 		ProviderFactories: testAccProviders,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccOpenStackNetworkingSubnetDataSourceSubnetPoolIDAttribute(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
-// 					resource.TestCheckResourceAttr(
-// 						"data.vkcs_networking_subnet.subnet_1", "tags.#", "2"),
-// 					resource.TestCheckResourceAttr(
-// 						"data.vkcs_networking_subnet.subnet_1", "all_tags.#", "2"),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
 
 func testAccCheckNetworkingSubnetDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -162,7 +122,7 @@ func testAccCheckNetworkingSubnetDataSourceGoodNetwork(n1, n2 string) resource.T
 	}
 }
 
-const testAccOpenStackNetworkingSubnetDataSourceSubnet = `
+const testAccNetworkingSubnetDataSourceSubnet = `
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
   admin_state_up = "true"
@@ -180,40 +140,17 @@ resource "vkcs_networking_subnet" "subnet_1" {
 }
 `
 
-// const testAccOpenStackNetworkingSubnetDataSourceSubnetWithSubnetPool = `
-// resource "vkcs_networking_network" "network_1" {
-//   name = "network_1"
-//   admin_state_up = "true"
-// }
-
-// resource "openstack_networking_subnetpool_v2" "subnetpool_1" {
-//   name = "my_ipv4_pool"
-//   prefixes = ["10.11.12.0/24"]
-// }
-
-// resource "vkcs_networking_subnet" "subnet_1" {
-//   name = "subnet_1"
-//   cidr = "10.11.12.0/25"
-//   network_id = "${vkcs_networking_network.network_1.id}"
-//   subnetpool_id = "${openstack_networking_subnetpool_v2.subnetpool_1.id}"
-//   tags = [
-//     "foo",
-//     "bar",
-//   ]
-// }
-// `
-
-func testAccOpenStackNetworkingSubnetDataSourceBasic() string {
+func testAccNetworkingSubnetDataSourceBasic() string {
 	return fmt.Sprintf(`
 %s
 
 data "vkcs_networking_subnet" "subnet_1" {
   name = "${vkcs_networking_subnet.subnet_1.name}"
 }
-`, testAccOpenStackNetworkingSubnetDataSourceSubnet)
+`, testAccNetworkingSubnetDataSourceSubnet)
 }
 
-func testAccOpenStackNetworkingSubnetDataSourceCidr() string {
+func testAccNetworkingSubnetDataSourceCidr() string {
 	return fmt.Sprintf(`
 %s
 
@@ -221,10 +158,10 @@ data "vkcs_networking_subnet" "subnet_1" {
   cidr = "192.168.199.0/24"
   tags = []
 }
-`, testAccOpenStackNetworkingSubnetDataSourceSubnet)
+`, testAccNetworkingSubnetDataSourceSubnet)
 }
 
-func testAccOpenStackNetworkingSubnetDataSourceDhcpEnabled() string {
+func testAccNetworkingSubnetDataSourceDhcpEnabled() string {
 	return fmt.Sprintf(`
 %s
 
@@ -235,10 +172,10 @@ data "vkcs_networking_subnet" "subnet_1" {
     "bar",
   ]
 }
-`, testAccOpenStackNetworkingSubnetDataSourceSubnet)
+`, testAccNetworkingSubnetDataSourceSubnet)
 }
 
-func testAccOpenStackNetworkingSubnetDataSourceIPVersion() string {
+func testAccNetworkingSubnetDataSourceIPVersion() string {
 	return fmt.Sprintf(`
 %s
 
@@ -246,49 +183,15 @@ data "vkcs_networking_subnet" "subnet_1" {
   network_id = "${vkcs_networking_network.network_1.id}"
   ip_version = 4
 }
-`, testAccOpenStackNetworkingSubnetDataSourceSubnet)
+`, testAccNetworkingSubnetDataSourceSubnet)
 }
 
-func testAccOpenStackNetworkingSubnetDataSourceGatewayIP() string {
+func testAccNetworkingSubnetDataSourceGatewayIP() string {
 	return fmt.Sprintf(`
 %s
 
 data "vkcs_networking_subnet" "subnet_1" {
   gateway_ip = "${vkcs_networking_subnet.subnet_1.gateway_ip}"
 }
-`, testAccOpenStackNetworkingSubnetDataSourceSubnet)
+`, testAccNetworkingSubnetDataSourceSubnet)
 }
-
-// func testAccOpenStackNetworkingSubnetDataSourceNetworkIDAttribute() string {
-// 	return fmt.Sprintf(`
-// %s
-
-// data "vkcs_networking_subnet" "subnet_1" {
-//   subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
-//   tags = [
-//     "foo",
-//   ]
-// }
-
-// resource "openstack_networking_port_v2" "port_1" {
-//   name            = "test_port"
-//   network_id      = "${data.vkcs_networking_subnet.subnet_1.network_id}"
-//   admin_state_up  = "true"
-// }
-
-// `, testAccOpenStackNetworkingSubnetDataSourceSubnet)
-// }
-
-// func testAccOpenStackNetworkingSubnetDataSourceSubnetPoolIDAttribute() string {
-// 	return fmt.Sprintf(`
-// %s
-
-// data "vkcs_networking_subnet" "subnet_1" {
-//   subnetpool_id = "${vkcs_networking_subnet.subnet_1.subnetpool_id}"
-//   tags = [
-//     "foo",
-//     "bar",
-//   ]
-// }
-// `, testAccOpenStackNetworkingSubnetDataSourceSubnetWithSubnetPool)
-// }

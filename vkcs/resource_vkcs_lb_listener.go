@@ -42,7 +42,7 @@ func resourceListener() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
-					"TCP", "UDP", "SCTP", "HTTP", "HTTPS", "TERMINATED_HTTPS",
+					"TCP", "UDP", "HTTP", "HTTPS", "TERMINATED_HTTPS",
 				}, false),
 			},
 
@@ -163,7 +163,6 @@ func resourceListenerCreate(ctx context.Context, d *schema.ResourceData, meta in
 
 	var createOpts octavialisteners.CreateOptsBuilder
 	opts := octavialisteners.CreateOpts{
-		// Protocol SCTP requires octavia minor version 2.23
 		Protocol:               octavialisteners.Protocol(d.Get("protocol").(string)),
 		ProtocolPort:           d.Get("protocol_port").(int),
 		LoadbalancerID:         d.Get("loadbalancer_id").(string),

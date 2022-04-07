@@ -10,7 +10,7 @@ description: |-
 This example shows how to create a simple terraform configuration for creation of VKCS resources.
 
 First, create a Terraform config file named `main.tf`. Inside, you'll want to include the configuration of
-[VKCS Provider](https://registry.terraform.io/providers/MailRuCloudSolutions/vkcs/latest/docs).
+[VKCS Provider](https://registry.terraform.io/providers/vk-cs/vkcs/latest/docs).
 
 Use VKCS provider:
 
@@ -29,4 +29,4 @@ Configure VKCS provider:
 * The `password` field should be replaced with your user's password.
 * The `project_id` field should be replaced with your project_id.
 
-For additional configuration parameters, please read [configuration reference](https://registry.terraform.io/providers/MailRuCloudSolutions/vkcs/latest/docs#configuration-reference)
+For additional configuration parameters, please read [configuration reference](https://registry.terraform.io/providers/vk-cs/vkcs/latest/docs#configuration-reference)

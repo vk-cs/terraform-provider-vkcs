@@ -41,7 +41,7 @@ linters:
 
 linters-settings:
   errcheck:
-    ignore: github.com/hashicorp/terraform-plugin-sdk/helper/schema:ForceNew|Set,fmt:.*,io:Close,github.com/MailRuCloudSolutions/terraform-provider-vkcs:Set
+    ignore: github.com/hashicorp/terraform-plugin-sdk/helper/schema:ForceNew|Set,fmt:.*,io:Close,github.com/vk-cs/terraform-provider-vkcs:Set
   govet:
     disable:
       - copylocks

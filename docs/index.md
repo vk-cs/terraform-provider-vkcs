@@ -24,8 +24,8 @@ Terraform 1.0 and later:
 terraform {
   required_providers {
     vkcs = {
-      source = "MailRuCloudSolutions/vkcs"
-      version = "~> 0.5.8"
+      source = "vk-cs/vkcs"
+      version = "~> 0.1.0"
     }
   }
 }
@@ -62,5 +62,5 @@ The following arguments are supported:
 
 * `auth_url` - (Optional) URL for authentication in VKCS. Default is https://infra.mail.ru/identity/v3/.
 
-* `region` - (Optional) A region to use. Default is `RegionOne`. **New since v0.4.0**
+* `region` - (Optional) A region to use. Default is `RegionOne`.
 

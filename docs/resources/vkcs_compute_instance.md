@@ -477,33 +477,6 @@ The `scheduler_hints` block supports:
 * `group` - (Optional) A UUID of a Server Group. The instance will be placed
     into that group.
 
-* `different_host` - (Optional) A list of instance UUIDs. The instance will
-    be scheduled on a different host than all other instances.
-
-* `same_host` - (Optional) A list of instance UUIDs. The instance will be
-    scheduled on the same host of those specified.
-
-* `query` - (Optional) A conditional query that a compute node must pass in
-    order to host an instance. The query must use the `JsonFilter` syntax
-    which is described
-    [here](https://docs.openstack.org/nova/latest/admin/configuration/schedulers.html#jsonfilter).
-    At this time, only simple queries are supported. Compound queries using
-    `and`, `or`, or `not` are not supported. An example of a simple query is:
-
-    ```
-    [">=", "$free_ram_mb", "1024"]
-    ```
-
-* `target_cell` - (Optional) The name of a cell to host the instance.
-
-* `different_cell` - (Optional) The names of cells where not to build the instance.
-
-* `build_near_host_ip` - (Optional) An IP Address in CIDR form. The instance
-    will be placed on a compute node that is in the same subnet.
-
-* `additional_properties` - (Optional) Arbitrary key/value pairs of additional
-  properties to pass to the scheduler.
-
 The `personality` block supports:
 
 * `file` - (Required) The absolute path of the destination file.

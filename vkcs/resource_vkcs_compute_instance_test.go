@@ -158,63 +158,6 @@ func TestAccComputeInstance_initialShelve(t *testing.T) {
 	})
 }
 
-// func TestAccComputeInstance_secgroupMulti(t *testing.T) {
-// 	var instance1 servers.Server
-// 	var secgroup1 secgroups.SecurityGroup
-
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckCompute(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccComputeInstanceSecgroupMulti(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeSecGroupExists(
-// 						"vkcs_compute_secgroup.secgroup_1", &secgroup1),
-// 					testAccCheckComputeInstanceExists(
-// 						"vkcs_compute_instance.instance_1", &instance1),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
-
-// func TestAccComputeInstance_secgroupMultiUpdate(t *testing.T) {
-// 	var instance1 servers.Server
-// 	var secgroup1, secgroup2 secgroups.SecurityGroup
-
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckCompute(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccComputeInstanceSecgroupMultiUpdate1(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeSecGroupExists(
-// 						"vkcs_compute_secgroup.secgroup_1", &secgroup1),
-// 					testAccCheckComputeSecGroupExists(
-// 						"vkcs_compute_secgroup.secgroup_2", &secgroup2),
-// 					testAccCheckComputeInstanceExists(
-// 						"vkcs_compute_instance.instance_1", &instance1),
-// 				),
-// 			},
-// 			{
-// 				Config: testAccComputeInstanceSecgroupMultiUpdate2(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeSecGroupExists(
-// 						"vkcs_compute_secgroup.secgroup_1", &secgroup1),
-// 					testAccCheckComputeSecGroupExists(
-// 						"vkcs_compute_secgroup.secgroup_2", &secgroup2),
-// 					testAccCheckComputeInstanceExists(
-// 						"vkcs_compute_instance.instance_1", &instance1),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
-
 func TestAccComputeInstance_bootFromVolumeImage(t *testing.T) {
 	var instance servers.Server
 

@@ -54,7 +54,7 @@ func resourcePool() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
-					"TCP", "UDP", "HTTP", "HTTPS", "PROXY", "SCTP", "PROXYV2",
+					"TCP", "UDP", "HTTP", "HTTPS", "PROXY",
 				}, false),
 			},
 
@@ -76,7 +76,7 @@ func resourcePool() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ValidateFunc: validation.StringInSlice([]string{
-					"ROUND_ROBIN", "LEAST_CONNECTIONS", "SOURCE_IP", "SOURCE_IP_PORT",
+					"ROUND_ROBIN", "LEAST_CONNECTIONS", "SOURCE_IP",
 				}, false),
 			},
 

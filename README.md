@@ -31,15 +31,15 @@ $ cd $GOPATH/src/github.com/vk-cs
 $ git clone git@github.com:vk-cs/terraform-provider-vkcs.git
 $ cd $GOPATH/src/github.com/vk-cs/terraform-provider-vkcs
 $ make build_darwin
-$ mkdir -p ~/.terraform.d/plugins/hub.vkcs.mail.ru/repository/vkcs/0.5.8/darwin_amd64/
-$ cp terraform-provider-vkcs_darwin ~/.terraform.d/plugins/hub.vkcs.mail.ru/repository/vkcs/0.5.8/darwin_amd64/terraform-provider-vkcs_v0.5.8
+$ mkdir -p ~/.terraform.d/plugins/hub.vkcs.mail.ru/repository/vkcs/0.1.0/darwin_amd64/
+$ cp terraform-provider-vkcs_darwin ~/.terraform.d/plugins/hub.vkcs.mail.ru/repository/vkcs/0.1.0/darwin_amd64/terraform-provider-vkcs_v0.1.0
 
 $ cat <<EOF > main.tf 
 terraform {
   required_providers {
     vkcs = {
       source  = "hub.vkcs.mail.ru/repository/vkcs"
-      version = "~> 0.5.8"
+      version = "~> 0.1.0"
     }
   }
 }
@@ -52,8 +52,8 @@ Publishing provider
 Provider publishes via action [release](https://github.com/vk-cs/terraform-provider-vkcs/blob/master/.github/workflows/release.yml).
 To call the action create new tag.
 ```sh
-$ git tag v0.5.8
-$ git push origin v0.5.8
+$ git tag v0.1.0
+$ git push origin v0.1.0
 ```
 
 Thank You!

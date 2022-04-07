@@ -20,6 +20,10 @@ type PrivateDNSDomainExt struct {
 	PrivateDNSDomain string `json:"private_dns_domain,omitempty"`
 }
 
+type ServicesAccessExt struct {
+	ServicesAccess *bool `json:"enable_shadow_port,omitempty"`
+}
+
 type networkExtended struct {
 	networks.Network
 	external.NetworkExternalExt
@@ -28,7 +32,7 @@ type networkExtended struct {
 	policies.QoSPolicyExt
 	provider.NetworkProviderExt
 	PrivateDNSDomainExt
-	ServicesAccess bool `json:"enable_shadow_port,omitempty"`
+	ServicesAccessExt
 }
 
 // networkingNetworkID retrieves network ID by the provided name.

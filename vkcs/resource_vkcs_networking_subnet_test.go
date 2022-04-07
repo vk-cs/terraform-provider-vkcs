@@ -146,65 +146,6 @@ func TestAccNetworkingSubnet_timeout(t *testing.T) {
 	})
 }
 
-// func TestAccNetworkingSubnet_subnetPool(t *testing.T) {
-// 	var subnet subnets.Subnet
-
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckNetworking(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccNetworkingSubnetPool,
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
-
-// func TestAccNetworkingSubnet_subnetPoolNoCIDR(t *testing.T) {
-// 	var subnet subnets.Subnet
-
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckNetworking(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccNetworkingSubnetPoolNoCIDR,
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
-
-// func TestAccNetworkingSubnet_subnetPrefixLength(t *testing.T) {
-// 	var subnet [2]subnets.Subnet
-
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckNetworking(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccNetworkingSubnetPrefixLength,
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet[0]),
-// 					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_2", &subnet[1]),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_networking_subnet.subnet_1", "prefix_length", "27"),
-// 					resource.TestCheckResourceAttr(
-// 						"vkcs_networking_subnet.subnet_2", "prefix_length", "32"),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
-
 func TestAccNetworkingSubnet_multipleAllocationPools(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheckNetworking(t) },
@@ -456,73 +397,6 @@ resource "vkcs_networking_subnet" "subnet_1" {
 }
 `
 
-// const testAccNetworkingSubnetPool = `
-// resource "vkcs_networking_network" "network_1" {
-//   name = "network_1"
-//   admin_state_up = "true"
-// }
-
-// resource "openstack_networking_subnetpool_v2" "subnetpool_1" {
-//   name = "my_ipv4_pool"
-//   prefixes = ["10.11.12.0/24"]
-// }
-
-// resource "vkcs_networking_subnet" "subnet_1" {
-//   name = "subnet_1"
-//   cidr = "10.11.12.0/25"
-//   no_gateway = true
-// 	network_id = "${vkcs_networking_network.network_1.id}"
-// 	subnetpool_id = "${openstack_networking_subnetpool_v2.subnetpool_1.id}"
-// }
-// `
-
-// const testAccNetworkingSubnetPoolNoCIDR = `
-// resource "vkcs_networking_network" "network_1" {
-//   name = "network_1"
-//   admin_state_up = "true"
-// }
-
-// resource "openstack_networking_subnetpool_v2" "subnetpool_1" {
-//   name = "my_ipv4_pool"
-//   prefixes = ["10.11.12.0/24"]
-//   min_prefixlen = "24"
-// }
-
-// resource "vkcs_networking_subnet" "subnet_1" {
-//   name = "subnet_1"
-// 	network_id = "${vkcs_networking_network.network_1.id}"
-// 	subnetpool_id = "${openstack_networking_subnetpool_v2.subnetpool_1.id}"
-// }
-// `
-
-// const testAccNetworkingSubnetPrefixLength = `
-// resource "vkcs_networking_network" "network_1" {
-//   name           = "network_1"
-//   admin_state_up = "true"
-// }
-
-// resource "openstack_networking_subnetpool_v2" "subnetpool_1" {
-//   name     = "my_ipv4_pool"
-//   prefixes = ["10.11.12.0/24"]
-// }
-
-// resource "vkcs_networking_subnet" "subnet_1" {
-//   name          = "subnet_1"
-//   prefix_length = 27
-//   enable_dhcp   = false
-//   network_id    = "${vkcs_networking_network.network_1.id}"
-//   subnetpool_id = "${openstack_networking_subnetpool_v2.subnetpool_1.id}"
-// }
-
-// resource "vkcs_networking_subnet" "subnet_2" {
-//   name          = "subnet_2"
-//   prefix_length = 32
-//   enable_dhcp   = false
-//   network_id    = "${vkcs_networking_network.network_1.id}"
-//   subnetpool_id = "${openstack_networking_subnetpool_v2.subnetpool_1.id}"
-// }
-// `
-
 const testAccNetworkingSubnetMultipleAllocationPools1 = `
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
@@ -591,52 +465,6 @@ resource "vkcs_networking_subnet" "subnet_1" {
   }
 }
 `
-
-//const testAccNetworkingSubnetAllocationPool1 = `
-//resource "vkcs_networking_network" "network_1" {
-//  name = "network_1"
-//  admin_state_up = "true"
-//}
-//
-//resource "vkcs_networking_subnet" "subnet_1" {
-//  name = "subnet_1"
-//  cidr = "10.3.0.0/16"
-//  network_id = "${vkcs_networking_network.network_1.id}"
-//
-//  allocation_pool {
-//    start = "10.3.0.2"
-//    end = "10.3.0.255"
-//  }
-//
-//  allocation_pool {
-//    start = "10.3.255.0"
-//    end = "10.3.255.254"
-//  }
-//}
-//`
-//
-//const testAccNetworkingSubnetAllocationPool2 = `
-//resource "vkcs_networking_network" "network_1" {
-//  name = "network_1"
-//  admin_state_up = "true"
-//}
-//
-//resource "vkcs_networking_subnet" "subnet_1" {
-//  name = "subnet_1"
-//  cidr = "10.3.0.0/16"
-//  network_id = "${vkcs_networking_network.network_1.id}"
-//
-//  allocation_pool {
-//    start = "10.3.255.10"
-//    end = "10.3.255.154"
-//  }
-//
-//  allocation_pool {
-//    start = "10.3.0.2"
-//    end = "10.3.0.255"
-//  }
-//}
-//`
 
 const testAccNetworkingSubnetClearDNSNameservers1 = `
 resource "vkcs_networking_network" "network_1" {

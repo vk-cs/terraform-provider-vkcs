@@ -8,16 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccOpenStackNetworkingFloatingIPV2DataSource_address(t *testing.T) {
+func TestAccNetworkingFloatingIPV2DataSource_address(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOpenStackNetworkingFloatingIPV2DataSourceFloatingIP(),
+				Config: testAccNetworkingFloatingIPV2DataSourceFloatingIP(),
 			},
 			{
-				Config: testAccOpenStackNetworkingFloatingIPV2DataSourceAddress(),
+				Config: testAccNetworkingFloatingIPV2DataSourceAddress(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPV2DataSourceID("data.vkcs_networking_floatingip.fip_1"),
 					resource.TestCheckResourceAttrSet(
@@ -53,7 +53,7 @@ func testAccCheckNetworkingFloatingIPV2DataSourceID(n string) resource.TestCheck
 	}
 }
 
-func testAccOpenStackNetworkingFloatingIPV2DataSourceFloatingIP() string {
+func testAccNetworkingFloatingIPV2DataSourceFloatingIP() string {
 	return fmt.Sprintf(`
 resource "vkcs_networking_floatingip" "fip_1" {
   pool = "%s"
@@ -66,7 +66,7 @@ resource "vkcs_networking_floatingip" "fip_1" {
 `, osPoolName)
 }
 
-func testAccOpenStackNetworkingFloatingIPV2DataSourceAddress() string {
+func testAccNetworkingFloatingIPV2DataSourceAddress() string {
 	return fmt.Sprintf(`
 %s
 
@@ -77,5 +77,5 @@ data "vkcs_networking_floatingip" "fip_1" {
     "foo",
   ]
 }
-`, testAccOpenStackNetworkingFloatingIPV2DataSourceFloatingIP())
+`, testAccNetworkingFloatingIPV2DataSourceFloatingIP())
 }

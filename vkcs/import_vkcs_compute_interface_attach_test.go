@@ -1,24 +1,30 @@
 package vkcs
 
-// func TestAccComputeV2InterfaceAttachImport_basic(t *testing.T) {
-// 	resourceName := "openstack_compute_interface_attach_v2.ai_1"
+import (
+	"testing"
 
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckCompute(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckComputeInterfaceAttachDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccComputeInterfaceAttachBasic(),
-// 			},
-// 			{
-// 				ResourceName:      resourceName,
-// 				ImportState:       true,
-// 				ImportStateVerify: true,
-// 				ImportStateVerifyIgnore: []string{
-// 					"admin_pass",
-// 				},
-// 			},
-// 		},
-// 	})
-// }
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+)
+
+func TestAccComputeInterfaceAttachImport_basic(t *testing.T) {
+	resourceName := "vkcs_compute_interface_attach.ai_1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheckCompute(t) },
+		ProviderFactories: testAccProviders,
+		CheckDestroy:      testAccCheckComputeInterfaceAttachDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccComputeInterfaceAttachBasic(),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"admin_pass",
+				},
+			},
+		},
+	})
+}
