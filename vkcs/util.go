@@ -2,6 +2,7 @@ package vkcs
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -18,6 +19,14 @@ func mapStructureDecoder(strct interface{}, v *map[string]interface{}, config *m
 	config.Result = strct
 	decoder, _ := mapstructure.NewDecoder(config)
 	return decoder.Decode(*v)
+}
+
+// getTimestamp ...
+func getTimestamp(t *time.Time) string {
+	if t != nil {
+		return t.Format(time.RFC3339)
+	}
+	return ""
 }
 
 // BuildRequest takes an opts struct and builds a request body for
@@ -195,4 +204,27 @@ func isOperationNotSupported(d string, types ...string) bool {
 		}
 	}
 	return false
+}
+
+func ensureOnlyOnePresented(d *schema.ResourceData, keys ...string) (string, error) {
+	var isPresented bool
+	var keyPresented string
+	for _, key := range keys {
+		_, ok := d.GetOk(key)
+
+		if ok {
+			if isPresented {
+				return "", fmt.Errorf("only one of %v keys can be presented", keys)
+			}
+
+			isPresented = true
+			keyPresented = key
+		}
+	}
+
+	if !isPresented {
+		return "", fmt.Errorf("no one of %v keys are presented", keys)
+	}
+
+	return keyPresented, nil
 }
