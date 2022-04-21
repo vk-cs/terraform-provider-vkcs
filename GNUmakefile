@@ -45,6 +45,15 @@ testacc_sfs: fmtcheck
 testacc_networking: fmtcheck
 	TF_ACC=1 go test -run=TestAccNetworking $(TEST) -v $(TESTARGS) -timeout 120m
 
+testacc_dbaas: fmtcheck
+	TF_ACC=1 go test -run=TestAccDatabase $(TEST) -v $(TESTARGS) -timeout 120m
+
+testmock_k8saas: fmtcheck
+	TF_ACC=1 TF_ACC_MOCK_MCS=1 go test $(TEST) -run=TestMockAcc $(TESTARGS) -timeout 120m
+
+testacc_k8saas: fmtcheck
+	TF_ACC=1 go test -run=TestAccKubernetes $(TEST) $(TESTARGS) -timeout 120m
+
 vet:
 	@echo "go vet ."
 	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \

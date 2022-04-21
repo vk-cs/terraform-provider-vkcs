@@ -3,7 +3,9 @@ package vkcs
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/utils/terraform/auth"
@@ -17,6 +19,8 @@ const (
 	maxRetriesCount         = 3
 	defaultIdentityEndpoint = "https://infra.mail.ru/identity/v3/"
 	defaultUsersDomainName  = "users"
+	requestsMaxRetriesCount = 3
+	requestsRetryDelay      = 30 * time.Millisecond
 )
 
 // configer is interface to work with gophercloud.Config calls
@@ -28,6 +32,9 @@ type configer interface {
 	NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error)
 	BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error)
 	KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error)
+	ContainerInfraV1Client(region string) (ContainerClient, error)
+	IdentityV3Client(region string) (ContainerClient, error)
+	DatabaseV1Client(region string) (*gophercloud.ServiceClient, error)
 	GetMutex() *mutexkv.MutexKV
 }
 
@@ -68,6 +75,40 @@ func (c *config) BlockStorageV3Client(region string) (*gophercloud.ServiceClient
 
 func (c *config) KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error) {
 	return c.Config.KeyManagerV1Client(region)
+}
+
+// DatabaseV1Client is implementation of DatabaseV1Client method
+func (c *config) DatabaseV1Client(region string) (*gophercloud.ServiceClient, error) {
+	client, clientErr := c.Config.DatabaseV1Client(region)
+	client.ProviderClient.RetryFunc = func(context context.Context, method, url string, options *gophercloud.RequestOpts, err error, failCount uint) error {
+		if failCount >= requestsMaxRetriesCount {
+			return err
+		}
+		switch errType := err.(type) {
+		case gophercloud.ErrDefault500, gophercloud.ErrDefault503:
+			time.Sleep(requestsRetryDelay)
+			return nil
+		case gophercloud.ErrUnexpectedResponseCode:
+			if errType.Actual == http.StatusGatewayTimeout {
+				time.Sleep(requestsRetryDelay)
+				return nil
+			}
+			return err
+		default:
+			return err
+		}
+	}
+	return client, clientErr
+}
+
+// ContainerInfraV1Client is implementation of ContainerInfraV1Client method
+func (c *config) ContainerInfraV1Client(region string) (ContainerClient, error) {
+	return c.Config.ContainerInfraV1Client(region)
+}
+
+// IdentityV3Client is implementation of ContainerInfraV1Client method
+func (c *config) IdentityV3Client(region string) (ContainerClient, error) {
+	return c.Config.IdentityV3Client(region)
 }
 
 func (c *config) GetMutex() *mutexkv.MutexKV {
@@ -205,6 +246,9 @@ func Provider() *schema.Provider {
 			"vkcs_blockstorage_snapshot":         dataSourceBlockStorageSnapshot(),
 			"vkcs_sharedfilesystem_sharenetwork": dataSourceSharedFilesystemShareNetwork(),
 			"vkcs_sharedfilesystem_share":        dataSourceSharedFilesystemShare(),
+			"vkcs_db_database":                   dataSourceDatabaseDatabase(),
+			"vkcs_db_instance":                   dataSourceDatabaseInstance(),
+			"vkcs_db_user":                       dataSourceDatabaseUser(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -248,6 +292,11 @@ func Provider() *schema.Provider {
 			"vkcs_sharedfilesystem_sharenetwork":      resourceSharedFilesystemShareNetwork(),
 			"vkcs_sharedfilesystem_share":             resourceSharedFilesystemShare(),
 			"vkcs_sharedfilesystem_share_access":      resourceSharedFilesystemShareAccess(),
+			"vkcs_db_instance":                        resourceDatabaseInstance(),
+			"vkcs_db_database":                        resourceDatabaseDatabase(),
+			"vkcs_db_user":                            resourceDatabaseUser(),
+			"vkcs_db_cluster":                         resourceDatabaseCluster(),
+			"vkcs_db_cluster_with_shards":             resourceDatabaseClusterWithShards(),
 		},
 	}
 

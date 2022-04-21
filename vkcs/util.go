@@ -6,7 +6,19 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/mitchellh/mapstructure"
 )
+
+var decoderConfig = &mapstructure.DecoderConfig{
+	TagName: "json",
+}
+
+// mapStructureDecoder ...
+func mapStructureDecoder(strct interface{}, v *map[string]interface{}, config *mapstructure.DecoderConfig) error {
+	config.Result = strct
+	decoder, _ := mapstructure.NewDecoder(config)
+	return decoder.Decode(*v)
+}
 
 // BuildRequest takes an opts struct and builds a request body for
 // Gophercloud to execute.
@@ -174,4 +186,13 @@ func sliceUnion(a, b []string) []string {
 		}
 	}
 	return res
+}
+
+func isOperationNotSupported(d string, types ...string) bool {
+	for _, t := range types {
+		if d == t {
+			return true
+		}
+	}
+	return false
 }
