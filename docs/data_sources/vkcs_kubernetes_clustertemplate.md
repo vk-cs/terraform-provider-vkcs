@@ -63,7 +63,7 @@ attributes are exported:
 
 * `updated_at` - The time at which cluster template was updated.
 
-* `deprecated_at` - The time at which the cluster template is deprecated. **New since version v0.6.8**.
+* `deprecated_at` - The time at which the cluster template is deprecated.
 
 * `apiserver_port` - The API server port for the Container Orchestration
     Engine for this cluster template.

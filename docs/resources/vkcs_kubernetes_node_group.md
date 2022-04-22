@@ -23,7 +23,7 @@ resource "vkcs_kubernetes_node_group" "mynodegroup" {
 The following arguments are supported:
 
 * `autoscaling_enabled` - (Optional) Determines whether the autoscaling is enabled.
-* `availability_zones` - (Optional, **New since v0.5.0**) The list of availability zones of the node group.
+* `availability_zones` - (Optional) The list of availability zones of the node group.
   Zones `MS1` and  `GZ1` are available. By default, node group is being created at
   cluster's zone.
   **Important:** Receiving default AZ add it manually to your main.tf config to sync it with state 
@@ -52,7 +52,7 @@ The following arguments are supported:
 attributes are exported:
 
 * `autoscaling_enabled` - Determines whether the autoscaling is enabled.
-* `availability_zones` - The list of availability zones of the node group. **New since v0.5.0**
+* `availability_zones` - The list of availability zones of the node group.
 * `cluster_id` - The UUID of cluster that node group belongs.
 * `flavor_id` - The UUID of a flavor. 
 * `labels` - The list of key value pairs representing additional

@@ -67,11 +67,11 @@ The following arguments are supported:
 
 * `registry_auth_password` - (Optional) Docker registry access password.
 
-* `availability_zone` - (Required) Zones available for cluster. `GZ1` and `MS1` zones are available. **New since v0.3.3**.
+* `availability_zone` - (Required) Zones available for cluster. `GZ1` and `MS1` zones are available.
 
-* `region` - (Optional) Region to use for the cluster. Default is a region configured for provider. **New since v0.4.0**.
+* `region` - (Optional) Region to use for the cluster. Default is a region configured for provider.
 
-* `loadbalancer_subnet_id` - (Optional) The UUID of the load balancer's subnet. Changing this creates new cluster. **New since v0.5.4**.
+* `loadbalancer_subnet_id` - (Optional) The UUID of the load balancer's subnet. Changing this creates new cluster.
 
 ## Attributes
 
@@ -100,8 +100,8 @@ This resource exports the following attributes:
 * `api_lb_fip` - API LoadBalancer fip.
 * `ingress_floating_ip` - Floating IP created for ingress service.
 * `registry_auth_password` - Docker registry access password.
-* `availability_zone` - Availability zone of the cluster. **New since v0.3.3**
-* `loadbalancer_subnet_id` - UUID of the load balancer's subnet. **New since v0.5.4**.
+* `availability_zone` - Availability zone of the cluster.
+* `loadbalancer_subnet_id` - UUID of the load balancer's subnet.
 
 ## Import
 
