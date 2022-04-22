@@ -31,14 +31,14 @@ $ cd $GOPATH/src/github.com/vk-cs
 $ git clone git@github.com:vk-cs/terraform-provider-vkcs.git
 $ cd $GOPATH/src/github.com/vk-cs/terraform-provider-vkcs
 $ make build_darwin
-$ mkdir -p ~/.terraform.d/plugins/hub.vkcs.mail.ru/repository/vkcs/0.1.0/darwin_amd64/
-$ cp terraform-provider-vkcs_darwin ~/.terraform.d/plugins/hub.vkcs.mail.ru/repository/vkcs/0.1.0/darwin_amd64/terraform-provider-vkcs_v0.1.0
+$ mkdir -p ~/.terraform.d/plugins/hub.mcs.mail.ru/repository/vkcs/0.1.0/darwin_amd64/
+$ cp terraform-provider-vkcs_darwin ~/.terraform.d/plugins/hub.mcs.mail.ru/repository/vkcs/0.1.0/darwin_amd64/terraform-provider-vkcs_v0.1.0
 
 $ cat <<EOF > main.tf 
 terraform {
   required_providers {
     vkcs = {
-      source  = "hub.vkcs.mail.ru/repository/vkcs"
+      source  = "hub.mcs.mail.ru/repository/vkcs"
       version = "~> 0.1.0"
     }
   }
