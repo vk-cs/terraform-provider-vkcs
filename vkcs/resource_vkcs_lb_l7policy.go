@@ -104,7 +104,7 @@ func resourceL7PolicyCreate(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	// Assign some required variables for use in creation.
@@ -192,7 +192,7 @@ func resourceL7PolicyRead(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	l7Policy, err := l7policies.Get(lbClient, d.Id()).Extract()
@@ -218,7 +218,7 @@ func resourceL7PolicyUpdate(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	// Assign some required variables for use in updating.
@@ -327,7 +327,7 @@ func resourceL7PolicyDelete(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	timeout := d.Timeout(schema.TimeoutDelete)
@@ -376,7 +376,7 @@ func resourceL7PolicyImport(d *schema.ResourceData, meta interface{}) ([]*schema
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return nil, fmt.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	l7Policy, err := l7policies.Get(lbClient, d.Id()).Extract()

@@ -102,7 +102,7 @@ func resourceL7RuleCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	// Assign some required variables for use in creation.
@@ -190,7 +190,7 @@ func resourceL7RuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	l7policyID := d.Get("l7policy_id").(string)
@@ -217,7 +217,7 @@ func resourceL7RuleUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	// Assign some required variables for use in updating.
@@ -309,7 +309,7 @@ func resourceL7RuleDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	timeout := d.Timeout(schema.TimeoutDelete)
@@ -372,7 +372,7 @@ func resourceL7RuleImport(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return nil, fmt.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	listenerID := ""

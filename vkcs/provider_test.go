@@ -238,10 +238,10 @@ func TestProvider_impl(t *testing.T) {
 // https://github.com/hashicorp/terraform/pull/6279#issuecomment-219020144
 func TestAccProvider_caCertFile(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" || os.Getenv("OS_SSL_TESTS") == "" {
-		t.Skip("TF_ACC or OS_SSL_TESTS not set, skipping OpenStack SSL test.")
+		t.Skip("TF_ACC or OS_SSL_TESTS not set, skipping VKCS SSL test.")
 	}
 	if os.Getenv("OS_CACERT") == "" {
-		t.Skip("OS_CACERT is not set; skipping OpenStack CA test.")
+		t.Skip("OS_CACERT is not set; skipping VKCS CA test.")
 	}
 
 	p := Provider()
@@ -258,16 +258,16 @@ func TestAccProvider_caCertFile(t *testing.T) {
 
 	diag := p.Configure(context.Background(), terraform.NewResourceConfigRaw(raw))
 	if diag != nil {
-		t.Fatalf("unexpected err when specifying OpenStack CA by file: %v", diag)
+		t.Fatalf("unexpected err when specifying VKCS CA by file: %v", diag)
 	}
 }
 
 func TestAccProvider_caCertString(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" || os.Getenv("OS_SSL_TESTS") == "" {
-		t.Skip("TF_ACC or OS_SSL_TESTS not set, skipping OpenStack SSL test.")
+		t.Skip("TF_ACC or OS_SSL_TESTS not set, skipping VKCS SSL test.")
 	}
 	if os.Getenv("OS_CACERT") == "" {
-		t.Skip("OS_CACERT is not set; skipping OpenStack CA test.")
+		t.Skip("OS_CACERT is not set; skipping VKCS CA test.")
 	}
 
 	p := Provider()
@@ -282,16 +282,16 @@ func TestAccProvider_caCertString(t *testing.T) {
 
 	diag := p.Configure(context.Background(), terraform.NewResourceConfigRaw(raw))
 	if diag != nil {
-		t.Fatalf("Unexpected err when specifying OpenStack CA by string: %v", diag)
+		t.Fatalf("Unexpected err when specifying VKCS CA by string: %v", diag)
 	}
 }
 
 func TestAccProvider_clientCertFile(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" || os.Getenv("OS_SSL_TESTS") == "" {
-		t.Skip("TF_ACC or OS_SSL_TESTS not set, skipping OpenStack SSL test.")
+		t.Skip("TF_ACC or OS_SSL_TESTS not set, skipping VKCS SSL test.")
 	}
 	if os.Getenv("OS_CERT") == "" || os.Getenv("OS_KEY") == "" {
-		t.Skip("OS_CERT or OS_KEY is not set; skipping OpenStack client SSL auth test.")
+		t.Skip("OS_CERT or OS_KEY is not set; skipping VKCS client SSL auth test.")
 	}
 
 	p := Provider()
@@ -314,16 +314,16 @@ func TestAccProvider_clientCertFile(t *testing.T) {
 
 	diag := p.Configure(context.Background(), terraform.NewResourceConfigRaw(raw))
 	if diag != nil {
-		t.Fatalf("unexpected err when specifying OpenStack Client keypair by file: %v", diag)
+		t.Fatalf("unexpected err when specifying VKCS Client keypair by file: %v", diag)
 	}
 }
 
 func TestAccProvider_clientCertString(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" || os.Getenv("OS_SSL_TESTS") == "" {
-		t.Skip("TF_ACC or OS_SSL_TESTS not set, skipping OpenStack SSL test.")
+		t.Skip("TF_ACC or OS_SSL_TESTS not set, skipping VKCS SSL test.")
 	}
 	if os.Getenv("OS_CERT") == "" || os.Getenv("OS_KEY") == "" {
-		t.Skip("OS_CERT or OS_KEY is not set; skipping OpenStack client SSL auth test.")
+		t.Skip("OS_CERT or OS_KEY is not set; skipping VKCS client SSL auth test.")
 	}
 
 	p := Provider()
@@ -344,7 +344,7 @@ func TestAccProvider_clientCertString(t *testing.T) {
 
 	diag := p.Configure(context.Background(), terraform.NewResourceConfigRaw(raw))
 	if diag != nil {
-		t.Fatalf("unexpected err when specifying OpenStack Client keypair by contents: %v", diag)
+		t.Fatalf("unexpected err when specifying VKCS Client keypair by contents: %v", diag)
 	}
 }
 

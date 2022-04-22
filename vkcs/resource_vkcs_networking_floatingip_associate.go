@@ -60,7 +60,7 @@ func resourceNetworkingFloatingIPAssociateCreate(ctx context.Context, d *schema.
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack network client: %s", err)
+		return diag.Errorf("Error creating VKCS network client: %s", err)
 	}
 
 	floatingIP := d.Get("floating_ip").(string)
@@ -92,7 +92,7 @@ func resourceNetworkingFloatingIPAssociateRead(ctx context.Context, d *schema.Re
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack network client: %s", err)
+		return diag.Errorf("Error creating VKCS network client: %s", err)
 	}
 
 	fip, err := floatingips.Get(networkingClient, d.Id()).Extract()
@@ -115,7 +115,7 @@ func resourceNetworkingFloatingIPAssociateUpdate(ctx context.Context, d *schema.
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack network client: %s", err)
+		return diag.Errorf("Error creating VKCS network client: %s", err)
 	}
 
 	var updateOpts floatingips.UpdateOpts
@@ -141,7 +141,7 @@ func resourceNetworkingFloatingIPAssociateDelete(ctx context.Context, d *schema.
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack network client: %s", err)
+		return diag.Errorf("Error creating VKCS network client: %s", err)
 	}
 
 	portID := d.Get("port_id").(string)

@@ -113,7 +113,7 @@ func testAccCheckLBMembersDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
 	lbClient, err := config.LoadBalancerV2Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
+		return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
@@ -158,7 +158,7 @@ func testAccCheckLBMembersExists(n string, members *[]pools.Member) resource.Tes
 		config := testAccProvider.Meta().(*config)
 		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
+			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
 
 		poolID := rs.Primary.Attributes["pool_id"]

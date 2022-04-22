@@ -111,10 +111,10 @@ func testAccCheckContainerDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
 	kmClient, err := config.KeyManagerV1Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack KeyManager client: %s", err)
+		return fmt.Errorf("Error creating VKCS KeyManager client: %s", err)
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "openstack_keymanager_container" {
+		if rs.Type != "vkcs_keymanager_container" {
 			continue
 		}
 		_, err = containers.Get(kmClient, rs.Primary.ID).Extract()
@@ -142,7 +142,7 @@ func testAccCheckContainerExists(n string, container *containers.Container) reso
 		config := testAccProvider.Meta().(configer)
 		kmClient, err := config.KeyManagerV1Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack KeyManager client: %s", err)
+			return fmt.Errorf("Error creating VKCS KeyManager client: %s", err)
 		}
 
 		var found *containers.Container

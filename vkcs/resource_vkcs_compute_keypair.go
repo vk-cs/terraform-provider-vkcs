@@ -64,7 +64,7 @@ func resourceComputeKeypairCreate(ctx context.Context, d *schema.ResourceData, m
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	name := d.Get("name").(string)
@@ -95,7 +95,7 @@ func resourceComputeKeypairRead(_ context.Context, d *schema.ResourceData, meta 
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	kp, err := keypairs.Get(computeClient, d.Id(), keypairs.GetOpts{}).Extract()
@@ -117,7 +117,7 @@ func resourceComputeKeypairDelete(_ context.Context, d *schema.ResourceData, met
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	err = keypairs.Delete(computeClient, d.Id(), keypairs.DeleteOpts{}).ExtractErr()

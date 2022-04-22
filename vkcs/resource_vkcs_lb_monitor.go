@@ -112,7 +112,7 @@ func resourceMonitorCreate(ctx context.Context, d *schema.ResourceData, meta int
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	adminStateUp := d.Get("admin_state_up").(bool)
@@ -174,7 +174,7 @@ func resourceMonitorRead(ctx context.Context, d *schema.ResourceData, meta inter
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	monitor, err := octaviamonitors.Get(lbClient, d.Id()).Extract()
@@ -209,7 +209,7 @@ func resourceMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	var hasChange bool
@@ -310,7 +310,7 @@ func resourceMonitorDelete(ctx context.Context, d *schema.ResourceData, meta int
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	// Get a clean copy of the parent pool.

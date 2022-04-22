@@ -87,7 +87,7 @@ func dataSourceSharedFilesystemShareRead(ctx context.Context, d *schema.Resource
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem sfsClient: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem sfsClient: %s", err)
 	}
 
 	sfsClient.Microversion = minManilaShareMicroversion

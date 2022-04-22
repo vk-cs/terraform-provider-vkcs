@@ -71,7 +71,7 @@ func resourceNetworkingRouterInterfaceCreate(ctx context.Context, d *schema.Reso
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	createOpts := routers.AddInterfaceOpts{
@@ -111,7 +111,7 @@ func resourceNetworkingRouterInterfaceRead(ctx context.Context, d *schema.Resour
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	r, err := ports.Get(networkingClient, d.Id()).Extract()
@@ -149,7 +149,7 @@ func resourceNetworkingRouterInterfaceDelete(ctx context.Context, d *schema.Reso
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	stateConf := &resource.StateChangeConf{

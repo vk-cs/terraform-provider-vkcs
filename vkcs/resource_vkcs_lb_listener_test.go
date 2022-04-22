@@ -156,7 +156,7 @@ func testAccCheckLBListenerDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
 	lbClient, err := config.LoadBalancerV2Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
+		return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
@@ -187,7 +187,7 @@ func testAccCheckLBListenerExists(n string, listener *listeners.Listener) resour
 		config := testAccProvider.Meta().(*config)
 		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
+			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
 
 		found, err := listeners.Get(lbClient, rs.Primary.ID).Extract()

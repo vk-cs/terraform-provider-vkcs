@@ -138,7 +138,7 @@ func resourceKeyManagerContainerCreate(ctx context.Context, d *schema.ResourceDa
 	config := meta.(configer)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack KeyManager client: %s", err)
+		return diag.Errorf("Error creating VKCS KeyManager client: %s", err)
 	}
 
 	containerType := keyManagerContainerType(d.Get("type").(string))
@@ -199,7 +199,7 @@ func resourceKeyManagerContainerRead(ctx context.Context, d *schema.ResourceData
 	config := meta.(configer)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack barbican client: %s", err)
+		return diag.Errorf("Error creating VKCS KeyManager client: %s", err)
 	}
 
 	container, err := containers.Get(kmClient, d.Id()).Extract()
@@ -237,7 +237,7 @@ func resourceKeyManagerContainerUpdate(ctx context.Context, d *schema.ResourceDa
 	config := meta.(configer)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack barbican client: %s", err)
+		return diag.Errorf("Error creating VKCS KeyManager client: %s", err)
 	}
 
 	if d.HasChange("acl") {
@@ -255,7 +255,7 @@ func resourceKeyManagerContainerDelete(ctx context.Context, d *schema.ResourceDa
 	config := meta.(configer)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack barbican client: %s", err)
+		return diag.Errorf("Error creating VKCS KeyManager client: %s", err)
 	}
 
 	stateConf := &resource.StateChangeConf{

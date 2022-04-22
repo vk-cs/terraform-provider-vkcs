@@ -101,7 +101,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	var allFlavors []flavors.Flavor
@@ -111,7 +111,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 			if _, ok := err.(gophercloud.ErrDefault404); ok {
 				return diag.Errorf("No Flavor found")
 			}
-			return diag.Errorf("Unable to retrieve OpenStack %s flavor: %s", v, err)
+			return diag.Errorf("Unable to retrieve VKCS %s flavor: %s", v, err)
 		}
 
 		allFlavors = append(allFlavors, *flavor)
@@ -136,12 +136,12 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 
 		allPages, err := flavors.ListDetail(computeClient, listOpts).AllPages()
 		if err != nil {
-			return diag.Errorf("Unable to query OpenStack flavors: %s", err)
+			return diag.Errorf("Unable to query VKCS flavors: %s", err)
 		}
 
 		allFlavors, err = flavors.ExtractFlavors(allPages)
 		if err != nil {
-			return diag.Errorf("Unable to retrieve OpenStack flavors: %s", err)
+			return diag.Errorf("Unable to retrieve VKCS flavors: %s", err)
 		}
 	}
 

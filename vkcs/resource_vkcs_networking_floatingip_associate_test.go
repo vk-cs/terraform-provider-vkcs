@@ -76,7 +76,7 @@ func testAccCheckNetworkingFloatingIPAssociateDestroy(s *terraform.State) error 
 	config := testAccProvider.Meta().(configer)
 	networkClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack network client: %s", err)
+		return fmt.Errorf("Error creating VKCS network client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {

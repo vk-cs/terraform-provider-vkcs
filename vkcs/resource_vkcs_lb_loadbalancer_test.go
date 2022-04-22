@@ -134,7 +134,7 @@ func testAccCheckLBLoadBalancerDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
 	lbClient, err := config.LoadBalancerV2Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
+		return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
@@ -166,7 +166,7 @@ func testAccCheckLBLoadBalancerExists(
 		config := testAccProvider.Meta().(*config)
 		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
+			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
 
 		found, err := loadbalancers.Get(lbClient, rs.Primary.ID).Extract()
@@ -197,7 +197,7 @@ func testAccCheckLBLoadBalancerHasTag(n, tag string) resource.TestCheckFunc {
 		config := testAccProvider.Meta().(*config)
 		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
+			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
 
 		found, err := loadbalancers.Get(lbClient, rs.Primary.ID).Extract()
@@ -233,7 +233,7 @@ func testAccCheckLBLoadBalancerTagCount(n string, expected int) resource.TestChe
 		config := testAccProvider.Meta().(*config)
 		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack load balancing client: %s", err)
+			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
 
 		found, err := loadbalancers.Get(lbClient, rs.Primary.ID).Extract()
@@ -258,7 +258,7 @@ func testAccCheckLBLoadBalancerHasSecGroup(lb *loadbalancers.LoadBalancer, sg *g
 		config := testAccProvider.Meta().(*config)
 		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
+			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}
 
 		port, err := ports.Get(networkingClient, lb.VipPortID).Extract()

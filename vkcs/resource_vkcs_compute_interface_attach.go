@@ -72,7 +72,7 @@ func resourceComputeInterfaceAttachCreate(ctx context.Context, d *schema.Resourc
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	instanceID := d.Get("instance_id").(string)
@@ -137,7 +137,7 @@ func resourceComputeInterfaceAttachRead(_ context.Context, d *schema.ResourceDat
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	instanceID, attachmentID, err := computeInterfaceAttachParseID(d.Id())
@@ -168,7 +168,7 @@ func resourceComputeInterfaceAttachDelete(ctx context.Context, d *schema.Resourc
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	instanceID, attachmentID, err := computeInterfaceAttachParseID(d.Id())

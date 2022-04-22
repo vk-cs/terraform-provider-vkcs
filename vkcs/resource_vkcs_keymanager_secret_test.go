@@ -206,10 +206,10 @@ func testAccCheckSecretDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
 	kmClient, err := config.KeyManagerV1Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack KeyManager client: %s", err)
+		return fmt.Errorf("Error creating VKCS KeyManager client: %s", err)
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "openstack_keymanager_secret" {
+		if rs.Type != "vkcs_keymanager_secret" {
 			continue
 		}
 		_, err = secrets.Get(kmClient, rs.Primary.ID).Extract()
@@ -237,7 +237,7 @@ func testAccCheckSecretExists(n string, secret *secrets.Secret) resource.TestChe
 		config := testAccProvider.Meta().(configer)
 		kmClient, err := config.KeyManagerV1Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack KeyManager client: %s", err)
+			return fmt.Errorf("Error creating VKCS KeyManager client: %s", err)
 		}
 
 		var found *secrets.Secret
@@ -257,7 +257,7 @@ func testAccCheckPayloadEquals(payload string, secret *secrets.Secret) resource.
 		config := testAccProvider.Meta().(configer)
 		kmClient, err := config.KeyManagerV1Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack KeyManager client: %s", err)
+			return fmt.Errorf("Error creating VKCS KeyManager client: %s", err)
 		}
 
 		opts := secrets.GetPayloadOpts{
@@ -278,7 +278,7 @@ func testAccCheckMetadataEquals(key string, value string, secret *secrets.Secret
 		config := testAccProvider.Meta().(configer)
 		kmClient, err := config.KeyManagerV1Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
+			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}
 
 		uuid := keyManagerSecretGetUUIDfromSecretRef(secret.SecretRef)

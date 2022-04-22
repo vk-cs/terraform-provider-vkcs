@@ -97,7 +97,7 @@ func testAccCheckNetworkingFloatingIPDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
 	networkClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack floating IP: %s", err)
+		return fmt.Errorf("Error creating VKCS floating IP: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
@@ -128,7 +128,7 @@ func testAccCheckNetworkingFloatingIPExists(n string, kp *floatingips.FloatingIP
 		config := testAccProvider.Meta().(configer)
 		networkClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
+			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}
 
 		found, err := floatingips.Get(networkClient, rs.Primary.ID).Extract()

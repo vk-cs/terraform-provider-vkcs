@@ -44,7 +44,7 @@ func dataSourceComputeKeypairRead(ctx context.Context, d *schema.ResourceData, m
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	name := d.Get("name").(string)

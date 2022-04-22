@@ -87,7 +87,7 @@ func testAccCheckComputeServerGroupDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
 	computeClient, err := config.ComputeV2Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack compute client: %s", err)
+		return fmt.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
@@ -118,7 +118,7 @@ func testAccCheckComputeServerGroupExists(n string, kp *servergroups.ServerGroup
 		config := testAccProvider.Meta().(configer)
 		computeClient, err := config.ComputeV2Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack compute client: %s", err)
+			return fmt.Errorf("Error creating VKCS compute client: %s", err)
 		}
 
 		found, err := servergroups.Get(computeClient, rs.Primary.ID).Extract()

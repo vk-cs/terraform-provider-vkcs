@@ -226,7 +226,7 @@ func testAccCheckNetworkingSecGroupRuleDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
 	networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack networking client: %s", err)
+		return fmt.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
@@ -257,7 +257,7 @@ func testAccCheckNetworkingSecGroupRuleExists(n string, securityGroupRule *rules
 		config := testAccProvider.Meta().(configer)
 		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
+			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}
 
 		found, err := rules.Get(networkingClient, rs.Primary.ID).Extract()

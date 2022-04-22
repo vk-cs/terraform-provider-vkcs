@@ -94,7 +94,7 @@ func resourceIPSecPolicyCreate(ctx context.Context, d *schema.ResourceData, meta
 	config := meta.(*config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	encapsulationMode := resourceIPSecPolicyEncapsulationMode(d.Get("encapsulation_mode").(string))
@@ -151,7 +151,7 @@ func resourceIPSecPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 	config := meta.(*config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	policy, err := ipsecpolicies.Get(networkingClient, d.Id()).Extract()
@@ -159,7 +159,7 @@ func resourceIPSecPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(checkDeleted(d, err, "IPSec policy"))
 	}
 
-	log.Printf("[DEBUG] Read OpenStack IPSec policy %s: %#v", d.Id(), policy)
+	log.Printf("[DEBUG] Read VKCS IPSec policy %s: %#v", d.Id(), policy)
 
 	d.Set("name", policy.Name)
 	d.Set("description", policy.Description)
@@ -188,7 +188,7 @@ func resourceIPSecPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta
 	config := meta.(*config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	var hasChange bool
@@ -266,7 +266,7 @@ func resourceIPSecPolicyDelete(ctx context.Context, d *schema.ResourceData, meta
 	config := meta.(*config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	stateConf := &resource.StateChangeConf{

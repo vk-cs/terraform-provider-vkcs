@@ -70,7 +70,7 @@ func testAccCheckEndpointGroupDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*config)
 	networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack networking client: %s", err)
+		return fmt.Errorf("Error creating VKCS networking client: %s", err)
 	}
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "vkcs_vpnaas_group" {
@@ -101,7 +101,7 @@ func testAccCheckEndpointGroupExists(n string, group *endpointgroups.EndpointGro
 		config := testAccProvider.Meta().(*config)
 		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
+			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}
 
 		var found *endpointgroups.EndpointGroup

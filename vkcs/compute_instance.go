@@ -341,7 +341,7 @@ func flattenInstanceNetworks(d *schema.ResourceData, meta interface{}) ([]map[st
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating OpenStack compute client: %s", err)
+		return nil, fmt.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	server, err := servers.Get(computeClient, d.Id()).Extract()
@@ -454,7 +454,7 @@ func getInstanceAccessAddresses(d *schema.ResourceData, networks []map[string]in
 		}
 	}
 
-	log.Printf("[DEBUG] OpenStack Instance Network Access Addresses: %s, %s", hostv4, hostv6)
+	log.Printf("[DEBUG] VKCS Instance Network Access Addresses: %s, %s", hostv4, hostv6)
 
 	return hostv4, hostv6
 }
