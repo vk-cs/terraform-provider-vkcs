@@ -249,6 +249,12 @@ func Provider() *schema.Provider {
 			"vkcs_db_database":                   dataSourceDatabaseDatabase(),
 			"vkcs_db_instance":                   dataSourceDatabaseInstance(),
 			"vkcs_db_user":                       dataSourceDatabaseUser(),
+			"vkcs_kubernetes_clustertemplate":    dataSourceKubernetesClusterTemplate(),
+			"vkcs_kubernetes_clustertemplates":   dataSourceKubernetesClusterTemplates(),
+			"vkcs_kubernetes_cluster":            dataSourceKubernetesCluster(),
+			"vkcs_kubernetes_node_group":         dataSourceKubernetesNodeGroup(),
+			"vkcs_region":                        dataSourceVkcsRegion(),
+			"vkcs_regions":                       dataSourceVkcsRegions(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -297,6 +303,8 @@ func Provider() *schema.Provider {
 			"vkcs_db_user":                            resourceDatabaseUser(),
 			"vkcs_db_cluster":                         resourceDatabaseCluster(),
 			"vkcs_db_cluster_with_shards":             resourceDatabaseClusterWithShards(),
+			"vkcs_kubernetes_cluster":                 resourceKubernetesCluster(),
+			"vkcs_kubernetes_node_group":              resourceKubernetesNodeGroup(),
 		},
 	}
 

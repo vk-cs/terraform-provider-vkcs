@@ -32,6 +32,8 @@ var (
 	osDBDatastoreType          = os.Getenv("OS_DB_DATASTORE_TYPE")
 	osDBShardsDatastoreType    = os.Getenv("OS_DB_SHARDS_DATASTORE_TYPE")
 	osDBShardsDatastoreVersion = os.Getenv("OS_DB_SHARDS_DATASTORE_VERSION")
+	clusterTemplateID          = os.Getenv("CLUSTER_TEMPLATE_ID")
+	osSubnetworkID             = os.Getenv("OS_SUBNETWORK_ID")
 )
 
 var testAccProviders map[string]func() (*schema.Provider, error)
@@ -138,6 +140,21 @@ func testAccPreCheckDatabase(t *testing.T) {
 		"OS_DB_DATASTORE_VERSION": osDBDatastoreVersion,
 		"OS_DB_DATASTORE_TYPE":    osDBDatastoreType,
 		"OS_FLAVOR_ID":            osFlavorID,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckKubernetes(t *testing.T) {
+	vars := map[string]interface{}{
+		"CLUSTER_TEMPLATE_ID": clusterTemplateID,
+		"OS_FLAVOR_ID":        osFlavorID,
+		"OS_NETWORK_ID":       osNetworkID,
+		"OS_SUBNETWORK_ID":    osSubnetworkID,
+		"OS_KEYPAIR_NAME":     osKeypairName,
 	}
 	for k, v := range vars {
 		if v == "" {

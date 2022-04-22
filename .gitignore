@@ -2,8 +2,6 @@
 *.exe
 .DS_Store
 example.tf
-main.tf
-vars.tf
 .terraform*
 terraform.tfplan
 terraform.tfstate

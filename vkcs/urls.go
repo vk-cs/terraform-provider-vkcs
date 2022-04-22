@@ -47,3 +47,23 @@ func instanceDatabaseURL(c ContainerClient, api string, id string, databaseName 
 func instanceCapabilitiesURL(c ContainerClient, api string, id string) string {
 	return c.ServiceURL(api, id, "capabilities")
 }
+
+func deleteURL(c ContainerClient, api string, id string) string {
+	return c.ServiceURL(api, id)
+}
+
+func kubeConfigURL(c ContainerClient, api string, id string) string {
+	return c.ServiceURL(api, id, "kube_config")
+}
+
+func actionsURL(c ContainerClient, api string, id string) string {
+	return c.ServiceURL(api, id, "actions")
+}
+
+func upgradeURL(c ContainerClient, api string, id string) string {
+	return c.ServiceURL(api, id, "actions", "upgrade")
+}
+
+func scaleURL(c ContainerClient, api string, id string) string {
+	return c.ServiceURL(api, id, "actions", "scale")
+}

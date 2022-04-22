@@ -29,12 +29,17 @@ func getDBRequestOpts(codes ...int) *gophercloud.RequestOpts {
 	return reqOpts
 }
 
-// dateTimeWithoutTZFormat represents format of time used in dbaas
-type dateTimeWithoutTZFormat struct {
-	time.Time
+func getRequestOpts(codes ...int) *gophercloud.RequestOpts {
+	reqOpts := &gophercloud.RequestOpts{
+		OkCodes: codes,
+	}
+	if len(codes) != 0 {
+		reqOpts.OkCodes = codes
+	}
+	addMagnumMicroVersionHeader(reqOpts)
+	return reqOpts
 }
 
-// UnmarshalJSON is used to correctly unmarshal datetime fields
 func (t *dateTimeWithoutTZFormat) UnmarshalJSON(b []byte) (err error) {
 	layout := "2006-01-02T15:04:05"
 	s := strings.Trim(string(b), "\"")
@@ -45,6 +50,16 @@ func (t *dateTimeWithoutTZFormat) UnmarshalJSON(b []byte) (err error) {
 	return
 }
 
+// dateTimeWithoutTZFormat represents format of time used in dbaas
+type dateTimeWithoutTZFormat struct {
+	time.Time
+}
+
+// UnmarshalJSON is used to correctly unmarshal datetime fields
 type optsBuilder interface {
 	Map() (map[string]interface{}, error)
+}
+
+type patchOptsBuilder interface {
+	PatchMap() ([]map[string]interface{}, error)
 }
