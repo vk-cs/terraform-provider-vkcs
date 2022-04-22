@@ -170,7 +170,7 @@ func dataSourceKeyManagerSecretRead(ctx context.Context, d *schema.ResourceData,
 	config := meta.(configer)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack barbican client: %s", err)
+		return diag.Errorf("Error creating VKCS KeyManager client: %s", err)
 	}
 
 	aclOnly := d.Get("acl_only").(bool)

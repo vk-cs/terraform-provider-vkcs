@@ -83,7 +83,7 @@ func dataSourceSharedFilesystemShareNetworkRead(ctx context.Context, d *schema.R
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem sfsClient: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem sfsClient: %s", err)
 	}
 
 	listOpts := sharenetworks.ListOpts{

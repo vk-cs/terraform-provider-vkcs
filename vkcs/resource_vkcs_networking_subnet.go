@@ -191,7 +191,7 @@ func resourceNetworkingSubnetCreate(ctx context.Context, d *schema.ResourceData,
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	// Check nameservers.
@@ -293,7 +293,7 @@ func resourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData, m
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	s, err := subnets.Get(networkingClient, d.Id()).Extract()
@@ -342,7 +342,7 @@ func resourceNetworkingSubnetUpdate(ctx context.Context, d *schema.ResourceData,
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	var hasChange bool
@@ -401,7 +401,7 @@ func resourceNetworkingSubnetUpdate(ctx context.Context, d *schema.ResourceData,
 		log.Printf("[DEBUG] Updating vkcs_networking_subnet %s with options: %#v", d.Id(), updateOpts)
 		_, err = subnets.Update(networkingClient, d.Id(), updateOpts).Extract()
 		if err != nil {
-			return diag.Errorf("Error updating OpenStack Neutron vkcs_networking_subnet %s: %s", d.Id(), err)
+			return diag.Errorf("Error updating VKCS networking vkcs_networking_subnet %s: %s", d.Id(), err)
 		}
 	}
 
@@ -422,7 +422,7 @@ func resourceNetworkingSubnetDelete(ctx context.Context, d *schema.ResourceData,
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	stateConf := &resource.StateChangeConf{

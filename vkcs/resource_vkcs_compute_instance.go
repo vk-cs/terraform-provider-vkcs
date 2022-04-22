@@ -361,12 +361,12 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	imageClient, err := config.ImageV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack image client: %s", err)
+		return diag.Errorf("Error creating VKCS image client: %s", err)
 	}
 
 	computeClient.Microversion = computeAPIMicroVersion
@@ -479,7 +479,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack server: %s", err)
+		return diag.Errorf("Error creating VKCS server: %s", err)
 	}
 	log.Printf("[INFO] Instance ID: %s", server.ID)
 
@@ -520,7 +520,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	if strings.ToLower(vmState) == "shutoff" {
 		err = startstop.Stop(computeClient, d.Id()).ExtractErr()
 		if err != nil {
-			return diag.Errorf("Error stopping OpenStack instance: %s", err)
+			return diag.Errorf("Error stopping VKCS instance: %s", err)
 		}
 		stopStateConf := &resource.StateChangeConf{
 			//Pending:    []string{"ACTIVE"},
@@ -545,7 +545,7 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	server, err := servers.Get(computeClient, d.Id()).Extract()
@@ -607,7 +607,7 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 
 	flavorID, ok := server.Flavor["id"].(string)
 	if !ok {
-		return diag.Errorf("Error setting OpenStack server's flavor: %v", server.Flavor)
+		return diag.Errorf("Error setting VKCS server's flavor: %v", server.Flavor)
 	}
 	d.Set("flavor_id", flavorID)
 
@@ -665,7 +665,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	var updateOpts servers.UpdateOpts
@@ -676,7 +676,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 	if updateOpts != (servers.UpdateOpts{}) {
 		_, err := servers.Update(computeClient, d.Id(), updateOpts).Extract()
 		if err != nil {
-			return diag.Errorf("Error updating OpenStack server: %s", err)
+			return diag.Errorf("Error updating VKCS server: %s", err)
 		}
 	}
 
@@ -687,7 +687,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		if strings.ToLower(powerStateNew) == "shelved_offloaded" {
 			err = shelveunshelve.Shelve(computeClient, d.Id()).ExtractErr()
 			if err != nil {
-				return diag.Errorf("Error shelve OpenStack instance: %s", err)
+				return diag.Errorf("Error shelve VKCS instance: %s", err)
 			}
 			shelveStateConf := &resource.StateChangeConf{
 				//Pending:    []string{"ACTIVE"},
@@ -707,7 +707,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		if strings.ToLower(powerStateNew) == "shutoff" {
 			err = startstop.Stop(computeClient, d.Id()).ExtractErr()
 			if err != nil {
-				return diag.Errorf("Error stopping OpenStack instance: %s", err)
+				return diag.Errorf("Error stopping VKCS instance: %s", err)
 			}
 			stopStateConf := &resource.StateChangeConf{
 				//Pending:    []string{"ACTIVE"},
@@ -731,12 +731,12 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 				}
 				err = shelveunshelve.Unshelve(computeClient, d.Id(), unshelveOpt).ExtractErr()
 				if err != nil {
-					return diag.Errorf("Error unshelving OpenStack instance: %s", err)
+					return diag.Errorf("Error unshelving VKCS instance: %s", err)
 				}
 			} else {
 				err = startstop.Start(computeClient, d.Id()).ExtractErr()
 				if err != nil {
-					return diag.Errorf("Error starting OpenStack instance: %s", err)
+					return diag.Errorf("Error starting VKCS instance: %s", err)
 				}
 			}
 			startStateConf := &resource.StateChangeConf{
@@ -790,7 +790,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 
 		_, err := servers.UpdateMetadata(computeClient, d.Id(), metadataOpts).Extract()
 		if err != nil {
-			return diag.Errorf("Error updating OpenStack server (%s) metadata: %s", d.Id(), err)
+			return diag.Errorf("Error updating VKCS server (%s) metadata: %s", d.Id(), err)
 		}
 	}
 
@@ -812,7 +812,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 					continue
 				}
 
-				return diag.Errorf("Error removing security group (%s) from OpenStack server (%s): %s", g, d.Id(), err)
+				return diag.Errorf("Error removing security group (%s) from VKCS server (%s): %s", g, d.Id(), err)
 			}
 			log.Printf("[DEBUG] Removed security group (%s) from instance (%s)", g, d.Id())
 		}
@@ -820,7 +820,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		for _, g := range secgroupsToAdd.List() {
 			err := secgroups.AddServer(computeClient, d.Id(), g.(string)).ExtractErr()
 			if err != nil && err.Error() != "EOF" {
-				return diag.Errorf("Error adding security group (%s) to OpenStack server (%s): %s", g, d.Id(), err)
+				return diag.Errorf("Error adding security group (%s) to VKCS server (%s): %s", g, d.Id(), err)
 			}
 			log.Printf("[DEBUG] Added security group (%s) to instance (%s)", g, d.Id())
 		}
@@ -830,7 +830,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		if newPwd, ok := d.Get("admin_pass").(string); ok {
 			err := servers.ChangeAdminPassword(computeClient, d.Id(), newPwd).ExtractErr()
 			if err != nil {
-				return diag.Errorf("Error changing admin password of OpenStack server (%s): %s", d.Id(), err)
+				return diag.Errorf("Error changing admin password of VKCS server (%s): %s", d.Id(), err)
 			}
 		}
 	}
@@ -862,7 +862,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		log.Printf("[DEBUG] Resize configuration: %#v", resizeOpts)
 		err = servers.Resize(computeClient, d.Id(), resizeOpts).ExtractErr()
 		if err != nil {
-			return diag.Errorf("Error resizing OpenStack server: %s", err)
+			return diag.Errorf("Error resizing VKCS server: %s", err)
 		}
 
 		// Wait for the instance to finish resizing.
@@ -902,7 +902,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 			log.Printf("[DEBUG] Confirming resize")
 			err = servers.ConfirmResize(computeClient, d.Id()).ExtractErr()
 			if err != nil {
-				return diag.Errorf("Error confirming resize of OpenStack server: %s", err)
+				return diag.Errorf("Error confirming resize of VKCS server: %s", err)
 			}
 
 			stateConf = &resource.StateChangeConf{
@@ -940,7 +940,7 @@ func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, 
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	if d.Get("stop_before_destroy").(bool) {
@@ -992,20 +992,20 @@ func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 	if d.Get("force_delete").(bool) {
-		log.Printf("[DEBUG] Force deleting OpenStack Instance %s", d.Id())
+		log.Printf("[DEBUG] Force deleting VKCS Instance %s", d.Id())
 		err = servers.ForceDelete(computeClient, d.Id()).ExtractErr()
 		if err != nil {
 			return diag.FromErr(checkDeleted(d, err, "Error force deleting vkcs_compute_instance"))
 		}
 	} else {
-		log.Printf("[DEBUG] Deleting OpenStack Instance %s", d.Id())
+		log.Printf("[DEBUG] Deleting VKCS Instance %s", d.Id())
 		err = servers.Delete(computeClient, d.Id()).ExtractErr()
 		if err != nil {
 			return diag.FromErr(checkDeleted(d, err, "Error deleting vkcs_compute_instance"))
 		}
 	}
 
-	log.Printf("[DEBUG] Deleting OpenStack Instance %s", d.Id())
+	log.Printf("[DEBUG] Deleting VKCS Instance %s", d.Id())
 	err = servers.Delete(computeClient, d.Id()).ExtractErr()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error deleting vkcs_compute_instance"))
@@ -1040,7 +1040,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating OpenStack compute client: %s", err)
+		return nil, fmt.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	results := make([]*schema.ResourceData, 1)
@@ -1065,7 +1065,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 	if len(serverWithAttachments.VolumesAttached) > 0 {
 		blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 		if err != nil {
-			return nil, fmt.Errorf("Error creating OpenStack volume V3 client: %s", err)
+			return nil, fmt.Errorf("Error creating VKCS volume client: %s", err)
 		}
 		var volMetaData = struct {
 			VolumeImageMetadata map[string]interface{} `json:"volume_image_metadata"`
@@ -1113,7 +1113,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 }
 
 // ServerStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
-// an OpenStack instance.
+// an VKCS instance.
 func ServerStateRefreshFunc(client *gophercloud.ServiceClient, instanceID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		s, err := servers.Get(client, instanceID).Extract()

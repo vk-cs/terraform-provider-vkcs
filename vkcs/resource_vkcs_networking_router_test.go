@@ -88,7 +88,7 @@ func testAccCheckNetworkingRouterDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(configer)
 	networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack networking client: %s", err)
+		return fmt.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
@@ -119,7 +119,7 @@ func testAccCheckNetworkingRouterExists(n string, router *routers.Router) resour
 		config := testAccProvider.Meta().(configer)
 		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack networking client: %s", err)
+			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}
 
 		found, err := routers.Get(networkingClient, rs.Primary.ID).Extract()

@@ -67,7 +67,7 @@ func dataSourceBlockStorageSnapshotRead(ctx context.Context, d *schema.ResourceD
 	config := meta.(configer)
 	client, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack block storage client: %s", err)
+		return diag.Errorf("Error creating VKCS block storage client: %s", err)
 	}
 
 	listOpts := snapshots.ListOpts{
@@ -78,12 +78,12 @@ func dataSourceBlockStorageSnapshotRead(ctx context.Context, d *schema.ResourceD
 
 	allPages, err := snapshots.List(client, listOpts).AllPages()
 	if err != nil {
-		return diag.Errorf("Unable to query openstack_blockstorage_snapshots_v3: %s", err)
+		return diag.Errorf("Unable to query vkcs_blockstorage_snapshots: %s", err)
 	}
 
 	allSnapshots, err := snapshots.ExtractSnapshots(allPages)
 	if err != nil {
-		return diag.Errorf("Unable to retrieve openstack_blockstorage_snapshots_v3: %s", err)
+		return diag.Errorf("Unable to retrieve vkcs_blockstorage_snapshots: %s", err)
 	}
 
 	if len(allSnapshots) < 1 {

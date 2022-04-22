@@ -67,7 +67,7 @@ func resourceNetworkingPortSecGroupAssociateCreate(ctx context.Context, d *schem
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	securityGroups := expandToStringSlice(d.Get("security_group_ids").(*schema.Set).List())
@@ -110,7 +110,7 @@ func resourceNetworkingPortSecGroupAssociateRead(ctx context.Context, d *schema.
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	port, err := ports.Get(networkingClient, d.Id()).Extract()
@@ -146,7 +146,7 @@ func resourceNetworkingPortSecGroupAssociateUpdate(ctx context.Context, d *schem
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	var updateOpts ports.UpdateOpts
@@ -174,7 +174,7 @@ func resourceNetworkingPortSecGroupAssociateUpdate(ctx context.Context, d *schem
 		log.Printf("[DEBUG] Port Security Group Update Options: %#v", updateOpts.SecurityGroups)
 		_, err = ports.Update(networkingClient, d.Id(), updateOpts).Extract()
 		if err != nil {
-			return diag.Errorf("Error updating OpenStack Neutron Port: %s", err)
+			return diag.Errorf("Error updating VKCS networking Port: %s", err)
 		}
 	}
 
@@ -185,7 +185,7 @@ func resourceNetworkingPortSecGroupAssociateDelete(ctx context.Context, d *schem
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	var updateOpts ports.UpdateOpts

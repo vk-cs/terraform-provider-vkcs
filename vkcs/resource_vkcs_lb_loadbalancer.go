@@ -107,7 +107,7 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, met
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	var (
@@ -157,7 +157,7 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, met
 	// to the port that was created behind the scenes.
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 	if err := resourceLoadBalancerSetSecurityGroups(networkingClient, vipPortID, d); err != nil {
 		return diag.Errorf("Error setting vkcs_lb_loadbalancer security groups: %s", err)
@@ -172,7 +172,7 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, meta 
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	var vipPortID string
@@ -200,7 +200,7 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, meta 
 	if vipPortID != "" {
 		networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 		if err != nil {
-			return diag.Errorf("Error creating OpenStack networking client: %s", err)
+			return diag.Errorf("Error creating VKCS networking client: %s", err)
 		}
 		if err := resourceLoadBalancerGetSecurityGroups(networkingClient, vipPortID, d); err != nil {
 			return diag.Errorf("Error getting port security groups for vkcs_lb_loadbalancer: %s", err)
@@ -214,7 +214,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, met
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 	var updateOpts octavialoadbalancers.UpdateOpts
 	var hasChange bool
@@ -277,7 +277,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, met
 	if d.HasChange("security_group_ids") {
 		networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 		if err != nil {
-			return diag.Errorf("Error creating OpenStack networking client: %s", err)
+			return diag.Errorf("Error creating VKCS networking client: %s", err)
 		}
 		vipPortID := d.Get("vip_port_id").(string)
 		if err := resourceLoadBalancerSetSecurityGroups(networkingClient, vipPortID, d); err != nil {
@@ -292,7 +292,7 @@ func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, met
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	log.Printf("[DEBUG] Deleting vkcs_lb_loadbalancer %s", d.Id())

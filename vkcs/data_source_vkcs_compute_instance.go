@@ -130,7 +130,7 @@ func dataSourceComputeInstanceRead(ctx context.Context, d *schema.ResourceData, 
 	log.Print("[DEBUG] Creating compute client")
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	id := d.Get("id").(string)
@@ -185,7 +185,7 @@ func dataSourceComputeInstanceRead(ctx context.Context, d *schema.ResourceData, 
 
 	flavorID, ok := server.Flavor["id"].(string)
 	if !ok {
-		return diag.Errorf("Error setting OpenStack server's flavor: %v", server.Flavor)
+		return diag.Errorf("Error setting VKCS server's flavor: %v", server.Flavor)
 	}
 	d.Set("flavor_id", flavorID)
 

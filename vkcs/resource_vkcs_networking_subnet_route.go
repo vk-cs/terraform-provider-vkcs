@@ -61,7 +61,7 @@ func resourceNetworkingSubnetRouteCreate(ctx context.Context, d *schema.Resource
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	subnetID := d.Get("subnet_id").(string)
@@ -123,7 +123,7 @@ func resourceNetworkingSubnetRouteRead(ctx context.Context, d *schema.ResourceDa
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	subnetID, destCIDR, nextHop, err := resourceNetworkingSubnetRouteParseID(d.Id())
@@ -169,7 +169,7 @@ func resourceNetworkingSubnetRouteDelete(ctx context.Context, d *schema.Resource
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	subnetID := d.Get("subnet_id").(string)

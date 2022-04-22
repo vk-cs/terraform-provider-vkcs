@@ -89,7 +89,7 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	adminStateUp := d.Get("admin_state_up").(bool)
@@ -157,7 +157,7 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, meta interf
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	poolID := d.Get("pool_id").(string)
@@ -184,7 +184,7 @@ func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
 	var updateOpts pools.UpdateMemberOpts
@@ -253,7 +253,7 @@ func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack loadbalancer client: %s", err)
+		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
 	// Get a clean copy of the parent pool.

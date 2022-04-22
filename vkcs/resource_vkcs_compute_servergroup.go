@@ -60,7 +60,7 @@ func resourceComputeServerGroupCreate(ctx context.Context, d *schema.ResourceDat
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	name := d.Get("name").(string)
@@ -91,7 +91,7 @@ func resourceComputeServerGroupRead(_ context.Context, d *schema.ResourceData, m
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	sg, err := servergroups.Get(computeClient, d.Id()).Extract()
@@ -114,7 +114,7 @@ func resourceComputeServerGroupDelete(_ context.Context, d *schema.ResourceData,
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
 	if err := servergroups.Delete(computeClient, d.Id()).ExtractErr(); err != nil {

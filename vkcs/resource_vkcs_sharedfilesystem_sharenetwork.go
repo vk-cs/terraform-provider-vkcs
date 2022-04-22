@@ -87,7 +87,7 @@ func resourceSharedFilesystemShareNetworkCreate(ctx context.Context, d *schema.R
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	createOpts := sharenetworks.CreateOpts{
@@ -125,7 +125,7 @@ func resourceSharedFilesystemShareNetworkRead(ctx context.Context, d *schema.Res
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	sharenetwork, err := sharenetworks.Get(sfsClient, d.Id()).Extract()
@@ -158,7 +158,7 @@ func resourceSharedFilesystemShareNetworkUpdate(ctx context.Context, d *schema.R
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	var updateOpts sharenetworks.UpdateOpts
@@ -219,7 +219,7 @@ func resourceSharedFilesystemShareNetworkDelete(ctx context.Context, d *schema.R
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack sharedfilesystem client: %s", err)
+		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	log.Printf("[DEBUG] Attempting to delete sharenetwork %s", d.Id())

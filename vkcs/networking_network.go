@@ -40,7 +40,7 @@ func networkingNetworkID(d *schema.ResourceData, meta interface{}, networkName s
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return "", fmt.Errorf("Error creating OpenStack network client: %s", err)
+		return "", fmt.Errorf("Error creating VKCS network client: %s", err)
 	}
 
 	opts := networks.ListOpts{Name: networkName}
@@ -71,7 +71,7 @@ func networkingNetworkName(d *schema.ResourceData, meta interface{}, networkID s
 	config := meta.(configer)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
-		return "", fmt.Errorf("Error creating OpenStack network client: %s", err)
+		return "", fmt.Errorf("Error creating VKCS network client: %s", err)
 	}
 
 	opts := networks.ListOpts{ID: networkID}
