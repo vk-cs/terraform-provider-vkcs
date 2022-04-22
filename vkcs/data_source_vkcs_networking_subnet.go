@@ -165,9 +165,9 @@ func dataSourceNetworkingSubnet() *schema.Resource {
 			},
 
 			"sdn": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validateSDN(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: validateSDN(),
 			},
 		},
 	}
@@ -190,7 +190,7 @@ func dataSourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData,
 		listOpts.Description = v.(string)
 	}
 
-	if v, ok := d.GetOkExists("dhcp_enabled"); ok {
+	if v, ok := d.GetOk("dhcp_enabled"); ok {
 		enableDHCP := v.(bool)
 		listOpts.EnableDHCP = &enableDHCP
 	}

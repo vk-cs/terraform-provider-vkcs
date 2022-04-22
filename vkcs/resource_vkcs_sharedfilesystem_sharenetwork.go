@@ -235,11 +235,11 @@ func resourceSharedFilesystemShareNetworkGetSvcByShareNetID(sfsClient *gopherclo
 	securityServiceListOpts := securityservices.ListOpts{ShareNetworkID: shareNetworkID}
 	securityServicePages, err := securityservices.List(sfsClient, securityServiceListOpts).AllPages()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to list security services for sharenetwork %s: %s", shareNetworkID, err)
+		return nil, fmt.Errorf("unable to list security services for sharenetwork %s: %s", shareNetworkID, err)
 	}
 	securityServiceList, err := securityservices.ExtractSecurityServices(securityServicePages)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to extract security services for sharenetwork %s: %s", shareNetworkID, err)
+		return nil, fmt.Errorf("unable to extract security services for sharenetwork %s: %s", shareNetworkID, err)
 	}
 	log.Printf("[DEBUG] Retrieved security services for sharenetwork %s: %#v", shareNetworkID, securityServiceList)
 

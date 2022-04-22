@@ -220,7 +220,7 @@ func resourceListenerCreate(ctx context.Context, d *schema.ResourceData, meta in
 
 	log.Printf("[DEBUG] vkcs_lb_listener create options: %#v", createOpts)
 	var listener *octavialisteners.Listener
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		listener, err = octavialisteners.Create(lbClient, createOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -408,7 +408,7 @@ func resourceListenerUpdate(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	log.Printf("[DEBUG] vkcs_lb_listener %s update options: %#v", d.Id(), updateOpts)
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		_, err = octavialisteners.Update(lbClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -445,7 +445,7 @@ func resourceListenerDelete(ctx context.Context, d *schema.ResourceData, meta in
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	log.Printf("[DEBUG] Deleting vkcs_lb_listener %s", d.Id())
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		err = octavialisteners.Delete(lbClient, d.Id()).ExtractErr()
 		if err != nil {
 			return checkForRetryableError(err)

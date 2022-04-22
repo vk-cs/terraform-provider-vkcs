@@ -116,7 +116,7 @@ func resourceBlockStorageVolumeCreate(ctx context.Context, d *schema.ResourceDat
 	config := meta.(configer)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("error creating VKCS block storage client: %s", err)
+		return diag.Errorf("Error creating VKCS block storage client: %s", err)
 	}
 
 	metadata := d.Get("metadata").(map[string]interface{})
@@ -164,7 +164,7 @@ func resourceBlockStorageVolumeRead(ctx context.Context, d *schema.ResourceData,
 	config := meta.(configer)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("error creating VKCS block storage client: %s", err)
+		return diag.Errorf("Error creating VKCS block storage client: %s", err)
 	}
 
 	v, err := volumes.Get(blockStorageClient, d.Id()).Extract()
@@ -191,7 +191,7 @@ func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceDat
 	config := meta.(configer)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("error creating VKCS block storage client: %s", err)
+		return diag.Errorf("Error creating VKCS block storage client: %s", err)
 	}
 
 	name := d.Get("name").(string)
@@ -271,7 +271,7 @@ func resourceBlockStorageVolumeDelete(ctx context.Context, d *schema.ResourceDat
 	config := meta.(configer)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("error creating VKCS block storage client: %s", err)
+		return diag.Errorf("Error creating VKCS block storage client: %s", err)
 	}
 
 	err = volumes.Delete(blockStorageClient, d.Id(), nil).ExtractErr()

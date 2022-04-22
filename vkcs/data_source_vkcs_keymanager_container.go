@@ -113,7 +113,7 @@ func dataSourceKeyManagerContainerRead(ctx context.Context, d *schema.ResourceDa
 	config := meta.(configer)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating VKCS KeyManager client: %s", err)
+		return diag.Errorf("Error creating VKCS keymanager client: %s", err)
 	}
 
 	listOpts := containers.ListOpts{

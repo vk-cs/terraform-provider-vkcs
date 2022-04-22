@@ -15,7 +15,7 @@ func TestAccAvailabilityZones_basic(t *testing.T) {
 			{
 				Config: testAccAvailabilityZonesConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("data.vkcs_compute_availability_zones.zones", "names.#", regexp.MustCompile("[1-9]\\d*")),
+					resource.TestMatchResourceAttr("data.vkcs_compute_availability_zones.zones", "names.#", regexp.MustCompile(`[1-9]\d*`)),
 				),
 			},
 		},

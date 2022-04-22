@@ -254,7 +254,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, met
 		}
 
 		log.Printf("[DEBUG] Updating vkcs_lb_loadbalancer %s with options: %#v", d.Id(), updateOpts)
-		err = resource.Retry(timeout, func() *resource.RetryError {
+		err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 			_, err = octavialoadbalancers.Update(lbClient, d.Id(), updateOpts).Extract()
 			if err != nil {
 				return checkForRetryableError(err)
@@ -297,7 +297,7 @@ func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, met
 
 	log.Printf("[DEBUG] Deleting vkcs_lb_loadbalancer %s", d.Id())
 	timeout := d.Timeout(schema.TimeoutDelete)
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		err = octavialoadbalancers.Delete(lbClient, d.Id(), nil).ExtractErr()
 		if err != nil {
 			return checkForRetryableError(err)

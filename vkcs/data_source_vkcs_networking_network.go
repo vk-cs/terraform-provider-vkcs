@@ -98,9 +98,9 @@ func dataSourceNetworkingNetwork() *schema.Resource {
 			},
 
 			"sdn": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validateSDN(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: validateSDN(),
 			},
 		},
 	}
@@ -130,7 +130,7 @@ func dataSourceNetworkingNetworkRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Add the external attribute if specified.
-	if v, ok := d.GetOkExists("external"); ok {
+	if v, ok := d.GetOk("external"); ok {
 		isExternal := v.(bool)
 		listOpts = external.ListOptsExt{
 			ListOptsBuilder: listOpts,

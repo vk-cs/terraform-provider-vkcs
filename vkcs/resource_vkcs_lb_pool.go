@@ -139,11 +139,9 @@ func resourcePoolCreate(ctx context.Context, d *schema.ResourceData, meta interf
 					"Persistence cookie_name needs to be set if using 'APP_COOKIE' persistence type")
 			}
 			persistence.CookieName = pV["cookie_name"].(string)
-		} else {
-			if pV["cookie_name"].(string) != "" {
-				return diag.Errorf(
-					"Persistence cookie_name can only be set if using 'APP_COOKIE' persistence type")
-			}
+		} else if pV["cookie_name"].(string) != "" {
+			return diag.Errorf(
+				"Persistence cookie_name can only be set if using 'APP_COOKIE' persistence type")
 		}
 	}
 
@@ -188,7 +186,7 @@ func resourcePoolCreate(ctx context.Context, d *schema.ResourceData, meta interf
 
 	log.Printf("[DEBUG] Attempting to create pool")
 	var pool *pools.Pool
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		pool, err = pools.Create(lbClient, createOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -276,7 +274,7 @@ func resourcePoolUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	log.Printf("[DEBUG] Updating pool %s with options: %#v", d.Id(), updateOpts)
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		_, err = pools.Update(lbClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -313,7 +311,7 @@ func resourcePoolDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	log.Printf("[DEBUG] Attempting to delete pool %s", d.Id())
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		err = pools.Delete(lbClient, d.Id()).ExtractErr()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -338,7 +336,7 @@ func resourcePoolImport(ctx context.Context, d *schema.ResourceData, meta interf
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating VKCS networking client: %s", err)
+		return nil, fmt.Errorf("error creating VKCS networking client: %s", err)
 	}
 
 	pool, err := pools.Get(lbClient, d.Id()).Extract()
@@ -348,12 +346,13 @@ func resourcePoolImport(ctx context.Context, d *schema.ResourceData, meta interf
 
 	log.Printf("[DEBUG] Retrieved pool %s during the import: %#v", d.Id(), pool)
 
-	if len(pool.Listeners) > 0 && pool.Listeners[0].ID != "" {
+	switch {
+	case len(pool.Listeners) > 0 && pool.Listeners[0].ID != "":
 		d.Set("listener_id", pool.Listeners[0].ID)
-	} else if len(pool.Loadbalancers) > 0 && pool.Loadbalancers[0].ID != "" {
+	case len(pool.Loadbalancers) > 0 && pool.Loadbalancers[0].ID != "":
 		d.Set("loadbalancer_id", pool.Loadbalancers[0].ID)
-	} else {
-		return nil, fmt.Errorf("Unable to detect pool's Listener ID or Load Balancer ID")
+	default:
+		return nil, fmt.Errorf("unable to detect pool's Listener ID or Load Balancer ID")
 	}
 
 	return []*schema.ResourceData{d}, nil

@@ -63,19 +63,19 @@ func resourceImagesImageFileProps(filename string) (int64, string, error) {
 
 	file, err := os.Open(filename)
 	if err != nil {
-		return -1, "", fmt.Errorf("Error opening file for Image: %s", err)
+		return -1, "", fmt.Errorf("error opening file for Image: %s", err)
 	}
 	defer file.Close()
 
 	fstat, err := file.Stat()
 	if err != nil {
-		return -1, "", fmt.Errorf("Error reading image file %q: %s", file.Name(), err)
+		return -1, "", fmt.Errorf("error reading image file %q: %s", file.Name(), err)
 	}
 
 	filesize = fstat.Size()
 	filechecksum, err = fileMD5Checksum(file)
 	if err != nil {
-		return -1, "", fmt.Errorf("Error computing image file %q checksum: %s", file.Name(), err)
+		return -1, "", fmt.Errorf("error computing image file %q checksum: %s", file.Name(), err)
 	}
 
 	return filesize, filechecksum, nil
@@ -93,18 +93,18 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 
 		if _, err := os.Stat(filename); err != nil {
 			if !os.IsNotExist(err) {
-				return "", fmt.Errorf("Error while trying to access file %q: %s", filename, err)
+				return "", fmt.Errorf("error while trying to access file %q: %s", filename, err)
 			}
 			log.Printf("[DEBUG] File doens't exists %s. will download from %s", filename, furl)
 			file, err := os.Create(filename)
 			if err != nil {
-				return "", fmt.Errorf("Error creating file %q: %s", filename, err)
+				return "", fmt.Errorf("error creating file %q: %s", filename, err)
 			}
 			defer file.Close()
 			client := &client.ProviderClient.HTTPClient
 			request, err := http.NewRequest("GET", furl, nil)
 			if err != nil {
-				return "", fmt.Errorf("Error create a new request")
+				return "", fmt.Errorf("error create a new request")
 			}
 
 			username := d.Get("image_source_username").(string)
@@ -115,25 +115,25 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 
 			resp, err := client.Do(request)
 			if err != nil {
-				return "", fmt.Errorf("Error downloading image from %q", furl)
+				return "", fmt.Errorf("error downloading image from %q", furl)
 			}
 
 			// check for credential error among other errors
 			if resp.StatusCode != http.StatusOK {
-				return "", fmt.Errorf("Error downloading image from %q, statusCode is %d", furl, resp.StatusCode)
+				return "", fmt.Errorf("error downloading image from %q, statusCode is %d", furl, resp.StatusCode)
 			}
 
 			defer resp.Body.Close()
 
 			if _, err = io.Copy(file, resp.Body); err != nil {
-				return "", fmt.Errorf("Error downloading image %q to file %q: %s", furl, filename, err)
+				return "", fmt.Errorf("error downloading image %q to file %q: %s", furl, filename, err)
 			}
 			return filename, nil
 		}
 		log.Printf("[DEBUG] File exists %s", filename)
 		return filename, nil
 	} else {
-		return "", fmt.Errorf("Error in config. no file specified")
+		return "", fmt.Errorf("error in config. no file specified")
 	}
 }
 
@@ -145,7 +145,7 @@ func resourceImagesImageRefreshFunc(client *gophercloud.ServiceClient, id string
 		}
 		log.Printf("[DEBUG] VKCS image status is: %s", img.Status)
 
-		return img, fmt.Sprintf("%s", img.Status), nil
+		return img, string(img.Status), nil
 	}
 }
 

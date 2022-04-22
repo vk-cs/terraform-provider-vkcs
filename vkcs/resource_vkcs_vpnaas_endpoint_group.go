@@ -159,8 +159,7 @@ func resourceEndpointGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 		hasChange = true
 	}
 
-	var updateOpts endpointgroups.UpdateOptsBuilder
-	updateOpts = opts
+	var updateOpts endpointgroups.UpdateOptsBuilder = opts
 
 	log.Printf("[DEBUG] Updating endpoint group with id %s: %#v", d.Id(), updateOpts)
 
@@ -228,7 +227,7 @@ func waitForEndpointGroupDeletion(networkingClient *gophercloud.ServiceClient, i
 				log.Printf("[DEBUG] EndpointGroup %s is actually deleted", id)
 				return "", "DELETED", nil
 			}
-			return nil, "", fmt.Errorf("Unexpected error: %s", err)
+			return nil, "", fmt.Errorf("unexpected error: %s", err)
 		}
 
 		log.Printf("[DEBUG] EndpointGroup %s deletion is pending", id)

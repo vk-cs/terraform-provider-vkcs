@@ -65,9 +65,9 @@ func dataSourceNetworkingRouter() *schema.Resource {
 			},
 
 			"sdn": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validateSDN(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: validateSDN(),
 			},
 		},
 	}
@@ -94,7 +94,7 @@ func dataSourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData,
 		listOpts.Description = v.(string)
 	}
 
-	if v, ok := d.GetOkExists("admin_state_up"); ok {
+	if v, ok := d.GetOk("admin_state_up"); ok {
 		asu := v.(bool)
 		listOpts.AdminStateUp = &asu
 	}
@@ -145,13 +145,5 @@ func dataSourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("all_tags", router.Tags)
 	d.Set("region", getRegion(d, config))
 	d.Set("sdn", getSDN(d))
-
-	externalFixedIPs := make([]map[string]string, 0, len(router.GatewayInfo.ExternalFixedIPs))
-	for _, v := range router.GatewayInfo.ExternalFixedIPs {
-		externalFixedIPs = append(externalFixedIPs, map[string]string{
-			"subnet_id":  v.SubnetID,
-			"ip_address": v.IPAddress,
-		})
-	}
 	return nil
 }

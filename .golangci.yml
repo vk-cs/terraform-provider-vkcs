@@ -5,21 +5,6 @@ run:
 issues:
   max-per-linter: 0
   max-same-issues: 0
-  exclude-rules:
-    - linters:
-      - stylecheck
-      text: "ST1005:"
-    - linters:
-      - staticcheck
-      text: "SA1019:"
-    - linters:
-      - errcheck
-      text: "is not checked"
-    - linters:
-      - staticcheck
-      text: "SA4010:"
-
-    
 
 linters:
   disable-all: true
@@ -27,7 +12,7 @@ linters:
     - deadcode
     - errcheck
     - gofmt
-    #- gosimple
+    - gosimple
     - ineffassign
     - misspell
     - staticcheck
@@ -36,12 +21,12 @@ linters:
     - unused
     - varcheck
     - vet
-    #- gocritic
+    - gocritic
     - stylecheck
 
 linters-settings:
   errcheck:
-    ignore: github.com/hashicorp/terraform-plugin-sdk/helper/schema:ForceNew|Set,fmt:.*,io:Close,github.com/vk-cs/terraform-provider-vkcs:Set
+    ignore: github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema:ForceNew|Set,fmt:.*,io:Close,github.com/vk-cs/terraform-provider-vkcs:Set
   govet:
     disable:
       - copylocks

@@ -1,6 +1,6 @@
 module github.com/vk-cs/terraform-provider-vkcs
 
-go 1.17
+go 1.18
 
 require (
 	github.com/gophercloud/gophercloud v0.24.0

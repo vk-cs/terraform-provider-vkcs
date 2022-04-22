@@ -81,7 +81,6 @@ func TestAccNetworkingNetwork_fullstack(t *testing.T) {
 	var instance servers.Server
 	var network networks.Network
 	var port ports.Port
-	//var secgroup secgroups.SecurityGroup
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
@@ -94,7 +93,6 @@ func TestAccNetworkingNetwork_fullstack(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
 					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
-					//testAccCheckComputeSecGroupExists("vkcs_compute_secgroup.secgroup_1", &secgroup),
 					testAccCheckNetworkingPortExists("vkcs_networking_port.port_1", &port),
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 				),

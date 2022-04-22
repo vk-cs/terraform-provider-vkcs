@@ -147,7 +147,7 @@ func resourceMonitorCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	log.Printf("[DEBUG] vkcs_lb_monitor create options: %#v", createOpts)
 	var monitor *octaviamonitors.Monitor
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		monitor, err = octaviamonitors.Create(lbClient, createOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -285,7 +285,7 @@ func resourceMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	log.Printf("[DEBUG] vkcs_lb_monitor %s update options: %#v", d.Id(), updateOpts)
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		_, err = octaviamonitors.Update(lbClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -335,7 +335,7 @@ func resourceMonitorDelete(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	log.Printf("[DEBUG] Deleting vkcs_lb_monitor %s", d.Id())
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		err = octaviamonitors.Delete(lbClient, d.Id()).ExtractErr()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -361,7 +361,7 @@ func resourceMonitorImport(ctx context.Context, d *schema.ResourceData, meta int
 	monitorID := parts[0]
 
 	if len(monitorID) == 0 {
-		return nil, fmt.Errorf("Invalid format specified for vkcs_lb_monitor. Format must be <monitorID>[/<poolID>]")
+		return nil, fmt.Errorf("invalid format specified for vkcs_lb_monitor. Format must be <monitorID>[/<poolID>]")
 	}
 
 	d.SetId(monitorID)

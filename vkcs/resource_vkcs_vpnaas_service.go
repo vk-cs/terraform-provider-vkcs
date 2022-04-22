@@ -183,8 +183,7 @@ func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, meta int
 		hasChange = true
 	}
 
-	var updateOpts services.UpdateOptsBuilder
-	updateOpts = opts
+	var updateOpts services.UpdateOptsBuilder = opts
 
 	log.Printf("[DEBUG] Updating service with id %s: %#v", d.Id(), updateOpts)
 
@@ -252,7 +251,7 @@ func waitForServiceDeletion(networkingClient *gophercloud.ServiceClient, id stri
 				log.Printf("[DEBUG] Service %s is actually deleted", id)
 				return "", "DELETED", nil
 			}
-			return nil, "", fmt.Errorf("Unexpected error: %s", err)
+			return nil, "", fmt.Errorf("unexpected error: %s", err)
 		}
 
 		log.Printf("[DEBUG] Service %s deletion is pending", id)

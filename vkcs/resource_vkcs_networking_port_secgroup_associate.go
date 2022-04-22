@@ -53,11 +53,11 @@ func resourceNetworkingPortSecGroupAssociate() *schema.Resource {
 			},
 
 			"sdn": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Computed:     true,
-				ValidateFunc: validateSDN(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				ValidateDiagFunc: validateSDN(),
 			},
 		},
 	}
@@ -82,7 +82,7 @@ func resourceNetworkingPortSecGroupAssociateCreate(ctx context.Context, d *schem
 
 	var updateOpts ports.UpdateOpts
 	var enforce bool
-	if v, ok := d.GetOkExists("enforce"); ok {
+	if v, ok := d.GetOk("enforce"); ok {
 		enforce = v.(bool)
 	}
 
@@ -119,7 +119,7 @@ func resourceNetworkingPortSecGroupAssociateRead(ctx context.Context, d *schema.
 	}
 
 	var enforce bool
-	if v, ok := d.GetOkExists("enforce"); ok {
+	if v, ok := d.GetOk("enforce"); ok {
 		enforce = v.(bool)
 	}
 
@@ -151,7 +151,7 @@ func resourceNetworkingPortSecGroupAssociateUpdate(ctx context.Context, d *schem
 
 	var updateOpts ports.UpdateOpts
 	var enforce bool
-	if v, ok := d.GetOkExists("enforce"); ok {
+	if v, ok := d.GetOk("enforce"); ok {
 		enforce = v.(bool)
 	}
 
@@ -190,7 +190,7 @@ func resourceNetworkingPortSecGroupAssociateDelete(ctx context.Context, d *schem
 
 	var updateOpts ports.UpdateOpts
 	var enforce bool
-	if v, ok := d.GetOkExists("enforce"); ok {
+	if v, ok := d.GetOk("enforce"); ok {
 		enforce = v.(bool)
 	}
 

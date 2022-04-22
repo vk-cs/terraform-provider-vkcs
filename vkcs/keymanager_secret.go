@@ -60,7 +60,7 @@ func keyManagerSecretWaitForSecretCreation(kmClient *gophercloud.ServiceClient, 
 		}
 
 		if secret.Status == "ERROR" {
-			return "", secret.Status, fmt.Errorf("Error creating secret")
+			return "", secret.Status, fmt.Errorf("error creating secret")
 		}
 
 		return secret, secret.Status, nil
@@ -114,7 +114,7 @@ func resourceSecretV1PayloadBase64CustomizeDiff(diff *schema.ResourceDiff) error
 
 		v, err := base64.StdEncoding.DecodeString(newPayload)
 		if err != nil {
-			return fmt.Errorf("The Payload is not in the defined base64 format: %s", err)
+			return fmt.Errorf("the Payload is not in the defined base64 format: %s", err)
 		}
 		newPayloadDecoded := string(v)
 

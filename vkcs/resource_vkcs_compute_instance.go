@@ -92,9 +92,9 @@ func resourceComputeInstance() *schema.Resource {
 				ForceNew: true,
 				// just stash the hash for state & diff comparisons
 				StateFunc: func(v interface{}) string {
-					switch v.(type) {
+					switch v := v.(type) {
 					case string:
-						hash := sha1.Sum([]byte(v.(string)))
+						hash := sha1.Sum([]byte(v))
 						return hex.EncodeToString(hash[:])
 					default:
 						return ""
@@ -419,7 +419,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	// Retrieve tags and set microversion if they're provided.
 	instanceTags := ComputeInstanceTags(d)
 
-	if v, ok := d.GetOkExists("availability_zone"); ok {
+	if v, ok := d.GetOk("availability_zone"); ok {
 		availabilityZone = v.(string)
 	}
 
@@ -699,7 +699,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 			}
 
 			log.Printf("[DEBUG] Waiting for instance (%s) to shelve", d.Id())
-			_, err = shelveStateConf.WaitForState()
+			_, err = shelveStateConf.WaitForStateContext(ctx)
 			if err != nil {
 				return diag.Errorf("Error waiting for instance (%s) to become shelve: %s", d.Id(), err)
 			}
@@ -1040,13 +1040,13 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating VKCS compute client: %s", err)
+		return nil, fmt.Errorf("error creating VKCS compute client: %s", err)
 	}
 
 	results := make([]*schema.ResourceData, 1)
 	diagErr := resourceComputeInstanceRead(ctx, d, meta)
 	if diagErr != nil {
-		return nil, fmt.Errorf("Error reading vkcs_compute_instance %s: %v", d.Id(), diagErr)
+		return nil, fmt.Errorf("error reading vkcs_compute_instance %s: %v", d.Id(), diagErr)
 	}
 
 	raw := servers.Get(computeClient, d.Id())
@@ -1065,7 +1065,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 	if len(serverWithAttachments.VolumesAttached) > 0 {
 		blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 		if err != nil {
-			return nil, fmt.Errorf("Error creating VKCS volume client: %s", err)
+			return nil, fmt.Errorf("error creating VKCS volume client: %s", err)
 		}
 		var volMetaData = struct {
 			VolumeImageMetadata map[string]interface{} `json:"volume_image_metadata"`
@@ -1102,7 +1102,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 
 	metadata, err := servers.Metadata(computeClient, d.Id()).Extract()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to read metadata for vkcs_compute_instance %s: %s", d.Id(), err)
+		return nil, fmt.Errorf("unable to read metadata for vkcs_compute_instance %s: %s", d.Id(), err)
 	}
 
 	d.Set("metadata", metadata)
@@ -1236,7 +1236,7 @@ func getImageIDFromConfig(imageClient *gophercloud.ServiceClient, d *schema.Reso
 		return imageID, nil
 	}
 
-	return "", fmt.Errorf("Neither a boot device, image ID, or image name were able to be determined")
+	return "", fmt.Errorf("neither a boot device, image ID, or image name were able to be determined")
 }
 
 func setImageInformation(computeClient *gophercloud.ServiceClient, server *servers.Server, d *schema.ResourceData) error {
@@ -1303,7 +1303,7 @@ func getFlavorID(computeClient *gophercloud.ServiceClient, d *schema.ResourceDat
 		return flavorID, nil
 	}
 
-	return "", fmt.Errorf("Neither a flavor_id or flavor_name could be determined")
+	return "", fmt.Errorf("neither a flavor_id or flavor_name could be determined")
 }
 
 func resourceComputeSchedulerHintsHash(v interface{}) int {
@@ -1330,18 +1330,18 @@ func checkBlockDeviceConfig(d *schema.ResourceData) error {
 			vM := v.(map[string]interface{})
 
 			if vM["source_type"] != "blank" && vM["uuid"] == "" {
-				return fmt.Errorf("You must specify a uuid for %s block device types", vM["source_type"])
+				return fmt.Errorf("you must specify a uuid for %s block device types", vM["source_type"])
 			}
 
 			if vM["source_type"] == "image" && vM["destination_type"] == "volume" {
 				if vM["volume_size"] == 0 {
-					return fmt.Errorf("You must specify a volume_size when creating a volume from an image")
+					return fmt.Errorf("you must specify a volume_size when creating a volume from an image")
 				}
 			}
 
 			if vM["source_type"] == "blank" && vM["destination_type"] == "local" {
 				if vM["volume_size"] == 0 {
-					return fmt.Errorf("You must specify a volume_size when creating a blank block device")
+					return fmt.Errorf("you must specify a volume_size when creating a blank block device")
 				}
 			}
 		}

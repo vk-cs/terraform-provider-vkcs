@@ -28,9 +28,7 @@ func blockStorageVolumeStateRefreshFunc(client *gophercloud.ServiceClient, volum
 			return nil, "", err
 		}
 		if v.Status == "error" {
-			return v, v.Status, fmt.Errorf("The volume is in error status. " +
-				"Please check with VKCS support or check the Block Storage " +
-				"API logs to see why this error occurred.")
+			return v, v.Status, fmt.Errorf("the volume is in error status. Please check with your cloud admin or check the Block Storage API logs to see why this error occurred")
 		}
 
 		return v, v.Status, nil

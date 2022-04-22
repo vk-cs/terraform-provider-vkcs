@@ -107,7 +107,7 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	// Set the weight only if it's defined in the configuration.
 	// This prevents all members from being created with a default weight of 0.
-	if v, ok := d.GetOkExists("weight"); ok {
+	if v, ok := d.GetOk("weight"); ok {
 		weight := v.(int)
 		createOpts.Weight = &weight
 	}
@@ -130,7 +130,7 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	log.Printf("[DEBUG] Attempting to create member")
 	var member *pools.Member
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		member, err = pools.CreateMember(lbClient, poolID, createOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -228,7 +228,7 @@ func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	log.Printf("[DEBUG] Updating member %s with options: %#v", d.Id(), updateOpts)
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		_, err = pools.UpdateMember(lbClient, poolID, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -277,7 +277,7 @@ func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	log.Printf("[DEBUG] Attempting to delete member %s", d.Id())
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		err = pools.DeleteMember(lbClient, poolID, d.Id()).ExtractErr()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -301,7 +301,7 @@ func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, meta inte
 func resourceMemberImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	parts := strings.SplitN(d.Id(), "/", 2)
 	if len(parts) != 2 {
-		err := fmt.Errorf("Invalid format specified for Member. Format must be <pool id>/<member id>")
+		err := fmt.Errorf("invalid format specified for Member. Format must be <pool id>/<member id>")
 		return nil, err
 	}
 

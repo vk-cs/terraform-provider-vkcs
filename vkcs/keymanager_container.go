@@ -53,7 +53,7 @@ func keyManagerContainerWaitForContainerCreation(kmClient *gophercloud.ServiceCl
 		}
 
 		if container.Status == "ERROR" {
-			return "", container.Status, fmt.Errorf("Error creating container")
+			return "", container.Status, fmt.Errorf("error creating container")
 		}
 
 		return container, container.Status, nil

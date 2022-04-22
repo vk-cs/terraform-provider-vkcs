@@ -59,7 +59,7 @@ func waitForLBListener(ctx context.Context, lbClient *gophercloud.ServiceClient,
 	log.Printf("[DEBUG] Waiting for vkcs_lb_listener %s to become %s.", listener.ID, target)
 
 	if len(listener.Loadbalancers) == 0 {
-		return fmt.Errorf("Failed to detect a vkcs_lb_loadbalancer for the %s vkcs_lb_listener", listener.ID)
+		return fmt.Errorf("failed to detect a vkcs_lb_loadbalancer for the %s vkcs_lb_listener", listener.ID)
 	}
 
 	lbID := listener.Loadbalancers[0].ID
@@ -81,7 +81,7 @@ func waitForLBListener(ctx context.Context, lbClient *gophercloud.ServiceClient,
 			}
 		}
 
-		return fmt.Errorf("Error waiting for vkcs_lb_listener %s to become %s: %s", listener.ID, target, err)
+		return fmt.Errorf("error waiting for vkcs_lb_listener %s to become %s: %s", listener.ID, target, err)
 	}
 
 	return nil
@@ -129,10 +129,10 @@ func waitForLBLoadBalancer(ctx context.Context, lbClient *gophercloud.ServiceCli
 			case "DELETED":
 				return nil
 			default:
-				return fmt.Errorf("Error: loadbalancer %s not found: %s", lbID, err)
+				return fmt.Errorf("error: loadbalancer %s not found: %s", lbID, err)
 			}
 		}
-		return fmt.Errorf("Error waiting for loadbalancer %s to become %s: %s", lbID, target, err)
+		return fmt.Errorf("error waiting for loadbalancer %s to become %s: %s", lbID, target, err)
 	}
 
 	return nil
@@ -174,7 +174,7 @@ func waitForLBMember(ctx context.Context, lbClient *gophercloud.ServiceClient, p
 			}
 		}
 
-		return fmt.Errorf("Error waiting for member %s to become %s: %s", member.ID, target, err)
+		return fmt.Errorf("error waiting for member %s to become %s: %s", member.ID, target, err)
 	}
 
 	return nil
@@ -227,7 +227,7 @@ func waitForLBMonitor(ctx context.Context, lbClient *gophercloud.ServiceClient, 
 				return nil
 			}
 		}
-		return fmt.Errorf("Error waiting for vkcs_lb_monitor %s to become %s: %s", monitor.ID, target, err)
+		return fmt.Errorf("error waiting for vkcs_lb_monitor %s to become %s: %s", monitor.ID, target, err)
 	}
 
 	return nil
@@ -281,7 +281,7 @@ func waitForLBPool(ctx context.Context, lbClient *gophercloud.ServiceClient, poo
 			}
 		}
 
-		return fmt.Errorf("Error waiting for pool %s to become %s: %s", pool.ID, target, err)
+		return fmt.Errorf("error waiting for pool %s to become %s: %s", pool.ID, target, err)
 	}
 
 	return nil
@@ -327,7 +327,7 @@ func lbFindLBIDviaPool(lbClient *gophercloud.ServiceClient, pool *octaviapools.P
 		}
 	}
 
-	return "", fmt.Errorf("Unable to determine loadbalancer ID from pool %s", pool.ID)
+	return "", fmt.Errorf("unable to determine loadbalancer ID from pool %s", pool.ID)
 }
 
 func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.ServiceClient, lbID, resourceType, resourceID string, parentID string) resource.StateRefreshFunc {
@@ -343,7 +343,7 @@ func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.Servic
 					},
 				}
 			}
-			return nil, "", fmt.Errorf("Unable to get statuses from the Load Balancer %s statuses tree: %s", lbID, err)
+			return nil, "", fmt.Errorf("unable to get statuses from the Load Balancer %s statuses tree: %s", lbID, err)
 		}
 
 		// Don't fail, when statuses returns "null"
@@ -430,7 +430,7 @@ func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.Servic
 			return l7Rule, "ACTIVE", err
 		}
 
-		return nil, "", fmt.Errorf("An unexpected error occurred querying the status of %s %s by loadbalancer %s", resourceType, resourceID, lbID)
+		return nil, "", fmt.Errorf("an unexpected error occurred querying the status of %s %s by loadbalancer %s", resourceType, resourceID, lbID)
 	}
 }
 
@@ -461,7 +461,7 @@ func waitForLBL7Policy(ctx context.Context, lbClient *gophercloud.ServiceClient,
 	log.Printf("[DEBUG] Waiting for l7policy %s to become %s.", l7policy.ID, target)
 
 	if len(parentListener.Loadbalancers) == 0 {
-		return fmt.Errorf("Unable to determine loadbalancer ID from listener %s", parentListener.ID)
+		return fmt.Errorf("unable to determine loadbalancer ID from listener %s", parentListener.ID)
 	}
 
 	lbID := parentListener.Loadbalancers[0].ID
@@ -483,7 +483,7 @@ func waitForLBL7Policy(ctx context.Context, lbClient *gophercloud.ServiceClient,
 			}
 		}
 
-		return fmt.Errorf("Error waiting for l7policy %s to become %s: %s", l7policy.ID, target, err)
+		return fmt.Errorf("error waiting for l7policy %s to become %s: %s", l7policy.ID, target, err)
 	}
 
 	return nil
@@ -493,18 +493,18 @@ func getListenerIDForL7Policy(lbClient *gophercloud.ServiceClient, id string) (s
 	log.Printf("[DEBUG] Trying to get Listener ID associated with the %s L7 Policy ID", id)
 	lbsPages, err := octavialoadbalancers.List(lbClient, octavialoadbalancers.ListOpts{}).AllPages()
 	if err != nil {
-		return "", fmt.Errorf("No Load Balancers were found: %s", err)
+		return "", fmt.Errorf("no Load Balancers were found: %s", err)
 	}
 
 	lbs, err := octavialoadbalancers.ExtractLoadBalancers(lbsPages)
 	if err != nil {
-		return "", fmt.Errorf("Unable to extract Load Balancers list: %s", err)
+		return "", fmt.Errorf("unable to extract Load Balancers list: %s", err)
 	}
 
 	for _, lb := range lbs {
 		statuses, err := octavialoadbalancers.GetStatuses(lbClient, lb.ID).Extract()
 		if err != nil {
-			return "", fmt.Errorf("Failed to get Load Balancer statuses: %s", err)
+			return "", fmt.Errorf("failed to get Load Balancer statuses: %s", err)
 		}
 		for _, listener := range statuses.Loadbalancer.Listeners {
 			for _, l7policy := range listener.L7Policies {
@@ -515,7 +515,7 @@ func getListenerIDForL7Policy(lbClient *gophercloud.ServiceClient, id string) (s
 		}
 	}
 
-	return "", fmt.Errorf("Unable to find Listener ID associated with the %s L7 Policy ID", id)
+	return "", fmt.Errorf("unable to find Listener ID associated with the %s L7 Policy ID", id)
 }
 
 func resourceLBL7RuleRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, l7policyID string, l7rule *octavial7policies.Rule) resource.StateRefreshFunc {
@@ -545,7 +545,7 @@ func waitForLBL7Rule(ctx context.Context, lbClient *gophercloud.ServiceClient, p
 	log.Printf("[DEBUG] Waiting for l7rule %s to become %s.", l7rule.ID, target)
 
 	if len(parentListener.Loadbalancers) == 0 {
-		return fmt.Errorf("Unable to determine loadbalancer ID from listener %s", parentListener.ID)
+		return fmt.Errorf("unable to determine loadbalancer ID from listener %s", parentListener.ID)
 	}
 
 	lbID := parentListener.Loadbalancers[0].ID
@@ -567,7 +567,7 @@ func waitForLBL7Rule(ctx context.Context, lbClient *gophercloud.ServiceClient, p
 			}
 		}
 
-		return fmt.Errorf("Error waiting for l7rule %s to become %s: %s", l7rule.ID, target, err)
+		return fmt.Errorf("error waiting for l7rule %s to become %s: %s", l7rule.ID, target, err)
 	}
 
 	return nil

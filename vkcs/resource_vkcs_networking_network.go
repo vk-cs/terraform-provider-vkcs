@@ -87,11 +87,11 @@ func resourceNetworkingNetwork() *schema.Resource {
 			},
 
 			"sdn": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Computed:     true,
-				ValidateFunc: validateSDN(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				ValidateDiagFunc: validateSDN(),
 			},
 
 			"vkcs_services_access": {
@@ -119,7 +119,7 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 		d.Get("vkcs_services_access").(bool),
 	}
 
-	if v, ok := d.GetOkExists("admin_state_up"); ok {
+	if v, ok := d.GetOk("admin_state_up"); ok {
 		asu := v.(bool)
 		createOpts.AdminStateUp = &asu
 	}
@@ -129,7 +129,7 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 	finalCreateOpts = createOpts
 
 	// Add the port security attribute if specified.
-	if v, ok := d.GetOkExists("port_security_enabled"); ok {
+	if v, ok := d.GetOk("port_security_enabled"); ok {
 		portSecurityEnabled := v.(bool)
 		finalCreateOpts = portsecurity.NetworkCreateOptsExt{
 			CreateOptsBuilder:   finalCreateOpts,

@@ -165,7 +165,7 @@ func resourceL7PolicyCreate(ctx context.Context, d *schema.ResourceData, meta in
 
 	log.Printf("[DEBUG] Attempting to create L7 Policy")
 	var l7Policy *l7policies.L7Policy
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		l7Policy, err = l7policies.Create(lbClient, createOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -302,7 +302,7 @@ func resourceL7PolicyUpdate(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	log.Printf("[DEBUG] Updating L7 Policy %s with options: %#v", d.Id(), updateOpts)
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		_, err = l7policies.Update(lbClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -352,7 +352,7 @@ func resourceL7PolicyDelete(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	log.Printf("[DEBUG] Attempting to delete L7 Policy %s", d.Id())
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		err = l7policies.Delete(lbClient, d.Id()).ExtractErr()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -376,7 +376,7 @@ func resourceL7PolicyImport(d *schema.ResourceData, meta interface{}) ([]*schema
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating VKCS loadbalancer client: %s", err)
+		return nil, fmt.Errorf("error creating VKCS loadbalancer client: %s", err)
 	}
 
 	l7Policy, err := l7policies.Get(lbClient, d.Id()).Extract()

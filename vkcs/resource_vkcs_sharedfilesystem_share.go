@@ -133,7 +133,7 @@ func resourceSharedFilesystemShareCreate(ctx context.Context, d *schema.Resource
 		AvailabilityZone: d.Get("availability_zone").(string),
 	}
 
-	if v, ok := d.GetOkExists("share_type"); ok {
+	if v, ok := d.GetOk("share_type"); ok {
 		createOpts.ShareType = v.(string)
 	}
 
@@ -143,7 +143,7 @@ func resourceSharedFilesystemShareCreate(ctx context.Context, d *schema.Resource
 
 	log.Printf("[DEBUG] Attempting to create share")
 	var share *shares.Share
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		share, err = shares.Create(sfsClient, createOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -236,7 +236,7 @@ func resourceSharedFilesystemShareUpdate(ctx context.Context, d *schema.Resource
 		}
 
 		log.Printf("[DEBUG] Attempting to update share")
-		err = resource.Retry(timeout, func() *resource.RetryError {
+		err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 			_, err := shares.Update(sfsClient, d.Id(), updateOpts).Extract()
 			if err != nil {
 				return checkForRetryableError(err)
@@ -270,7 +270,7 @@ func resourceSharedFilesystemShareUpdate(ctx context.Context, d *schema.Resource
 			pending = append(pending, "extending")
 			resizeOpts := shares.ExtendOpts{NewSize: newSize.(int)}
 			log.Printf("[DEBUG] Resizing share %s with options: %#v", d.Id(), resizeOpts)
-			err = resource.Retry(timeout, func() *resource.RetryError {
+			err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 				err := shares.Extend(sfsClient, d.Id(), resizeOpts).Err
 				log.Printf("[DEBUG] Resizing share %s with options: %#v", d.Id(), resizeOpts)
 				if err != nil {
@@ -282,7 +282,7 @@ func resourceSharedFilesystemShareUpdate(ctx context.Context, d *schema.Resource
 			pending = append(pending, "shrinking")
 			resizeOpts := shares.ShrinkOpts{NewSize: newSize.(int)}
 			log.Printf("[DEBUG] Resizing share %s with options: %#v", d.Id(), resizeOpts)
-			err = resource.Retry(timeout, func() *resource.RetryError {
+			err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 				err := shares.Shrink(sfsClient, d.Id(), resizeOpts).Err
 				log.Printf("[DEBUG] Resizing share %s with options: %#v", d.Id(), resizeOpts)
 				if err != nil {
@@ -322,7 +322,7 @@ func resourceSharedFilesystemShareDelete(ctx context.Context, d *schema.Resource
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	log.Printf("[DEBUG] Attempting to delete share %s", d.Id())
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		err = shares.Delete(sfsClient, d.Id()).ExtractErr()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -375,10 +375,10 @@ func waitForSFShare(ctx context.Context, sfsClient *gophercloud.ServiceClient, i
 			case "deleted":
 				return nil
 			default:
-				return fmt.Errorf("Error: share %s not found: %s", id, err)
+				return fmt.Errorf("error: share %s not found: %s", id, err)
 			}
 		}
-		errorMessage := fmt.Sprintf("Error waiting for share %s to become %s", id, target)
+		errorMessage := fmt.Sprintf("error waiting for share %s to become %s", id, target)
 		msg := resourceSFSShareManilaMessage(sfsClient, id)
 		if msg == nil {
 			return fmt.Errorf("%s: %s", errorMessage, err)
