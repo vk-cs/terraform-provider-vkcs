@@ -216,11 +216,11 @@ func resourceNetworkingPort() *schema.Resource {
 			},
 
 			"sdn": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Computed:     true,
-				ValidateFunc: validateSDN(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				ValidateDiagFunc: validateSDN(),
 			},
 		},
 	}
@@ -256,7 +256,7 @@ func resourceNetworkingPortCreate(ctx context.Context, d *schema.ResourceData, m
 		MapValueSpecs(d),
 	}
 
-	if v, ok := d.GetOkExists("admin_state_up"); ok {
+	if v, ok := d.GetOk("admin_state_up"); ok {
 		asu := v.(bool)
 		createOpts.AdminStateUp = &asu
 	}
@@ -286,7 +286,7 @@ func resourceNetworkingPortCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	// Add the port security attribute if specified.
-	if v, ok := d.GetOkExists("port_security_enabled"); ok {
+	if v, ok := d.GetOk("port_security_enabled"); ok {
 		portSecurityEnabled := v.(bool)
 		finalCreateOpts = portsecurity.PortCreateOptsExt{
 			CreateOptsBuilder:   finalCreateOpts,

@@ -61,7 +61,7 @@ func computeInterfaceAttachDetachFunc(
 func computeInterfaceAttachParseID(id string) (string, string, error) {
 	idParts := strings.Split(id, "/")
 	if len(idParts) < 2 {
-		return "", "", fmt.Errorf("Unable to determine vkcs_compute_interface_attach %s ID", id)
+		return "", "", fmt.Errorf("unable to determine vkcs_compute_interface_attach %s ID", id)
 	}
 
 	instanceID := idParts[0]

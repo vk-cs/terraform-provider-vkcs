@@ -463,7 +463,7 @@ func TestAccComputeInstance_networkModeNone(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeInstanceNetworkModeNone(),
+				Config: testAccComputeInstanceNetworkModeNone,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckComputeInstanceNetworkDoesNotExist("vkcs_compute_instance.instance_1", &instance),
@@ -839,97 +839,6 @@ resource "vkcs_compute_instance" "instance_1" {
 `, osNetworkID)
 }
 
-// func testAccComputeInstanceSecgroupMulti() string {
-// 	return fmt.Sprintf(`
-// resource "vkcs_compute_secgroup" "secgroup_1" {
-//   name = "secgroup_1"
-//   description = "a security group"
-//   rule {
-//     from_port = 22
-//     to_port = 22
-//     ip_protocol = "tcp"
-//     cidr = "0.0.0.0/0"
-//   }
-// }
-
-// resource "vkcs_compute_instance" "instance_1" {
-//   name = "instance_1"
-//   security_groups = ["default", "${vkcs_compute_secgroup.secgroup_1.name}"]
-//   network {
-//     uuid = "%s"
-//   }
-// }
-// `, osNetworkID)
-// }
-
-// func testAccComputeInstanceSecgroupMultiUpdate1() string {
-// 	return fmt.Sprintf(`
-// resource "vkcs_compute_secgroup" "secgroup_1" {
-//   name = "secgroup_1"
-//   description = "a security group"
-//   rule {
-//     from_port = 22
-//     to_port = 22
-//     ip_protocol = "tcp"
-//     cidr = "0.0.0.0/0"
-//   }
-// }
-
-// resource "vkcs_compute_secgroup" "secgroup_2" {
-//   name = "secgroup_2"
-//   description = "another security group"
-//   rule {
-//     from_port = 80
-//     to_port = 80
-//     ip_protocol = "tcp"
-//     cidr = "0.0.0.0/0"
-//   }
-// }
-
-// resource "vkcs_compute_instance" "instance_1" {
-//   name = "instance_1"
-//   security_groups = ["default"]
-//   network {
-//     uuid = "%s"
-//   }
-// }
-// `, osNetworkID)
-// }
-
-// func testAccComputeInstanceSecgroupMultiUpdate2() string {
-// 	return fmt.Sprintf(`
-// resource "vkcs_compute_secgroup" "secgroup_1" {
-//   name = "secgroup_1"
-//   description = "a security group"
-//   rule {
-//     from_port = 22
-//     to_port = 22
-//     ip_protocol = "tcp"
-//     cidr = "0.0.0.0/0"
-//   }
-// }
-
-// resource "vkcs_compute_secgroup" "secgroup_2" {
-//   name = "secgroup_2"
-//   description = "another security group"
-//   rule {
-//     from_port = 80
-//     to_port = 80
-//     ip_protocol = "tcp"
-//     cidr = "0.0.0.0/0"
-//   }
-// }
-
-// resource "vkcs_compute_instance" "instance_1" {
-//   name = "instance_1"
-//   security_groups = ["default", "${vkcs_compute_secgroup.secgroup_1.name}", "${vkcs_compute_secgroup.secgroup_2.name}"]
-//   network {
-//     uuid = "%s"
-//   }
-// }
-// `, osNetworkID)
-// }
-
 func testAccComputeInstanceBootFromVolumeImage() string {
 	return fmt.Sprintf(`
 resource "vkcs_compute_instance" "instance_1" {
@@ -1127,39 +1036,6 @@ resource "vkcs_compute_instance" "instance_1" {
 `, osNetworkID)
 }
 
-// func testAccComputeInstanceMultiEphemeral() string {
-// 	return fmt.Sprintf(`
-// resource "vkcs_compute_instance" "instance_1" {
-//   name = "terraform-test"
-//   security_groups = ["default"]
-//   block_device {
-//     boot_index = 0
-//     delete_on_termination = true
-//     destination_type = "local"
-//     source_type = "image"
-//     uuid = "%s"
-//   }
-//   block_device {
-//     boot_index = -1
-//     delete_on_termination = true
-//     destination_type = "local"
-//     source_type = "blank"
-//     volume_size = 1
-//   }
-//   block_device {
-//     boot_index = -1
-//     delete_on_termination = true
-//     destination_type = "local"
-//     source_type = "blank"
-//     volume_size = 1
-//   }
-//   network {
-//     uuid = "%s"
-//   }
-// }
-// `, osImageID, osNetworkID)
-// }
-
 func testAccComputeInstanceAccessIPv4() string {
 	return fmt.Sprintf(`
 resource "vkcs_networking_network" "network_1" {
@@ -1294,15 +1170,13 @@ resource "vkcs_compute_instance" "instance_1" {
 `, osNetworkID)
 }
 
-func testAccComputeInstanceNetworkModeNone() string {
-	return fmt.Sprintf(`
+const testAccComputeInstanceNetworkModeNone = `
 resource "vkcs_compute_instance" "instance_1" {
   name = "test-instance-1"
 
   network_mode = "none"
 }
-`)
-}
+`
 
 func testAccComputeInstanceNetworkNameToID() string {
 	return fmt.Sprintf(`

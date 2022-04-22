@@ -100,10 +100,7 @@ func resourceKeyManagerSecret() *schema.Resource {
 				ForceNew:  true,
 				Computed:  true,
 				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
-					if strings.TrimSpace(o) == strings.TrimSpace(n) {
-						return true
-					}
-					return false
+					return strings.TrimSpace(o) == strings.TrimSpace(n)
 				},
 			},
 
@@ -262,8 +259,7 @@ func resourceKeyManagerSecretCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	// set the metadata
-	var metadataCreateOpts secrets.MetadataOpts
-	metadataCreateOpts = flattenKeyManagerSecretMetadata(d)
+	var metadataCreateOpts secrets.MetadataOpts = flattenKeyManagerSecretMetadata(d)
 
 	log.Printf("[DEBUG] Metadata Create Options for resource_keymanager_secret_metadata_v1 %s: %#v", uuid, metadataCreateOpts)
 
@@ -297,7 +293,7 @@ func resourceKeyManagerSecretRead(ctx context.Context, d *schema.ResourceData, m
 	config := meta.(configer)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating VKCS KeyManager client: %s", err)
+		return diag.Errorf("Error creating VKCS keymanager client: %s", err)
 	}
 
 	secret, err := secrets.Get(kmClient, d.Id()).Extract()
@@ -321,7 +317,7 @@ func resourceKeyManagerSecretRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("content_types", secret.ContentTypes)
 
 	// don't fail, if the default key doesn't exist
-	payloadContentType, _ := secret.ContentTypes["default"]
+	payloadContentType := secret.ContentTypes["default"]
 	d.Set("payload_content_type", payloadContentType)
 
 	d.Set("payload", keyManagerSecretGetPayload(kmClient, d.Id()))
@@ -353,7 +349,7 @@ func resourceKeyManagerSecretUpdate(ctx context.Context, d *schema.ResourceData,
 	config := meta.(configer)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating VKCS KeyManager client: %s", err)
+		return diag.Errorf("Error creating VKCS keymanager client: %s", err)
 	}
 
 	if d.HasChange("acl") {
@@ -439,7 +435,7 @@ func resourceKeyManagerSecretDelete(ctx context.Context, d *schema.ResourceData,
 	config := meta.(configer)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating VKCS KeyManager client: %s", err)
+		return diag.Errorf("Error creating VKCS keymanager client: %s", err)
 	}
 
 	stateConf := &resource.StateChangeConf{

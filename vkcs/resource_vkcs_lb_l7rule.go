@@ -162,7 +162,7 @@ func resourceL7RuleCreate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	log.Printf("[DEBUG] Attempting to create L7 Rule")
 	var l7Rule *l7policies.Rule
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		l7Rule, err = l7policies.CreateRule(lbClient, l7policyID, createOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -284,7 +284,7 @@ func resourceL7RuleUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	log.Printf("[DEBUG] Updating L7 Rule %s with options: %#v", d.Id(), updateOpts)
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		_, err := l7policies.UpdateRule(lbClient, l7policyID, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -342,7 +342,7 @@ func resourceL7RuleDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	log.Printf("[DEBUG] Attempting to delete L7 Rule %s", d.Id())
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		err = l7policies.DeleteRule(lbClient, l7policyID, d.Id()).ExtractErr()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -365,14 +365,14 @@ func resourceL7RuleDelete(ctx context.Context, d *schema.ResourceData, meta inte
 func resourceL7RuleImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	parts := strings.SplitN(d.Id(), "/", 2)
 	if len(parts) != 2 {
-		err := fmt.Errorf("Invalid format specified for L7 Rule. Format must be <policy id>/<rule id>")
+		err := fmt.Errorf("invalid format specified for L7 Rule. Format must be <policy id>/<rule id>")
 		return nil, err
 	}
 
 	config := meta.(*config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating VKCS loadbalancer client: %s", err)
+		return nil, fmt.Errorf("error creating VKCS loadbalancer client: %s", err)
 	}
 
 	listenerID := ""
@@ -382,7 +382,7 @@ func resourceL7RuleImport(ctx context.Context, d *schema.ResourceData, meta inte
 	// Get a clean copy of the parent L7 Policy.
 	parentL7Policy, err := l7policies.Get(lbClient, l7policyID).Extract()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to get parent L7 Policy: %s", err)
+		return nil, fmt.Errorf("unable to get parent L7 Policy: %s", err)
 	}
 
 	if parentL7Policy.ListenerID != "" {

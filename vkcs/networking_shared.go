@@ -85,6 +85,6 @@ func getSDN(d *schema.ResourceData) string {
 	return defaultSDN
 }
 
-func validateSDN() schema.SchemaValidateFunc {
-	return validation.StringInSlice([]string{"neutron", "sprut"}, true)
+func validateSDN() schema.SchemaValidateDiagFunc {
+	return validation.ToDiagFunc(validation.StringInSlice([]string{"neutron", "sprut"}, true))
 }

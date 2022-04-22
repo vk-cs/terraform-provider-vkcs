@@ -302,7 +302,7 @@ func resourceImagesImageCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(checkDeleted(d, err, "image"))
 	}
 
-	if v, ok := d.GetOkExists("verify_checksum"); !ok || (ok && v.(bool)) {
+	if v, ok := d.GetOk("verify_checksum"); !ok || (ok && v.(bool)) {
 		if img.Checksum != fileChecksum {
 			return diag.Errorf("Error wrong checksum: got %q, expected %q", img.Checksum, fileChecksum)
 		}
@@ -483,7 +483,7 @@ func resourceImagesImageUpdate(ctx context.Context, d *schema.ResourceData, meta
 
 	_, err = images.Update(imageClient, d.Id(), updateOpts).Extract()
 	if err != nil {
-		return diag.Errorf("Error updating image: %s", err)
+		return diag.Errorf("error updating image: %s", err)
 	}
 
 	return resourceImagesImageRead(ctx, d, meta)
@@ -493,12 +493,12 @@ func resourceImagesImageDelete(ctx context.Context, d *schema.ResourceData, meta
 	config := meta.(configer)
 	imageClient, err := config.ImageV2Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating VKCS image client: %s", err)
+		return diag.Errorf("error creating VKCS image client: %s", err)
 	}
 
 	log.Printf("[DEBUG] Deleting Image %s", d.Id())
 	if err := images.Delete(imageClient, d.Id()).Err; err != nil {
-		return diag.Errorf("Error deleting Image: %s", err)
+		return diag.Errorf("error deleting Image: %s", err)
 	}
 
 	d.SetId("")
@@ -507,7 +507,7 @@ func resourceImagesImageDelete(ctx context.Context, d *schema.ResourceData, meta
 
 func validateStoreInProperties(v interface{}, k string) (ws []string, errors []error) {
 	if _, ok := v.(map[string]interface{})["store"]; ok {
-		errors = append(errors, fmt.Errorf("Error creating Image: set up store disabled"))
+		errors = append(errors, fmt.Errorf("error creating Image: set up store disabled"))
 	}
 	return
 }

@@ -52,9 +52,9 @@ func dataSourceNetworkingSecGroup() *schema.Resource {
 			},
 
 			"sdn": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validateSDN(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: validateSDN(),
 			},
 		},
 	}

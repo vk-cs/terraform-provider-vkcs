@@ -170,7 +170,7 @@ func dataSourceKeyManagerSecretRead(ctx context.Context, d *schema.ResourceData,
 	config := meta.(configer)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating VKCS KeyManager client: %s", err)
+		return diag.Errorf("Error creating VKCS keymanager client: %s", err)
 	}
 
 	aclOnly := d.Get("acl_only").(bool)
@@ -230,7 +230,7 @@ func dataSourceKeyManagerSecretRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("content_types", secret.ContentTypes)
 
 	// don't fail, if the default key doesn't exist
-	payloadContentType, _ := secret.ContentTypes["default"]
+	payloadContentType := secret.ContentTypes["default"]
 	d.Set("payload_content_type", payloadContentType)
 
 	d.Set("payload", keyManagerSecretGetPayload(kmClient, d.Id()))
@@ -298,7 +298,7 @@ func dataSourceValidateDateFilter(v interface{}, k string) (ws []string, errors 
 	if len(parts) == 2 {
 		supportedDateFilters := getDateFilters()
 		if !strSliceContains(supportedDateFilters[:], parts[0]) {
-			errors = append(errors, fmt.Errorf("Invalid %q date filter, supported: %+q", parts[0], supportedDateFilters))
+			errors = append(errors, fmt.Errorf("invalid %q date filter, supported: %+q", parts[0], supportedDateFilters))
 		}
 
 		_, err := time.Parse(time.RFC3339, parts[1])

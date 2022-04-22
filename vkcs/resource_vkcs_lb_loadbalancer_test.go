@@ -22,7 +22,7 @@ func TestAccLBLoadBalancer_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckLBLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccLbLoadBalancerConfigBasic(),
+				Config: testAccLbLoadBalancerConfigBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBLoadBalancerExists("vkcs_lb_loadbalancer.loadbalancer_1", &lb),
 					testAccCheckLBLoadBalancerHasTag("vkcs_lb_loadbalancer.loadbalancer_1", "tag1"),
@@ -30,7 +30,7 @@ func TestAccLBLoadBalancer_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccLbLoadBalancerConfigUpdate(),
+				Config: testAccLbLoadBalancerConfigUpdate,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBLoadBalancerHasTag("vkcs_lb_loadbalancer.loadbalancer_1", "tag1"),
 					testAccCheckLBLoadBalancerHasTag("vkcs_lb_loadbalancer.loadbalancer_1", "tag2"),
@@ -276,8 +276,7 @@ func testAccCheckLBLoadBalancerHasSecGroup(lb *loadbalancers.LoadBalancer, sg *g
 	}
 }
 
-func testAccLbLoadBalancerConfigBasic() string {
-	return fmt.Sprintf(`
+const testAccLbLoadBalancerConfigBasic = `
     resource "vkcs_networking_network" "network_1" {
       name = "network_1"
       admin_state_up = "true"
@@ -300,11 +299,9 @@ func testAccLbLoadBalancerConfigBasic() string {
         update = "15m"
         delete = "15m"
       }
-    }`)
-}
+    }`
 
-func testAccLbLoadBalancerConfigUpdate() string {
-	return fmt.Sprintf(`
+const testAccLbLoadBalancerConfigUpdate = `
     resource "vkcs_networking_network" "network_1" {
       name = "network_1"
       admin_state_up = "true"
@@ -328,8 +325,7 @@ func testAccLbLoadBalancerConfigUpdate() string {
         update = "15m"
         delete = "15m"
       }
-    }`)
-}
+    }`
 
 const testAccLbLoadBalancerSecGroup = `
 resource "vkcs_networking_secgroup" "secgroup_1" {

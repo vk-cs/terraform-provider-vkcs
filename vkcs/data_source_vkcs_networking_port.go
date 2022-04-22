@@ -168,9 +168,9 @@ func dataSourceNetworkingPort() *schema.Resource {
 			},
 
 			"sdn": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validateSDN(),
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: validateSDN(),
 			},
 		},
 	}
@@ -198,7 +198,7 @@ func dataSourceNetworkingPortRead(ctx context.Context, d *schema.ResourceData, m
 		listOpts.Description = v.(string)
 	}
 
-	if v, ok := d.GetOkExists("admin_state_up"); ok {
+	if v, ok := d.GetOk("admin_state_up"); ok {
 		asu := v.(bool)
 		listOpts.AdminStateUp = &asu
 	}

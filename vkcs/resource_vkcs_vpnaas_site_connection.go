@@ -234,8 +234,7 @@ func resourceSiteConnectionRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("peer_cidrs", conn.PeerCIDRs)
 
 	// Set the dpd
-	var dpdMap map[string]interface{}
-	dpdMap = make(map[string]interface{})
+	dpdMap := make(map[string]interface{})
 	dpdMap["action"] = conn.DPD.Action
 	dpdMap["interval"] = conn.DPD.Interval
 	dpdMap["timeout"] = conn.DPD.Timeout
@@ -330,8 +329,7 @@ func resourceSiteConnectionUpdate(ctx context.Context, d *schema.ResourceData, m
 		hasChange = true
 	}
 
-	var updateOpts siteconnections.UpdateOptsBuilder
-	updateOpts = opts
+	var updateOpts siteconnections.UpdateOptsBuilder = opts
 
 	log.Printf("[DEBUG] Updating site connection with id %s: %#v", d.Id(), updateOpts)
 
@@ -399,7 +397,7 @@ func waitForSiteConnectionDeletion(networkingClient *gophercloud.ServiceClient, 
 				log.Printf("[DEBUG] SiteConnection %s is actually deleted", id)
 				return "", "DELETED", nil
 			}
-			return nil, "", fmt.Errorf("Unexpected error: %s", err)
+			return nil, "", fmt.Errorf("unexpected error: %s", err)
 		}
 
 		log.Printf("[DEBUG] SiteConnection %s deletion is pending", id)

@@ -99,7 +99,7 @@ func resourceSharedFilesystemShareAccessCreate(ctx context.Context, d *schema.Re
 	timeout := d.Timeout(schema.TimeoutCreate)
 
 	var access *shares.AccessRight
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		access, err = shares.GrantAccess(sfsClient, shareID, grantOpts).Extract()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -187,7 +187,7 @@ func resourceSharedFilesystemShareAccessDelete(ctx context.Context, d *schema.Re
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	log.Printf("[DEBUG] Attempting to delete vkcs_sharedfilesystem_share_access %s", d.Id())
-	err = resource.Retry(timeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
 		err = shares.RevokeAccess(sfsClient, shareID, revokeOpts).ExtractErr()
 		if err != nil {
 			return checkForRetryableError(err)
@@ -225,7 +225,7 @@ func resourceSharedFilesystemShareAccessDelete(ctx context.Context, d *schema.Re
 		if _, ok := err.(gophercloud.ErrDefault404); ok {
 			return nil
 		}
-		return diag.Errorf("Error waiting for vkcs_sharedfilesystem_share_access %s to become denied: %s", d.Id(), err)
+		return diag.Errorf("error waiting for vkcs_sharedfilesystem_share_access %s to become denied: %s", d.Id(), err)
 	}
 
 	return nil
@@ -234,14 +234,14 @@ func resourceSharedFilesystemShareAccessDelete(ctx context.Context, d *schema.Re
 func resourceSharedFilesystemShareAccessImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	parts := strings.SplitN(d.Id(), "/", 2)
 	if len(parts) != 2 {
-		err := fmt.Errorf("Invalid format specified for vkcs_sharedfilesystem_share_access. Format must be <share id>/<ACL id>")
+		err := fmt.Errorf("invalid format specified for vkcs_sharedfilesystem_share_access. Format must be <share id>/<ACL id>")
 		return nil, err
 	}
 
 	config := meta.(*config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
+		return nil, fmt.Errorf("error creating VKCS sharedfilesystem client: %s", err)
 	}
 
 	sfsClient.Microversion = sharedFilesystemMinMicroversion
@@ -251,7 +251,7 @@ func resourceSharedFilesystemShareAccessImport(ctx context.Context, d *schema.Re
 
 	access, err := shares.ListAccessRights(sfsClient, shareID).Extract()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to get %s vkcs_sharedfilesystem_share: %s", shareID, err)
+		return nil, fmt.Errorf("unable to get %s vkcs_sharedfilesystem_share: %s", shareID, err)
 	}
 
 	for _, v := range access {

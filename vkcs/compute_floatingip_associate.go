@@ -15,7 +15,7 @@ import (
 func parseComputeFloatingIPAssociateID(id string) (string, string, string, error) {
 	idParts := strings.Split(id, "/")
 	if len(idParts) < 3 {
-		return "", "", "", fmt.Errorf("Unable to determine floating ip association ID")
+		return "", "", "", fmt.Errorf("unable to determine floating ip association ID")
 	}
 
 	floatingIP := idParts[0]

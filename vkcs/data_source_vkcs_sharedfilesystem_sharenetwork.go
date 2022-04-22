@@ -94,7 +94,7 @@ func dataSourceSharedFilesystemShareNetworkRead(ctx context.Context, d *schema.R
 		NeutronSubnetID: d.Get("neutron_subnet_id").(string),
 	}
 
-	if v, ok := d.GetOkExists("ip_version"); ok {
+	if v, ok := d.GetOk("ip_version"); ok {
 		listOpts.IPVersion = gophercloud.IPVersion(v.(int))
 	}
 
@@ -115,7 +115,7 @@ func dataSourceSharedFilesystemShareNetworkRead(ctx context.Context, d *schema.R
 
 	var securityServiceID string
 	var securityServiceIDs []string
-	if v, ok := d.GetOkExists("security_service_id"); ok {
+	if v, ok := d.GetOk("security_service_id"); ok {
 		// filtering by "security_service_id"
 		securityServiceID = v.(string)
 		var filteredShareNetworks []sharenetworks.ShareNetwork

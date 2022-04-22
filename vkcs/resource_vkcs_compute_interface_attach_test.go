@@ -99,7 +99,7 @@ func testAccCheckComputeInterfaceAttachExists(n string, ai *attachinterfaces.Int
 			return err
 		}
 
-		//if found.instanceID != instanceID || found.PortID != portID {
+		// if found.instanceID != instanceID || found.PortID != portID {
 		if found.PortID != portID {
 			return fmt.Errorf("InterfaceAttach not found")
 		}

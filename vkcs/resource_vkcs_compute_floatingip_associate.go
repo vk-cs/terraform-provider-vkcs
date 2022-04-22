@@ -88,7 +88,7 @@ func resourceComputeFloatingIPAssociateCreate(ctx context.Context, d *schema.Res
 	// This API call should be synchronous, but we've had reports where it isn't.
 	// If the user opted in to wait for association, then poll here.
 	var waitUntilAssociated bool
-	if v, ok := d.GetOkExists("wait_until_associated"); ok {
+	if v, ok := d.GetOk("wait_until_associated"); ok {
 		if wua, ok := v.(bool); ok {
 			waitUntilAssociated = wua
 		}

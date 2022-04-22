@@ -170,8 +170,7 @@ func resourceIKEPolicyRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("region", getRegion(d, config))
 
 	// Set the lifetime
-	var lifetimeMap map[string]interface{}
-	lifetimeMap = make(map[string]interface{})
+	lifetimeMap := make(map[string]interface{})
 	lifetimeMap["units"] = policy.Lifetime.Units
 	lifetimeMap["value"] = policy.Lifetime.Value
 	var lifetime []map[string]interface{}
@@ -370,10 +369,10 @@ func resourceIKEPolicyIKEVersion(v string) ikepolicies.IKEVersion {
 
 func resourceIKEPolicyPhase1NegotiationMode(v string) ikepolicies.Phase1NegotiationMode {
 	var phase1NegotiationMode ikepolicies.Phase1NegotiationMode
-	switch v {
-	case "main":
+	if v == "main" {
 		phase1NegotiationMode = ikepolicies.Phase1NegotiationModeMain
 	}
+
 	return phase1NegotiationMode
 }
 

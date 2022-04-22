@@ -15,7 +15,7 @@ func TestAccLBLoadBalancer_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckLBLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccLbLoadBalancerConfigBasic(),
+				Config: testAccLbLoadBalancerConfigBasic,
 			},
 
 			{

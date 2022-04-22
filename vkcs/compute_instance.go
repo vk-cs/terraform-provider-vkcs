@@ -82,7 +82,7 @@ func getAllInstanceNetworks(d *schema.ResourceData, meta interface{}) ([]Instanc
 
 		if networkID == "" && networkName == "" && portID == "" {
 			return nil, fmt.Errorf(
-				"At least one of network.uuid, network.name, or network.port must be set")
+				"at least one of network.uuid, network.name, or network.port must be set")
 		}
 
 		// If a user specified both an ID and name, that makes things easy
@@ -152,7 +152,7 @@ func getInstanceNetworkInfo(d *schema.ResourceData, meta interface{}, queryType,
 	if err == nil {
 		networkInfo, err := getInstanceNetworkInfoNeutron(networkClient, queryType, queryTerm)
 		if err != nil {
-			return nil, fmt.Errorf("Error trying to get network information from the Network API: %s", err)
+			return nil, fmt.Errorf("error trying to get network information from the Network API: %s", err)
 		}
 
 		return networkInfo, nil
@@ -173,22 +173,22 @@ func getInstanceNetworkInfoNeutron(client *gophercloud.ServiceClient, queryType,
 		}
 		allPages, err := ports.List(client, listOpts).AllPages()
 		if err != nil {
-			return nil, fmt.Errorf("Unable to retrieve networks from the Network API: %s", err)
+			return nil, fmt.Errorf("unable to retrieve networks from the Network API: %s", err)
 		}
 
 		allPorts, err := ports.ExtractPorts(allPages)
 		if err != nil {
-			return nil, fmt.Errorf("Unable to retrieve networks from the Network API: %s", err)
+			return nil, fmt.Errorf("unable to retrieve networks from the Network API: %s", err)
 		}
 
 		var port ports.Port
 		switch len(allPorts) {
 		case 0:
-			return nil, fmt.Errorf("Could not find any matching port for %s %s", queryType, queryTerm)
+			return nil, fmt.Errorf("could not find any matching port for %s %s", queryType, queryTerm)
 		case 1:
 			port = allPorts[0]
 		default:
-			return nil, fmt.Errorf("More than one port found for %s %s", queryType, queryTerm)
+			return nil, fmt.Errorf("more than one port found for %s %s", queryType, queryTerm)
 		}
 
 		queryType = "id"
@@ -208,22 +208,22 @@ func getInstanceNetworkInfoNeutron(client *gophercloud.ServiceClient, queryType,
 
 	allPages, err := networks.List(client, listOpts).AllPages()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve networks from the Network API: %s", err)
+		return nil, fmt.Errorf("unable to retrieve networks from the Network API: %s", err)
 	}
 
 	allNetworks, err := networks.ExtractNetworks(allPages)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve networks from the Network API: %s", err)
+		return nil, fmt.Errorf("unable to retrieve networks from the Network API: %s", err)
 	}
 
 	var network networks.Network
 	switch len(allNetworks) {
 	case 0:
-		return nil, fmt.Errorf("Could not find any matching network for %s %s", queryType, queryTerm)
+		return nil, fmt.Errorf("could not find any matching network for %s %s", queryType, queryTerm)
 	case 1:
 		network = allNetworks[0]
 	default:
-		return nil, fmt.Errorf("More than one network found for %s %s", queryType, queryTerm)
+		return nil, fmt.Errorf("more than one network found for %s %s", queryType, queryTerm)
 	}
 
 	v := map[string]interface{}{
@@ -268,7 +268,7 @@ func getInstanceAddresses(addresses map[string]interface{}) []InstanceAddresses 
 	}
 
 	for _, networkName := range networkNames {
-		v, _ := addresses[networkName]
+		v := addresses[networkName]
 		instanceAddresses := InstanceAddresses{
 			NetworkName: networkName,
 		}
@@ -341,7 +341,7 @@ func flattenInstanceNetworks(d *schema.ResourceData, meta interface{}) ([]map[st
 	config := meta.(configer)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating VKCS compute client: %s", err)
+		return nil, fmt.Errorf("error creating VKCS compute client: %s", err)
 	}
 
 	server, err := servers.Get(computeClient, d.Id()).Extract()

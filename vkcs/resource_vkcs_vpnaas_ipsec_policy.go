@@ -171,8 +171,7 @@ func resourceIPSecPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.Set("region", getRegion(d, config))
 
 	// Set the lifetime
-	var lifetimeMap map[string]interface{}
-	lifetimeMap = make(map[string]interface{})
+	lifetimeMap := make(map[string]interface{})
 	lifetimeMap["units"] = policy.Lifetime.Units
 	lifetimeMap["value"] = policy.Lifetime.Value
 	var lifetime []map[string]interface{}
