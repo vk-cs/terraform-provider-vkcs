@@ -7,3 +7,5 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.1.0
+- Initial release
