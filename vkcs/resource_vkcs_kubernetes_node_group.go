@@ -228,7 +228,7 @@ func resourceKubernetesNodeGroupCreate(ctx context.Context, d *schema.ResourceDa
 		Delay:        createUpdateDelay * time.Minute,
 		PollInterval: createUpdatePollInterval * time.Second,
 	}
-	_, err = stateConf.WaitForState()
+	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return diag.Errorf(
 			"error waiting for vkcs_kubernetes_cluster %s to become ready: %s", s.ClusterID, err)
@@ -324,7 +324,7 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.Errorf("error scaling vkcs_kubernetes_node_group : %s", err)
 		}
 
-		_, err = stateConf.WaitForState()
+		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			return diag.Errorf(
 				"error waiting for vkcs_kubernetes_node_group %s to become scaled: %s", d.Id(), err)
@@ -392,7 +392,7 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.Errorf("error updating vkcs_kubernetes_node_group : %s", err)
 		}
 
-		_, err = stateConf.WaitForState()
+		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			return diag.Errorf(
 				"error waiting for vkcs_kubernetes_node_group %s to become updated: %s", d.Id(), err)
@@ -421,7 +421,7 @@ func resourceKubernetesNodeGroupDelete(ctx context.Context, d *schema.ResourceDa
 		Delay:        nodeGroupDeleteDelay * time.Second,
 		PollInterval: deletePollInterval * time.Second,
 	}
-	_, err = stateConf.WaitForState()
+	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return diag.Errorf(
 			"error waiting for vkcs_kubernetes_node_group %s to become deleted: %s", d.Id(), err)
