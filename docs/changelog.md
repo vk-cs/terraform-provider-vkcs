@@ -7,5 +7,8 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.1.1
+- Fix database instances import: databases & users
+
 #### v0.1.0
 - Initial release
