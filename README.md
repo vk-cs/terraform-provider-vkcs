@@ -1,7 +1,7 @@
 Terraform VKCS Provider
 ============================
 
-* Documentation [https://registry.terraform.io/providers/VKCloudSolutions/vkcs/latest/docs](https://registry.terraform.io/providers/VKCloudSolutions/vkcs/latest/docs)
+* Documentation [https://registry.terraform.io/providers/vk-cs/vkcs/latest/docs](https://registry.terraform.io/providers/vk-cs/vkcs/latest/docs)
 
 Requirements
 ------------
