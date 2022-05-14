@@ -1,5 +1,5 @@
 Terraform VKCS Provider
-============================
+=======================
 
 * Documentation [https://registry.terraform.io/providers/vk-cs/vkcs/latest/docs](https://registry.terraform.io/providers/vk-cs/vkcs/latest/docs)
 
@@ -10,7 +10,7 @@ Requirements
 -	[Go](https://golang.org/doc/install) 1.18 (to build the provider plugin)
 
 Using The Provider
-----------------------
+------------------
 To use the provider, prepare configuration files based on examples from [here](https://github.com/vk-cs/terraform-provider-vkcs/tree/master/examples)
 
 ```sh
@@ -21,7 +21,7 @@ $ terraform plan
 ```
 
 Provider development
----------------------
+--------------------
 To start improve it grab the repository, build it and install into local registry repository.
 Builds for MacOS, Windows and Linux are available.
 The example is for MacOS.
