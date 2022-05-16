@@ -21,7 +21,7 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 				config := meta.(configer)
 				DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 				if err != nil {
-					return nil, fmt.Errorf("Error creating VKCS database client: %s", err)
+					return nil, fmt.Errorf("error creating VKCS database client: %s", err)
 				}
 
 				if resourceDatabaseClusterWithShardsRead(ctx, d, meta).HasError() {

@@ -6,7 +6,6 @@ import (
 	"github.com/gophercloud/gophercloud"
 	db "github.com/gophercloud/gophercloud/openstack/db/v1/databases"
 	"github.com/gophercloud/gophercloud/openstack/db/v1/instances"
-	"github.com/gophercloud/gophercloud/openstack/db/v1/users"
 	"github.com/gophercloud/gophercloud/pagination"
 )
 
@@ -732,7 +731,7 @@ func userList(client databaseClient, id string, dbmsType string) pagination.Page
 		APIPath = dbClustersAPIPath
 	}
 	return pagination.NewPager(client.(*gophercloud.ServiceClient), instanceUsersURL(client, APIPath, id), func(r pagination.PageResult) pagination.Page {
-		return users.UserPage{LinkedPageBase: pagination.LinkedPageBase{PageResult: r}}
+		return DBUserPage{LinkedPageBase: pagination.LinkedPageBase{PageResult: r}}
 	})
 }
 
@@ -846,7 +845,7 @@ func databaseList(client databaseClient, id string, dbmsType string) pagination.
 		APIPath = dbClustersAPIPath
 	}
 	return pagination.NewPager(client.(*gophercloud.ServiceClient), instanceDatabasesURL(client, APIPath, id), func(r pagination.PageResult) pagination.Page {
-		return db.DBPage{LinkedPageBase: pagination.LinkedPageBase{PageResult: r}}
+		return DBPage{LinkedPageBase: pagination.LinkedPageBase{PageResult: r}}
 	})
 }
 
