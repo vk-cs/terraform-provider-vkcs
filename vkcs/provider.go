@@ -249,6 +249,7 @@ func Provider() *schema.Provider {
 			"vkcs_db_database":                   dataSourceDatabaseDatabase(),
 			"vkcs_db_instance":                   dataSourceDatabaseInstance(),
 			"vkcs_db_user":                       dataSourceDatabaseUser(),
+			"vkcs_db_datastores":                 dataSourceDatabaseDatastores(),
 			"vkcs_kubernetes_clustertemplate":    dataSourceKubernetesClusterTemplate(),
 			"vkcs_kubernetes_clustertemplates":   dataSourceKubernetesClusterTemplates(),
 			"vkcs_kubernetes_cluster":            dataSourceKubernetesCluster(),
