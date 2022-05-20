@@ -48,6 +48,10 @@ func instanceCapabilitiesURL(c ContainerClient, api string, id string) string {
 	return c.ServiceURL(api, id, "capabilities")
 }
 
+func backupScheduleURL(c ContainerClient, api string, id string) string {
+	return c.ServiceURL(api, id, "backup_schedule")
+}
+
 func deleteURL(c ContainerClient, api string, id string) string {
 	return c.ServiceURL(api, id)
 }

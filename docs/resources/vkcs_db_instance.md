@@ -12,41 +12,127 @@ Provides a db instance resource. This can be used to create, modify and delete d
 
 ## Example Usage
 
+### Basic instance
 ```terraform
 
 resource "vkcs_db_instance" "db-instance" {
   name = "db-instance"
 
   datastore {
-    type    = example_datastore_type
-    version = example_datastore_version
+    type    = "postgresql"
+    version = "13"
   }
 
   floating_ip_enabled = true
 
-  flavor_id         = example_flavor_id
-  availability_zone = example_availability_zone
+  flavor_id         = "9e931469-1490-489e-88af-29a289681c53"
+  availability_zone = "MS1"
 
   size        = 8
-  volume_type = example_volume_type
+  volume_type = "MS1"
   disk_autoexpand {
     autoexpand    = true
     max_disk_size = 1000
   }
 
   network {
-    uuid = example_network_id
+    uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
   }
 
   capabilities {
-    name = capability_name
+    name = "node_exporter"
   }
 
   capabilities {
-    name = another_capability_name
+    name = "postgres_extensions"
   }
 }
 ```
+### Instance restored from backup
+```terraform
+
+resource "vkcs_db_instance" "db-instance" {
+  name = "db-instance"
+
+  datastore {
+    type    = "postgresql"
+    version = "13"
+  }
+
+  floating_ip_enabled = true
+
+  flavor_id         = "9e931469-1490-489e-88af-29a289681c53"
+  availability_zone = "MS1"
+
+  size        = 8
+  volume_type = "MS1"
+  disk_autoexpand {
+    autoexpand    = true
+    max_disk_size = 1000
+  }
+
+  network {
+    uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
+  }
+
+  capabilities {
+    name = "node_exporter"
+  }
+
+  capabilities {
+    name = "postgres_extensions"
+  }
+
+  restore_point {
+    backup_id = "backup_id"
+  }
+}
+```
+### Postgresql instance with scheduled PITR backup
+```terraform
+
+resource "vkcs_db_instance" "db-instance" {
+  name = "db-instance"
+
+  datastore {
+    type    = "postgresql"
+    version = "13"
+  }
+
+  floating_ip_enabled = true
+
+  flavor_id         = "9e931469-1490-489e-88af-29a289681c53"
+  availability_zone = "MS1"
+
+  size        = 8
+  volume_type = "MS1"
+  disk_autoexpand {
+    autoexpand    = true
+    max_disk_size = 1000
+  }
+
+  network {
+    uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
+  }
+
+  capabilities {
+    name = "node_exporter"
+  }
+
+  capabilities {
+    name = "postgres_extensions"
+  }
+
+  backup_schedule {
+    name = three_hours_backup
+    start_hours = 16
+    start_minutes = 20
+    interval_hours = 3
+    keep_count = 3
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -97,6 +183,17 @@ The following arguments are supported:
 * `capabilities` - Object that represents capability applied to instance. There can be several instances of this object (see example). Each instance of this object has following attributes:
     * `name` - (Required) The name of the capability to apply.
     * `settings` - Map of key-value settings of the capability.
+
+* `restore_point` - Object that represents backup to restore instance from. **New since v.0.1.4**. It has following attributes:
+    * `backup_id` - (Required) ID of the backup.
+    * `target` - Used only for restoring from postgresql PITR backups. Timestamp of needed backup in format "2021-10-06 01:02:00". You can specify "latest" to use most recent backup.
+
+* `backup_schedule` - Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4**. This object has following attributes:
+    * `name` - Name of the schedule.
+    * `start_hours` - Hours part of timestamp of initial backup
+    * `start_minutes` - Minutes part of timestamp of initial backup
+    * `interval_hours` - Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.
+    * `keep_count` - Number of backups to be stored.
 
 ## Import
 

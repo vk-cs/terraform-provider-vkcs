@@ -98,6 +98,23 @@ type configuration struct {
 	Name  string  `json:"name"`
 }
 
+type restorePoint struct {
+	BackupRef string `json:"backup_ref" required:"true" mapstructure:"backup_id"`
+	Target    string `json:"target,omitempty"`
+}
+
+type backupSchedule struct {
+	Name          string `json:"name"`
+	StartHours    int    `json:"start_hours"`
+	StartMinutes  int    `json:"start_minutes"`
+	IntervalHours int    `json:"interval_hours"`
+	KeepCount     int    `json:"keep_count"`
+}
+
+type backupScheduleOpts struct {
+	BackupSchedule *backupSchedule `json:"backup_schedule"`
+}
+
 // instanceAutoExpandOpts represents autoresize parameters of volume of database instance
 type instanceAutoExpandOpts struct {
 	AutoExpand  bool
@@ -314,6 +331,11 @@ func (opts *instanceApplyCapabilityOpts) Map() (map[string]interface{}, error) {
 	return body, err
 }
 
+func (opts *backupSchedule) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
 // Map converts opts to a map (for a request body)
 func (opts *userBatchCreateOpts) Map() (map[string]interface{}, error) {
 	body, err := gophercloud.BuildRequestBody(*opts, "")
@@ -358,6 +380,8 @@ type dbInstanceCreateOpts struct {
 	MaxDiskSize       int                      `json:"volume_autoresize_max_size,omitempty"`
 	Walvolume         *walVolume               `json:"wal_volume,omitempty"`
 	Capabilities      []instanceCapabilityOpts `json:"capabilities,omitempty"`
+	RestorePoint      *restorePoint            `json:"restore_point,omitempty"`
+	BackupSchedule    *backupSchedule          `json:"backup_schedule,omitempty"`
 }
 
 // networkOpts represents network parameters of database instance
@@ -372,6 +396,10 @@ type commonInstanceResult struct {
 }
 
 type commonInstanceCapabilitiesResult struct {
+	gophercloud.Result
+}
+
+type commonBackupScheduleResult struct {
 	gophercloud.Result
 }
 
@@ -390,6 +418,14 @@ type getInstanceShortResult struct {
 
 type getInstanceCapabilitiesResult struct {
 	commonInstanceCapabilitiesResult
+}
+
+type getInstanceBackupScheduleResult struct {
+	commonBackupScheduleResult
+}
+
+type getClusterBackupScheduleResult struct {
+	commonBackupScheduleResult
 }
 
 // rootUserResp represents parameters of root user response
@@ -434,6 +470,10 @@ type actionResult struct {
 // isRootUserEnabledResult represents result of getting root user status
 type isRootUserEnabledResult struct {
 	commonRootUserResult
+}
+
+type updateBackupScheduleResult struct {
+	gophercloud.ErrResult
 }
 
 // deleteResult represents result of database instance delete
@@ -521,6 +561,17 @@ func (r commonInstanceCapabilitiesResult) extract() ([]databaseCapability, error
 	return c.Capabilities, nil
 }
 
+func (r commonBackupScheduleResult) extract() (*backupSchedule, error) {
+	var b *backupScheduleOpts
+	if r.Body == nil {
+		return nil, nil
+	}
+	if err := r.ExtractInto(&b); err != nil {
+		return nil, err
+	}
+	return b.BackupSchedule, nil
+}
+
 var instancesAPIPath = "instances"
 
 // instanceCreate performs request to create database instance
@@ -564,6 +615,16 @@ func clusterGetCapabilities(client databaseClient, id string) (r getInstanceCapa
 	reqOpts := getDBRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Get(instanceCapabilitiesURL(client, dbClustersAPIPath, id), &r.Body, reqOpts)
+	if r.Err == nil {
+		r.Header = result.Header
+	}
+	return
+}
+
+func instanceGetBackupSchedule(client databaseClient, id string) (r getInstanceBackupScheduleResult) {
+	reqOpts := getDBRequestOpts(200)
+	var result *http.Response
+	result, r.Err = client.Get(backupScheduleURL(client, instancesAPIPath, id), &r.Body, reqOpts)
 	if r.Err == nil {
 		r.Header = result.Header
 	}
@@ -685,6 +746,21 @@ func instanceRootUserDisable(client databaseClient, id string) (r deleteRootUser
 	reqOpts := getDBRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Delete(rootUserURL(client, instancesAPIPath, id), reqOpts)
+	if r.Err == nil {
+		r.Header = result.Header
+	}
+	return
+}
+
+func instanceUpdateBackupSchedule(client databaseClient, id string, opts optsBuilder) (r updateBackupScheduleResult) {
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	reqOpts := getDBRequestOpts(200)
+	var result *http.Response
+	result, r.Err = client.Put(backupScheduleURL(client, instancesAPIPath, id), b, nil, reqOpts)
 	if r.Err == nil {
 		r.Header = result.Header
 	}

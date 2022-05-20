@@ -38,6 +38,7 @@ var (
 	dbInstanceStatusResize             dbInstanceStatus = "RESIZE"
 	dbInstanceStatusDetach             dbInstanceStatus = "DETACH"
 	dbInstanceStatusCapabilityApplying dbInstanceStatus = "CAPABILITY_APPLYING"
+	dbInstanceStatusBackup             dbInstanceStatus = "BACKUP"
 )
 
 type dbCapabilityStatus string
@@ -321,6 +322,57 @@ func resourceDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			"restore_point": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"backup_id": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						},
+						"target": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+					},
+				},
+			},
+
+			"backup_schedule": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: false,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"start_hours": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"start_minutes": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"interval_hours": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"keep_count": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -344,6 +396,15 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	message := "unable to determine vkcs_db_instance"
+
+	if v, ok := d.GetOk("restore_point"); ok {
+		restorepoint, err := extractDatabaseRestorePoint(v.([]interface{}))
+		if err != nil {
+			return diag.Errorf("%s restore_point", message)
+		}
+		createOpts.RestorePoint = &restorepoint
+	}
+
 	if v, ok := d.GetOk("datastore"); ok {
 		datastore, err := extractDatabaseDatastore(v.([]interface{}))
 		if err != nil {
@@ -419,6 +480,14 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 		createOpts.Walvolume.MaxDiskSize = walAutoExpandOpts.MaxDiskSize
 	}
 
+	if v, ok := d.GetOk("backup_schedule"); ok {
+		backupSchedule, err := extractDatabaseBackupSchedule(v.([]interface{}))
+		if err != nil {
+			return diag.Errorf("%s backup_schedule", message)
+		}
+		createOpts.BackupSchedule = &backupSchedule
+	}
+
 	var checkCapabilities *[]instanceCapabilityOpts
 	if capabilities, ok := d.GetOk("capabilities"); ok {
 		capabilitiesOpts, err := extractDatabaseCapabilities(capabilities.([]interface{}))
@@ -435,7 +504,6 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 
 	inst := dbInstance{}
 	inst.Instance = createOpts
-
 	instance, err := instanceCreate(DatabaseV1Client, inst).extract()
 	if err != nil {
 		return diag.Errorf("error creating vkcs_db_instance: %s", err)
@@ -445,7 +513,7 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 	log.Printf("[DEBUG] Waiting for vkcs_db_instance %s to become available", instance.ID)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{string(dbInstanceStatusBuild)},
+		Pending:    []string{string(dbInstanceStatusBuild), string(dbInstanceStatusBackup)},
 		Target:     []string{string(dbInstanceStatusActive)},
 		Refresh:    databaseInstanceStateRefreshFunc(DatabaseV1Client, instance.ID, checkCapabilities),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
@@ -537,6 +605,17 @@ func resourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, m
 		if isRootEnabled {
 			d.Set("root_enabled", true)
 		}
+	}
+
+	backupSchedule, err := instanceGetBackupSchedule(DatabaseV1Client, d.Id()).extract()
+	if err != nil {
+		return diag.Errorf("error getting backup schedule for instance: %s: %s", d.Id(), err)
+	}
+	if backupSchedule != nil {
+		flattened := flattenDatabaseBackupSchedule(*backupSchedule)
+		d.Set("backup_schedule", flattened)
+	} else {
+		d.Set("backup_schedule", nil)
 	}
 
 	return nil
@@ -781,6 +860,28 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 		_, err = applyCapabilityInstanceConf.WaitForStateContext(ctx)
 		if err != nil {
 			return diag.Errorf("error applying capability to vkcs_db_instance %s: %s", d.Id(), err)
+		}
+	}
+
+	if d.HasChange("backup_schedule") {
+		_, newBackupSchedule := d.GetChange("backup_schedule")
+		backupScheduleUpdateOpts, err := extractDatabaseBackupSchedule(newBackupSchedule.([]interface{}))
+		if err != nil {
+			return diag.Errorf("unable to determine vkcs_db_instance backup_schedule")
+		}
+
+		err = instanceUpdateBackupSchedule(DatabaseV1Client, d.Id(), &backupScheduleUpdateOpts).ExtractErr()
+
+		if err != nil {
+			return diag.Errorf("error updating backup schedule for vkcs_db_instance %s: %s", d.Id(), err)
+		}
+
+		stateConf.Pending = []string{string(dbInstanceStatusBuild), string(dbInstanceStatusBackup)}
+		stateConf.Target = []string{string(dbInstanceStatusActive)}
+
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			return diag.Errorf("error waiting for vkcs_db_instance %s to become ready: %s", d.Id(), err)
 		}
 	}
 

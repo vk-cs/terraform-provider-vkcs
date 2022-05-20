@@ -23,6 +23,7 @@ var (
 	dbClusterStatusShrink             dbClusterStatus = "SHRINKING_CLUSTER"
 	dbClusterStatusUpdating           dbClusterStatus = "UPDATING_CLUSTER"
 	dbClusterStatusCapabilityApplying dbClusterStatus = "CAPABILITY_APPLYING"
+	dbClusterStatusBackup             dbClusterStatus = "BACKUP"
 )
 
 func resourceDatabaseCluster() *schema.Resource {
@@ -269,6 +270,56 @@ func resourceDatabaseCluster() *schema.Resource {
 					},
 				},
 			},
+			"restore_point": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"backup_id": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						},
+						"target": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+					},
+				},
+			},
+			"backup_schedule": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: false,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"start_hours": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"start_minutes": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"interval_hours": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"keep_count": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -286,6 +337,15 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	message := "unable to determine vkcs_db_cluster"
+
+	if v, ok := d.GetOk("restore_point"); ok {
+		restorepoint, err := extractDatabaseRestorePoint(v.([]interface{}))
+		if err != nil {
+			return diag.Errorf("%s restore_point", message)
+		}
+		createOpts.RestorePoint = &restorepoint
+	}
+
 	if v, ok := d.GetOk("datastore"); ok {
 		datastore, err := extractDatabaseDatastore(v.([]interface{}))
 		if err != nil {
@@ -354,6 +414,14 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 
 	createOpts.Instances = instances
 
+	if v, ok := d.GetOk("backup_schedule"); ok {
+		backupSchedule, err := extractDatabaseBackupSchedule(v.([]interface{}))
+		if err != nil {
+			return diag.Errorf("%s backup_schedule", message)
+		}
+		createOpts.BackupSchedule = &backupSchedule
+	}
+
 	var checkCapabilities *[]instanceCapabilityOpts
 	if capabilities, ok := d.GetOk("capabilities"); ok {
 		capabilitiesOpts, err := extractDatabaseCapabilities(capabilities.([]interface{}))
@@ -379,7 +447,7 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 	log.Printf("[DEBUG] Waiting for vkcs_db_cluster %s to become available", cluster.ID)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{string(dbClusterStatusBuild)},
+		Pending:    []string{string(dbClusterStatusBuild), string(dbClusterStatusBackup)},
 		Target:     []string{string(dbClusterStatusActive)},
 		Refresh:    databaseClusterStateRefreshFunc(DatabaseV1Client, cluster.ID, checkCapabilities),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
@@ -444,6 +512,17 @@ func resourceDatabaseClusterRead(ctx context.Context, d *schema.ResourceData, me
 		if _, ok := d.GetOk("wal_disk_autoexpand"); ok {
 			d.Set("wal_disk_autoexpand", flattenDatabaseInstanceAutoExpand(cluster.WalAutoExpand, cluster.WalMaxDiskSize))
 		}
+	}
+
+	backupSchedule, err := dbClusterGetBackupSchedule(DatabaseV1Client, d.Id()).extract()
+	if err != nil {
+		return diag.Errorf("error getting backup schedule for cluster: %s: %s", d.Id(), err)
+	}
+	if backupSchedule != nil {
+		flattened := flattenDatabaseBackupSchedule(*backupSchedule)
+		d.Set("backup_schedule", flattened)
+	} else {
+		d.Set("backup_schedule", nil)
 	}
 
 	return nil
@@ -715,6 +794,28 @@ func resourceDatabaseClusterUpdate(ctx context.Context, d *schema.ResourceData, 
 			if err != nil {
 				return diag.Errorf("error waiting for vkcs_db_cluster %s to become ready: %s", d.Id(), err)
 			}
+		}
+	}
+
+	if d.HasChange("backup_schedule") {
+		_, newBackupSchedule := d.GetChange("backup_schedule")
+		backupScheduleUpdateOpts, err := extractDatabaseBackupSchedule(newBackupSchedule.([]interface{}))
+		if err != nil {
+			return diag.Errorf("unable to determine vkcs_db_cluster backup_schedule")
+		}
+
+		err = dbClusterUpdateBackupSchedule(DatabaseV1Client, d.Id(), &backupScheduleUpdateOpts).ExtractErr()
+
+		if err != nil {
+			return diag.Errorf("error updating backup schedule for vkcs_db_cluster %s: %s", d.Id(), err)
+		}
+
+		stateConf.Pending = []string{string(dbClusterStatusUpdating), string(dbClusterStatusBackup)}
+		stateConf.Target = []string{string(dbClusterStatusActive)}
+
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			return diag.Errorf("error waiting for vkcs_db_cluster %s to become ready: %s", d.Id(), err)
 		}
 	}
 
