@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.1.1
+- Fix typo in data-sources docs location
 - Fix database instances import: databases & users
 
 #### v0.1.0
