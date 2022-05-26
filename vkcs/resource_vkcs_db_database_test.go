@@ -61,7 +61,7 @@ func testAccCheckDatabaseDatabaseExists(n string, instance *instanceResp, databa
 			return fmt.Errorf("Unable to retrieve databases: %s", err)
 		}
 
-		allDatabases, err := databases.ExtractDBs(pages)
+		allDatabases, err := ExtractDBs(pages)
 		if err != nil {
 			return fmt.Errorf("Unable to extract databases: %s", err)
 		}
@@ -100,7 +100,7 @@ func testAccCheckDatabaseDatabaseDestroy(s *terraform.State) error {
 			return nil
 		}
 
-		allDatabase, err := databases.ExtractDBs(pages)
+		allDatabase, err := ExtractDBs(pages)
 		if err != nil {
 			return fmt.Errorf("Unable to extract databases: %s", err)
 		}

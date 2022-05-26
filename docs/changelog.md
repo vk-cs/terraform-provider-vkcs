@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.1.2
+- Fix creation of db databases and users
+
 #### v0.1.1
 - Fix typo in data-sources docs location
 - Fix database instances import: databases & users

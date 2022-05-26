@@ -55,7 +55,7 @@ func databaseDatabaseStateRefreshFunc(client databaseClient, dbmsID string, data
 			return nil, "", fmt.Errorf("unable to retrieve vkcs database databases: %s", err)
 		}
 
-		allDatabases, err := databases.ExtractDBs(pages)
+		allDatabases, err := ExtractDBs(pages)
 		if err != nil {
 			return nil, "", fmt.Errorf("unable to extract vkcs database databases: %s", err)
 		}
