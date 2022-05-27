@@ -58,12 +58,17 @@ func TestPatchOpts(t *testing.T) {
 			Value: false,
 			Op:    "replace",
 		},
+		{
+			Path:  "/max_node_unavailable",
+			Value: 80,
+			Op:    "replace",
+		},
 	}
 
 	b, _ := patchOpts.PatchMap()
 
 	assert.IsType(t, []map[string]interface{}{}, b)
-	assert.Len(t, b, 3)
+	assert.Len(t, b, 4)
 }
 
 func TestAddBatchOpts(t *testing.T) {

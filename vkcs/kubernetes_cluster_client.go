@@ -61,22 +61,23 @@ type nodeGroupBatchAddParams struct {
 }
 
 type nodeGroup struct {
-	Name              string    `json:"name,omitempty"`
-	NodeCount         int       `json:"node_count,omitempty"`
-	MaxNodes          int       `json:"max_nodes,omitempty"`
-	MinNodes          int       `json:"min_nodes,omitempty"`
-	VolumeSize        int       `json:"volume_size,omitempty"`
-	VolumeType        string    `json:"volume_type,omitempty"`
-	FlavorID          string    `json:"flavor_id,omitempty"`
-	ImageID           string    `json:"image_id,omitempty"`
-	Autoscaling       bool      `json:"autoscaling_enabled,omitempty"`
-	ClusterID         string    `json:"cluster_id,omitempty"`
-	UUID              string    `json:"uuid,omitempty"`
-	CreatedAt         time.Time `json:"created_at,omitempty"`
-	UpdatedAt         time.Time `json:"updated_at,omitempty"`
-	Nodes             []*node   `json:"nodes,omitempty"`
-	State             string    `json:"state,omitempty"`
-	AvailabilityZones []string  `json:"availability_zones"`
+	Name               string    `json:"name,omitempty"`
+	NodeCount          int       `json:"node_count,omitempty"`
+	MaxNodes           int       `json:"max_nodes,omitempty"`
+	MinNodes           int       `json:"min_nodes,omitempty"`
+	VolumeSize         int       `json:"volume_size,omitempty"`
+	VolumeType         string    `json:"volume_type,omitempty"`
+	FlavorID           string    `json:"flavor_id,omitempty"`
+	ImageID            string    `json:"image_id,omitempty"`
+	Autoscaling        bool      `json:"autoscaling_enabled,omitempty"`
+	ClusterID          string    `json:"cluster_id,omitempty"`
+	UUID               string    `json:"uuid,omitempty"`
+	CreatedAt          time.Time `json:"created_at,omitempty"`
+	UpdatedAt          time.Time `json:"updated_at,omitempty"`
+	Nodes              []*node   `json:"nodes,omitempty"`
+	State              string    `json:"state,omitempty"`
+	AvailabilityZones  []string  `json:"availability_zones"`
+	MaxNodeUnavailable int       `json:"max_node_unavailable,omitempty"`
 }
 
 type nodeGroupLabel struct {
@@ -92,18 +93,19 @@ type nodeGroupTaint struct {
 
 // nodeGroupCreateOpts contains options to create node group.
 type nodeGroupCreateOpts struct {
-	ClusterID         string           `json:"cluster_id" required:"true"`
-	Name              string           `json:"name"`
-	Labels            []nodeGroupLabel `json:"labels,omitempty"`
-	Taints            []nodeGroupTaint `json:"taints,omitempty"`
-	NodeCount         int              `json:"node_count,omitempty"`
-	MaxNodes          int              `json:"max_nodes,omitempty"`
-	MinNodes          int              `json:"min_nodes,omitempty"`
-	VolumeSize        int              `json:"volume_size,omitempty"`
-	VolumeType        string           `json:"volume_type,omitempty"`
-	FlavorID          string           `json:"flavor_id,omitempty"`
-	Autoscaling       bool             `json:"autoscaling_enabled,omitempty"`
-	AvailabilityZones []string         `json:"availability_zones,omitempty"`
+	ClusterID          string           `json:"cluster_id" required:"true"`
+	Name               string           `json:"name"`
+	Labels             []nodeGroupLabel `json:"labels,omitempty"`
+	Taints             []nodeGroupTaint `json:"taints,omitempty"`
+	NodeCount          int              `json:"node_count,omitempty"`
+	MaxNodes           int              `json:"max_nodes,omitempty"`
+	MinNodes           int              `json:"min_nodes,omitempty"`
+	VolumeSize         int              `json:"volume_size,omitempty"`
+	VolumeType         string           `json:"volume_type,omitempty"`
+	FlavorID           string           `json:"flavor_id,omitempty"`
+	Autoscaling        bool             `json:"autoscaling_enabled,omitempty"`
+	AvailabilityZones  []string         `json:"availability_zones,omitempty"`
+	MaxNodeUnavailable int              `json:"max_node_unavailable,omitempty"`
 }
 
 // nodeGroupScaleOpts contains options to scale node group

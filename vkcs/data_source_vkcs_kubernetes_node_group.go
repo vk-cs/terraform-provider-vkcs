@@ -97,6 +97,11 @@ func dataSourceKubernetesNodeGroup() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"max_node_unavailable": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: false,
+			},
 		},
 	}
 }
@@ -128,6 +133,7 @@ func dataSourceKubernetesNodeGroupRead(ctx context.Context, d *schema.ResourceDa
 	d.Set("nodes", flattenNodes(nodeGroup.Nodes))
 	d.Set("state", nodeGroup.State)
 	d.Set("availability_zones", nodeGroup.AvailabilityZones)
+	d.Set("max_node_unavailable", nodeGroup.MaxNodeUnavailable)
 
 	if err := d.Set("created_at", getTimestamp(&nodeGroup.CreatedAt)); err != nil {
 		log.Printf("[DEBUG] Unable to set vkcs_kubernetes_node_group created_at: %s", err)

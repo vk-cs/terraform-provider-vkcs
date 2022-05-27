@@ -151,6 +151,11 @@ func resourceKubernetesNodeGroup() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"max_node_unavailable": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: false,
+			},
 		},
 	}
 }
@@ -163,13 +168,14 @@ func resourceKubernetesNodeGroupCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	createOpts := nodeGroupCreateOpts{
-		ClusterID:   d.Get("cluster_id").(string),
-		FlavorID:    d.Get("flavor_id").(string),
-		MaxNodes:    d.Get("max_nodes").(int),
-		MinNodes:    d.Get("min_nodes").(int),
-		VolumeSize:  d.Get("volume_size").(int),
-		VolumeType:  d.Get("volume_type").(string),
-		Autoscaling: d.Get("autoscaling_enabled").(bool),
+		ClusterID:          d.Get("cluster_id").(string),
+		FlavorID:           d.Get("flavor_id").(string),
+		MaxNodes:           d.Get("max_nodes").(int),
+		MinNodes:           d.Get("min_nodes").(int),
+		VolumeSize:         d.Get("volume_size").(int),
+		VolumeType:         d.Get("volume_type").(string),
+		Autoscaling:        d.Get("autoscaling_enabled").(bool),
+		MaxNodeUnavailable: d.Get("max_node_unavailable").(int),
 	}
 
 	if zonesRaw, ok := d.GetOk("availability_zones"); ok {
@@ -283,6 +289,7 @@ func resourceKubernetesNodeGroupRead(ctx context.Context, d *schema.ResourceData
 	d.Set("autoscaling_enabled", s.Autoscaling)
 	d.Set("cluster_id", s.ClusterID)
 	d.Set("availability_zones", s.AvailabilityZones)
+	d.Set("max_node_unavailable", s.MaxNodeUnavailable)
 
 	if err := d.Set("created_at", getTimestamp(&s.CreatedAt)); err != nil {
 		log.Printf("[DEBUG] Unable to set vkcs_kubernetes_node_group created_at: %s", err)
@@ -382,6 +389,14 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 		patchOpts = append(patchOpts, nodeGroupPatchParams{
 			Path:  "/taints",
 			Value: taints,
+			Op:    "replace",
+		})
+	}
+
+	if d.HasChange("max_node_unavailable") {
+		patchOpts = append(patchOpts, nodeGroupPatchParams{
+			Path:  "/max_node_unavailable",
+			Value: d.Get("max_node_unavailable").(int),
 			Op:    "replace",
 		})
 	}

@@ -45,6 +45,7 @@ The following arguments are supported:
  Changing this will force to create a new node group.
 * `volume_type` - (Optional) The volume type to load nodes from.
  Changing this will force to create a new node group.
+* `max_node_unavailable` - (Optional) The maximum number of nodes that can fail during an upgrade. The default value is 25 percent.
 
     
 ## Attributes
@@ -67,7 +68,7 @@ attributes are exported:
 * `uuid` - The UUID of the cluster's node group.
 * `volume_size` - The size in GB for volume to load nodes from.
 * `volume_type` - The volume type to load nodes from.
-
+* `max_node_unavailable` - (Optional) The maximum number of nodes that can fail during an upgrade.
 
 ## Import
 
