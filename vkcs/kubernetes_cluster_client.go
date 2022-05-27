@@ -13,7 +13,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clustertemplates"
 )
 
-const magnumAPIMicroVersion = "1.24"
+const magnumAPIMicroVersion = "1.26"
 
 var magnumAPIMicroVersionHeader = map[string]string{
 	"MCS-API-Version": fmt.Sprintf("container-infra %s", magnumAPIMicroVersion),
