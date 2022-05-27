@@ -102,7 +102,7 @@ func testAccCheckDatabaseUserExists(n string, instance *instanceResp, user *user
 			return fmt.Errorf("unable to retrieve users: %s", err)
 		}
 
-		allUsers, err := users.ExtractUsers(pages)
+		allUsers, err := ExtractUsers(pages)
 		if err != nil {
 			return fmt.Errorf("unable to extract users: %s", err)
 		}
@@ -151,7 +151,7 @@ func testAccCheckDatabaseUserDestroy(s *terraform.State) error {
 			return nil
 		}
 
-		allUsers, err := users.ExtractUsers(pages)
+		allUsers, err := ExtractUsers(pages)
 		if err != nil {
 			return fmt.Errorf("unable to extract users: %s", err)
 		}
