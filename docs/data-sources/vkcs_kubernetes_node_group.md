@@ -40,4 +40,4 @@ attributes are exported:
 * `uuid` - The UUID of the cluster's node group.
 * `volume_size` - The amount of memory of volume in Gb.
 * `volume_type` - The type of volume.
-* `max_node_unavailable` - Specified as a percentage. The maximum number of nodes that can fail during an upgrade.
+* `max_node_unavailable` - Specified as a percentage. The maximum number of nodes that can fail during an upgrade. **New since version v0.1.3**.
