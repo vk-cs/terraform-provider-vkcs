@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.1.3
+- Add max_node_unavailable option for node group
+
 #### v0.1.2
 - Fix creation of db databases and users
 
