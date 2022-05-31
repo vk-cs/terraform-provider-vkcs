@@ -11,7 +11,7 @@ description: |-
 Provides a db cluster with shards resource. This can be used to create, modify and delete db cluster with shards for clickhouse datastore.
 
 ## Example Usage
-
+### Basic cluster with shards
 ```terraform
 
 resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
@@ -24,32 +24,72 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
 
   shard {
     size        = 2
-    shard_id    = example_shard_id1
-    flavor_id   = example_flavor_id
+    shard_id    = "shard0"
+    flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
 
     volume_size = 10
-    volume_type = example_volume_type
+    volume_type = "MS1"
     
     network {
-      uuid = example_network_id
+      uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
     }
   }
 
   shard {
     size        = 2
-    shard_id    = example_shard_id2
-    flavor_id   = example_flavor_id
+    shard_id    = "shard1"
+    flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
     
     volume_size = 10
-    volume_type = example_volume_type
+    volume_type = "MS1"
 
     network {
-      uuid = example_network_id
+      uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
     }
   }
 }
 ```
+### Cluster with shards restored from backup
+```terraform
 
+resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
+  name = "db-cluster-with-shards"
+
+  datastore {
+    type    = "clickhouse"
+    version = "20.8"
+  }
+
+  shard {
+    size        = 2
+    shard_id    = "shard0"
+    flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
+
+    volume_size = 10
+    volume_type = "MS1"
+    
+    network {
+      uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
+    }
+  }
+
+  shard {
+    size        = 2
+    shard_id    = "shard1"
+    flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
+    
+    volume_size = 10
+    volume_type = "MS1"
+
+    network {
+      uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
+    }
+
+  restore_point {
+    backup_id = "7c8110f3-6f7f-4dc3-85c2-16feef9ddc2b"
+  }
+}
+```
 ## Argument Reference
 
 * `name` - (Required) The name of the cluster. Changing this creates a new cluster
@@ -87,6 +127,9 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
     * `network` -  Object that represents network of the cluster shard. Changing this creates a new cluster. It has following attributes: 
         * `uuid` - The id of the network. Changing this creates a new cluster.
         * `port` - The port id of the network. Changing this creates a new cluster.
+
+* `restore_point` - Object that represents backup to restore instance from. **New since v.0.1.4**. It has following attributes:
+    * `backup_id` - (Required) ID of the backup.
 
 ## Import
 

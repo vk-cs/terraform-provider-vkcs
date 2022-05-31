@@ -204,6 +204,22 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 				},
 			},
 
+			"restore_point": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"backup_id": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						},
+					},
+				},
+			},
+
 			"shard": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -308,6 +324,15 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 	}
 
 	message := "unable to determine vkcs_db_cluster_with_shards"
+
+	if v, ok := d.GetOk("restore_point"); ok {
+		restorepoint, err := extractDatabaseRestorePoint(v.([]interface{}))
+		if err != nil {
+			return diag.Errorf("%s restore_point", message)
+		}
+		createOpts.RestorePoint = &restorepoint
+	}
+
 	if v, ok := d.GetOk("datastore"); ok {
 		datastore, err := extractDatabaseDatastore(v.([]interface{}))
 		if err != nil {

@@ -29,6 +29,16 @@ func getClusterWithShardsDatastores() []string {
 	return []string{Clickhouse}
 }
 
+func extractDatabaseRestorePoint(v []interface{}) (restorePoint, error) {
+	var R restorePoint
+	in := v[0].(map[string]interface{})
+	err := mapstructure.Decode(in, &R)
+	if err != nil {
+		return R, err
+	}
+	return R, nil
+}
+
 func extractDatabaseDatastore(v []interface{}) (dataStore, error) {
 	var D dataStore
 	in := v[0].(map[string]interface{})
@@ -121,6 +131,28 @@ func flattenDatabaseInstanceCapabilities(c []databaseCapability) []map[string]in
 		capabilities[i]["settings"] = capability.Params
 	}
 	return capabilities
+}
+
+func extractDatabaseBackupSchedule(v []interface{}) (backupSchedule, error) {
+	var B backupSchedule
+	in := v[0].(map[string]interface{})
+	err := mapStructureDecoder(&B, &in, decoderConfig)
+	if err != nil {
+		return B, err
+	}
+	return B, nil
+}
+
+func flattenDatabaseBackupSchedule(b backupSchedule) []map[string]interface{} {
+	backupschedule := make([]map[string]interface{}, 1)
+	backupschedule[0] = make(map[string]interface{})
+	backupschedule[0]["name"] = b.Name
+	backupschedule[0]["start_hours"] = b.StartHours
+	backupschedule[0]["start_minutes"] = b.StartMinutes
+	backupschedule[0]["interval_hours"] = b.IntervalHours
+	backupschedule[0]["keep_count"] = b.KeepCount
+
+	return backupschedule
 }
 
 func databaseInstanceStateRefreshFunc(client databaseClient, instanceID string, capabilitiesOpts *[]instanceCapabilityOpts) resource.StateRefreshFunc {

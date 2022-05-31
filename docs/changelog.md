@@ -7,6 +7,11 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v.0.1.4
+- Add vkcs_db_backup resource and datasource
+- Add restore_point field to vkcs_db_instance, vkcs_db_cluster and vkcs_db_cluster_with_shards resources
+- Add backup_schedule field to vkcs_db_instance resource and data_source and to vkcs_db_cluster resource
+
 #### v0.1.3
 - Add max_node_unavailable option for node group
 

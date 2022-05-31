@@ -11,7 +11,7 @@ description: |-
 Provides a db cluster resource. This can be used to create, modify and delete db cluster for galera_mysql, postgresql, tarantool datastores.
 
 ## Example Usage
-
+### Basic cluster
 ```terraform
 
 resource "vkcs_db_cluster" "mydb-cluster" {
@@ -24,17 +24,74 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
   cluster_size = 3
 
-  flavor_id   = example_flavor_id
+  flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
 
   volume_size = 10
-  volume_type = example_volume_type
+  volume_type = "MS1"
 
   network {
-    uuid = example_network_id
+    uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
   }
 }
 ```
+### Cluster restored from backup
+```terraform
 
+resource "vkcs_db_cluster" "mydb-cluster" {
+  name        = "mydb-cluster"
+
+  datastore {
+    type    = "postgresql"
+    version = "12"
+  }
+
+  cluster_size = 3
+
+  flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
+
+  volume_size = 10
+  volume_type = "MS1"
+
+  network {
+    uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
+  }
+
+  restore_point {
+    backup_id = "backup_id"
+  }
+}
+```
+### Cluster with scheduled PITR backup
+```terraform
+
+resource "vkcs_db_cluster" "mydb-cluster" {
+  name        = "mydb-cluster"
+
+  datastore {
+    type    = "postgresql"
+    version = "12"
+  }
+
+  cluster_size = 3
+
+  flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
+
+  volume_size = 10
+  volume_type = "MS1"
+
+  network {
+    uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
+  }
+
+  backup_schedule {
+    name = three_hours_backup
+    start_hours = 16
+    start_minutes = 20
+    interval_hours = 3
+    keep_count = 3
+  }
+}
+```
 ## Argument Reference
 
 The following arguments are supported:
@@ -82,6 +139,18 @@ The following arguments are supported:
 * `capabilities` - Object that represents capability applied to cluster. There can be several instances of this object. Each instance of this object has following attributes:
     * `name` - (Required) The name of the capability to apply.
     * `settings` - Map of key-value settings of the capability.
+
+* `restore_point` - Object that represents backup to restore cluster from. **New since v.0.1.4**. It has following attributes:
+    * `backup_id` - (Required) ID of the backup.
+    * `target` - Used only for restoring from PITR backups. Timestamp of needed backup in format "2021-10-06 01:02:00". You can specify "latest" to use most recent backup. 
+
+* `backup_schedule` - Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4** This object has following attributes:
+    * `name` - Name of the schedule.
+    * `start_hours` - Hours part of timestamp of initial backup
+    * `start_minutes` - Minutes part of timestamp of initial backup
+    * `interval_hours` - Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.
+    * `keep_count` - Number of backups to be stored.
+
 
 ## Import
 

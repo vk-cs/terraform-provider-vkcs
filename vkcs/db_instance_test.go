@@ -117,3 +117,20 @@ func TestExtractDatabaseCapabilities(t *testing.T) {
 	actual, _ := extractDatabaseCapabilities(capabilities)
 	assert.Equal(t, expected, actual)
 }
+
+func TestExtractDatabaseRestorePoint(t *testing.T) {
+	restorepoint := []interface{}{
+		map[string]interface{}{
+			"backup_id": "foo",
+			"target":    "bar",
+		},
+	}
+
+	expected := restorePoint{
+		BackupRef: "foo",
+		Target:    "bar",
+	}
+
+	actual, _ := extractDatabaseRestorePoint(restorepoint)
+	assert.Equal(t, expected, actual)
+}

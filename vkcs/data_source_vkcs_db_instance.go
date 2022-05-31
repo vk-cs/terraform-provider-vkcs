@@ -116,6 +116,34 @@ func dataSourceDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			"backup_schedule": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"start_hours": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"start_minutes": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"interval_hours": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"keep_count": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -149,6 +177,17 @@ func dataSourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.Set("volume", schema.NewSet(volInstHash, []interface{}{m}))
+
+	backupSchedule, err := instanceGetBackupSchedule(DatabaseV1Client, d.Id()).extract()
+	if err != nil {
+		return diag.Errorf("error getting backup schedule for instance: %s: %s", d.Id(), err)
+	}
+	if backupSchedule != nil {
+		flattened := flattenDatabaseBackupSchedule(*backupSchedule)
+		d.Set("backup_schedule", flattened)
+	} else {
+		d.Set("backup_schedule", nil)
+	}
 
 	return nil
 }

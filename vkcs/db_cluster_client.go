@@ -22,6 +22,8 @@ type dbClusterCreateOpts struct {
 	WalMaxDiskSize    int                           `json:"wal_autoresize_max_size,omitempty"`
 	Instances         []dbClusterInstanceCreateOpts `json:"instances"`
 	Capabilities      []instanceCapabilityOpts      `json:"capabilities,omitempty"`
+	RestorePoint      *restorePoint                 `json:"restore_point,omitempty"`
+	BackupSchedule    *backupSchedule               `json:"backup_schedule,omitempty"`
 }
 
 // dbClusterInstanceCreateOpts represents database cluster instance creation parameters
@@ -354,6 +356,31 @@ func dbClusterUpdateAutoExpand(client databaseClient, id string, opts optsBuilde
 	reqOpts := getDBRequestOpts(202)
 	var result *http.Response
 	result, r.Err = client.Patch(getURL(client, dbClustersAPIPath, id), b, nil, reqOpts)
+	if r.Err == nil {
+		r.Header = result.Header
+	}
+	return
+}
+
+func dbClusterUpdateBackupSchedule(client databaseClient, id string, opts optsBuilder) (r updateBackupScheduleResult) {
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	reqOpts := getDBRequestOpts(200)
+	var result *http.Response
+	result, r.Err = client.Put(backupScheduleURL(client, clustersAPIPath, id), b, nil, reqOpts)
+	if r.Err == nil {
+		r.Header = result.Header
+	}
+	return
+}
+
+func dbClusterGetBackupSchedule(client databaseClient, id string) (r getClusterBackupScheduleResult) {
+	reqOpts := getDBRequestOpts(200)
+	var result *http.Response
+	result, r.Err = client.Get(backupScheduleURL(client, clustersAPIPath, id), &r.Body, reqOpts)
 	if r.Err == nil {
 		r.Header = result.Header
 	}
