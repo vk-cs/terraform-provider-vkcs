@@ -132,7 +132,7 @@ type clusterCreateOpts struct {
 	AvailabilityZone     string            `json:"availability_zone,omitempty"`
 	LoadbalancerSubnetID string            `json:"loadbalancer_subnet_id,omitempty"`
 	InsecureRegistries   []string          `json:"insecure_registries,omitempty"`
-	DnsDomain            string            `json:"dns_domain,omitempty"`
+	DNSDomain            string            `json:"dns_domain,omitempty"`
 }
 
 type clusterActionsBaseOpts struct {

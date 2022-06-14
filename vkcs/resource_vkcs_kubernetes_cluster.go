@@ -247,7 +247,7 @@ func resourceKubernetesClusterCreate(ctx context.Context, d *schema.ResourceData
 		LoadbalancerSubnetID: d.Get("loadbalancer_subnet_id").(string),
 		RegistryAuthPassword: d.Get("registry_auth_password").(string),
 		AvailabilityZone:     d.Get("availability_zone").(string),
-		DnsDomain:            d.Get("dns_domain").(string),
+		DNSDomain:            d.Get("dns_domain").(string),
 	}
 
 	if masterCount, ok := d.GetOk("master_count"); ok {

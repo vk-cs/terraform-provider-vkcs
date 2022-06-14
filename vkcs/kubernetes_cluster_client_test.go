@@ -31,7 +31,7 @@ func TestClusterCreateOpts(t *testing.T) {
 		SubnetID:           "95663bae-6763-4a53-9424-831975285cc1",
 		FloatingIPEnabled:  false,
 		InsecureRegistries: []string{"1.2.3.4", "6.7.8.9:1234"},
-		DnsDomain:          "cluster.example",
+		DNSDomain:          "cluster.example",
 	}
 
 	b, _ := createOpts.Map()
