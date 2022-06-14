@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v.0.1.5
+- Add dns_domain field to vkcs_kubernetes_cluster
+
 #### v.0.1.4
 - Add vkcs_db_backup resource and datasource
 - Add restore_point field to vkcs_db_instance, vkcs_db_cluster and vkcs_db_cluster_with_shards resources

@@ -209,6 +209,11 @@ func resourceKubernetesCluster() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"dns_domain": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -242,6 +247,7 @@ func resourceKubernetesClusterCreate(ctx context.Context, d *schema.ResourceData
 		LoadbalancerSubnetID: d.Get("loadbalancer_subnet_id").(string),
 		RegistryAuthPassword: d.Get("registry_auth_password").(string),
 		AvailabilityZone:     d.Get("availability_zone").(string),
+		DnsDomain:            d.Get("dns_domain").(string),
 	}
 
 	if masterCount, ok := d.GetOk("master_count"); ok {
@@ -332,6 +338,7 @@ func resourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("availability_zone", cluster.AvailabilityZone)
 	d.Set("region", getRegion(d, config))
 	d.Set("insecure_registries", cluster.InsecureRegistries)
+	d.Set("dns_domain", cluster.DNSDomain)
 
 	// Allow to read old api clusters
 	if cluster.NetworkID != "" {

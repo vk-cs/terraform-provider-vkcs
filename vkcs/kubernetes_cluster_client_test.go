@@ -31,13 +31,14 @@ func TestClusterCreateOpts(t *testing.T) {
 		SubnetID:           "95663bae-6763-4a53-9424-831975285cc1",
 		FloatingIPEnabled:  false,
 		InsecureRegistries: []string{"1.2.3.4", "6.7.8.9:1234"},
+		DnsDomain:          "cluster.example",
 	}
 
 	b, _ := createOpts.Map()
 
 	assert.IsType(t, map[string]interface{}{}, b["labels"])
 	assert.Len(t, b["labels"], 2)
-	assert.Len(t, b, 11)
+	assert.Len(t, b, 12)
 }
 
 func TestPatchOpts(t *testing.T) {

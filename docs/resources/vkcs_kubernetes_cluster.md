@@ -73,6 +73,11 @@ The following arguments are supported:
 
 * `loadbalancer_subnet_id` - (Optional) The UUID of the load balancer's subnet. Changing this creates new cluster.
 
+* `insecure_registries` - (Optional) Addresses of registries from which you can download images without checking 
+certificates. Changing this creates a new cluster.
+
+* `dns_domain` - (Optional) Custom DNS cluster domain. Changing this creates a new cluster.
+
 ## Attributes
 
 This resource exports the following attributes:
@@ -102,6 +107,8 @@ This resource exports the following attributes:
 * `registry_auth_password` - Docker registry access password.
 * `availability_zone` - Availability zone of the cluster.
 * `loadbalancer_subnet_id` - UUID of the load balancer's subnet.
+* `insecure_registries` - Addresses of registries from which you can download images without checking certificates.
+* `dns_domain` - Custom DNS cluster domain.
 
 ## Import
 
