@@ -2,9 +2,7 @@ package vkcs
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
@@ -122,6 +120,7 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 			CACertFile:       d.Get("cacert_file").(string),
 			ClientCertFile:   d.Get("cert").(string),
 			ClientKeyFile:    d.Get("key").(string),
+			Username:         d.Get("username").(string),
 			Password:         d.Get("password").(string),
 			TenantID:         d.Get("project_id").(string),
 			Region:           d.Get("region").(string),
@@ -144,27 +143,10 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 		config.Insecure = &insecure
 	}
 
-	if err := initWithUsername(d, config); err != nil {
-		return nil, diag.FromErr(err)
-	}
-
 	if err := config.LoadAndValidate(); err != nil {
 		return nil, diag.FromErr(err)
 	}
 	return config, nil
-}
-
-func initWithUsername(d *schema.ResourceData, config *config) error {
-	config.UserDomainName = defaultUsersDomainName
-
-	config.Username = os.Getenv("OS_USERNAME")
-	if v, ok := d.GetOk("username"); ok {
-		config.Username = v.(string)
-	}
-	if config.Username == "" {
-		return fmt.Errorf("username must be specified")
-	}
-	return nil
 }
 
 // Provider returns a schema.Provider for VKCS.
@@ -193,7 +175,7 @@ func Provider() *schema.Provider {
 			"username": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_USER_NAME", ""),
+				DefaultFunc: schema.EnvDefaultFunc("OS_USERNAME", ""),
 				Description: "User name to login with.",
 			},
 			"region": {
