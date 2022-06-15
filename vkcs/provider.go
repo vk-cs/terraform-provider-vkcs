@@ -16,7 +16,7 @@ import (
 const (
 	maxRetriesCount         = 3
 	defaultIdentityEndpoint = "https://infra.mail.ru/identity/v3/"
-	defaultUsersDomainName  = "users"
+	defaultUserDomainName   = "users"
 	defaultRegionName       = "RegionOne"
 	requestsMaxRetriesCount = 3
 	requestsRetryDelay      = 30 * time.Millisecond
@@ -125,6 +125,8 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 			TenantID:         d.Get("project_id").(string),
 			Region:           d.Get("region").(string),
 			IdentityEndpoint: d.Get("auth_url").(string),
+			UserDomainID:     d.Get("user_domain_id").(string),
+			UserDomainName:   d.Get("user_domain_name").(string),
 			AllowReauth:      true,
 			MaxRetries:       maxRetriesCount,
 			TerraformVersion: terraformVersion,
@@ -133,8 +135,8 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 		},
 	}
 
-	if config.UserDomainID == "" {
-		config.UserDomainID = os.Getenv("OS_USER_DOMAIN_ID")
+	if config.UserDomainID != "" {
+		config.UserDomainName = ""
 	}
 
 	v, ok := d.GetOk("insecure")
@@ -177,6 +179,18 @@ func Provider() *schema.Provider {
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("OS_USERNAME", ""),
 				Description: "User name to login with.",
+			},
+			"user_domain_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("OS_USER_DOMAIN_ID", ""),
+				Description: "The id of the domain where the user resides.",
+			},
+			"user_domain_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("OS_USER_DOMAIN_NAME", defaultUserDomainName),
+				Description: "The name of the domain where the user resides.",
 			},
 			"region": {
 				Type:        schema.TypeString,
