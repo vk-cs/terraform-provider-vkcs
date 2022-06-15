@@ -136,6 +136,11 @@ func dataSourceKubernetesCluster() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"dns_domain": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -180,6 +185,7 @@ func dataSourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData
 	d.Set("availability_zone", c.AvailabilityZone)
 	d.Set("loadbalancer_subnet_id", c.LoadbalancerSubnetID)
 	d.Set("insecure_registries", c.InsecureRegistries)
+	d.Set("dns_domain", c.DNSDomain)
 
 	k8sConfig, err := k8sConfigGet(containerInfraClient, c.UUID)
 	if err != nil {

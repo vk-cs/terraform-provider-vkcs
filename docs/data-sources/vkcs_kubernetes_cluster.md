@@ -61,3 +61,4 @@ attributes are exported:
 * `subnet_id` - UUID of the cluster's subnet.
 * `updated_at` - The time at which cluster was created.
 * `insecure_registries` - Addresses of registries from which you can download images without checking certificates.
+* `dns_domain` - Custom DNS cluster domain.

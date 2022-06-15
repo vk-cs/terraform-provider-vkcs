@@ -13,7 +13,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clustertemplates"
 )
 
-const magnumAPIMicroVersion = "1.26"
+const magnumAPIMicroVersion = "1.28"
 
 var magnumAPIMicroVersionHeader = map[string]string{
 	"MCS-API-Version": fmt.Sprintf("container-infra %s", magnumAPIMicroVersion),
@@ -132,6 +132,7 @@ type clusterCreateOpts struct {
 	AvailabilityZone     string            `json:"availability_zone,omitempty"`
 	LoadbalancerSubnetID string            `json:"loadbalancer_subnet_id,omitempty"`
 	InsecureRegistries   []string          `json:"insecure_registries,omitempty"`
+	DNSDomain            string            `json:"dns_domain,omitempty"`
 }
 
 type clusterActionsBaseOpts struct {
@@ -175,6 +176,7 @@ type cluster struct {
 	AvailabilityZone     string             `json:"availability_zone"`
 	LoadbalancerSubnetID string             `json:"loadbalancer_subnet_id"`
 	InsecureRegistries   []string           `json:"insecure_registries,omitempty"`
+	DNSDomain            string             `json:"dns_domain,omitempty"`
 }
 
 type clusterTemplate struct {
