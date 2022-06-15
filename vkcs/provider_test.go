@@ -79,7 +79,7 @@ func testAccAuthFromEnv() (configer, error) {
 			Password:          os.Getenv("OS_PASSWORD"),
 			ProjectDomainID:   os.Getenv("OS_PROJECT_DOMAIN_ID"),
 			ProjectDomainName: os.Getenv("OS_PROJECT_DOMAIN_NAME"),
-			Region:            os.Getenv("OS_REGION"),
+			Region:            os.Getenv("OS_REGION_NAME"),
 			Token:             os.Getenv("OS_TOKEN"),
 			TenantID:          tenantID,
 			TenantName:        tenantName,

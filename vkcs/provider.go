@@ -19,6 +19,7 @@ const (
 	maxRetriesCount         = 3
 	defaultIdentityEndpoint = "https://infra.mail.ru/identity/v3/"
 	defaultUsersDomainName  = "users"
+	defaultRegionName       = "RegionOne"
 	requestsMaxRetriesCount = 3
 	requestsRetryDelay      = 30 * time.Millisecond
 )
@@ -198,7 +199,7 @@ func Provider() *schema.Provider {
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_REGION", "RegionOne"),
+				DefaultFunc: schema.EnvDefaultFunc("OS_REGION_NAME", defaultRegionName),
 				Description: "A region to use.",
 			},
 			"insecure": {
