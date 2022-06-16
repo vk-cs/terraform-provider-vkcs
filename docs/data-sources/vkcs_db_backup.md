@@ -48,7 +48,7 @@ The following attributes are exported:
 * `wal_size` - Backup's WAL volume size
 
 * `datastore` - Object that represents datastore of backup
-    * `type` - (Required) Type of the datastore. Changing this creates a new instance.
-    * `version` - (Required) Version of the datastore. Changing this creates a new instance.
+    * `type` - Type of the datastore.
+    * `version` - Version of the datastore.
 
 * `meta` - Metadata of the backup
