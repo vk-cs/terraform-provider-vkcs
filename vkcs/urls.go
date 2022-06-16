@@ -71,3 +71,7 @@ func upgradeURL(c ContainerClient, api string, id string) string {
 func scaleURL(c ContainerClient, api string, id string) string {
 	return c.ServiceURL(api, id, "actions", "scale")
 }
+
+func datastoreParametersURL(c ContainerClient, api string, dsType string, dsVersion string) string {
+	return c.ServiceURL(api, dsType, "versions", dsVersion, "parameters")
+}

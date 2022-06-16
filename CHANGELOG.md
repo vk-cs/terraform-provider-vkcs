@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.1.7
+- Add vkcs_db_config_group resource and datasource
+
 #### v0.1.6
 - Fixed error handling of creating root user for resource_vkcs_db_instance
 - Minor updates to resource_vkcs_db_user and resource_vkcs_db_database documentation
