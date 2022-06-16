@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v.0.1.6
+- Minor updates to resource_vkcs_db_user and resource_vkcs_db_database documentation
+
 #### v.0.1.5
 - Add dns_domain field to vkcs_kubernetes_cluster
 

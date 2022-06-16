@@ -18,7 +18,7 @@ resource "vkcs_db_user" "myuser" {
   name        = "myuser"
   password    = "password"
   
-  instance_id = example_db_instance_id
+  dbms_id = example_dbms_id
   
   databases   = [example_db_database_name, example_db_other_database_name]
 }
@@ -31,13 +31,11 @@ The following arguments are supported:
 
 * `password` - (Required) The password of the user.
 
+* `dbms_id` - (Required) ID of the instance or cluster that user is created for.
+
 * `host` - IP address of the host that user will be accessible from.
 
-* `dbms_id` - (Optional) ID of the instance or cluster that user is created for.
-
 * `databases` - List of names of the databases, that user is created for.
-
-Either `instance_id` or `dbms_id` must be configured.
 
 ## Import
 
