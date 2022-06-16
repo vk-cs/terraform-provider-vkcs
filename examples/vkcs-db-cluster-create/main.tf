@@ -32,6 +32,7 @@ resource "vkcs_networking_router_interface" "db" {
 resource "vkcs_db_cluster" "db-cluster" {
   name        = "db-cluster"
 
+  availability_zone = "GZ1"
   datastore {
     type    = "postgresql"
     version = "12"

@@ -32,9 +32,11 @@ resource "vkcs_networking_router_interface" "db" {
 resource "vkcs_db_instance" "db-instance" {
   name        = "db-instance"
 
+  availability_zone = "GZ1"
+
   datastore {
     type    = "postgresql"
-    version = "10"
+    version = "13"
   }
 
   flavor_id   = data.vkcs_compute_flavor.db.id
@@ -46,7 +48,6 @@ resource "vkcs_db_instance" "db-instance" {
   }
 
   root_enabled  = true
-  root_password = "SomeRootPassword"
 }
 
 output "root_user_password" {

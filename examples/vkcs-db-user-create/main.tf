@@ -32,6 +32,8 @@ resource "vkcs_networking_router_interface" "db" {
 resource "vkcs_db_instance" "db-instance" {
   name        = "db-instance"
 
+  availability_zone = "GZ1"
+
   datastore {
     type    = "mysql"
     version = "5.7"

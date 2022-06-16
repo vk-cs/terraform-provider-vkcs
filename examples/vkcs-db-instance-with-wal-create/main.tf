@@ -32,6 +32,8 @@ resource "vkcs_networking_router_interface" "db" {
 resource "vkcs_db_instance" "db-instance" {
   name        = "db-instance"
 
+  availability_zone = "GZ1"
+
   datastore {
     type    = "postgresql"
     version = "11"
@@ -48,7 +50,10 @@ resource "vkcs_db_instance" "db-instance" {
   wal_volume {
     size          = 10
     volume_type   = "ceph-ssd"
-    autoexpand    = true
+  }
+
+  wal_disk_autoexpand {
+    autoexpand = true
     max_disk_size = 20
   }
 
