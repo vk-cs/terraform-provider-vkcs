@@ -16,9 +16,8 @@ Provides a db database resource. This can be used to create, modify and delete d
 
 resource "vkcs_db_database" "mydb" {
   name        = "mydb"
-  instance_id = example_db_instance_id
+  dbms_id = example_dbms_id
   charset     = "utf8"
-  collate     = "utf8_general_ci"
 }
 ```
 
@@ -28,13 +27,11 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the database. Changing this creates a new database.
 
-* `dbms_id` - (Optional) ID of the instance or cluster that database is created for.
+* `dbms_id` - (Required) ID of the instance or cluster that database is created for.
 
 * `charset` - Type of charset used for the database. Changing this creates a new database.
 
 * `collate` - Collate option of the database.  Changing this creates a new database.
-
-Either `instance_id` or `dbms_id` must be configured.
 
 ## Import
 
