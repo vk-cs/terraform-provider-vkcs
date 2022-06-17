@@ -544,8 +544,10 @@ func (r instanceShortResult) extract() (*instanceShortResp, error) {
 // extract is used to extract result into response struct
 func (r commonRootUserResult) extract() (*rootUserResp, error) {
 	var u *rootUserRespOpts
-	err := r.ExtractInto(&u)
-	return u.User, err
+	if err := r.ExtractInto(&u); err != nil {
+		return nil, err
+	}
+	return u.User, nil
 }
 
 // extract is used to extract result into response struct
