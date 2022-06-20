@@ -1,0 +1,13 @@
+name: Check CHANGELOG has been changed
+on:
+  pull_request:
+    paths:
+      - 'vkcs/**'
+      - '!CHANGELOG.md'
+jobs:
+  error:
+    runs-on: ubuntu-latest
+    steps:
+      - name: raise-error
+        run: "false"
+        shell: bash
