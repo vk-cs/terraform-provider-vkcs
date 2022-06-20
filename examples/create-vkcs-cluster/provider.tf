@@ -1,3 +1,4 @@
+# foo bar
 provider "vkcs" {
     username          = "user@mail.ru"
     password          = "password"
