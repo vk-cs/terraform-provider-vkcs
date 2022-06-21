@@ -13,7 +13,6 @@ data "vkcs_compute_flavor" "db" {
 
 resource "vkcs_networking_network" "db" {
   name           = "db-net"
-  admin_state_up = true
 }
 
 resource "vkcs_db_cluster" "db-cluster" {

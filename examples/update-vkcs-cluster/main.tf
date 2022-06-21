@@ -9,7 +9,6 @@ terraform {
 
 resource "vkcs_networking_network" "k8s" {
   name           = "k8s-net"
-  admin_state_up = true
 }
 
 resource "vkcs_networking_subnet" "k8s-subnetwork" {
@@ -26,7 +25,6 @@ data "vkcs_networking_network" "extnet" {
 
 resource "vkcs_networking_router" "k8s" {
   name                = "k8s-router"
-  admin_state_up      = true
   external_network_id = data.vkcs_networking_network.extnet.id
 }
 

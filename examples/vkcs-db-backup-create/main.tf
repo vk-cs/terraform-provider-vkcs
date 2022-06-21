@@ -27,6 +27,11 @@ resource "vkcs_db_instance" "db-instance" {
       "listen_port" : "9100"
     }
   }
+
+  depends_on = [
+    vkcs_networking_network.db,
+    vkcs_networking_subnet.db
+  ]
 }
 
 resource "vkcs_db_backup" "db-backup" {

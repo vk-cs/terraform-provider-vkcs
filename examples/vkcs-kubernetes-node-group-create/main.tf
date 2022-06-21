@@ -20,7 +20,7 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 }
 
 resource "vkcs_kubernetes_node_group" "default_ng" {
-    cluster_id = data.vkcs_kubernetes_cluster.k8s-cluster
+    cluster_id = vkcs_kubernetes_cluster.k8s-cluster.id
 
     node_count = 1
     name = "default"

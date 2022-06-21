@@ -17,6 +17,11 @@ resource "vkcs_db_instance" "db-instance" {
   }
 
   root_enabled  = true
+
+  depends_on = [
+    vkcs_networking_network.db,
+    vkcs_networking_subnet.db
+  ]
 }
 
 output "root_user_password" {
