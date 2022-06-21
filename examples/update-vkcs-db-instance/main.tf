@@ -18,7 +18,6 @@ resource "vkcs_compute_keypair" "keypair" {
 
 resource "vkcs_networking_network" "db" {
   name           = "db-net"
-  admin_state_up = true
 }
 
 resource "vkcs_db_instance" "db-instance" {

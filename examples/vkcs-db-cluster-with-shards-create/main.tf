@@ -1,8 +1,6 @@
 resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
   name = "db-cluster-with-shards"
 
-
-
   datastore {
     type    = "clickhouse"
     version = "20.8"
@@ -35,4 +33,9 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
       uuid = vkcs_networking_network.db.id
     }
   }
+
+  depends_on = [
+    vkcs_networking_network.db,
+    vkcs_networking_subnet.db
+  ]
 }

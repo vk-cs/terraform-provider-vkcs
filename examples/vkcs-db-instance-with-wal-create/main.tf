@@ -29,4 +29,9 @@ resource "vkcs_db_instance" "db-instance" {
   network {
     uuid = vkcs_networking_network.db.id
   }
+
+  depends_on = [
+    vkcs_networking_network.db,
+    vkcs_networking_subnet.db
+  ]
 }
