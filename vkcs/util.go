@@ -1,5 +1,6 @@
 package vkcs
 
+// foo bar
 import (
 	"fmt"
 	"time"

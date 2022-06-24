@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v.0.1.6
+- foo bar
 - Fixed error handling of creating root user for resource_vkcs_db_instance
 - Minor updates to resource_vkcs_db_user and resource_vkcs_db_database documentation
 
