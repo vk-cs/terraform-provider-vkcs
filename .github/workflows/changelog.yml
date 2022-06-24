@@ -3,11 +3,17 @@ on:
   pull_request:
     paths:
       - 'vkcs/**'
-      - '!CHANGELOG.md'
 jobs:
   error:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+      - uses: tj-actions/changed-files@v23.1
+        id: changelog
+        with:
+          files: |
+            CHANGELOG.md
       - name: raise-error
+        if: steps.changelog.outputs.any_changed == 'false'
         run: "false"
         shell: bash
