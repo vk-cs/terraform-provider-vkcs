@@ -37,12 +37,15 @@ jobs:
           # These secrets will need to be configured for the repository:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           PASSPHRASE: ${{ secrets.PASSPHRASE }}
+      - 
+        name: Generate release notes
+        run: CURRENT_TAG=$(git describe --abbrev=0 --match='v*.*.*' --tags); PREVIOUS_TAG=$(git describe --abbrev=0 --exclude="$CURRENT_TAG" --match='v*.*.*' --tags); sed -n -e "0,/#### $CURRENT_TAG/d" -e "/#### $PREVIOUS_TAG/q;p" CHANGELOG.md > release-notes.txt
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2.5.0
         with:
           version: latest
-          args: release --rm-dist
+          args: release --rm-dist  --release-notes=release-notes.txt
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           # GitHub sets this automatically

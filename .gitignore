@@ -19,6 +19,7 @@ bin/
 *.iml
 *.test
 *.iml
+release-notes.txt
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
