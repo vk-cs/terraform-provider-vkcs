@@ -7,14 +7,14 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v.0.1.6
+#### v0.1.6
 - Fixed error handling of creating root user for resource_vkcs_db_instance
 - Minor updates to resource_vkcs_db_user and resource_vkcs_db_database documentation
 
-#### v.0.1.5
+#### v0.1.5
 - Add dns_domain field to vkcs_kubernetes_cluster
 
-#### v.0.1.4
+#### v0.1.4
 - Add vkcs_db_backup resource and datasource
 - Add restore_point field to vkcs_db_instance, vkcs_db_cluster and vkcs_db_cluster_with_shards resources
 - Add backup_schedule field to vkcs_db_instance resource and data_source and to vkcs_db_cluster resource
