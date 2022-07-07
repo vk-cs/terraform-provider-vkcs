@@ -139,7 +139,7 @@ func dataSourceKubernetesCluster() *schema.Resource {
 			"dns_domain": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
+				Computed: false,
 			},
 		},
 	}
