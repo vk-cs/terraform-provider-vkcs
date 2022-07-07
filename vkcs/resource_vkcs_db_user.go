@@ -35,7 +35,7 @@ func resourceDatabaseUser() *schema.Resource {
 			"dbms_id": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: false,
+				ForceNew: true,
 			},
 
 			"password": {
