@@ -7,6 +7,10 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.1.8
+- Minor updates for resource_vkcs_kubernetes_cluster, resource_vkcs_kubernetes_node_group, 
+- data_source_vkcs_kubernetes_cluster and examples
+
 #### v0.1.7
 - Add vkcs_db_config_group resource and datasource
 

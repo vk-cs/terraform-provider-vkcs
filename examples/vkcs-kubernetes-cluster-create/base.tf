@@ -1,6 +1,6 @@
 resource "vkcs_networking_network" "k8s" {
-    name           = "k8s-net"
-    admin_state_up = true
+  name           = "k8s-net"
+  admin_state_up = true
 }
 
 resource "vkcs_networking_subnet" "k8s-subnetwork" {
