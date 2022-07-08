@@ -1,15 +1,6 @@
-terraform {
-  required_providers {
-    vkcs = {
-      source  = "vk-cs/vkcs"
-      version = "~> 0.1.0"
-    }
-  }
-}
-
 resource "vkcs_networking_network" "k8s" {
-    name           = "k8s-net"
-    admin_state_up = true
+  name           = "k8s-net"
+  admin_state_up = true
 }
 
 resource "vkcs_networking_subnet" "k8s-subnetwork" {
@@ -37,8 +28,4 @@ resource "vkcs_networking_router_interface" "k8s" {
 
 data "vkcs_compute_flavor" "k8s" {
   name = "Standard-2-4-50"
-}
-
-data "vkcs_kubernetes_clustertemplate" "ct" {
-  version = "1.21.4"
 }

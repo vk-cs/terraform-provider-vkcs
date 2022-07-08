@@ -1,3 +1,7 @@
+data "vkcs_kubernetes_clustertemplate" "ct" {
+  version = "1.21.4"
+}
+
 resource "vkcs_kubernetes_cluster" "k8s-cluster" {
   depends_on = [
     vkcs_networking_router_interface.k8s,
