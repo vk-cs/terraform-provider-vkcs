@@ -76,7 +76,7 @@ The following arguments are supported:
 * `insecure_registries` - (Optional) Addresses of registries from which you can download images without checking 
 certificates. Changing this creates a new cluster.
 
-* `dns_domain` - (Optional) Custom DNS cluster domain. Changing this creates a new cluster.
+* `dns_domain` - (Required) Custom DNS cluster domain, "cluster.local" by default. Changing this creates a new cluster.
 
 ## Attributes
 
