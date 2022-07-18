@@ -153,7 +153,8 @@ func resourceKubernetesNodeGroup() *schema.Resource {
 			},
 			"max_node_unavailable": {
 				Type:     schema.TypeInt,
-				Required: true,
+				Optional: true,
+				Computed: true,
 			},
 		},
 	}

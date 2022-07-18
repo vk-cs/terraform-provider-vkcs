@@ -17,5 +17,4 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
   floating_ip_enabled = true
   availability_zone   = "MS1"
   insecure_registries = ["1.2.3.4"]
-  dns_domain          = var.dns-domain
 }
