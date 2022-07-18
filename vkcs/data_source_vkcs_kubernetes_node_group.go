@@ -100,7 +100,7 @@ func dataSourceKubernetesNodeGroup() *schema.Resource {
 			"max_node_unavailable": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Computed: false,
+				Computed: true,
 			},
 		},
 	}

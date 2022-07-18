@@ -211,8 +211,9 @@ func resourceKubernetesCluster() *schema.Resource {
 			},
 			"dns_domain": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
+				Computed: true,
 			},
 		},
 	}
