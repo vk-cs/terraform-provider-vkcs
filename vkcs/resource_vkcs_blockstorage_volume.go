@@ -19,12 +19,13 @@ const (
 )
 
 var (
-	bsVolumeStatusBuild     = "creating"
-	bsVolumeStatusActive    = "available"
-	bsVolumeStatusInUse     = "in-use"
-	bsVolumeStatusShutdown  = "deleting"
-	bsVolumeStatusDeleted   = "deleted"
-	bsVolumeMigrationPolicy = "on-demand"
+	bsVolumeStatusBuild       = "creating"
+	bsVolumeStatusActive      = "available"
+	bsVolumeStatusInUse       = "in-use"
+	bsVolumeStatusShutdown    = "deleting"
+	bsVolumeStatusDeleted     = "deleted"
+	bsVolumeStatusDownloading = "downloading"
+	bsVolumeMigrationPolicy   = "on-demand"
 )
 
 func resourceBlockStorageVolume() *schema.Resource {
@@ -141,7 +142,7 @@ func resourceBlockStorageVolumeCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{bsVolumeStatusBuild},
+		Pending:    []string{bsVolumeStatusBuild, bsVolumeStatusDownloading},
 		Target:     []string{bsVolumeStatusActive},
 		Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, v.ID),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
@@ -222,7 +223,7 @@ func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 
 		stateConf := &resource.StateChangeConf{
-			Pending:    []string{bsVolumeStatusBuild},
+			Pending:    []string{bsVolumeStatusBuild, bsVolumeStatusDownloading},
 			Target:     []string{bsVolumeStatusActive, bsVolumeStatusInUse},
 			Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
 			Timeout:    d.Timeout(schema.TimeoutCreate),

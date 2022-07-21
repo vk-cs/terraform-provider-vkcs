@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.1.11
+- Fixed error of creating resource_vkcs_blockstorage_volume with high-iops volume type
+
 #### v0.1.10
 - Minor updates for resource_vkcs_kubernetes_cluster, resource_vkcs_kubernetes_node_group,
 - data_source_vkcs_kubernetes_cluster and examples
