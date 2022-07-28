@@ -26,7 +26,7 @@ resource "vkcs_db_instance" "db-instance" {
   floating_ip_enabled = true
 
   flavor_id         = "c8c42890-1ae9-411f-8cce-42e2d7c9b7d0"
-  availability_zone = "MS1"
+  availability_zone = "GZ1"
 
   size        = 8
   volume_type = "ceph-ssd"

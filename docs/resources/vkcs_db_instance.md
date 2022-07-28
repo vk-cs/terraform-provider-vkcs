@@ -26,10 +26,10 @@ resource "vkcs_db_instance" "db-instance" {
   floating_ip_enabled = true
 
   flavor_id         = "9e931469-1490-489e-88af-29a289681c53"
-  availability_zone = "MS1"
+  availability_zone = "GZ1"
 
   size        = 8
-  volume_type = "MS1"
+  volume_type = "ceph-ssd"
   disk_autoexpand {
     autoexpand    = true
     max_disk_size = 1000
@@ -62,10 +62,10 @@ resource "vkcs_db_instance" "db-instance" {
   floating_ip_enabled = true
 
   flavor_id         = "9e931469-1490-489e-88af-29a289681c53"
-  availability_zone = "MS1"
+  availability_zone = "GZ1"
 
   size        = 8
-  volume_type = "MS1"
+  volume_type = "ceph-ssd"
   disk_autoexpand {
     autoexpand    = true
     max_disk_size = 1000
@@ -102,10 +102,10 @@ resource "vkcs_db_instance" "db-instance" {
   floating_ip_enabled = true
 
   flavor_id         = "9e931469-1490-489e-88af-29a289681c53"
-  availability_zone = "MS1"
+  availability_zone = "GZ1"
 
   size        = 8
-  volume_type = "MS1"
+  volume_type = "ceph-ssd"
   disk_autoexpand {
     autoexpand    = true
     max_disk_size = 1000

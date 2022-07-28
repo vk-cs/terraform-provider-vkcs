@@ -10,9 +10,6 @@ func TestAccDatabaseCluster_importBasic(t *testing.T) {
 	resourceName := "vkcs_db_cluster.basic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckDatabase(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
 		Steps: []resource.TestStep{

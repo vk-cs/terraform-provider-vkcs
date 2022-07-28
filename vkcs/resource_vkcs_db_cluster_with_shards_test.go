@@ -12,7 +12,6 @@ func TestAccDatabaseClusterWithShards_basic(t *testing.T) {
 	var cluster dbClusterResp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseClusterWithShardsDestroy,
 		Steps: []resource.TestStep{
@@ -51,37 +50,34 @@ func testAccCheckDatabaseClusterWithShardsDestroy(s *terraform.State) error {
 }
 
 var testAccDatabaseClusterWithShardsBasic = fmt.Sprintf(`
+%s
+
+%s
+
  resource "vkcs_db_cluster_with_shards" "basic" {
 	name      = "basic"
 
 	datastore {
-	  version = "%s"
-	  type    = "%s"
+	  version = "20.8"
+	  type    = "clickhouse"
 	}
   
-  
-	shard {
-	  size = 2
-	  shard_id = "shard0"
-	  flavor_id = "%s"
-	  volume_size      = 8
-	  volume_type = "ms1"
-	  network {
-		  uuid = "%s"
-	  }
-	  availability_zone = "MS1"
-	}
   
 	shard {
 	  size = 1
-	  shard_id = "shard1"
-	  flavor_id = "%s"
-	  volume_size = 8
-	  volume_type = "ms1"
+	  shard_id = "shard0"
+	  flavor_id = data.vkcs_compute_flavor.base.id
+	  volume_size      = 8
+	  volume_type = "ceph-ssd"
 	  network {
-		   uuid = "%s"
+		  uuid = vkcs_networking_network.base.id
 	  }
-	  availability_zone = "MS1"
+	  availability_zone = "GZ1"
 	}
+
+	depends_on = [
+		vkcs_networking_network.base,
+		vkcs_networking_subnet.base
+	]
  }
-`, osDBShardsDatastoreVersion, osDBShardsDatastoreType, osFlavorID, osNetworkID, osFlavorID, osNetworkID)
+`, testAccBaseFlavor, testAccBaseNetwork)

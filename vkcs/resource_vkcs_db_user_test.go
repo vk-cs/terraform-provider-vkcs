@@ -15,7 +15,6 @@ func TestAccDatabaseUser_basic(t *testing.T) {
 	var instance instanceResp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseUserDestroy,
 		Steps: []resource.TestStep{
@@ -39,7 +38,6 @@ func TestAccDatabaseUser_update_and_delete(t *testing.T) {
 	var instance instanceResp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseUserDestroy,
 		Steps: []resource.TestStep{
@@ -172,20 +170,29 @@ func testAccCheckDatabaseUserDestroy(s *terraform.State) error {
 }
 
 var testAccDatabaseUserBasic = fmt.Sprintf(`
+%s
+
+%s
+
 resource "vkcs_db_instance" "basic" {
   name = "basic"
-  flavor_id = "%s"
+  flavor_id = data.vkcs_compute_flavor.base.id
   size = 10
-  volume_type = "ms1"
+  volume_type = "ceph-ssd"
 
   datastore {
-    version = "%s"
-    type    = "%s"
+    version = "13"
+    type    = "postgresql"
   }
 
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  availability_zone = "GZ1"
+  depends_on = [
+    vkcs_networking_network.base,
+    vkcs_networking_subnet.base
+  ]
 }
 
 resource "vkcs_db_database" "testdb1" {
@@ -206,23 +213,32 @@ resource "vkcs_db_user" "basic" {
 	"${vkcs_db_database.testdb1.name}"
   ]
 }
-`, osFlavorID, osDBDatastoreVersion, osDBDatastoreType, osNetworkID)
+`, testAccBaseFlavor, testAccBaseNetwork)
 
 var testAccDatabaseUserAddDatabase = fmt.Sprintf(`
+%s
+
+%s
+
 resource "vkcs_db_instance" "basic" {
   name = "basic"
-  flavor_id = "%s"
+  flavor_id = data.vkcs_compute_flavor.base.id
   size = 10
-  volume_type = "ms1"
+  volume_type = "ceph-ssd"
 
   datastore {
-    version = "%s"
-    type    = "%s"
+    version = "13"
+    type    = "postgresql"
   }
 
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  availability_zone = "GZ1"
+  depends_on = [
+    vkcs_networking_network.base,
+    vkcs_networking_subnet.base
+  ]
 }
 
 resource "vkcs_db_database" "testdb1" {
@@ -244,4 +260,4 @@ resource "vkcs_db_user" "basic" {
 	  "${vkcs_db_database.testdb1.name}"
   ]
 }
-`, osFlavorID, osDBDatastoreVersion, osDBDatastoreType, osNetworkID)
+`, testAccBaseFlavor, testAccBaseNetwork)

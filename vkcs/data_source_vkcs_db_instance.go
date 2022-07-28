@@ -163,8 +163,8 @@ func dataSourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData,
 	d.SetId(instance.ID)
 
 	d.Set("name", instance.Name)
-	d.Set("flavor_id", instance.Flavor)
-	d.Set("datastore", instance.DataStore)
+	d.Set("flavor_id", instance.Flavor.ID)
+	d.Set("datastore", flattenDatabaseInstanceDatastore(*instance.DataStore))
 	d.Set("region", getRegion(d, config))
 	d.Set("ip", instance.IP)
 	d.Set("status", instance.Status)

@@ -12,7 +12,6 @@ func TestAccDatabaseInstance_basic(t *testing.T) {
 	var instance instanceResp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -41,7 +40,6 @@ func TestAccDatabaseInstance_basic(t *testing.T) {
 func TestAccDatabaseInstance_rootUser(t *testing.T) {
 	var instance instanceResp
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -62,7 +60,6 @@ func TestAccDatabaseInstance_wal(t *testing.T) {
 	var instance instanceResp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -83,7 +80,6 @@ func TestAccDatabaseInstance_wal_no_update(t *testing.T) {
 	var instance instanceResp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -193,96 +189,121 @@ func testAccCheckDatabaseRootUserExists(n string, instance *instanceResp) resour
 }
 
 var testAccDatabaseInstanceBasic = fmt.Sprintf(`
+%s
+
+%s
+
 resource "vkcs_db_instance" "basic" {
   name             = "basic"
-  flavor_id = "%s"
+  flavor_id = data.vkcs_compute_flavor.base.id
   size = 8
-  volume_type = "ms1"
+  volume_type = "ceph-ssd"
 
   datastore {
-    version = "%s"
-    type    = "%s"
+    version = "13"
+    type    = "postgresql"
   }
 
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "MS1"
+  availability_zone = "GZ1"
   floating_ip_enabled = true
-  keypair = "%s"
 
   disk_autoexpand {
     autoexpand = true
     max_disk_size = 1000
   }
+  depends_on = [
+    vkcs_networking_network.base,
+    vkcs_networking_subnet.base
+  ]
 
 }
-`, osFlavorID, osDBDatastoreVersion, osDBDatastoreType, osNetworkID, osKeypairName)
+`, testAccBaseFlavor, testAccBaseNetwork)
 
 var testAccDatabaseInstanceUpdate = fmt.Sprintf(`
+%s
+
+%s
+
 resource "vkcs_db_instance" "basic" {
   name             = "basic"
-  flavor_id = "%s"
+  flavor_id = data.vkcs_compute_flavor.base.id
   size = 9
-  volume_type = "ms1"
+  volume_type = "ceph-ssd"
 
   datastore {
-    version = "%s"
-    type    = "%s"
+    version = "13"
+    type    = "postgresql"
   }
 
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "MS1"
+  availability_zone = "GZ1"
   floating_ip_enabled = true
-  keypair = "%s"
 
   disk_autoexpand {
     autoexpand = true
     max_disk_size = 2000
   }
+  depends_on = [
+    vkcs_networking_network.base,
+    vkcs_networking_subnet.base
+  ]
 
 }
-`, osNewFlavorID, osDBDatastoreVersion, osDBDatastoreType, osNetworkID, osKeypairName)
+`, testAccBaseFlavorSecond, testAccBaseNetwork)
 
 var testAccDatabaseInstanceRootUser = fmt.Sprintf(`
+%s
+
+%s
+
 resource "vkcs_db_instance" "basic" {
   name = "basic"
-  flavor_id = "%s"
+  flavor_id = data.vkcs_compute_flavor.base.id
   size = 10
-  volume_type = "ms1"
+  volume_type = "ceph-ssd"
 
   datastore {
-    version = "%s"
-    type    = "%s"
+    version = "13"
+    type    = "postgresql"
   }
 
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
   root_enabled = true
+  depends_on = [
+    vkcs_networking_network.base,
+    vkcs_networking_subnet.base
+  ]
 }
-`, osFlavorID, osDBDatastoreVersion, osDBDatastoreType, osNetworkID)
+`, testAccBaseFlavor, testAccBaseNetwork)
 
 var testAccDatabaseInstanceWal = fmt.Sprintf(`
+%s
+
+%s
+
 resource "vkcs_db_instance" "basic" {
   name             = "basic_wal"
-  flavor_id = "%s"
+  flavor_id = data.vkcs_compute_flavor.base.id
   size = 8
-  volume_type = "ms1"
+  volume_type = "ceph-ssd"
 
   datastore {
-    version = "%s"
-    type    = "%s"
+    version = "13"
+    type    = "postgresql"
   }
 
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "MS1"
+  availability_zone = "GZ1"
   floating_ip_enabled = true
-  keypair = "%s"
 
   disk_autoexpand {
     autoexpand = true
@@ -291,7 +312,7 @@ resource "vkcs_db_instance" "basic" {
 
   wal_volume {
 	  size = 8
-	  volume_type = "ms1"
+	  volume_type = "ceph-ssd"
   }
 
   wal_disk_autoexpand {
@@ -300,4 +321,4 @@ resource "vkcs_db_instance" "basic" {
   }
 
 }
-`, osFlavorID, osDBDatastoreVersion, osDBDatastoreType, osNetworkID, osKeypairName)
+`, testAccBaseFlavor, testAccBaseNetwork)
