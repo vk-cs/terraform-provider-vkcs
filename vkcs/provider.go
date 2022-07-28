@@ -2,9 +2,7 @@ package vkcs
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
@@ -18,7 +16,8 @@ import (
 const (
 	maxRetriesCount         = 3
 	defaultIdentityEndpoint = "https://infra.mail.ru/identity/v3/"
-	defaultUsersDomainName  = "users"
+	defaultUserDomainName   = "users"
+	defaultRegionName       = "RegionOne"
 	requestsMaxRetriesCount = 3
 	requestsRetryDelay      = 30 * time.Millisecond
 )
@@ -121,10 +120,13 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 			CACertFile:       d.Get("cacert_file").(string),
 			ClientCertFile:   d.Get("cert").(string),
 			ClientKeyFile:    d.Get("key").(string),
+			Username:         d.Get("username").(string),
 			Password:         d.Get("password").(string),
 			TenantID:         d.Get("project_id").(string),
 			Region:           d.Get("region").(string),
 			IdentityEndpoint: d.Get("auth_url").(string),
+			UserDomainID:     d.Get("user_domain_id").(string),
+			UserDomainName:   d.Get("user_domain_name").(string),
 			AllowReauth:      true,
 			MaxRetries:       maxRetriesCount,
 			TerraformVersion: terraformVersion,
@@ -133,8 +135,8 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 		},
 	}
 
-	if config.UserDomainID == "" {
-		config.UserDomainID = os.Getenv("OS_USER_DOMAIN_ID")
+	if config.UserDomainID != "" {
+		config.UserDomainName = ""
 	}
 
 	v, ok := d.GetOk("insecure")
@@ -143,27 +145,10 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 		config.Insecure = &insecure
 	}
 
-	if err := initWithUsername(d, config); err != nil {
-		return nil, diag.FromErr(err)
-	}
-
 	if err := config.LoadAndValidate(); err != nil {
 		return nil, diag.FromErr(err)
 	}
 	return config, nil
-}
-
-func initWithUsername(d *schema.ResourceData, config *config) error {
-	config.UserDomainName = defaultUsersDomainName
-
-	config.Username = os.Getenv("OS_USERNAME")
-	if v, ok := d.GetOk("username"); ok {
-		config.Username = v.(string)
-	}
-	if config.Username == "" {
-		return fmt.Errorf("username must be specified")
-	}
-	return nil
 }
 
 // Provider returns a schema.Provider for VKCS.
@@ -192,13 +177,25 @@ func Provider() *schema.Provider {
 			"username": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_USER_NAME", ""),
+				DefaultFunc: schema.EnvDefaultFunc("OS_USERNAME", ""),
 				Description: "User name to login with.",
+			},
+			"user_domain_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("OS_USER_DOMAIN_ID", ""),
+				Description: "The id of the domain where the user resides.",
+			},
+			"user_domain_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("OS_USER_DOMAIN_NAME", defaultUserDomainName),
+				Description: "The name of the domain where the user resides.",
 			},
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_REGION", "RegionOne"),
+				DefaultFunc: schema.EnvDefaultFunc("OS_REGION_NAME", defaultRegionName),
 				Description: "A region to use.",
 			},
 			"insecure": {
