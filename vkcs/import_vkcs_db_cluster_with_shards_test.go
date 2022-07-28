@@ -10,9 +10,6 @@ func TestAccDatabaseClusterWithShards_importBasic(t *testing.T) {
 	resourceName := "vkcs_db_cluster_with_shards.basic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckDatabase(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseClusterWithShardsDestroy,
 		Steps: []resource.TestStep{

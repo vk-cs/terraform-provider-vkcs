@@ -263,6 +263,12 @@ data "vkcs_compute_flavor" "base" {
 }
 `
 
+const testAccBaseFlavorSecond string = `
+data "vkcs_compute_flavor" "base" {
+  name = "Basic-1-2-40"
+}
+`
+
 const testAccBaseImage string = `
 data "vkcs_images_image" "base" {
   name = "Ubuntu-18.04-Standard"

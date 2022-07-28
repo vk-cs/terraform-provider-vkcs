@@ -12,7 +12,6 @@ func TestAccDatabaseBackup_basic(t *testing.T) {
 	var backup dbBackupResp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseBackupDestroy,
 		Steps: []resource.TestStep{

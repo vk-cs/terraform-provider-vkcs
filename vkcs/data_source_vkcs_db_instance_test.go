@@ -13,7 +13,6 @@ func TestAccDatabaseDataSourceInstance_basic(t *testing.T) {
 	datasourceName := "data.vkcs_db_instance.basic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -47,6 +46,6 @@ var testAccDataSourceDatabaseInstanceBasic = fmt.Sprintf(`
 %s
 
 data "vkcs_db_instance" "basic" {
-	id = "${vkcs_db_instance.basic.id}"
+	id = vkcs_db_instance.basic.id
 }
 `, testAccDatabaseInstanceBasic)

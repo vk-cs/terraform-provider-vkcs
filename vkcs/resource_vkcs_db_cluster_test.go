@@ -12,7 +12,6 @@ func TestAccDatabaseCluster_basic(t *testing.T) {
 	var cluster dbClusterResp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
 		Steps: []resource.TestStep{
@@ -42,12 +41,11 @@ func TestAccDatabaseCluster_wal(t *testing.T) {
 	var cluster dbClusterResp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseClusterBasic,
+				Config: testAccDatabaseClusterWal,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster.basic", &cluster),
@@ -63,7 +61,6 @@ func TestAccDatabaseCluster_wal_no_update(t *testing.T) {
 	var cluster dbClusterResp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
 		Steps: []resource.TestStep{
@@ -141,70 +138,97 @@ func testAccCheckDatabaseClusterDestroy(s *terraform.State) error {
 }
 
 var testAccDatabaseClusterBasic = fmt.Sprintf(`
+%s
+
+%s
+
  resource "vkcs_db_cluster" "basic" {
    name      = "basic"
-   flavor_id = "%s"
+   flavor_id = data.vkcs_compute_flavor.base.id
    volume_size      = 8
-   volume_type = "ms1"
+   volume_type = "ceph-ssd"
    cluster_size = 3
    datastore {
-	version = "%s"
-	type    = "%s"
+	version = "13"
+	type    = "postgresql"
   }
 
    network {
-     uuid = "%s"
+     uuid = vkcs_networking_network.base.id
    }
 	
-   availability_zone = "MS1"
+   availability_zone = "GZ1"
+
+   depends_on = [
+    vkcs_networking_network.base,
+    vkcs_networking_subnet.base
+  ]
  }
-`, osFlavorID, osDBDatastoreVersion, osDBDatastoreType, osNetworkID)
+`, testAccBaseFlavor, testAccBaseNetwork)
 
 var testAccDatabaseClusterUpdate = fmt.Sprintf(`
+%s
+
+%s
+
 resource "vkcs_db_cluster" "basic" {
 	name      = "basic"
-	flavor_id = "%s"
+	flavor_id = data.vkcs_compute_flavor.base.id
 	volume_size      = 9
-	volume_type = "ms1"
+	volume_type = "ceph-ssd"
 	cluster_size = 3
 	datastore {
-	 version = "%s"
-	 type    = "%s"
+	 version = "13"
+	 type    = "postgresql"
    }
  
 	network {
-	  uuid = "%s"
+	  uuid = vkcs_networking_network.base.id
 	}
 	 
-	availability_zone = "MS1"
+	availability_zone = "GZ1"
+
+	depends_on = [
+		vkcs_networking_network.base,
+		vkcs_networking_subnet.base
+	  ]
   }
-`, osNewFlavorID, osDBDatastoreVersion, osDBDatastoreType, osNetworkID)
+`, testAccBaseFlavorSecond, testAccBaseNetwork)
 
 var testAccDatabaseClusterWal = fmt.Sprintf(`
+%s
+
+%s
+
  resource "vkcs_db_cluster" "basic" {
    name      = "basic"
-   flavor_id = "%s"
+   flavor_id = data.vkcs_compute_flavor.base.id
    volume_size      = 8
-   volume_type = "ms1"
+   volume_type = "ceph-ssd"
    cluster_size = 3
    datastore {
-	version = "%s"
-	type    = "%s"
+	version = "13"
+	type    = "postgresql"
   }
 
    network {
-     uuid = "%s"
+     uuid = vkcs_networking_network.base.id
    }
 	
-   availability_zone = "MS1"
+   availability_zone = "GZ1"
    wal_volume {
 	size = 8
-	volume_type = "ms1"
+	volume_type = "ceph-ssd"
    }
 
    wal_disk_autoexpand {
 	autoexpand = true
 	max_disk_size = 1000
    }
+
+   depends_on = [
+    vkcs_networking_network.base,
+    vkcs_networking_subnet.base
+  ]
  }
-`, osFlavorID, osDBDatastoreVersion, osDBDatastoreType, osNetworkID)
+`, testAccBaseFlavor, testAccBaseNetwork)

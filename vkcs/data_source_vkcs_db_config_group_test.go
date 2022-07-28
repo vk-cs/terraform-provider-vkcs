@@ -13,7 +13,6 @@ func TestAccDatabaseDataSourceConfigGroup_basic(t *testing.T) {
 	datasourceName := "data.vkcs_db_config_group.basic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseConfigGroupDestroy,
 		Steps: []resource.TestStep{

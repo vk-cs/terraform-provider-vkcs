@@ -10,9 +10,6 @@ func TestAccDatabaseConfigGroup_importBasic(t *testing.T) {
 	resourceName := "vkcs_db_config_group.basic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckDatabase(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseConfigGroupDestroy,
 		Steps: []resource.TestStep{

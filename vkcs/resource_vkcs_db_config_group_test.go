@@ -12,7 +12,6 @@ func TestAccDatabaseConfigGroup_basic(t *testing.T) {
 	var configGroup dbConfigGroupResp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckDatabase(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseConfigGroupDestroy,
 		Steps: []resource.TestStep{
@@ -95,55 +94,64 @@ func testAccCheckDatabaseConfigGroupDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccDatabaseConfigGroupResource = fmt.Sprintf(
-	`
+var testAccDatabaseConfigGroupResource = `
 resource "vkcs_db_config_group" "basic" {
 	name = "basic"
 	datastore {
-		version = "%s"
-		type = "%s"
+		version = "13"
+		type = "postgresql"
 	}
 	values = {
 		max_connections: "100"
 	}
 }
-`, osDBDatastoreVersion, osDBDatastoreType)
+`
 
 var testAccDatabaseConfigGroupBasic = fmt.Sprintf(`
 %s
 
+%s
+
+%s
+
 resource "vkcs_db_instance" "basic" {
   name             = "basic"
-  flavor_id = "%s"
+  flavor_id = data.vkcs_compute_flavor.base.id
   size = 8
-  volume_type = "ms1"
+  volume_type = "ceph-ssd"
   configuration_id = vkcs_db_config_group.basic.id
   datastore {
-    version = "%s"
-    type    = "%s"
+    version = "13"
+    type    = "postgresql"
   }
 
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "MS1"
+  availability_zone = "GZ1"
   floating_ip_enabled = true
-  keypair = "%s"
 
   disk_autoexpand {
     autoexpand = true
     max_disk_size = 1000
   }
-
+  depends_on = [
+    vkcs_networking_network.base,
+    vkcs_networking_subnet.base
+  ]
 }
-`, testAccDatabaseConfigGroupResource, osFlavorID, osDBDatastoreVersion, osDBDatastoreType, osNetworkID, osKeypairName)
+`, testAccDatabaseConfigGroupResource, testAccBaseNetwork, testAccBaseFlavor)
 
 var testAccDatabaseConfigGroupUpdate = fmt.Sprintf(`
+%s
+
+%s
+
 resource "vkcs_db_config_group" "basic" {
 	name = "basic"
 	datastore {
-		version = "%s"
-		type = "%s"
+		version = "13"
+		type = "postgresql"
 	}
 	values = {
 		max_connections: "200"
@@ -152,26 +160,28 @@ resource "vkcs_db_config_group" "basic" {
 
 resource "vkcs_db_instance" "basic" {
   name             = "basic"
-  flavor_id = "%s"
+  flavor_id = data.vkcs_compute_flavor.base.id
   size = 8
-  volume_type = "ms1"
+  volume_type = "ceph-ssd"
   configuration_id = vkcs_db_config_group.basic.id
   datastore {
-    version = "%s"
-    type    = "%s"
+    version = "13"
+    type    = "postgresql"
   }
 
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "MS1"
+  availability_zone = "GZ1"
   floating_ip_enabled = true
-  keypair = "%s"
 
   disk_autoexpand {
     autoexpand = true
     max_disk_size = 1000
   }
-
+  depends_on = [
+    vkcs_networking_network.base,
+    vkcs_networking_subnet.base
+  ]
 }
-`, osDBDatastoreVersion, osDBDatastoreType, osFlavorID, osDBDatastoreVersion, osDBDatastoreType, osNetworkID, osKeypairName)
+`, testAccBaseNetwork, testAccBaseFlavor)
