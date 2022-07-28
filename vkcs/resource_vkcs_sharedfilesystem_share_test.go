@@ -14,7 +14,6 @@ func TestAccSFSShare_basic(t *testing.T) {
 	var share shares.Share
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckSFS(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckSFSShareDestroy,
 		Steps: []resource.TestStep{

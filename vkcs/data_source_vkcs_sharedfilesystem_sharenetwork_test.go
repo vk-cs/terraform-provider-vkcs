@@ -8,7 +8,6 @@ import (
 
 func TestAccSFSShareNetworkDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckSFS(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{

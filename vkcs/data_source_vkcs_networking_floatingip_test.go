@@ -10,7 +10,6 @@ import (
 
 func TestAccNetworkingFloatingIPV2DataSource_address(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -28,10 +27,6 @@ func TestAccNetworkingFloatingIPV2DataSource_address(t *testing.T) {
 						"data.vkcs_networking_floatingip.fip_1", "status"),
 					resource.TestCheckResourceAttrSet(
 						"data.vkcs_networking_floatingip.fip_1", "description"),
-					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_floatingip.fip_1", "tags.#", "1"),
-					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_floatingip.fip_1", "all_tags.#", "2"),
 				),
 			},
 		},
@@ -55,15 +50,13 @@ func testAccCheckNetworkingFloatingIPV2DataSourceID(n string) resource.TestCheck
 
 func testAccNetworkingFloatingIPV2DataSourceFloatingIP() string {
 	return fmt.Sprintf(`
+%s
+
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = "%s"
+  pool = data.vkcs_networking_network.extnet.name
   description = "test fip"
-  tags = [
-    "foo",
-    "bar",
-  ]
 }
-`, osPoolName)
+`, testAccBaseExtNetwork)
 }
 
 func testAccNetworkingFloatingIPV2DataSourceAddress() string {
@@ -73,9 +66,6 @@ func testAccNetworkingFloatingIPV2DataSourceAddress() string {
 data "vkcs_networking_floatingip" "fip_1" {
   address = "${vkcs_networking_floatingip.fip_1.address}"
   description = "test fip"
-  tags = [
-    "foo",
-  ]
 }
 `, testAccNetworkingFloatingIPV2DataSourceFloatingIP())
 }

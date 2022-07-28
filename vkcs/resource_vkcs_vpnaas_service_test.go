@@ -14,9 +14,6 @@ import (
 func TestAccVPNaaSService_basic(t *testing.T) {
 	var service services.Service
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckVPN(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckServiceDestroy,
 		Steps: []resource.TestStep{
@@ -84,15 +81,17 @@ func testAccCheckServiceExists(n string, serv *services.Service) resource.TestCh
 
 func testAccServiceBasic() string {
 	return fmt.Sprintf(`
+%s
+
 	resource "vkcs_networking_router" "router_1" {
 	  name = "router_1"
 	  admin_state_up = "true"
-	  external_network_id = "%s"
+	  external_network_id = data.vkcs_networking_network.extnet.id
 	}
 
 	resource "vkcs_vpnaas_service" "service_1" {
 		router_id = "${vkcs_networking_router.router_1.id}"
 		admin_state_up = "false"
 	}
-	`, osExtGwID)
+	`, testAccBaseExtNetwork)
 }

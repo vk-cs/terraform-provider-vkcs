@@ -14,7 +14,6 @@ func TestAccLBPool_basic(t *testing.T) {
 	var pool pools.Pool
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLB(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBPoolDestroy,
 		Steps: []resource.TestStep{
@@ -38,9 +37,6 @@ func TestAccLBPool_octavia_udp(t *testing.T) {
 	var pool pools.Pool
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckLB(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBPoolDestroy,
 		Steps: []resource.TestStep{

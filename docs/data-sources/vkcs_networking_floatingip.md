@@ -35,8 +35,6 @@ data "vkcs_networking_floatingip" "floatingip_1" {
 
 * `fixed_ip` - (Optional) The specific IP address of the internal port which should be associated with the floating IP.
 
-* `tags` - (Optional) The list of floating IP tags to filter.
-
 * `tenant_id` - (Optional) The owner of the floating IP.
 
 * `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
@@ -46,5 +44,4 @@ data "vkcs_networking_floatingip" "floatingip_1" {
 `id` is set to the ID of the found floating IP. In addition, the following attributes
 are exported:
 
-* `all_tags` - A set of string tags applied on the floating IP.
 * `sdn` - See Argument Reference above.

@@ -60,7 +60,7 @@ func resourceNetworkingPort() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 				ForceNew: false,
-				Computed: true,
+				Default:  true,
 			},
 
 			"mac_address": {
@@ -200,7 +200,7 @@ func resourceNetworkingPort() *schema.Resource {
 			"port_security_enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Computed: true,
+				Default:  true,
 			},
 
 			"dns_name": {
@@ -256,10 +256,8 @@ func resourceNetworkingPortCreate(ctx context.Context, d *schema.ResourceData, m
 		MapValueSpecs(d),
 	}
 
-	if v, ok := d.GetOk("admin_state_up"); ok {
-		asu := v.(bool)
-		createOpts.AdminStateUp = &asu
-	}
+	asu := d.Get("admin_state_up").(bool)
+	createOpts.AdminStateUp = &asu
 
 	if noSecurityGroups {
 		securityGroups = []string{}
@@ -285,13 +283,11 @@ func resourceNetworkingPortCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	// Add the port security attribute if specified.
-	if v, ok := d.GetOk("port_security_enabled"); ok {
-		portSecurityEnabled := v.(bool)
-		finalCreateOpts = portsecurity.PortCreateOptsExt{
-			CreateOptsBuilder:   finalCreateOpts,
-			PortSecurityEnabled: &portSecurityEnabled,
-		}
+	// Add the port security attribute
+	pse := d.Get("port_security_enabled").(bool)
+	finalCreateOpts = portsecurity.PortCreateOptsExt{
+		CreateOptsBuilder:   finalCreateOpts,
+		PortSecurityEnabled: &pse,
 	}
 
 	if dnsName := d.Get("dns_name").(string); dnsName != "" {

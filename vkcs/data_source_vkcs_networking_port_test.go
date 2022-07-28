@@ -8,7 +8,6 @@ import (
 
 func TestAccNetworkingPortDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{

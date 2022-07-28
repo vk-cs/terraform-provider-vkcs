@@ -10,7 +10,6 @@ func TestAccNetworkingSecGroupRule_importBasic(t *testing.T) {
 	resourceName := "vkcs_networking_secgroup_rule.secgroup_rule_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingSecGroupRuleDestroy,
 		Steps: []resource.TestStep{

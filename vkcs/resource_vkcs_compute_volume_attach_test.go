@@ -13,7 +13,6 @@ func TestAccComputeVolumeAttach_basic(t *testing.T) {
 	var va volumeattach.VolumeAttachment
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeVolumeAttachDestroy,
 		Steps: []resource.TestStep{
@@ -92,24 +91,33 @@ func testAccCheckComputeVolumeAttachExists(n string, va *volumeattach.VolumeAtta
 
 func testAccComputeVolumeAttachBasic() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   size = 1
-  availability_zone = "nova"
-  volume_type = "%s"
+  availability_zone = "GZ1"
+  volume_type = "ceph-ssd"
 }
 
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_compute_volume_attach" "va_1" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
   volume_id = "${vkcs_blockstorage_volume.volume_1.id}"
 }
-`, osVolumeType, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }

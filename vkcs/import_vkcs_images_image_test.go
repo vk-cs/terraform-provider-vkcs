@@ -10,9 +10,6 @@ func TestAccImagesImage_importBasic(t *testing.T) {
 	resourceName := "vkcs_images_image.image_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckImage(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckImagesImageDestroy,
 		Steps: []resource.TestStep{

@@ -18,7 +18,7 @@ resource "vkcs_blockstorage_volume" "bs-volume" {
   name = "bs-volume"
   size = 8
   volume_type = "ceph-hdd"
-  availability_zone = "MS1"
+  availability_zone = "GZ1"
 }
 ```
 ## Argument Reference

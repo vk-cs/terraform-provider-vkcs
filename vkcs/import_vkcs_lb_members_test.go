@@ -10,9 +10,6 @@ func TestAccLBMembers_importBasic(t *testing.T) {
 	membersResourceName := "vkcs_lb_members.members_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckLB(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBMembersDestroy,
 		Steps: []resource.TestStep{

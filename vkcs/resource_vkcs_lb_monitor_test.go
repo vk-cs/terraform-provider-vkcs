@@ -14,7 +14,6 @@ func TestAccLBMonitor_basic(t *testing.T) {
 	var monitor monitors.Monitor
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLB(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBMonitorDestroy,
 		Steps: []resource.TestStep{
@@ -41,9 +40,6 @@ func TestAccLBMonitor_octavia(t *testing.T) {
 	var monitor monitors.Monitor
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckLB(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBMonitorDestroy,
 		Steps: []resource.TestStep{
@@ -70,9 +66,6 @@ func TestAccLBMonitor_octavia_udp(t *testing.T) {
 	var monitor monitors.Monitor
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckLB(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBMonitorDestroy,
 		Steps: []resource.TestStep{

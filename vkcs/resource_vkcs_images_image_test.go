@@ -14,9 +14,6 @@ func TestAccImagesImage_basic(t *testing.T) {
 	var image images.Image
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckImage(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckImagesImageDestroy,
 		Steps: []resource.TestStep{
@@ -25,45 +22,13 @@ func TestAccImagesImage_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImagesImageExists("vkcs_images_image.image_1", &image),
 					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "name", "Rancher TerraformAccTest"),
+						"vkcs_images_image.image_1", "name", "Centos TerraformAccTest"),
 					resource.TestCheckResourceAttr(
 						"vkcs_images_image.image_1", "container_format", "bare"),
 					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "disk_format", "qcow2"),
+						"vkcs_images_image.image_1", "disk_format", "raw"),
 					resource.TestCheckResourceAttr(
 						"vkcs_images_image.image_1", "schema", "/v2/schemas/image"),
-				),
-			},
-			{
-				Config: testAccImagesImageBasicWithID,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckImagesImageExists("vkcs_images_image.image_1", &image),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "name", "Rancher TerraformAccTest"),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "container_format", "bare"),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "disk_format", "qcow2"),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "schema", "/v2/schemas/image"),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "image_id", "c1efdf94-9a1a-4401-88b8-d616029d2551"),
-				),
-			},
-			{
-				Config: testAccImagesImageBasicHidden,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckImagesImageExists("vkcs_images_image.image_1", &image),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "name", "Rancher TerraformAccTest"),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "container_format", "bare"),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "disk_format", "qcow2"),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "schema", "/v2/schemas/image"),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "hidden", "true"),
 				),
 			},
 		},
@@ -74,9 +39,6 @@ func TestAccImagesImage_name(t *testing.T) {
 	var image images.Image
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckImage(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckImagesImageDestroy,
 		Steps: []resource.TestStep{
@@ -85,7 +47,7 @@ func TestAccImagesImage_name(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImagesImageExists("vkcs_images_image.image_1", &image),
 					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "name", "Rancher TerraformAccTest"),
+						"vkcs_images_image.image_1", "name", "Centos TerraformAccTest"),
 				),
 			},
 			{
@@ -93,7 +55,7 @@ func TestAccImagesImage_name(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImagesImageExists("vkcs_images_image.image_1", &image),
 					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "name", "TerraformAccTest Rancher"),
+						"vkcs_images_image.image_1", "name", "TerraformAccTest Centos"),
 				),
 			},
 		},
@@ -104,9 +66,6 @@ func TestAccImagesImage_tags(t *testing.T) {
 	var image images.Image
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckImage(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckImagesImageDestroy,
 		Steps: []resource.TestStep{
@@ -150,9 +109,6 @@ func TestAccImagesImage_properties(t *testing.T) {
 	var image5 images.Image
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckImage(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckImagesImageDestroy,
 		Steps: []resource.TestStep{
@@ -160,8 +116,6 @@ func TestAccImagesImage_properties(t *testing.T) {
 				Config: testAccImagesImageBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImagesImageExists("vkcs_images_image.image_1", &image1),
-					resource.TestCheckResourceAttrSet(
-						"vkcs_images_image.image_1", "properties.os_hash_value"),
 				),
 			},
 			{
@@ -172,8 +126,6 @@ func TestAccImagesImage_properties(t *testing.T) {
 						"vkcs_images_image.image_1", "properties.foo", "bar"),
 					resource.TestCheckResourceAttr(
 						"vkcs_images_image.image_1", "properties.bar", "foo"),
-					resource.TestCheckResourceAttrSet(
-						"vkcs_images_image.image_1", "properties.os_hash_value"),
 				),
 			},
 			{
@@ -182,8 +134,6 @@ func TestAccImagesImage_properties(t *testing.T) {
 					testAccCheckImagesImageExists("vkcs_images_image.image_1", &image3),
 					resource.TestCheckResourceAttr(
 						"vkcs_images_image.image_1", "properties.foo", "bar"),
-					resource.TestCheckResourceAttrSet(
-						"vkcs_images_image.image_1", "properties.os_hash_value"),
 				),
 			},
 			{
@@ -192,8 +142,6 @@ func TestAccImagesImage_properties(t *testing.T) {
 					testAccCheckImagesImageExists("vkcs_images_image.image_1", &image4),
 					resource.TestCheckResourceAttr(
 						"vkcs_images_image.image_1", "properties.foo", "baz"),
-					resource.TestCheckResourceAttrSet(
-						"vkcs_images_image.image_1", "properties.os_hash_value"),
 				),
 			},
 			{
@@ -204,36 +152,6 @@ func TestAccImagesImage_properties(t *testing.T) {
 						"vkcs_images_image.image_1", "properties.foo", "baz"),
 					resource.TestCheckResourceAttr(
 						"vkcs_images_image.image_1", "properties.bar", "foo"),
-					resource.TestCheckResourceAttrSet(
-						"vkcs_images_image.image_1", "properties.os_hash_value"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccImagesImage_webdownload(t *testing.T) {
-	var image images.Image
-
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckImage(t)
-		},
-		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckImagesImageDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccImagesImageWebdownload,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckImagesImageExists("vkcs_images_image.image_1", &image),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "name", "Rancher TerraformAccTest"),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "container_format", "bare"),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "disk_format", "qcow2"),
-					resource.TestCheckResourceAttr(
-						"vkcs_images_image.image_1", "schema", "/v2/schemas/image"),
 				),
 			},
 		},
@@ -365,36 +283,10 @@ func testAccCheckImagesImageTagCount(n string, expected int) resource.TestCheckF
 
 const testAccImagesImageBasic = `
   resource "vkcs_images_image" "image_1" {
-      name   = "Rancher TerraformAccTest"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
+      name   = "Centos TerraformAccTest"
+      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
       container_format = "bare"
-      disk_format = "qcow2"
-
-      timeouts {
-        create = "10m"
-      }
-  }`
-
-const testAccImagesImageBasicWithID = `
-  resource "vkcs_images_image" "image_1" {
-      name = "Rancher TerraformAccTest"
-      image_id = "c1efdf94-9a1a-4401-88b8-d616029d2551"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
-      container_format = "bare"
-      disk_format = "qcow2"
-
-      timeouts {
-        create = "10m"
-      }
-  }`
-
-const testAccImagesImageBasicHidden = `
-  resource "vkcs_images_image" "image_1" {
-      name = "Rancher TerraformAccTest"
-      hidden = true
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
-      container_format = "bare"
-      disk_format = "qcow2"
+      disk_format = "raw"
 
       timeouts {
         create = "10m"
@@ -403,53 +295,53 @@ const testAccImagesImageBasicHidden = `
 
 const testAccImagesImageName1 = `
   resource "vkcs_images_image" "image_1" {
-      name   = "Rancher TerraformAccTest"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
+      name   = "Centos TerraformAccTest"
+      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
       container_format = "bare"
-      disk_format = "qcow2"
+      disk_format = "raw"
   }`
 
 const testAccImagesImageName2 = `
   resource "vkcs_images_image" "image_1" {
-      name   = "TerraformAccTest Rancher"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
+      name   = "TerraformAccTest Centos"
+      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
       container_format = "bare"
-      disk_format = "qcow2"
+      disk_format = "raw"
   }`
 
 const testAccImagesImageTags1 = `
   resource "vkcs_images_image" "image_1" {
-      name   = "Rancher TerraformAccTest"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
+      name   = "Centos TerraformAccTest"
+      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
       container_format = "bare"
-      disk_format = "qcow2"
+      disk_format = "raw"
       tags = ["foo","bar"]
   }`
 
 const testAccImagesImageTags2 = `
   resource "vkcs_images_image" "image_1" {
-      name   = "Rancher TerraformAccTest"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
+      name   = "Centos TerraformAccTest"
+      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
       container_format = "bare"
-      disk_format = "qcow2"
+      disk_format = "raw"
       tags = ["foo","bar","baz"]
   }`
 
 const testAccImagesImageTags3 = `
   resource "vkcs_images_image" "image_1" {
-      name   = "Rancher TerraformAccTest"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
+      name   = "Centos TerraformAccTest"
+      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
       container_format = "bare"
-      disk_format = "qcow2"
+      disk_format = "raw"
       tags = ["foo","baz"]
   }`
 
 const testAccImagesImageProperties1 = `
   resource "vkcs_images_image" "image_1" {
-      name   = "Rancher TerraformAccTest"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
+      name   = "Centos TerraformAccTest"
+      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
       container_format = "bare"
-      disk_format = "qcow2"
+      disk_format = "raw"
 
       properties = {
         foo = "bar"
@@ -459,10 +351,10 @@ const testAccImagesImageProperties1 = `
 
 const testAccImagesImageProperties2 = `
   resource "vkcs_images_image" "image_1" {
-      name   = "Rancher TerraformAccTest"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
+      name   = "Centos TerraformAccTest"
+      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
       container_format = "bare"
-      disk_format = "qcow2"
+      disk_format = "raw"
 
       properties = {
         foo = "bar"
@@ -471,10 +363,10 @@ const testAccImagesImageProperties2 = `
 
 const testAccImagesImageProperties3 = `
   resource "vkcs_images_image" "image_1" {
-      name   = "Rancher TerraformAccTest"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
+      name   = "Centos TerraformAccTest"
+      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
       container_format = "bare"
-      disk_format = "qcow2"
+      disk_format = "raw"
 
       properties = {
         foo = "baz"
@@ -483,26 +375,13 @@ const testAccImagesImageProperties3 = `
 
 const testAccImagesImageProperties4 = `
   resource "vkcs_images_image" "image_1" {
-      name   = "Rancher TerraformAccTest"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
+      name   = "Centos TerraformAccTest"
+      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
       container_format = "bare"
-      disk_format = "qcow2"
+      disk_format = "raw"
 
       properties = {
         foo = "baz"
         bar = "foo"
-      }
-  }`
-
-const testAccImagesImageWebdownload = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "Rancher TerraformAccTest"
-      image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
-      container_format = "bare"
-      disk_format = "qcow2"
-      web_download = true
-
-      timeouts {
-        create = "10m"
       }
   }`

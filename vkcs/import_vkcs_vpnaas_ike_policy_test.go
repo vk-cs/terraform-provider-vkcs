@@ -10,9 +10,6 @@ func TestAccIKEPolicy_importBasic(t *testing.T) {
 	resourceName := "vkcs_vpnaas_ike_policy.policy_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckVPN(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIKEPolicyDestroy,
 		Steps: []resource.TestStep{
