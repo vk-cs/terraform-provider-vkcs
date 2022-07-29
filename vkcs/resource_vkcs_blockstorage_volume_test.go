@@ -14,12 +14,11 @@ func TestAccBlockStorageVolume_basic(t *testing.T) {
 	var volume volumes.Volume
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckBlockStorage(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBlockStorageVolumeBasic(),
+				Config: testAccBlockStorageVolumeBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
 					testAccCheckBlockStorageVolumeMetadata(&volume, "foo", "bar"),
@@ -30,7 +29,7 @@ func TestAccBlockStorageVolume_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccBlockStorageVolumeUpdate(),
+				Config: testAccBlockStorageVolumeUpdate,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
 					testAccCheckBlockStorageVolumeMetadata(&volume, "foo", "bar"),
@@ -46,7 +45,6 @@ func TestAccBlockStorageVolume_basic(t *testing.T) {
 
 func TestAccBlockStorageVolume_online_resize(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckBlockStorage(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
@@ -72,7 +70,6 @@ func TestAccBlockStorageVolume_image(t *testing.T) {
 	var volume volumes.Volume
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckBlockStorage(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
@@ -164,8 +161,7 @@ func testAccCheckBlockStorageVolumeMetadata(
 	}
 }
 
-func testAccBlockStorageVolumeBasic() string {
-	return fmt.Sprintf(`
+const testAccBlockStorageVolumeBasic string = `
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   description = "first test volume"
@@ -173,42 +169,48 @@ resource "vkcs_blockstorage_volume" "volume_1" {
     foo = "bar"
   }
   size = 1
-  availability_zone = "nova"
-  volume_type = "%s"
-}
-`, osVolumeType)
-}
+  availability_zone = "GZ1"
+  volume_type = "ceph-ssd"
+}`
 
 func testAccBlockStorageVolumeOnlineResize() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
 resource "vkcs_compute_instance" "basic" {
-  name            = "instance_1"
-  flavor_name     = "%s"
-  image_id      = "%s"
-  network_mode = "none"
+  name          = "instance_1"
+  flavor_name   = data.vkcs_compute_flavor.base.name
+  image_id      = data.vkcs_images_image.base.id
+  network_mode  = "none"
 }
 
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   description = "test volume"
   size = 1
-  availability_zone = "nova"
-  volume_type = "%s"
+  availability_zone = "GZ1"
+  volume_type = "ceph-ssd"
 }
 
 resource "vkcs_compute_volume_attach" "va_1" {
   instance_id = "${vkcs_compute_instance.basic.id}"
   volume_id   = "${vkcs_blockstorage_volume.volume_1.id}"
 }
-`, osFlavorName, osImageID, osVolumeType)
+`, testAccBaseFlavor, testAccBaseImage)
 }
 
 func testAccBlockStorageVolumeOnlineResizeUpdate() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
 resource "vkcs_compute_instance" "basic" {
   name            = "instance_1"
-  flavor_name     = "%s"
-  image_id      = "%s"
+  flavor_name     = data.vkcs_compute_flavor.base.name
+  image_id      = data.vkcs_images_image.base.id
   network_mode = "none"
 }
 
@@ -216,19 +218,18 @@ resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   description = "test volume"
   size = 2
-  availability_zone = "nova"
-  volume_type = "%s"
+  availability_zone = "GZ1"
+  volume_type = "ceph-ssd"
 }
 
 resource "vkcs_compute_volume_attach" "va_1" {
   instance_id = "${vkcs_compute_instance.basic.id}"
   volume_id   = "${vkcs_blockstorage_volume.volume_1.id}"
 }
-`, osFlavorName, osImageID, osVolumeType)
+`, testAccBaseFlavor, testAccBaseImage)
 }
 
-func testAccBlockStorageVolumeUpdate() string {
-	return fmt.Sprintf(`
+const testAccBlockStorageVolumeUpdate = `
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1-updated"
   description = "first test volume"
@@ -236,20 +237,21 @@ resource "vkcs_blockstorage_volume" "volume_1" {
     foo = "bar"
   }
   size = 2
-  availability_zone = "nova"
-  volume_type = "%s"
+  availability_zone = "GZ1"
+  volume_type = "ceph-ssd"
 }
-`, osVolumeType)
-}
+`
 
 func testAccBlockStorageVolumeImage() string {
 	return fmt.Sprintf(`
+%s
+
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   size = 5
-  image_id = "%s"
-  availability_zone = "nova"
-  volume_type = "%s"
+  image_id = data.vkcs_images_image.base.id
+  availability_zone = "GZ1"
+  volume_type = "ceph-ssd"
 }
-`, osImageID, osVolumeType)
+`, testAccBaseImage)
 }

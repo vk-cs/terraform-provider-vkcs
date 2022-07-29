@@ -15,7 +15,6 @@ func TestAccLBL7Rule_basic(t *testing.T) {
 	var l7rule l7policies.Rule
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLB(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBL7RuleDestroy,
 		Steps: []resource.TestStep{

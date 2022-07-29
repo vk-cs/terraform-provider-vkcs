@@ -53,7 +53,7 @@ func resourceNetworkingNetwork() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 				ForceNew: false,
-				Computed: true,
+				Default:  true,
 			},
 
 			"value_specs": {
@@ -77,7 +77,7 @@ func resourceNetworkingNetwork() *schema.Resource {
 			"port_security_enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Computed: true,
+				Default:  true,
 			},
 
 			"private_dns_domain": {
@@ -119,22 +119,19 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 		d.Get("vkcs_services_access").(bool),
 	}
 
-	if v, ok := d.GetOk("admin_state_up"); ok {
-		asu := v.(bool)
-		createOpts.AdminStateUp = &asu
-	}
+	v := d.Get("admin_state_up")
+	asu := v.(bool)
+	createOpts.AdminStateUp = &asu
 
 	// Declare a finalCreateOpts interface.
 	var finalCreateOpts networks.CreateOptsBuilder
 	finalCreateOpts = createOpts
 
-	// Add the port security attribute if specified.
-	if v, ok := d.GetOk("port_security_enabled"); ok {
-		portSecurityEnabled := v.(bool)
-		finalCreateOpts = portsecurity.NetworkCreateOptsExt{
-			CreateOptsBuilder:   finalCreateOpts,
-			PortSecurityEnabled: &portSecurityEnabled,
-		}
+	v = d.Get("port_security_enabled")
+	pse := v.(bool)
+	finalCreateOpts = portsecurity.NetworkCreateOptsExt{
+		CreateOptsBuilder:   finalCreateOpts,
+		PortSecurityEnabled: &pse,
 	}
 
 	log.Printf("[DEBUG] vkcs_networking_network create options: %#v", finalCreateOpts)

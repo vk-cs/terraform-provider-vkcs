@@ -46,9 +46,6 @@ func TestAccLBMembers_basic(t *testing.T) {
 	var idx2 int
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckLB(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBMembersDestroy,
 		Steps: []resource.TestStep{

@@ -60,14 +60,6 @@ func resourceImagesImage() *schema.Resource {
 				Computed: true,
 			},
 
-			"image_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.IsUUID,
-			},
-
 			"image_cache_path": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -124,13 +116,6 @@ func resourceImagesImage() *schema.Resource {
 			"protected": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  false,
-			},
-
-			"hidden": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: false,
 				Default:  false,
 			},
 
@@ -227,15 +212,9 @@ func resourceImagesImageCreate(ctx context.Context, d *schema.ResourceData, meta
 		DiskFormat:      d.Get("disk_format").(string),
 		MinDisk:         d.Get("min_disk_gb").(int),
 		MinRAM:          d.Get("min_ram_mb").(int),
-		ID:              d.Get("image_id").(string),
 		Protected:       &protected,
 		Visibility:      &visibility,
 		Properties:      imageProperties,
-	}
-
-	if d.Get("hidden").(bool) {
-		hidden := true
-		createOpts.Hidden = &hidden
 	}
 
 	if v, ok := d.GetOk("tags"); ok {
@@ -340,11 +319,9 @@ func resourceImagesImageRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.Set("disk_format", img.DiskFormat)
 	d.Set("min_disk_gb", img.MinDiskGigabytes)
 	d.Set("min_ram_mb", img.MinRAMMegabytes)
-	d.Set("image_id", img.ID)
 	d.Set("file", img.File)
 	d.Set("name", img.Name)
 	d.Set("protected", img.Protected)
-	d.Set("hidden", img.Hidden)
 	d.Set("size_bytes", img.SizeBytes)
 	d.Set("tags", img.Tags)
 	d.Set("visibility", img.Visibility)
@@ -376,12 +353,6 @@ func resourceImagesImageUpdate(ctx context.Context, d *schema.ResourceData, meta
 	if d.HasChange("protected") {
 		protected := d.Get("protected").(bool)
 		v := images.ReplaceImageProtected{NewProtected: protected}
-		updateOpts = append(updateOpts, v)
-	}
-
-	if d.HasChange("hidden") {
-		hidden := d.Get("hidden").(bool)
-		v := images.ReplaceImageHidden{NewHidden: hidden}
 		updateOpts = append(updateOpts, v)
 	}
 

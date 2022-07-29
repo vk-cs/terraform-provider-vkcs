@@ -14,7 +14,6 @@ func TestAccNetworkingRouter_basic(t *testing.T) {
 	var router routers.Router
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingRouterDestroy,
 		Steps: []resource.TestStep{
@@ -43,7 +42,6 @@ func TestAccNetworkingRouter_updateExternalGateway(t *testing.T) {
 	var router routers.Router
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingRouterDestroy,
 		Steps: []resource.TestStep{
@@ -68,7 +66,6 @@ func TestAccNetworkingRouter_vendor_opts(t *testing.T) {
 	var router routers.Router
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingRouterDestroy,
 		Steps: []resource.TestStep{
@@ -164,15 +161,17 @@ resource "vkcs_networking_router" "router_1" {
 
 func testAccNetworkingRouterVendorOpts() string {
 	return fmt.Sprintf(`
+%s
+
 resource "vkcs_networking_router" "router_1" {
   name = "router_1"
   admin_state_up = "true"
-  external_network_id = "%s"
+  external_network_id = data.vkcs_networking_network.extnet.id
   vendor_options {
     set_router_gateway_after_create = true
   }
 }
-`, osExtGwID)
+`, testAccBaseExtNetwork)
 }
 
 const testAccNetworkingRouterUpdateExternalGateway1 = `
@@ -184,10 +183,12 @@ resource "vkcs_networking_router" "router_1" {
 
 func testAccNetworkingRouterUpdateExternalGateway2() string {
 	return fmt.Sprintf(`
+%s
+
 resource "vkcs_networking_router" "router_1" {
   name = "router"
   admin_state_up = "true"
-  external_network_id = "%s"
+  external_network_id = data.vkcs_networking_network.extnet.id
 }
-`, osExtGwID)
+`, testAccBaseExtNetwork)
 }

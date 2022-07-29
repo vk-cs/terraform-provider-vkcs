@@ -10,7 +10,6 @@ import (
 
 func TestAccComputeFlavorDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -37,7 +36,6 @@ func TestAccComputeFlavorDataSource_basic(t *testing.T) {
 
 func TestAccComputeFlavorDataSource_testQueries(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -118,36 +116,10 @@ func TestAccComputeFlavorDataSource_testQueries(t *testing.T) {
 
 func TestAccComputeFlavorDataSource_extraSpecs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccComputeFlavorDataSourceExtraSpecs,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckComputeFlavorDataSourceID("data.vkcs_compute_flavor.flavor_1"),
-					resource.TestCheckResourceAttr(
-						"data.vkcs_compute_flavor.flavor_1", "name", "Basic-1-2-20"),
-					resource.TestCheckResourceAttr(
-						"data.vkcs_compute_flavor.flavor_1", "extra_specs.%", "3"),
-					resource.TestCheckResourceAttr(
-						"data.vkcs_compute_flavor.flavor_1", "extra_specs.agg_common", "true"),
-					resource.TestCheckResourceAttr(
-						"data.vkcs_compute_flavor.flavor_1", "extra_specs.hw:cpu_sockets", "1"),
-					resource.TestCheckResourceAttr(
-						"data.vkcs_compute_flavor.flavor_1", "extra_specs.mcs:cpu_type", "standard"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccComputeFlavorDataSource_flavorID(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
-		ProviderFactories: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccComputeFlavorDataSourceFlavorID(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeFlavorDataSourceID("data.vkcs_compute_flavor.flavor_1"),
 					resource.TestCheckResourceAttr(
@@ -219,11 +191,3 @@ data "vkcs_compute_flavor" "flavor_1" {
 	name = "Basic-1-2-20"
   }
 `
-
-func testAccComputeFlavorDataSourceFlavorID() string {
-	return fmt.Sprintf(`
-          data "vkcs_compute_flavor" "flavor_1" {
-            flavor_id = "%s"
-          }
-          `, osFlavorID)
-}

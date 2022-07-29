@@ -220,3 +220,51 @@ func makeClusterDeleteResponseFixture() *http.Response {
 		StatusCode: 202,
 	}
 }
+
+const testAccBaseExtNetwork string = `
+data "vkcs_networking_network" "extnet" {
+	name = "ext-net"
+}
+`
+
+const testAccBaseNetwork string = `
+
+data "vkcs_networking_network" "extnet" {
+	name = "ext-net"
+  }
+  
+  resource "vkcs_networking_network" "base" {
+	name           = "base-net"
+	admin_state_up = true
+  }
+  
+  resource "vkcs_networking_subnet" "base" {
+	name       = "subnet_1"
+	network_id = vkcs_networking_network.base.id
+	cidr       = "192.168.199.0/24"
+	ip_version = 4
+  }
+  
+  resource "vkcs_networking_router" "base" {
+	name                = "base-router"
+	admin_state_up      = true
+	external_network_id = data.vkcs_networking_network.extnet.id
+  }
+  
+  resource "vkcs_networking_router_interface" "base" {
+	router_id = vkcs_networking_router.base.id
+	subnet_id = vkcs_networking_subnet.base.id
+  }
+`
+
+const testAccBaseFlavor string = `
+data "vkcs_compute_flavor" "base" {
+  name = "Basic-1-2-20"
+}
+`
+
+const testAccBaseImage string = `
+data "vkcs_images_image" "base" {
+  name = "Ubuntu-18.04-Standard"
+}
+`

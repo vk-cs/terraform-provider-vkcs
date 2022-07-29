@@ -15,7 +15,6 @@ func TestAccLBMember_basic(t *testing.T) {
 	var member2 pools.Member
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLB(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBMemberDestroy,
 		Steps: []resource.TestStep{
@@ -136,7 +135,7 @@ resource "vkcs_lb_member" "member_1" {
   protocol_port = 8080
   pool_id = "${vkcs_lb_pool.pool_1.id}"
   subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
-  weight = 0
+  weight = 1
 
   timeouts {
     create = "5m"

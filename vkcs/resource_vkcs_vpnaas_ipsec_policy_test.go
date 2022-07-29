@@ -16,9 +16,6 @@ import (
 func TestAccVPNaaSIPSecPolicy_basic(t *testing.T) {
 	var policy ipsecpolicies.Policy
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckVPN(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIPSecPolicyDestroy,
 		Steps: []resource.TestStep{
@@ -42,9 +39,6 @@ func TestAccVPNaaSIPSecPolicy_basic(t *testing.T) {
 func TestAccVPNaaSIPSecPolicy_withLifetime(t *testing.T) {
 	var policy ipsecpolicies.Policy
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckVPN(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIPSecPolicyDestroy,
 		Steps: []resource.TestStep{
@@ -62,9 +56,6 @@ func TestAccVPNaaSIPSecPolicy_withLifetime(t *testing.T) {
 func TestAccVPNaaSIPSecPolicy_Update(t *testing.T) {
 	var policy ipsecpolicies.Policy
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckVPN(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIPSecPolicyDestroy,
 		Steps: []resource.TestStep{
@@ -89,9 +80,6 @@ func TestAccVPNaaSIPSecPolicy_Update(t *testing.T) {
 func TestAccVPNaaSIPSecPolicy_withLifetimeUpdate(t *testing.T) {
 	var policy ipsecpolicies.Policy
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckVPN(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIPSecPolicyDestroy,
 		Steps: []resource.TestStep{

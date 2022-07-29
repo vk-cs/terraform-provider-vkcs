@@ -55,8 +55,6 @@ data "vkcs_images_image" "ubuntu" {
 * `visibility` - (Optional) The visibility of the image. Must be one of 
     "private", "community", or "shared". Defaults to "private".
 
-* `hidden` - (Optional) Whether or not the image is hidden from public list.
-
 ## Attributes Reference
 
 `id` is set to the ID of the found image. In addition, the following attributes

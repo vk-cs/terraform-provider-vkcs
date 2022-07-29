@@ -10,9 +10,6 @@ import (
 
 func TestAccImagesImageDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckImage(t)
-		},
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -27,7 +24,7 @@ func TestAccImagesImageDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.vkcs_images_image.image_1", "container_format", "bare"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_images_image.image_1", "disk_format", "qcow2"),
+						"data.vkcs_images_image.image_1", "disk_format", "raw"),
 					resource.TestCheckResourceAttr(
 						"data.vkcs_images_image.image_1", "min_disk_gb", "0"),
 					resource.TestCheckResourceAttr(
@@ -44,7 +41,6 @@ func TestAccImagesImageDataSource_basic(t *testing.T) {
 
 func TestAccImagesImageDataSource_testQueries(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckImage(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -66,12 +62,6 @@ func TestAccImagesImageDataSource_testQueries(t *testing.T) {
 				Config: testAccImagesImageDataSourceQuerySizeMax(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImagesDataSourceID("data.vkcs_images_image.image_1"),
-				),
-			},
-			{
-				Config: testAccImagesImageDataSourceQueryHidden(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckImagesDataSourceID("data.vkcs_images_image.image_3"),
 				),
 			},
 			{
@@ -107,7 +97,7 @@ const testAccImagesImageDataSourceCirros = `
 resource "vkcs_images_image" "image_1" {
   name = "CirrOS-tf_1"
   container_format = "bare"
-  disk_format = "qcow2"
+  disk_format = "raw"
   image_source_url = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
   tags = ["cirros-tf_1"]
   properties = {
@@ -119,23 +109,11 @@ resource "vkcs_images_image" "image_1" {
 resource "vkcs_images_image" "image_2" {
   name = "CirrOS-tf_2"
   container_format = "bare"
-  disk_format = "qcow2"
+  disk_format = "raw"
   image_source_url = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
   tags = ["cirros-tf_2"]
   properties = {
     foo = "bar"
-  }
-}
-
-resource "vkcs_images_image" "image_3" {
-  name = "CirrOS-tf_3"
-  container_format = "bare"
-  hidden = true
-  disk_format = "qcow2"
-  image_source_url = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
-  tags = ["cirros-tf_3"]
-  properties = {
-	foo = "bar"
   }
 }
 `
@@ -183,18 +161,6 @@ data "vkcs_images_image" "image_1" {
 	most_recent = true
 	visibility = "private"
 	size_max = "23000000"
-}
-`, testAccImagesImageDataSourceCirros)
-}
-
-func testAccImagesImageDataSourceQueryHidden() string {
-	return fmt.Sprintf(`
-%s
-
-data "vkcs_images_image" "image_3" {
-	most_recent = true
-	visibility = "private"
-	hidden = true
 }
 `, testAccImagesImageDataSourceCirros)
 }

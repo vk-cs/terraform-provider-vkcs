@@ -16,11 +16,11 @@ state](https://www.terraform.io/docs/language/state/sensitive-data.html).
 ## Example Usage
 
 ```hcl
-resource "vkcs_images_image" "rancheros" {
-  name             = "RancherOS"
-  image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
+resource "vkcs_images_image" "centos" {
+  name             = "CentOS-TF"
+  image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
   container_format = "bare"
-  disk_format      = "qcow2"
+  disk_format      = "raw"
 
   properties = {
     key = "value"
@@ -61,17 +61,11 @@ The following arguments are supported:
 * `min_ram_mb` - (Optional) Amount of ram (in MB) required to boot image.
     Defauts to 0.
 
-* `image_id` - (Optional) Unique ID (valid UUID) of image to create. Changing 
-    this creates a new image.
-
 * `properties` - (Optional) A map of key/value pairs to set freeform
     information about an image. See the "Notes" section for further
     information about properties.
 
 * `protected` - (Optional) If true, image will not be deletable.
-    Defaults to false.
-
-* `hidden` - (Optional) If true, image will be hidden from public list.
     Defaults to false.
 
 * `region` - (Optional) The region in which to obtain the Image client.
@@ -108,7 +102,6 @@ The following attributes are exported:
 * `owner` - The id of the vkcs user who owns the image.
 * `properties` - See Argument Reference above.
 * `protected` - See Argument Reference above.
-* `hidden` - See Argument Reference above.
 * `region` - See Argument Reference above.
 * `schema` - The path to the JSON-schema that represent the image or image
 * `size_bytes` - The size in bytes of the data associated with the image.
@@ -130,5 +123,5 @@ resource.
 Images can be imported using the `id`, e.g.
 
 ```
-$ terraform import vkcs_images_image.rancheros 89c60255-9bd6-460c-822a-e2b959ede9d2
+$ terraform import vkcs_images_image.centos 89c60255-9bd6-460c-822a-e2b959ede9d2
 ```

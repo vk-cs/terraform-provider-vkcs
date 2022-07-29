@@ -10,7 +10,6 @@ import (
 
 func TestAccSFSShareDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckSFS(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckSFSShareDestroy,
 		Steps: []resource.TestStep{

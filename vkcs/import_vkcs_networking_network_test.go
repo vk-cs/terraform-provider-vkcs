@@ -10,7 +10,6 @@ func TestAccNetworkingNetwork_importBasic(t *testing.T) {
 	resourceName := "vkcs_networking_network.network_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{

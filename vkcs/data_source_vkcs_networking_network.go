@@ -102,6 +102,11 @@ func dataSourceNetworkingNetwork() *schema.Resource {
 				Optional:         true,
 				ValidateDiagFunc: validateSDN(),
 			},
+
+			"vkcs_services_access": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 	}
 }

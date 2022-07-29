@@ -26,7 +26,6 @@ func TestAccNetworkingNetwork_basic(t *testing.T) {
 	var network networks.Network
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
@@ -59,7 +58,6 @@ func TestAccNetworkingNetwork_netstack(t *testing.T) {
 	var router routers.Router
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
@@ -84,12 +82,11 @@ func TestAccNetworkingNetwork_fullstack(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingNetworkFullstack,
+				Config: testAccNetworkingNetworkFullstack(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
 					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
@@ -105,7 +102,6 @@ func TestAccNetworkingNetwork_timeout(t *testing.T) {
 	var network networks.Network
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
@@ -123,7 +119,6 @@ func TestAccNetworkingNetwork_adminStateUp_omit(t *testing.T) {
 	var network networks.Network
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
@@ -144,7 +139,6 @@ func TestAccNetworkingNetwork_adminStateUp_true(t *testing.T) {
 	var network networks.Network
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
@@ -165,7 +159,6 @@ func TestAccNetworkingNetwork_adminStateUp_false(t *testing.T) {
 	var network networks.Network
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
@@ -186,7 +179,6 @@ func TestAccNetworkingNetwork_adminStateUp_update(t *testing.T) {
 	var network networks.Network
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
@@ -216,7 +208,6 @@ func TestAccNetworkingNetwork_portSecurity_omit(t *testing.T) {
 	var network testNetworkWithExtensions
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
@@ -258,7 +249,6 @@ func TestAccNetworkingNetwork_portSecurity_disabled(t *testing.T) {
 	var network testNetworkWithExtensions
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
@@ -290,7 +280,6 @@ func TestAccNetworkingNetwork_portSecurity_enabled(t *testing.T) {
 	var network testNetworkWithExtensions
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
@@ -322,7 +311,6 @@ func TestAccNetworkingNetwork_privateDnsDomain(t *testing.T) {
 	var network networks.Network
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
@@ -482,7 +470,12 @@ resource "vkcs_networking_router_interface" "ri_1" {
 }
 `
 
-const testAccNetworkingNetworkFullstack = `
+func testAccNetworkingNetworkFullstack() string {
+	return fmt.Sprintf(`
+%s
+
+%s
+
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
   admin_state_up = "true"
@@ -525,8 +518,11 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     port = "${vkcs_networking_port.port_1.id}"
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`
+`, testAccBaseImage, testAccBaseFlavor)
+}
 
 const testAccNetworkingNetworkTimeout = `
 resource "vkcs_networking_network" "network_1" {

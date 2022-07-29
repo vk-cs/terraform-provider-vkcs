@@ -13,7 +13,6 @@ func TestAccLBMember_importBasic(t *testing.T) {
 	poolResourceName := "vkcs_lb_pool.pool_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLB(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBMemberDestroy,
 		Steps: []resource.TestStep{

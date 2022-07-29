@@ -190,6 +190,13 @@ func resourceImagesImageUpdateComputedAttributes(_ context.Context, diff *schema
 						newProperties[oldKey] = v
 					}
 				}
+
+				// direct_url is provided by some storage drivers.
+				if oldKey == "direct_url" {
+					if v, ok := oldValue.(string); ok {
+						newProperties[oldKey] = v
+					}
+				}
 			}
 
 			// Set the diff to the newProperties, which includes the server-side

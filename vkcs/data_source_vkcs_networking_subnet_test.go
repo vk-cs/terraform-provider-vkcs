@@ -10,7 +10,6 @@ import (
 
 func TestAccNetworkingSubnetDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -33,7 +32,6 @@ func TestAccNetworkingSubnetDataSource_basic(t *testing.T) {
 
 func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{

@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/attributestags"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/dns"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 )
@@ -87,18 +86,6 @@ func resourceNetworkingFloating() *schema.Resource {
 				Type:     schema.TypeMap,
 				Optional: true,
 				ForceNew: true,
-			},
-
-			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-
-			"all_tags": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
 			"dns_name": {
@@ -234,16 +221,6 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 		d.Set("subnet_id", createOpts.SubnetID)
 	}
 
-	tags := networkingAttributesTags(d)
-	if len(tags) > 0 {
-		tagOpts := attributestags.ReplaceAllOpts{Tags: tags}
-		tags, err := attributestags.ReplaceAll(networkingClient, "floatingips", fip.ID, tagOpts).Extract()
-		if err != nil {
-			return diag.Errorf("Error setting tags on vkcs_networking_floatingip %s: %s", fip.ID, err)
-		}
-		log.Printf("[DEBUG] Set tags %s on vkcs_networking_floatingip %s", tags, fip.ID)
-	}
-
 	log.Printf("[DEBUG] Created vkcs_networking_floatingip %s: %#v", fip.ID, fip)
 	return resourceNetworkFloatingIPRead(ctx, d, meta)
 }
@@ -272,8 +249,6 @@ func resourceNetworkFloatingIPRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("dns_domain", fip.DNSDomain)
 	d.Set("region", getRegion(d, config))
 	d.Set("sdn", getSDN(d))
-
-	networkingReadAttributesTags(d, fip.Tags)
 
 	poolName, err := networkingNetworkName(d, meta, fip.FloatingNetworkID)
 	if err != nil {
@@ -319,16 +294,6 @@ func resourceNetworkFloatingIPUpdate(ctx context.Context, d *schema.ResourceData
 		if err != nil {
 			return diag.Errorf("Error updating vkcs_networking_floatingip %s: %s", d.Id(), err)
 		}
-	}
-
-	if d.HasChange("tags") {
-		tags := networkingV2UpdateAttributesTags(d)
-		tagOpts := attributestags.ReplaceAllOpts{Tags: tags}
-		tags, err := attributestags.ReplaceAll(networkingClient, "floatingips", d.Id(), tagOpts).Extract()
-		if err != nil {
-			return diag.Errorf("Error setting tags on vkcs_networking_floatingip %s: %s", d.Id(), err)
-		}
-		log.Printf("[DEBUG] Set tags %s on vkcs_networking_floatingip %s", tags, d.Id())
 	}
 
 	return resourceNetworkFloatingIPRead(ctx, d, meta)
