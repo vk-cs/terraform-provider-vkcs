@@ -10,7 +10,6 @@ import (
 
 func TestAccComputeQuotasetDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{

@@ -17,7 +17,6 @@ func TestAccNetworkingRouterRoute_basic(t *testing.T) {
 	var subnet [2]subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -215,13 +214,14 @@ resource "vkcs_networking_port" "port_2" {
 resource "vkcs_networking_router_interface" "int_2" {
   router_id = "${vkcs_networking_router.router_1.id}"
   port_id = "${vkcs_networking_port.port_2.id}"
+  depends_on = [vkcs_networking_router_interface.int_1]
 }
 
 resource "vkcs_networking_router_route" "router_route_1" {
   destination_cidr = "10.0.1.0/24"
   next_hop = "192.168.199.254"
 
-  depends_on = ["vkcs_networking_router_interface.int_1"]
+  depends_on = [vkcs_networking_router_interface.int_1, vkcs_networking_router_interface.int_2]
   router_id = "${vkcs_networking_router.router_1.id}"
 }
 `
@@ -284,13 +284,14 @@ resource "vkcs_networking_port" "port_2" {
 resource "vkcs_networking_router_interface" "int_2" {
   router_id = "${vkcs_networking_router.router_1.id}"
   port_id = "${vkcs_networking_port.port_2.id}"
+  depends_on = [vkcs_networking_router_interface.int_1]
 }
 
 resource "vkcs_networking_router_route" "router_route_1" {
   destination_cidr = "10.0.1.0/24"
   next_hop = "192.168.199.254"
 
-  depends_on = ["vkcs_networking_router_interface.int_1"]
+  depends_on = [vkcs_networking_router_interface.int_1, vkcs_networking_router_interface.int_2]
   router_id = "${vkcs_networking_router.router_1.id}"
 }
 
@@ -298,7 +299,7 @@ resource "vkcs_networking_router_route" "router_route_2" {
   destination_cidr = "10.0.2.0/24"
   next_hop = "192.168.200.254"
 
-  depends_on = ["vkcs_networking_router_interface.int_2"]
+  depends_on = [vkcs_networking_router_interface.int_1, vkcs_networking_router_interface.int_2]
   router_id = "${vkcs_networking_router.router_1.id}"
 }
 `

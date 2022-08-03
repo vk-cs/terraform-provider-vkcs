@@ -14,9 +14,6 @@ import (
 func TestAccVPNaaSSiteConnection_basic(t *testing.T) {
 	var conn siteconnections.Connection
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckVPN(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckSiteConnectionDestroy,
 		Steps: []resource.TestStep{
@@ -94,6 +91,8 @@ func testAccCheckSiteConnectionExists(n string, conn *siteconnections.Connection
 
 func testAccSiteConnectionBasic() string {
 	return fmt.Sprintf(`
+%s
+
 	resource "vkcs_networking_network" "network_1" {
 		name           = "tf_test_network"
   		admin_state_up = "true"
@@ -107,7 +106,7 @@ func testAccSiteConnectionBasic() string {
 
 	resource "vkcs_networking_router" "router_1" {
   		name             = "my_router"
-  		external_network_id = "%s"
+  		external_network_id = data.vkcs_networking_network.extnet.id
 	}
 
 	resource "vkcs_networking_router_interface" "router_interface_1" {
@@ -152,5 +151,5 @@ func testAccSiteConnectionBasic() string {
 		}
 		depends_on = ["vkcs_networking_router_interface.router_interface_1"]
 	}
-	`, osExtGwID)
+	`, testAccBaseExtNetwork)
 }

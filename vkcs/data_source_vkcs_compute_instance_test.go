@@ -10,7 +10,6 @@ import (
 
 func TestAccComputeInstanceDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -46,17 +45,26 @@ func testAccCheckComputeInstanceDataSourceID(n string) resource.TestCheckFunc {
 
 func testAccComputeInstanceDataSourceBasic() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   metadata = {
     foo = "bar"
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceDataSourceSource() string {

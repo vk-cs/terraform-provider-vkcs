@@ -28,7 +28,6 @@ func TestAccBlockStorageVolumeDataSource_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckBlockStorage(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -111,10 +110,10 @@ func testAccCheckBlockStorageVolumeDataSourceID(n, id string) resource.TestCheck
 	}
 }
 
-func testAccBlockStorageVolumeDataSourceBasic(snapshotName string) string {
+func testAccBlockStorageVolumeDataSourceBasic(volumeName string) string {
 	return fmt.Sprintf(`
     data "vkcs_blockstorage_volume" "volume_1" {
       name = "%s"
     }
-  `, snapshotName)
+  `, volumeName)
 }

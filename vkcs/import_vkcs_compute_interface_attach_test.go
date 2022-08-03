@@ -10,7 +10,6 @@ func TestAccComputeInterfaceAttachImport_basic(t *testing.T) {
 	resourceName := "vkcs_compute_interface_attach.ai_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInterfaceAttachDestroy,
 		Steps: []resource.TestStep{

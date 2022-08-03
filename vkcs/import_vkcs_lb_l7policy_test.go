@@ -10,7 +10,6 @@ func TestAccLBL7Policy_importBasic(t *testing.T) {
 	resourceName := "vkcs_lb_l7policy.l7policy_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLB(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBL7PolicyDestroy,
 		Steps: []resource.TestStep{

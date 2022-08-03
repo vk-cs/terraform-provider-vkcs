@@ -22,7 +22,6 @@ func TestAccComputeInstance_basic(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -34,7 +33,7 @@ func TestAccComputeInstance_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"vkcs_compute_instance.instance_1", "all_metadata.foo", "bar"),
 					resource.TestCheckResourceAttr(
-						"vkcs_compute_instance.instance_1", "availability_zone", "MS1"),
+						"vkcs_compute_instance.instance_1", "availability_zone", "GZ1"),
 				),
 			},
 		},
@@ -45,7 +44,6 @@ func TestAccComputeInstance_initialStateActive(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -84,7 +82,6 @@ func TestAccComputeInstance_initialStateShutoff(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -123,7 +120,6 @@ func TestAccComputeInstance_initialShelve(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -162,7 +158,6 @@ func TestAccComputeInstance_bootFromVolumeImage(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -181,7 +176,6 @@ func TestAccComputeInstance_bootFromVolumeVolume(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -201,7 +195,6 @@ func TestAccComputeInstance_bootFromVolumeForceNew(t *testing.T) {
 	var instance2 servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -228,7 +221,6 @@ func TestAccComputeInstance_blockDeviceNewVolume(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -246,7 +238,6 @@ func TestAccComputeInstance_blockDeviceNewVolumeTypeAndBus(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -265,7 +256,6 @@ func TestAccComputeInstance_blockDeviceExistingVolume(t *testing.T) {
 	var volume volumes.Volume
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -286,7 +276,6 @@ func TestAccComputeInstance_personality(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -300,30 +289,10 @@ func TestAccComputeInstance_personality(t *testing.T) {
 	})
 }
 
-// func TestAccComputeInstance_multiEphemeral(t *testing.T) {
-// 	var instance servers.Server
-
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheckCompute(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccComputeInstanceMultiEphemeral(),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckComputeInstanceExists(
-// 						"vkcs_compute_instance.instance_1", &instance),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
-
 func TestAccComputeInstance_accessIPv4(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -344,7 +313,6 @@ func TestAccComputeInstance_changeFixedIP(t *testing.T) {
 	var instance2 servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -370,7 +338,6 @@ func TestAccComputeInstance_changeFixedIP(t *testing.T) {
 func TestAccComputeInstance_stopBeforeDestroy(t *testing.T) {
 	var instance servers.Server
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -388,7 +355,6 @@ func TestAccComputeInstance_metadataRemove(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -424,7 +390,6 @@ func TestAccComputeInstance_metadataRemove(t *testing.T) {
 func TestAccComputeInstance_forceDelete(t *testing.T) {
 	var instance servers.Server
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -441,7 +406,6 @@ func TestAccComputeInstance_forceDelete(t *testing.T) {
 func TestAccComputeInstance_timeout(t *testing.T) {
 	var instance servers.Server
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -458,12 +422,11 @@ func TestAccComputeInstance_timeout(t *testing.T) {
 func TestAccComputeInstance_networkModeNone(t *testing.T) {
 	var instance servers.Server
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeInstanceNetworkModeNone,
+				Config: testAccComputeInstanceNetworkModeNone(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckComputeInstanceNetworkDoesNotExist("vkcs_compute_instance.instance_1", &instance),
@@ -477,7 +440,6 @@ func TestAccComputeInstance_networkNameToID(t *testing.T) {
 	var instance servers.Server
 	var network networks.Network
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -504,7 +466,6 @@ func TestAccComputeInstance_crazyNICs(t *testing.T) {
 	var port4 ports.Port
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -580,9 +541,8 @@ func TestAccComputeInstance_tags(t *testing.T) {
 	resourceName := "vkcs_compute_instance.instance_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
+		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccComputeInstanceTagsCreate(),
@@ -825,27 +785,43 @@ func testAccCheckComputeInstanceNetworkDoesNotExist(n string, _ *servers.Server)
 
 func testAccComputeInstanceBasic() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
-  availability_zone = "MS1"
+  availability_zone = "GZ1"
   security_groups = ["default"]
   metadata = {
     foo = "bar"
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceBootFromVolumeImage() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   block_device {
-    uuid = "%s"
+    uuid = data.vkcs_images_image.base.id
     source_type = "image"
     volume_size = 5
     boot_index = 0
@@ -853,23 +829,31 @@ resource "vkcs_compute_instance" "instance_1" {
     delete_on_termination = true
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osImageID, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceBootFromVolumeVolume() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_blockstorage_volume" "vol_1" {
   name = "vol_1"
   size = 5
-  image_id = "%s"
-  availability_zone = "nova"
-  volume_type = "%s"
+  image_id = data.vkcs_images_image.base.id
+  availability_zone = "GZ1"
+  volume_type = "ceph-ssd"
 }
 
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   block_device {
@@ -880,20 +864,27 @@ resource "vkcs_compute_instance" "instance_1" {
     delete_on_termination = true
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
-
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osImageID, osVolumeType, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceBootFromVolumeForceNew1() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]  
   name = "instance_1"
   security_groups = ["default"]
   block_device {
-    uuid = "%s"
+    uuid = data.vkcs_images_image.base.id
     source_type = "image"
     volume_size = 5
     boot_index = 0
@@ -901,19 +892,27 @@ resource "vkcs_compute_instance" "instance_1" {
     delete_on_termination = true
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osImageID, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceBootFromVolumeForceNew2() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   block_device {
-    uuid = "%s"
+    uuid = data.vkcs_images_image.base.id
     source_type = "image"
     volume_size = 4
     boot_index = 0
@@ -921,19 +920,27 @@ resource "vkcs_compute_instance" "instance_1" {
     delete_on_termination = true
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osImageID, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceBlockDeviceNewVolume() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   block_device {
-    uuid = "%s"
+    uuid = data.vkcs_images_image.base.id
     source_type = "image"
     destination_type = "local"
     boot_index = 0
@@ -947,19 +954,28 @@ resource "vkcs_compute_instance" "instance_1" {
     delete_on_termination = true
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osImageID, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceBlockDeviceNewVolumeTypeAndBus() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   block_device {
-    uuid = "%s"
+    uuid = data.vkcs_images_image.base.id
     source_type = "image"
     destination_type = "local"
     boot_index = 0
@@ -977,26 +993,35 @@ resource "vkcs_compute_instance" "instance_1" {
 		disk_bus = "virtio"
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osImageID, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceBlockDeviceExistingVolume() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   size = 1
-  availability_zone = "nova"
-  volume_type = "%s"
+  availability_zone = "GZ1"
+  volume_type = "ceph-ssd"
 }
 
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   block_device {
-    uuid = "%s"
+    uuid = data.vkcs_images_image.base.id
     source_type = "image"
     destination_type = "local"
     boot_index = 0
@@ -1010,15 +1035,24 @@ resource "vkcs_compute_instance" "instance_1" {
     delete_on_termination = true
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osVolumeType, osImageID, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstancePersonality() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   personality {
@@ -1030,14 +1064,22 @@ resource "vkcs_compute_instance" "instance_1" {
     content = "angry"
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceAccessIPv4() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
 }
@@ -1058,7 +1100,7 @@ resource "vkcs_compute_instance" "instance_1" {
   security_groups = ["default"]
 
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
 
   network {
@@ -1066,52 +1108,88 @@ resource "vkcs_compute_instance" "instance_1" {
     fixed_ip_v4 = "192.168.1.100"
     access_network = true
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceChangeFixedIP1() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
-    fixed_ip_v4 = "10.0.0.134"
+    uuid = vkcs_networking_network.base.id
+    fixed_ip_v4 = "192.168.199.134"
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceChangeFixedIP2() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
-    fixed_ip_v4 = "10.0.0.135"
+    uuid = vkcs_networking_network.base.id
+    fixed_ip_v4 = "192.168.199.135"
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceStopBeforeDestroy() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   stop_before_destroy = true
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceMetadataRemove1() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   metadata = {
@@ -1119,15 +1197,24 @@ resource "vkcs_compute_instance" "instance_1" {
     abc = "def"
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceMetadataRemove2() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   metadata = {
@@ -1135,28 +1222,46 @@ resource "vkcs_compute_instance" "instance_1" {
     ghi = "jkl"
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceForceDelete() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   force_delete = true
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceTimeout() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
 
@@ -1164,22 +1269,38 @@ resource "vkcs_compute_instance" "instance_1" {
     create = "10m"
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
-const testAccComputeInstanceNetworkModeNone = `
+func testAccComputeInstanceNetworkModeNone() string {
+	return fmt.Sprintf(`
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
   name = "test-instance-1"
 
   network_mode = "none"
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`
+`, testAccBaseFlavor, testAccBaseImage)
+}
 
 func testAccComputeInstanceNetworkNameToID() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
 }
@@ -1194,25 +1315,33 @@ resource "vkcs_networking_subnet" "subnet_1" {
 }
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.subnet_1"]
+  depends_on = ["vkcs_networking_subnet.base", "vkcs_networking_subnet.subnet_1"]
 
   name = "instance_1"
   security_groups = ["default"]
 
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
 
   network {
     name = "${vkcs_networking_network.network_1.name}"
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceCrazyNICs() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
 }
@@ -1285,6 +1414,7 @@ resource "vkcs_networking_port" "port_4" {
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = [
+	"vkcs_networking_subnet.base",
     "vkcs_networking_subnet.subnet_1",
     "vkcs_networking_subnet.subnet_2",
     "vkcs_networking_port.port_1",
@@ -1295,7 +1425,7 @@ resource "vkcs_compute_instance" "instance_1" {
   security_groups = ["default"]
 
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
 
   network {
@@ -1333,96 +1463,162 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     port = "${vkcs_networking_port.port_4.id}"
   }
+
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceStateActive() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   power_state = "active"
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceStateShutoff() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   power_state = "shutoff"
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceStateShelve() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   power_state = "shelved_offloaded"
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceTagsCreate() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
   tags = ["tag1", "tag2", "tag3"]
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceTagsAdd() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
   tags = ["tag1", "tag2", "tag3", "tag4"]
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceTagsDelete() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
   tags = ["tag2", "tag3"]
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeInstanceTagsClear() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }

@@ -10,7 +10,6 @@ import (
 
 func TestAccNetworkingRouterDataSource_name(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{

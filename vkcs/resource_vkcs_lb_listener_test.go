@@ -14,7 +14,6 @@ func TestAccLBListener_basic(t *testing.T) {
 	var listener listeners.Listener
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLB(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBListenerDestroy,
 		Steps: []resource.TestStep{
@@ -43,9 +42,6 @@ func TestAccLBListener_octavia(t *testing.T) {
 	var listener listeners.Listener
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckLB(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBListenerDestroy,
 		Steps: []resource.TestStep{
@@ -90,9 +86,6 @@ func TestAccLBListener_octavia_udp(t *testing.T) {
 	var listener listeners.Listener
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckLB(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBListenerDestroy,
 		Steps: []resource.TestStep{
@@ -112,9 +105,6 @@ func TestAccLBListenerConfig_octavia_insert_headers(t *testing.T) {
 	var listener listeners.Listener
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckLB(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBListenerDestroy,
 		Steps: []resource.TestStep{

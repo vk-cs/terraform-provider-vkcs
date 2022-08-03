@@ -15,7 +15,6 @@ func TestAccComputeKeypair_basic(t *testing.T) {
 	var keypair keypairs.KeyPair
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeKeypairDestroy,
 		Steps: []resource.TestStep{
@@ -36,7 +35,6 @@ func TestAccComputeKeypair_generatePrivate(t *testing.T) {
 	privateKeyRe := regexp.MustCompile(`.*BEGIN RSA PRIVATE KEY.*`)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeKeypairDestroy,
 		Steps: []resource.TestStep{
