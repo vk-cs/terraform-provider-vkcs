@@ -10,7 +10,6 @@ func TestAccComputeInstance_importBasic(t *testing.T) {
 	resourceName := "vkcs_compute_instance.instance_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -35,7 +34,6 @@ func TestAccComputeInstance_importbootFromVolumeForceNew_1(t *testing.T) {
 	resourceName := "vkcs_compute_instance.instance_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -58,7 +56,6 @@ func TestAccComputeInstance_importbootFromVolumeImage(t *testing.T) {
 	resourceName := "vkcs_compute_instance.instance_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{

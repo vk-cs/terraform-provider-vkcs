@@ -10,7 +10,6 @@ func TestAccSFSSecurityService_importBasic(t *testing.T) {
 	resourceName := "vkcs_sharedfilesystem_securityservice.securityservice_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckSFS(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckSFSSecurityServiceDestroy,
 		Steps: []resource.TestStep{

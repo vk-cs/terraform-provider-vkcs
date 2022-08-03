@@ -16,9 +16,6 @@ import (
 func TestAccVPNaaSGroup_basic(t *testing.T) {
 	var group endpointgroups.EndpointGroup
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckVPN(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckEndpointGroupDestroy,
 		Steps: []resource.TestStep{
@@ -38,9 +35,6 @@ func TestAccVPNaaSGroup_basic(t *testing.T) {
 func TestAccVPNaaSGroup_update(t *testing.T) {
 	var group endpointgroups.EndpointGroup
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckVPN(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckEndpointGroupDestroy,
 		Steps: []resource.TestStep{

@@ -30,7 +30,6 @@ func TestAccBlockStorageSnapshotDataSource_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckBlockStorage(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{

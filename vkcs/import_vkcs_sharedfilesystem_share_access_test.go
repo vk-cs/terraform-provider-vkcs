@@ -13,7 +13,6 @@ func TestAccSFSShareAccess_importBasic(t *testing.T) {
 	shareAccessName := "vkcs_sharedfilesystem_share_access.share_access_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckSFS(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckSFSShareAccessDestroy,
 		Steps: []resource.TestStep{

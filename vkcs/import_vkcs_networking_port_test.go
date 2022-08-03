@@ -10,7 +10,6 @@ func TestAccNetworkingPort_importBasic(t *testing.T) {
 	resourceName := "vkcs_networking_port.port_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -34,7 +33,6 @@ func TestAccNetworkingPort_importAllowedAddressPairs(t *testing.T) {
 	resourceName := "vkcs_networking_port.instance_port"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -58,7 +56,6 @@ func TestAccNetworkingPort_importAllowedAddressPairsNoMAC(t *testing.T) {
 	resourceName := "vkcs_networking_port.instance_port"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -82,7 +79,6 @@ func TestAccNetworkingPort_importDHCPOpts(t *testing.T) {
 	resourceName := "vkcs_networking_port.port_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{

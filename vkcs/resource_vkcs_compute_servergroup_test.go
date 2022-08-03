@@ -15,7 +15,6 @@ func TestAccComputeServerGroup_basic(t *testing.T) {
 	var sg servergroups.ServerGroup
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeServerGroupDestroy,
 		Steps: []resource.TestStep{
@@ -38,7 +37,6 @@ func TestAccComputeServerGroup_affinity(t *testing.T) {
 	var sg servergroups.ServerGroup
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeServerGroupDestroy,
 		Steps: []resource.TestStep{
@@ -63,7 +61,6 @@ func TestAccComputeServerGroup_soft_affinity(t *testing.T) {
 	var sg servergroups.ServerGroup
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeServerGroupDestroy,
 		Steps: []resource.TestStep{
@@ -159,40 +156,58 @@ resource "vkcs_compute_servergroup" "sg_1" {
 
 func testAccComputeServerGroupAffinity() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_servergroup" "sg_1" {
   name = "sg_1"
   policies = ["affinity"]
 }
 
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   scheduler_hints {
     group = "${vkcs_compute_servergroup.sg_1.id}"
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeServerGroupSoftAffinity() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_servergroup" "sg_1" {
   name = "sg_1"
   policies = ["soft-affinity"]
 }
 
 resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
   security_groups = ["default"]
   scheduler_hints {
     group = "${vkcs_compute_servergroup.sg_1.id}"
   }
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }

@@ -19,7 +19,6 @@ func TestAccNetworkingSubnetRoute_basic(t *testing.T) {
 	)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
