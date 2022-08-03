@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.1.12
+- Removed image_id attribute from resource_vkcs_images_image and hidden attribute from vkcs_images_image resource and data_source
+
 #### v0.1.11
 - Fixed error of creating resource_vkcs_blockstorage_volume with high-iops volume type
 
