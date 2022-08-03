@@ -66,8 +66,6 @@ The following arguments are supported:
 
 * `value_specs` - (Optional) Map of additional options.
 
-* `tags` - (Optional) A set of string tags for the floating IP.
-
 * `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
 ## Attributes Reference
@@ -81,9 +79,6 @@ The following attributes are exported:
 * `port_id` - ID of associated port.
 * `tenant_id` - the ID of the tenant in which to create the floating IP.
 * `fixed_ip` - The fixed IP which the floating IP maps to.
-* `tags` - See Argument Reference above.
-* `all_tags` - The collection of tags assigned on the floating IP, which have
-  been explicitly and implicitly added.
 * `sdn` - See Argument Reference above.
 
 ## Import
