@@ -151,6 +151,7 @@ type dbClusterInstanceResp struct {
 	Flavor            *links     `json:"flavor"`
 	GaVersion         string     `json:"ga_version"`
 	ID                string     `json:"id"`
+	IP                *[]string  `json:"ip"`
 	Links             *[]link    `json:"links"`
 	Name              string     `json:"name"`
 	Role              string     `json:"role"`

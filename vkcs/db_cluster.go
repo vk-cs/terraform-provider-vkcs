@@ -24,6 +24,88 @@ func flattenDatabaseClusterShard(inst dbClusterInstanceResp) map[string]interfac
 	return newShard
 }
 
+func flattenDatabaseClusterInstances(insts []dbClusterInstanceResp) []map[string]interface{} {
+	instances := make([]map[string]interface{}, len(insts))
+	for i, inst := range insts {
+		instances[i] = flattenDatabaseClusterInstance(inst)
+	}
+
+	return instances
+}
+
+func flattenDatabaseClusterInstance(inst dbClusterInstanceResp) map[string]interface{} {
+	instance := make(map[string]interface{})
+	instance["instance_id"] = inst.ID
+	instance["ip"] = inst.IP
+	instance["role"] = inst.Role
+
+	return instance
+}
+
+func expandDatabaseClusterShrinkOptions(v []interface{}) []string {
+	opts := make([]string, len(v))
+	for i, opt := range v {
+		opts[i] = opt.(string)
+	}
+	return opts
+}
+
+func databaseClusterDetermineShrinkedInstances(toDelete int, shrinkOptions []string, instances []dbClusterInstanceResp) ([]dbClusterShrinkOpts, error) {
+	ids := []dbClusterShrinkOpts{}
+	foundIDs := 0
+	if len(shrinkOptions) == 0 {
+		for _, instance := range instances {
+			if instance.Role != dbClusterInstanceRoleLeader {
+				ids = append(ids, dbClusterShrinkOpts{ID: instance.ID})
+				foundIDs++
+				if foundIDs == toDelete {
+					break
+				}
+			}
+		}
+		if foundIDs != toDelete {
+			return nil, fmt.Errorf("not enough instances to shrink cluster")
+		}
+	} else {
+		err := databaseClusterValidateShrinkOptions(shrinkOptions, instances)
+		if err != nil {
+			return nil, fmt.Errorf("invalid shrink options: %s", err)
+		}
+		for _, instance := range instances {
+			needToRemain := false
+			for _, opt := range shrinkOptions {
+				if instance.ID == opt {
+					needToRemain = true
+				}
+			}
+			if !needToRemain {
+				ids = append(ids, dbClusterShrinkOpts{ID: instance.ID})
+				foundIDs++
+			}
+		}
+		if foundIDs != toDelete {
+			return nil, fmt.Errorf("invalid shrink options: not enough instances to delete")
+		}
+	}
+
+	return ids, nil
+}
+
+func databaseClusterValidateShrinkOptions(shrinkOptions []string, instances []dbClusterInstanceResp) error {
+	for _, opt := range shrinkOptions {
+		optIsValid := false
+		for _, instance := range instances {
+			if instance.ID == opt {
+				optIsValid = true
+			}
+		}
+		if !optIsValid {
+			return fmt.Errorf("cluster does not have instance: %s", opt)
+		}
+	}
+	return nil
+}
+
 func getClusterStatus(c *dbClusterResp) string {
 	instancesStatus := string(dbInstanceStatusActive)
 	for _, inst := range c.Instances {
