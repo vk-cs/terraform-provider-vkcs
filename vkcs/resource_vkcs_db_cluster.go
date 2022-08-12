@@ -26,6 +26,10 @@ var (
 	dbClusterStatusBackup             dbClusterStatus = "BACKUP"
 )
 
+const (
+	dbClusterInstanceRoleLeader string = "leader"
+)
+
 func resourceDatabaseCluster() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceDatabaseClusterCreate,
@@ -359,6 +363,45 @@ func resourceDatabaseCluster() *schema.Resource {
 				},
 				Description: "Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4**",
 			},
+
+			"shrink_options": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Used only for shrinking cluster. List of IDs of instances that should remain after shrink. If no options are supplied, shrink operation will choose first non-leader instance to delete.",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return true
+				},
+			},
+
+			// Computed values
+			"instances": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"instance_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The id of the instance.",
+						},
+						"ip": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Description: "IP address of the instance.",
+						},
+						"role": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The role of the instance in cluster.",
+						},
+					},
+				},
+				Description: "Cluster instances info.",
+			},
 		},
 		Description: "Provides a db cluster resource. This can be used to create, modify and delete db cluster for galera_mysql, postgresql, tarantool datastores.",
 	}
@@ -553,6 +596,8 @@ func resourceDatabaseClusterRead(ctx context.Context, d *schema.ResourceData, me
 			d.Set("wal_disk_autoexpand", flattenDatabaseInstanceAutoExpand(cluster.WalAutoExpand, cluster.WalMaxDiskSize))
 		}
 	}
+
+	d.Set("instances", flattenDatabaseClusterInstances(cluster.Instances))
 
 	backupSchedule, err := dbClusterGetBackupSchedule(DatabaseV1Client, d.Id()).extract()
 	if err != nil {
@@ -809,13 +854,21 @@ func resourceDatabaseClusterUpdate(ctx context.Context, d *schema.ResourceData, 
 				return diag.Errorf("error waiting for vkcs_db_cluster %s to become ready: %s", d.Id(), err)
 			}
 		} else {
+			rawShrinkOptions := d.Get("shrink_options").([]interface{})
+			shrinkOptions := expandDatabaseClusterShrinkOptions(rawShrinkOptions)
+			if len(shrinkOptions) > 0 && len(shrinkOptions) != new.(int) {
+				return diag.Errorf("invalid shrink options: number of instances in shrink options should equal new cluster size")
+			}
+
 			cluster, err := dbClusterGet(DatabaseV1Client, d.Id()).extract()
 			if err != nil {
 				return diag.FromErr(checkDeleted(d, err, "Error retrieving vkcs_db_cluster"))
 			}
-			ids := make([]dbClusterShrinkOpts, old.(int)-new.(int))
-			for i := 0; i < len(ids); i++ {
-				ids[i].ID = cluster.Instances[i].ID
+
+			toDelete := old.(int) - new.(int)
+			ids, err := databaseClusterDetermineShrinkedInstances(toDelete, shrinkOptions, cluster.Instances)
+			if err != nil {
+				return diag.Errorf("error determining instances to shrink: %s", err)
 			}
 
 			shrinkClusterOpts := dbClusterShrinkClusterOpts{
