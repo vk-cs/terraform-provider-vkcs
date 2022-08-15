@@ -215,8 +215,8 @@ func resourceImagesImageUpdateComputedAttributes(_ context.Context, diff *schema
 
 // v - slice of images to filter
 // p - field "properties" of schema.Resource from dataSourceImagesImageIDs
-//	or dataSourceImagesImage. If p is empty no filtering applies and the
-//	function returns the v.
+// or dataSourceImagesImage. If p is empty no filtering applies and the
+// function returns the v.
 func imagesFilterByProperties(v []images.Image, p map[string]string) []images.Image {
 	var result []images.Image
 
