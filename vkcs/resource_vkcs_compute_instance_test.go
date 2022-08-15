@@ -271,7 +271,7 @@ func TestAccComputeInstance_blockDeviceExistingVolume(t *testing.T) {
 	})
 }
 
-//TODO: verify the personality really exists on the instance.
+// TODO: verify the personality really exists on the instance.
 func TestAccComputeInstance_personality(t *testing.T) {
 	var instance servers.Server
 
