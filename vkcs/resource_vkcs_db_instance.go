@@ -93,37 +93,42 @@ func resourceDatabaseInstance() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "Region to create resource in.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The name of the instance. Changing this creates a new instance",
 			},
 
 			"flavor_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
-				Computed: false,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    false,
+				Computed:    false,
+				Description: "The ID of flavor for the instance.",
 			},
 
 			"size": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: false,
-				Computed: false,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    false,
+				Computed:    false,
+				Description: "Size of the instance volume.",
 			},
 
 			"volume_type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-				Computed: false,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Computed:    false,
+				Description: "The type of the instance volume. Changing this creates a new instance.",
 			},
 
 			"wal_volume": {
@@ -134,14 +139,16 @@ func resourceDatabaseInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"size": {
-							Type:     schema.TypeInt,
-							Required: true,
-							ForceNew: false,
+							Type:        schema.TypeInt,
+							Required:    true,
+							ForceNew:    false,
+							Description: "Size of the instance wal volume.",
 						},
 						"volume_type": {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "The type of the instance wal volume.",
 						},
 						"autoexpand": {
 							Type:          schema.TypeBool,
@@ -149,6 +156,7 @@ func resourceDatabaseInstance() *schema.Resource {
 							ForceNew:      false,
 							Deprecated:    "Please, use wal_disk_autoexpand block instead",
 							ConflictsWith: []string{"wal_disk_autoexpand.0.autoexpand"},
+							Description:   "Indicates whether wal volume autoresize is enabled. ***Deprecated***. Please, use wal_disk_autoexpand block instead.",
 						},
 						"max_disk_size": {
 							Type:          schema.TypeInt,
@@ -156,9 +164,11 @@ func resourceDatabaseInstance() *schema.Resource {
 							ForceNew:      false,
 							Deprecated:    "Please, use wal_disk_autoexpand block instead",
 							ConflictsWith: []string{"wal_disk_autoexpand.0.max_disk_size"},
+							Description:   "Maximum disk size for wal volume autoresize. ***Deprecated***. Please, use wal_disk_autoexpand block instead.",
 						},
 					},
 				},
+				Description: "Object that represents wal volume of the instance. Changing this creates a new instance.",
 			},
 
 			"datastore": {
@@ -169,17 +179,20 @@ func resourceDatabaseInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"version": {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "Version of the datastore. Changing this creates a new instance.",
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "Type of the datastore. Changing this creates a new instance.",
 						},
 					},
 				},
+				Description: "Object that represents datastore of the instance. Changing this creates a new instance.",
 			},
 
 			"network": {
@@ -189,36 +202,42 @@ func resourceDatabaseInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"uuid": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The id of the network. Changing this creates a new instance.",
 						},
 						"port": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The port id of the network. Changing this creates a new instance.",
 						},
 						"fixed_ip_v4": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The IPv4 address. Changing this creates a new instance.",
 						},
 					},
 				},
+				Description: "Object that represents network of the instance. Changing this creates a new instance.",
 			},
 
 			"configuration_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: false,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    false,
+				ForceNew:    false,
+				Description: "The id of the configuration attached to instance.",
 			},
 
 			"replica_of": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: false,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    false,
+				ForceNew:    false,
+				Description: "ID of the instance, that current instance is replica of.",
 			},
 
 			"root_enabled": {
@@ -226,6 +245,7 @@ func resourceDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				ForceNew:      false,
 				ConflictsWith: []string{"replica_of"},
+				Description:   "Indicates whether root user is enabled for the instance.",
 			},
 
 			"root_password": {
@@ -235,27 +255,31 @@ func resourceDatabaseInstance() *schema.Resource {
 				Computed:      true,
 				ForceNew:      false,
 				ConflictsWith: []string{"replica_of"},
+				Description:   "Password for the root user of the instance. If this field is empty and root user is enabled, then after creation of the instance this field will contain auto-generated root user password.",
 			},
 
 			"availability_zone": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: false,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    false,
+				ForceNew:    true,
+				Description: "The name of the availability zone of the instance. Changing this creates a new instance.",
 			},
 
 			"floating_ip_enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: false,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    false,
+				ForceNew:    true,
+				Description: "Indicates whether floating ip is created for instance. Changing this creates a new instance.",
 			},
 
 			"keypair": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: false,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    false,
+				ForceNew:    true,
+				Description: "Name of the keypair to be attached to instance. Changing this creates a new instance.",
 			},
 
 			"disk_autoexpand": {
@@ -267,17 +291,20 @@ func resourceDatabaseInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"autoexpand": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							ForceNew: false,
+							Type:        schema.TypeBool,
+							Optional:    true,
+							ForceNew:    false,
+							Description: "Indicates whether autoresize is enabled.",
 						},
 						"max_disk_size": {
-							Type:     schema.TypeInt,
-							Optional: true,
-							ForceNew: false,
+							Type:        schema.TypeInt,
+							Optional:    true,
+							ForceNew:    false,
+							Description: "Maximum disk size for autoresize.",
 						},
 					},
 				},
+				Description: "Object that represents autoresize properties of the instance.",
 			},
 
 			"wal_disk_autoexpand": {
@@ -292,15 +319,18 @@ func resourceDatabaseInstance() *schema.Resource {
 							Optional:      true,
 							ForceNew:      false,
 							ConflictsWith: []string{"wal_volume.0.autoexpand"},
+							Description:   "Indicates whether wal volume autoresize is enabled.",
 						},
 						"max_disk_size": {
 							Type:          schema.TypeInt,
 							Optional:      true,
 							ForceNew:      false,
 							ConflictsWith: []string{"wal_volume.0.max_disk_size"},
+							Description:   "Maximum disk size for wal volume autoresize.",
 						},
 					},
 				},
+				Description: "Object that represents autoresize properties of the instance wal volume.",
 			},
 
 			"capabilities": {
@@ -310,17 +340,20 @@ func resourceDatabaseInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of the capability to apply.",
 						},
 						"settings": {
-							Type:     schema.TypeMap,
-							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-							Set:      schema.HashString,
+							Type:        schema.TypeMap,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Description: "Map of key-value settings of the capability.",
 						},
 					},
 				},
+				Description: "Object that represents capability applied to instance. There can be several instances of this object (see example).",
 			},
 			"restore_point": {
 				Type:     schema.TypeList,
@@ -330,17 +363,20 @@ func resourceDatabaseInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"backup_id": {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "ID of the backup.",
 						},
 						"target": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "Used only for restoring from postgresql PITR backups. Timestamp of needed backup in format \"2021-10-06 01:02:00\". You can specify \"latest\" to use most recent backup.",
 						},
 					},
 				},
+				Description: "Object that represents backup to restore instance from. **New since v.0.1.4**.",
 			},
 
 			"backup_schedule": {
@@ -351,29 +387,36 @@ func resourceDatabaseInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Name of the schedule.",
 						},
 						"start_hours": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Hours part of timestamp of initial backup.",
 						},
 						"start_minutes": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Minutes part of timestamp of initial backup.",
 						},
 						"interval_hours": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.",
 						},
 						"keep_count": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Number of backups to be stored.",
 						},
 					},
 				},
+				Description: "Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4**.",
 			},
 		},
+		Description: "Provides a db instance resource. This can be used to create, modify and delete db instance.",
 	}
 }
 

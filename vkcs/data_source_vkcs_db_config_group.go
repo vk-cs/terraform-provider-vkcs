@@ -14,8 +14,9 @@ func dataSourceDatabaseConfigGroup() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"config_group_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The UUID of the config_group.",
 			},
 			"datastore": {
 				Type:     schema.TypeList,
@@ -23,38 +24,47 @@ func dataSourceDatabaseConfigGroup() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"version": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Version of the datastore.",
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Type of the datastore.",
 						},
 					},
 				},
+				Description: "Object that represents datastore of backup",
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the config group.",
 			},
 			"values": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Map of configuration parameters in format \"key\": \"value\".",
 			},
 			"updated": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Timestamp of config group's last update.",
 			},
 			"created": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Timestamp of config group's creation.",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The description of the config group.",
 			},
 		},
+		Description: "Use this data source to get the information on a db config group resource.\n**New since v.0.1.7**.",
 	}
 }
 

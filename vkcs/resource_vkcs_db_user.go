@@ -27,28 +27,32 @@ func resourceDatabaseUser() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    false,
+				Description: "The name of the user. Changing this creates a new user.",
 			},
 
 			"dbms_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "ID of the instance or cluster that user is created for.",
 			},
 
 			"password": {
-				Type:      schema.TypeString,
-				Required:  true,
-				ForceNew:  false,
-				Sensitive: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    false,
+				Sensitive:   true,
+				Description: "The password of the user.",
 			},
 
 			"host": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "IP address of the host that user will be accessible from.",
 			},
 
 			"databases": {
@@ -59,13 +63,16 @@ func resourceDatabaseUser() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Description: "List of names of the databases, that user is created for.",
 			},
 
 			"dbms_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of dbms for the user, can be \"instance\" or \"cluster\".",
 			},
 		},
+		Description: "Provides a db user resource. This can be used to create, modify and delete db user.",
 	}
 }
 

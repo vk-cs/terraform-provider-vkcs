@@ -1,0 +1,27 @@
+---
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a db database.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Databases can be imported using the `dbms_id/name`
+
+{{codefile "shell" .ImportFile}}
+
+After the import you can use ```terraform show``` to view imported fields and write their values to your .tf file.
+
+You should at least add following fields to your .tf file:
+
+`name, dbms_id`

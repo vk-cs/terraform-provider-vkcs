@@ -1,54 +1,53 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: db_backup"
-subcategory: ""
+page_title: "vkcs: vkcs_db_backup"
 description: |-
   Get information on a db backup.
 ---
 
-# vkcs\_db\_backup
+# vkcs_db_backup
 
 Use this data source to get the information on a db backup resource.
-**New since v.0.1.4**.
 
 ## Example Usage
 
 ```terraform
-
 data "vkcs_db_backup" "db-backup" {
-  id = "d27fbf1a-373a-479c-b951-31041756f289"
+  backup_id = "d27fbf1a-373a-479c-b951-31041756f289"
 }
 ```
+
 ## Argument Reference
+- `backup_id` **String** (***Required***) The UUID of the backup.
 
-The following arguments are supported:
+- `description` **String** (*Optional*) The description of the backup
 
-* `id` - (Required) The UUID of the backup.
 
-## Attributes reference
+## Attributes Reference
+- `backup_id` **String** See Argument Reference above.
 
-The following attributes are exported:
+- `description` **String** See Argument Reference above.
 
-* `name` - The name of the backup. Changing this creates a new backup
+- `created` **String** Backup creation timestamp
 
-* `dbms_id` - ID of the instance or cluster, to create backup of
+- `datastore` **Object** Object that represents datastore of backup
 
-* `description` - The description of the backup
+- `dbms_id` **String** ID of the backed up instance or cluster
 
-* `container_prefix` - Prefix of S3 bucket (<prefix>-<project_id>) to store backup data. Default: databasebackups
+- `dbms_type` **String** Type of dbms of the backup, can be "instance" or "cluster".
 
-* `location_ref` - Location of backup data on backup storage
+- `id` **String** ID of the resource.
 
-* `created` - Backup creation timestamp
+- `location_ref` **String** Location of backup data on backup storage
 
-* `updated` - Timestamp of backup's last update
+- `meta` **String** Metadata of the backup
 
-* `size` - Backup's volume size
+- `name` **String** The name of the backup.
 
-* `wal_size` - Backup's WAL volume size
+- `size` **Number** Backup's volume size
 
-* `datastore` - Object that represents datastore of backup
-    * `type` - Type of the datastore.
-    * `version` - Version of the datastore.
+- `updated` **String** Timestamp of backup's last update
 
-* `meta` - Metadata of the backup
+- `wal_size` **Number** Backup's WAL volume size
+
+

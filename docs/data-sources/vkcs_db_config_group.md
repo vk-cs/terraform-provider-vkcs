@@ -1,12 +1,11 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: db_config_group"
-subcategory: ""
+page_title: "vkcs: vkcs_db_config_group"
 description: |-
   Get information on a db config group.
 ---
 
-# vkcs\_db\_config_group
+# vkcs_db_config_group
 
 Use this data source to get the information on a db config group resource.
 **New since v.0.1.7**.
@@ -14,31 +13,30 @@ Use this data source to get the information on a db config group resource.
 ## Example Usage
 
 ```terraform
-
 data "vkcs_db_config_group" "db-config-group" {
   config_group_id = "7a914e84-8fcf-46f8-bbe5-a8337ba090f4"
 }
 ```
+
 ## Argument Reference
+- `config_group_id` **String** (***Required***) The UUID of the config_group.
 
-The following arguments are supported:
 
-* `config_group_id` - (Required) The UUID of the config_group.
+## Attributes Reference
+- `config_group_id` **String** See Argument Reference above.
 
-## Attributes reference
+- `created` **String** Timestamp of config group's creation.
 
-The following attributes are exported:
+- `datastore` **Object** Object that represents datastore of backup
 
-* `name` - The name of the config group.
+- `description` **String** The description of the config group.
 
-* `datastore` - Object that represents datastore of backup
-    * `type` - Type of the datastore.
-    * `version` - Version of the datastore.
+- `id` **String** ID of the resource.
 
-* `description` - The description of the config group.
+- `name` **String** The name of the config group.
 
-* `values` - Map of configuration parameters in format "key": "value".  
+- `updated` **String** Timestamp of config group's last update.
 
-* `created` - Timestamp of config group's creation
+- `values` <strong>Map of </strong>**String** Map of configuration parameters in format "key": "value".
 
-* `updated` - Timestamp of config group's last update
+

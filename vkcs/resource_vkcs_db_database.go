@@ -26,34 +26,40 @@ func resourceDatabaseDatabase() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The name of the database. Changing this creates a new database.",
 			},
 
 			"dbms_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "ID of the instance or cluster that database is created for.",
 			},
 
 			"charset": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Type of charset used for the database. Changing this creates a new database.",
 			},
 
 			"collate": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Collate option of the database.  Changing this creates a new database.",
 			},
 
 			"dbms_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of dbms for the database, can be \"instance\" or \"cluster\".",
 			},
 		},
+		Description: "Provides a db database resource. This can be used to create, modify and delete db databases.",
 	}
 }
 

@@ -1,0 +1,27 @@
+---
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a db config group.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}
+
+## Updating config group
+
+While it is possible to create/delete config groups that are not attached to any instance or cluster, in order to update config group, it must be attached.
+
+## Import
+
+Config groups can be imported using the `id`, e.g.
+
+{{codefile "shell" .ImportFile}}
+
+After the import you can use ```terraform show``` to view imported fields and write their values to your .tf file.

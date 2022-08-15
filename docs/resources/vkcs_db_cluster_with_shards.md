@@ -1,19 +1,17 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: db_cluster_with_shards"
-subcategory: ""
+page_title: "vkcs: vkcs_db_cluster_with_shards"
 description: |-
   Manages a db cluster with shards.
 ---
 
-# vkcs\_db\_cluster\_with\_shards (Resource)
+# vkcs_db_cluster_with_shards
 
 Provides a db cluster with shards resource. This can be used to create, modify and delete db cluster with shards for clickhouse datastore.
 
 ## Example Usage
 ### Basic cluster with shards
 ```terraform
-
 resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
   name = "db-cluster-with-shards"
 
@@ -23,35 +21,42 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
   }
 
   shard {
-    size        = 2
+    availability_zone = "GZ1"
+    size        = 1
     shard_id    = "shard0"
-    flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
+    flavor_id   = data.vkcs_compute_flavor.db.id
 
-    volume_size = 10
+    volume_size = 8
     volume_type = "ceph-ssd"
-    
+
     network {
-      uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
+      uuid = vkcs_networking_network.db.id
     }
   }
 
   shard {
-    size        = 2
+    availability_zone = "GZ1"
+    size        = 1
     shard_id    = "shard1"
-    flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
+    flavor_id   = data.vkcs_compute_flavor.db.id
     
-    volume_size = 10
+    volume_size = 8
     volume_type = "ceph-ssd"
 
     network {
-      uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
+      uuid = vkcs_networking_network.db.id
     }
   }
+
+  depends_on = [
+    vkcs_networking_network.db,
+    vkcs_networking_subnet.db
+  ]
 }
 ```
+
 ### Cluster with shards restored from backup
 ```terraform
-
 resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
   name = "db-cluster-with-shards"
 
@@ -91,52 +96,138 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
 }
 ```
 ## Argument Reference
+- `datastore` (***Required***) Object that represents datastore of the cluster. Changing this creates a new cluster.
+  - `type` **String** (***Required***) Type of the datastore. Changing this creates a new cluster. Type of the datastore must be "clickhouse".
 
-* `name` - (Required) The name of the cluster. Changing this creates a new cluster
+  - `version` **String** (***Required***) Version of the datastore. Changing this creates a new cluster.
 
-* `datastore` - (Required) Object that represents datastore of the cluster. Changing this creates a new cluster. It has following attributes:
-    * `type` - (Required) Type of the datastore. Changing this creates a new cluster. Type of the datastore must be "clickhouse".
-    * `version` - (Required) Version of the datastore. Changing this creates a new cluster.
+- `name` **String** (***Required***) The name of the cluster. Changing this creates a new cluster.
 
-* `keypair` - Name of the keypair to be attached to cluster. Changing this creates a new cluster.
+- `shard` (***Required***) Object that represents cluster shard. There can be several instances of this object.
+  - `flavor_id` **String** (***Required***) The ID of flavor for the cluster shard.
 
-* `floating_ip_enabled` - Boolean field that indicates whether floating ip is created for cluster. Changing this creates a new cluster.
+  - `shard_id` **String** (***Required***) The ID of the shard. Changing this creates a new cluster.
 
-* `root_enabled` - Boolean field that indicates whether root user is enabled for the cluster.
+  - `size` **Number** (***Required***) The number of instances in the cluster shard.
 
-* `root_password` - Password for the root user of the cluster.
+  - `volume_size` **Number** (***Required***) Size of the cluster shard instance volume.
 
-* `configuration_id` - The id of the configuration attached to cluster.
+  - `volume_type` **String** (***Required***) The type of the cluster shard instance volume.
 
-* `capabilities` - Object that represents capability applied to cluster. There can be several instances of this object. Each instance of this object has following attributes:
-    * `name` - (Required) The name of the capability to apply.
-    * `settings` - Map of key-value settings of the capability.
+  - `availability_zone` **String** (*Optional*) The name of the availability zone of the cluster shard. Changing this creates a new cluster.
 
-* `shard` - (Required) Object that represents cluster shard. There can be several instances of this object. Each instance of this object has following attributes:
-    * `size` - (Required) The number of instances in the cluster shard.
-    * `shard_id` - (Required) The ID of the shard. Changing this creates a new cluster.
-    * `flavor_id` - (Required) The ID of flavor for the cluster shard.
-    * `availability_zone` - The name of the availability zone of the cluster shard. Changing this creates a new cluster.
-    * `volume_size` - (Required) Size of the cluster shard instance volume.
-    * `volume_type` - (Required) The type of the cluster shard instance volume.
-    * `wal_volume` - Object that represents wal volume of the cluster. It has following attributes:
-        * `size` - (Required) Size of the instance wal volume.
-        * `volume_type` - (Required) The type of the cluster wal volume.
-        * `autoexpand` - Boolean field that indicates whether wal volume autoresize is enabled.
-        * `max_disk_size` - Maximum disk size for wal volume autoresize.
-    * `network` -  Object that represents network of the cluster shard. Changing this creates a new cluster. It has following attributes: 
-        * `uuid` - The id of the network. Changing this creates a new cluster.
-        * `port` - The port id of the network. Changing this creates a new cluster.
+  - `network` (*Optional*)
+    - `port` **String** (*Optional*) The port id of the network. Changing this creates a new cluster.
 
-* `restore_point` - Object that represents backup to restore instance from. **New since v.0.1.4**. It has following attributes:
-    * `backup_id` - (Required) ID of the backup.
+    - `uuid` **String** (*Optional*) The id of the network. Changing this creates a new cluster.
+
+  - `wal_volume` (*Optional*) Object that represents wal volume of the cluster.
+    - `size` **Number** (***Required***) Size of the instance wal volume.
+
+    - `volume_type` **String** (***Required***) The type of the cluster wal volume.
+
+- `capabilities` (*Optional*) Object that represents capability applied to cluster. There can be several instances of this object.
+  - `name` **String** (***Required***) The name of the capability to apply.
+
+  - `settings` <strong>Map of </strong>**String** (*Optional*) Map of key-value settings of the capability.
+
+- `configuration_id` **String** (*Optional*) The id of the configuration attached to cluster.
+
+- `disk_autoexpand` (*Optional*) Object that represents autoresize properties of the cluster.
+  - `autoexpand` **Boolean** (*Optional*) Indicates whether autoresize is enabled.
+
+  - `max_disk_size` **Number** (*Optional*) Maximum disk size for autoresize.
+
+- `floating_ip_enabled` **Boolean** (*Optional*) Boolean field that indicates whether floating ip is created for cluster. Changing this creates a new cluster.
+
+- `keypair` **String** (*Optional*) Name of the keypair to be attached to cluster. Changing this creates a new cluster.
+
+- `region` **String** (*Optional*) Region to create resource in.
+
+- `restore_point` (*Optional*) Object that represents backup to restore instance from. **New since v.0.1.4**.
+  - `backup_id` **String** (***Required***) ID of the backup.
+
+- `root_enabled` **Boolean** (*Optional*) Indicates whether root user is enabled for the cluster.
+
+- `root_password` **String** (*Optional* Sensitive) Password for the root user of the cluster.
+
+- `wal_disk_autoexpand` (*Optional*) Object that represents autoresize properties of wal volume of the cluster.
+  - `autoexpand` **Boolean** (*Optional*) Indicates whether wal volume autoresize is enabled.
+
+  - `max_disk_size` **Number** (*Optional*) Maximum disk size for wal volume autoresize.
+
+
+## Attributes Reference
+- `datastore`  See Argument Reference above.
+  - `type` **String** See Argument Reference above.
+
+  - `version` **String** See Argument Reference above.
+
+- `name` **String** See Argument Reference above.
+
+- `shard`  See Argument Reference above.
+  - `flavor_id` **String** See Argument Reference above.
+
+  - `shard_id` **String** See Argument Reference above.
+
+  - `size` **Number** See Argument Reference above.
+
+  - `volume_size` **Number** See Argument Reference above.
+
+  - `volume_type` **String** See Argument Reference above.
+
+  - `availability_zone` **String** See Argument Reference above.
+
+  - `network` 
+    - `port` **String** See Argument Reference above.
+
+    - `uuid` **String** See Argument Reference above.
+
+  - `wal_volume`  See Argument Reference above.
+    - `size` **Number** See Argument Reference above.
+
+    - `volume_type` **String** See Argument Reference above.
+
+- `capabilities`  See Argument Reference above.
+  - `name` **String** See Argument Reference above.
+
+  - `settings` <strong>Map of </strong>**String** See Argument Reference above.
+
+- `configuration_id` **String** See Argument Reference above.
+
+- `disk_autoexpand`  See Argument Reference above.
+  - `autoexpand` **Boolean** See Argument Reference above.
+
+  - `max_disk_size` **Number** See Argument Reference above.
+
+- `floating_ip_enabled` **Boolean** See Argument Reference above.
+
+- `keypair` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `restore_point`  See Argument Reference above.
+  - `backup_id` **String** See Argument Reference above.
+
+- `root_enabled` **Boolean** See Argument Reference above.
+
+- `root_password` **String** See Argument Reference above.
+
+- `wal_disk_autoexpand`  See Argument Reference above.
+  - `autoexpand` **Boolean** See Argument Reference above.
+
+  - `max_disk_size` **Number** See Argument Reference above.
+
+- `id` **String** ID of the resource.
+
+
 
 ## Import
 
 Clusters can be imported using the `id`, e.g.
 
-```
-$ terraform import vkcs_db_cluster_with_shards.mycluster 708a74a1-6b00-4a96-938c-28a8a6d98590
+```shell
+terraform import vkcs_db_cluster_with_shards.mycluster 708a74a1-6b00-4a96-938c-28a8a6d98590
 ```
 
 After the import you can use ```terraform show``` to view imported fields and write their values to your .tf file.
