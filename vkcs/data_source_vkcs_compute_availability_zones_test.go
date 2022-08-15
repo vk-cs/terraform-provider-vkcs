@@ -7,9 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccAvailabilityZones_basic(t *testing.T) {
+func TestAccComputeAvailabilityZones_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{

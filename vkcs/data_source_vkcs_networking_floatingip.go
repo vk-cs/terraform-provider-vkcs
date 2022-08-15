@@ -3,7 +3,6 @@ package vkcs
 import (
 	"context"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -56,18 +55,6 @@ func dataSourceNetworkingFloatingIP() *schema.Resource {
 				Optional: true,
 			},
 
-			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-
-			"all_tags": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-
 			"sdn": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -114,11 +101,6 @@ func dataSourceNetworkingFloatingIPRead(ctx context.Context, d *schema.ResourceD
 		listOpts.Status = v.(string)
 	}
 
-	tags := networkingAttributesTags(d)
-	if len(tags) > 0 {
-		listOpts.Tags = strings.Join(tags, ",")
-	}
-
 	pages, err := floatingips.List(networkingClient, listOpts).AllPages()
 	if err != nil {
 		return diag.Errorf("Unable to list vkcs_networking_floatingips: %s", err)
@@ -151,7 +133,6 @@ func dataSourceNetworkingFloatingIPRead(ctx context.Context, d *schema.ResourceD
 	d.Set("fixed_ip", fip.FixedIP)
 	d.Set("tenant_id", fip.TenantID)
 	d.Set("status", fip.Status)
-	d.Set("all_tags", fip.Tags)
 	d.Set("region", getRegion(d, config))
 	d.Set("sdn", getSDN(d))
 

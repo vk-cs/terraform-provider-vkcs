@@ -17,7 +17,6 @@ func TestAccLBLoadBalancer_basic(t *testing.T) {
 	var lb loadbalancers.LoadBalancer
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLB(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBLoadBalancerDestroy,
 		Steps: []resource.TestStep{
@@ -48,7 +47,6 @@ func TestAccLBLoadBalancer_secGroup(t *testing.T) {
 	var sg1, sg2 groups.SecGroup
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLB(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBLoadBalancerDestroy,
 		Steps: []resource.TestStep{
@@ -91,9 +89,6 @@ func TestAccLBLoadBalancer_vip_network(t *testing.T) {
 	var lb loadbalancers.LoadBalancer
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckLB(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBLoadBalancerDestroy,
 		Steps: []resource.TestStep{
@@ -112,9 +107,6 @@ func TestAccLBLoadBalancer_vip_port_id(t *testing.T) {
 	var port ports.Port
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheckLB(t)
-		},
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBLoadBalancerDestroy,
 		Steps: []resource.TestStep{

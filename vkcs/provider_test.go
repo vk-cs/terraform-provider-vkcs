@@ -17,16 +17,12 @@ import (
 var (
 	osFlavorID                 = os.Getenv("OS_FLAVOR_ID")
 	osNewFlavorID              = os.Getenv("OS_NEW_FLAVOR_ID")
-	osFlavorName               = os.Getenv("OS_FLAVOR_NAME")
-	osImageID                  = os.Getenv("OS_IMAGE_ID")
 	osNetworkID                = os.Getenv("OS_NETWORK_ID")
 	osRegionName               = os.Getenv("OS_REGION_NAME")
 	osProjectID                = os.Getenv("OS_PROJECT_ID")
-	osAuthURL                  = os.Getenv("OS_AUTH_URL")
 	osPoolName                 = os.Getenv("OS_POOL_NAME")
 	osExtGwID                  = os.Getenv("OS_EXTGW_ID")
 	osPrivateDNSDomain         = os.Getenv("OS_PRIVATE_DNS_DOMAIN")
-	osVolumeType               = os.Getenv("OS_VOLUME_TYPE")
 	osKeypairName              = os.Getenv("OS_KEYPAIR_NAME")
 	osDBDatastoreVersion       = os.Getenv("OS_DB_DATASTORE_VERSION")
 	osDBDatastoreType          = os.Getenv("OS_DB_DATASTORE_TYPE")
@@ -48,95 +44,8 @@ func init() {
 	}
 }
 
-func testAccPreCheckCompute(t *testing.T) {
-	vars := map[string]interface{}{
-		"OS_FLAVOR_ID": osFlavorID,
-		"OS_IMAGE_ID":  osImageID,
-		// "OS_FLAVOR_NAME": osFlavorName,
-		"OS_NETWORK_ID":  osNetworkID,
-		"OS_REGION_NAME": osRegionName,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckImage(t *testing.T) {
-	vars := map[string]interface{}{
-		"OS_AUTH_URL":   osAuthURL,
-		"OS_IMAGE_ID":   osImageID,
-		"OS_FLAVOR_ID":  osFlavorID,
-		"OS_NETWORK_ID": osNetworkID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckLB(t *testing.T) {
-	vars := map[string]interface{}{
-		"OS_AUTH_URL":   osAuthURL,
-		"OS_IMAGE_ID":   osImageID,
-		"OS_FLAVOR_ID":  osFlavorID,
-		"OS_NETWORK_ID": osNetworkID,
-		"OS_EXTGW_ID":   osExtGwID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckNetworking(t *testing.T) {
-	vars := map[string]interface{}{
-		"OS_REGION_NAME":        osRegionName,
-		"OS_POOL_NAME":          osPoolName,
-		"OS_EXTGW_ID":           osExtGwID,
-		"OS_PRIVATE_DNS_DOMAIN": osPrivateDNSDomain,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckBlockStorage(t *testing.T) {
-	vars := map[string]interface{}{
-		"OS_REGION_NAME": osRegionName,
-		"OS_VOLUME_TYPE": osVolumeType,
-		"OS_FLAVOR_NAME": osFlavorName,
-		"OS_IMAGE_ID":    osImageID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckSFS(t *testing.T) {
-	vars := map[string]interface{}{
-		"OS_AUTH_URL":   osAuthURL,
-		"OS_IMAGE_ID":   osImageID,
-		"OS_FLAVOR_ID":  osFlavorID,
-		"OS_NETWORK_ID": osNetworkID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
 func testAccPreCheckDatabase(t *testing.T) {
 	vars := map[string]interface{}{
-		"OS_NETWORK_ID":           osNetworkID,
 		"OS_DB_DATASTORE_VERSION": osDBDatastoreVersion,
 		"OS_DB_DATASTORE_TYPE":    osDBDatastoreType,
 		"OS_FLAVOR_ID":            osFlavorID,
@@ -205,23 +114,6 @@ func testAccAuthFromEnv() (configer, error) {
 	}
 
 	return config, nil
-}
-
-func testAccPreCheckVPN(t *testing.T) {
-	vars := map[string]interface{}{
-		"OS_AUTH_URL":    osAuthURL,
-		"OS_IMAGE_ID":    osImageID,
-		"OS_FLAVOR_ID":   osFlavorID,
-		"OS_NETWORK_ID":  osNetworkID,
-		"OS_REGION_NAME": osRegionName,
-		"OS_POOL_NAME":   osPoolName,
-		"OS_EXTGW_ID":    osExtGwID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
 }
 
 func TestProvider(t *testing.T) {

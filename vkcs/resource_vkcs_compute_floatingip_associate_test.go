@@ -16,7 +16,6 @@ func TestAccComputeFloatingIPAssociate_basic(t *testing.T) {
 	var fip floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
@@ -45,7 +44,6 @@ func TestAccComputeV2FloatingIPAssociate_fixedIP(t *testing.T) {
 	var fip floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
@@ -67,7 +65,6 @@ func TestAccComputeFloatingIPAssociate_attachNew(t *testing.T) {
 	var floatingIP2 floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
@@ -98,7 +95,6 @@ func TestAccComputeFloatingIPAssociate_waitUntilAssociated(t *testing.T) {
 	var fip floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckCompute(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
@@ -190,35 +186,53 @@ func testAccCheckComputeFloatingIPAssociateAssociated(
 
 func testAccComputeFloatingIPAssociateBasic() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
+  pool = data.vkcs_networking_network.extnet.name
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
   floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
   instance_id = "${vkcs_compute_instance.instance_1.id}"
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeFloatingIPAssociateUpdate() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
+  pool = data.vkcs_networking_network.extnet.name
   description = "test"
 }
 
@@ -226,20 +240,29 @@ resource "vkcs_compute_floatingip_associate" "fip_1" {
   floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
   instance_id = "${vkcs_compute_instance.instance_1.id}"
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeFloatingIPAssociateFixedIP() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
+	pool = data.vkcs_networking_network.extnet.name
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
@@ -247,66 +270,95 @@ resource "vkcs_compute_floatingip_associate" "fip_1" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
   fixed_ip = "${vkcs_compute_instance.instance_1.access_ip_v4}"
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeFloatingIPAssociateAttachNew1() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
+  pool = data.vkcs_networking_network.extnet.name
 }
 
 resource "vkcs_networking_floatingip" "fip_2" {
+  pool = data.vkcs_networking_network.extnet.name
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
   floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
   instance_id = "${vkcs_compute_instance.instance_1.id}"
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeFloatingIPAssociateAttachNew2() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
+  pool = data.vkcs_networking_network.extnet.name
 }
 
 resource "vkcs_networking_floatingip" "fip_2" {
+  pool = data.vkcs_networking_network.extnet.name
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
   floating_ip = "${vkcs_networking_floatingip.fip_2.address}"
   instance_id = "${vkcs_compute_instance.instance_1.id}"
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }
 
 func testAccComputeFloatingIPAssociateWaitUntilAssociated() string {
 	return fmt.Sprintf(`
+%s
+
+%s
+
+%s
+
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
   security_groups = ["default"]
   network {
-    uuid = "%s"
+    uuid = vkcs_networking_network.base.id
   }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
+  pool = data.vkcs_networking_network.extnet.name
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
@@ -315,5 +367,5 @@ resource "vkcs_compute_floatingip_associate" "fip_1" {
 
   wait_until_associated = true
 }
-`, osNetworkID)
+`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
 }

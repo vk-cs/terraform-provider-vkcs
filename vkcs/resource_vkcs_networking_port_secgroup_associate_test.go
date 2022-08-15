@@ -26,7 +26,6 @@ func TestAccNetworkingPortSecGroupAssociate_update(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			// enforce = false

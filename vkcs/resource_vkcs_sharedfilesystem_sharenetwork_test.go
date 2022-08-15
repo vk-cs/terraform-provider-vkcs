@@ -20,7 +20,6 @@ func TestAccSFSShareNetwork_basic(t *testing.T) {
 	var sharenetwork2 sharenetworks.ShareNetwork
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckSFS(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckSFSShareNetworkDestroy,
 		Steps: []resource.TestStep{
@@ -57,7 +56,6 @@ func TestAccSFSShareNetwork_secservice(t *testing.T) {
 	var sharenetwork sharenetworks.ShareNetwork
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckSFS(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckSFSShareNetworkDestroy,
 		Steps: []resource.TestStep{

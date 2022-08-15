@@ -13,7 +13,6 @@ func TestAccBlockStorageSnapshot_basic(t *testing.T) {
 	var snapshot snapshots.Snapshot
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckBlockStorage(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckBlockStorageSnapshotDestroy,
 		Steps: []resource.TestStep{
@@ -130,7 +129,7 @@ resource "vkcs_blockstorage_snapshot" "snapshot_1" {
     foo = "bar"
   }
 }
-`, testAccBlockStorageVolumeBasic())
+`, testAccBlockStorageVolumeBasic)
 }
 
 func testAccBlockStorageSnapshotUpdate() string {
@@ -145,5 +144,5 @@ resource "vkcs_blockstorage_snapshot" "snapshot_1" {
     foo = "bar"
   }
 }
-`, testAccBlockStorageVolumeBasic())
+`, testAccBlockStorageVolumeBasic)
 }

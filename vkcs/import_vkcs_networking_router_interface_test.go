@@ -10,7 +10,6 @@ func TestAccNetworkingRouterInterface_importBasic_port(t *testing.T) {
 	resourceName := "vkcs_networking_router_interface.int_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingRouterInterfaceDestroy,
 		Steps: []resource.TestStep{
@@ -31,7 +30,6 @@ func TestAccNetworkingRouterInterface_importBasic_subnet(t *testing.T) {
 	resourceName := "vkcs_networking_router_interface.int_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckNetworking(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingRouterInterfaceDestroy,
 		Steps: []resource.TestStep{

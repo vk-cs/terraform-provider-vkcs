@@ -10,7 +10,6 @@ func TestAccLBListener_importBasic(t *testing.T) {
 	resourceName := "vkcs_lb_listener.listener_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLB(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBListenerDestroy,
 		Steps: []resource.TestStep{
@@ -31,7 +30,6 @@ func TestAccLBListener_importOctavia(t *testing.T) {
 	resourceName := "vkcs_lb_listener.listener_1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLB(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckLBListenerDestroy,
 		Steps: []resource.TestStep{
