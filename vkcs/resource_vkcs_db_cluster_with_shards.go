@@ -67,16 +67,18 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "Region to create resource in.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The name of the cluster. Changing this creates a new cluster.",
 			},
 
 			"datastore": {
@@ -87,9 +89,10 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"version": {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "Version of the datastore. Changing this creates a new cluster.",
 						},
 						"type": {
 							Type:     schema.TypeString,
@@ -102,44 +105,51 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 								}
 								return
 							},
+							Description: "Type of the datastore. Changing this creates a new cluster. Type of the datastore must be \"clickhouse\".",
 						},
 					},
 				},
+				Description: "Object that represents datastore of the cluster. Changing this creates a new cluster.",
 			},
 
 			"configuration_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: false,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    false,
+				ForceNew:    false,
+				Description: "The id of the configuration attached to cluster.",
 			},
 
 			"root_enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "Indicates whether root user is enabled for the cluster.",
 			},
 
 			"root_password": {
-				Type:      schema.TypeString,
-				Optional:  true,
-				Sensitive: true,
-				Computed:  true,
-				ForceNew:  false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				Computed:    true,
+				ForceNew:    false,
+				Description: "Password for the root user of the cluster.",
 			},
 
 			"floating_ip_enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: false,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    false,
+				ForceNew:    true,
+				Description: "Boolean field that indicates whether floating ip is created for cluster. Changing this creates a new cluster.",
 			},
 
 			"keypair": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: false,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    false,
+				ForceNew:    true,
+				Description: "Name of the keypair to be attached to cluster. Changing this creates a new cluster.",
 			},
 
 			"disk_autoexpand": {
@@ -150,17 +160,20 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"autoexpand": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							ForceNew: false,
+							Type:        schema.TypeBool,
+							Optional:    true,
+							ForceNew:    false,
+							Description: "Indicates whether autoresize is enabled.",
 						},
 						"max_disk_size": {
-							Type:     schema.TypeInt,
-							Optional: true,
-							ForceNew: false,
+							Type:        schema.TypeInt,
+							Optional:    true,
+							ForceNew:    false,
+							Description: "Maximum disk size for autoresize.",
 						},
 					},
 				},
+				Description: "Object that represents autoresize properties of the cluster.",
 			},
 
 			"wal_disk_autoexpand": {
@@ -171,17 +184,20 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"autoexpand": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							ForceNew: false,
+							Type:        schema.TypeBool,
+							Optional:    true,
+							ForceNew:    false,
+							Description: "Indicates whether wal volume autoresize is enabled.",
 						},
 						"max_disk_size": {
-							Type:     schema.TypeInt,
-							Optional: true,
-							ForceNew: false,
+							Type:        schema.TypeInt,
+							Optional:    true,
+							ForceNew:    false,
+							Description: "Maximum disk size for wal volume autoresize.",
 						},
 					},
 				},
+				Description: "Object that represents autoresize properties of wal volume of the cluster.",
 			},
 
 			"capabilities": {
@@ -191,17 +207,20 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of the capability to apply.",
 						},
 						"settings": {
-							Type:     schema.TypeMap,
-							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-							Set:      schema.HashString,
+							Type:        schema.TypeMap,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Description: "Map of key-value settings of the capability.",
 						},
 					},
 				},
+				Description: "Object that represents capability applied to cluster. There can be several instances of this object.",
 			},
 
 			"restore_point": {
@@ -212,12 +231,14 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"backup_id": {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "ID of the backup.",
 						},
 					},
 				},
+				Description: "Object that represents backup to restore instance from. **New since v.0.1.4**.",
 			},
 
 			"shard": {
@@ -227,35 +248,40 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"shard_id": {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "The ID of the shard. Changing this creates a new cluster.",
 						},
 
 						"size": {
-							Type:     schema.TypeInt,
-							Required: true,
-							ForceNew: false,
+							Type:        schema.TypeInt,
+							Required:    true,
+							ForceNew:    false,
+							Description: "The number of instances in the cluster shard.",
 						},
 
 						"flavor_id": {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: false,
-							Computed: false,
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    false,
+							Computed:    false,
+							Description: "The ID of flavor for the cluster shard.",
 						},
 						"volume_size": {
-							Type:     schema.TypeInt,
-							Required: true,
-							ForceNew: false,
-							Computed: false,
+							Type:        schema.TypeInt,
+							Required:    true,
+							ForceNew:    false,
+							Computed:    false,
+							Description: "Size of the cluster shard instance volume.",
 						},
 
 						"volume_type": {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: false,
-							Computed: false,
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    false,
+							Computed:    false,
+							Description: "The type of the cluster shard instance volume.",
 						},
 
 						"wal_volume": {
@@ -265,17 +291,20 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"size": {
-										Type:     schema.TypeInt,
-										Required: true,
-										ForceNew: false,
+										Type:        schema.TypeInt,
+										Required:    true,
+										ForceNew:    false,
+										Description: "Size of the instance wal volume.",
 									},
 									"volume_type": {
-										Type:     schema.TypeString,
-										Required: true,
-										ForceNew: false,
+										Type:        schema.TypeString,
+										Required:    true,
+										ForceNew:    false,
+										Description: "The type of the cluster wal volume.",
 									},
 								},
 							},
+							Description: "Object that represents wal volume of the cluster.",
 						},
 
 						"network": {
@@ -285,29 +314,35 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"uuid": {
-										Type:     schema.TypeString,
-										Optional: true,
-										ForceNew: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										ForceNew:    true,
+										Description: "The id of the network. Changing this creates a new cluster.",
 									},
 									"port": {
-										Type:     schema.TypeString,
-										Optional: true,
-										ForceNew: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										ForceNew:    true,
+										Description: "The port id of the network. Changing this creates a new cluster.",
 									},
 								},
+								Description: "Object that represents network of the cluster shard. Changing this creates a new cluster.",
 							},
 						},
 
 						"availability_zone": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: false,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    false,
+							ForceNew:    true,
+							Description: "The name of the availability zone of the cluster shard. Changing this creates a new cluster.",
 						},
 					},
 				},
+				Description: "Object that represents cluster shard. There can be several instances of this object.",
 			},
 		},
+		Description: "Provides a db cluster with shards resource. This can be used to create, modify and delete db cluster with shards for clickhouse datastore.",
 	}
 }
 

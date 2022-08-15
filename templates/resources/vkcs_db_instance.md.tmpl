@@ -1,0 +1,35 @@
+---
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a db instance.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+### Basic instance
+{{tffile .ExampleFile}}
+
+### Instance restored from backup
+{{tffile "templates/resources/vkcs_db_instance/instance_from_backup/main.tf"}}
+
+### Postgresql instance with scheduled PITR backup
+{{tffile "templates/resources/vkcs_db_instance/instance_with_pitr/main.tf"}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Instances can be imported using the `id`, e.g.
+
+{{codefile "shell" .ImportFile}}
+
+After the import you can use ```terraform show``` to view imported fields and write their values to your .tf file.
+
+You should at least add following fields to your .tf file:
+
+`name, flavor_id, size, volume_type, datastore`
+
+Please, use `"IMPORTED"` as value for `volume_type` field.

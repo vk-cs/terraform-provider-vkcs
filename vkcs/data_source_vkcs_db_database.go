@@ -13,32 +13,38 @@ func dataSourceDatabaseDatabase() *schema.Resource {
 		ReadContext: dataSourceDatabaseDatabaseRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The id of the database in form \"dbms_id/db_name\".",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the database.",
 			},
 
 			"dbms_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the instance or cluster that database is created for.",
 			},
 
 			"charset": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Type of charset used for the database.",
 			},
 
 			"collate": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Collate option of the database.",
 			},
 		},
+		Description: "Use this data source to get the information on a db database resource.",
 	}
 }
 

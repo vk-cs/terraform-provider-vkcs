@@ -32,28 +32,33 @@ func dataSourceDatabaseInstance() *schema.Resource {
 		ReadContext: dataSourceDatabaseInstanceRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The id of the instance.",
 			},
 
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Region of the resource.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the instance.",
 			},
 
 			"flavor_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ID of flavor for the instance.",
 			},
 
 			"hostname": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The hostname of the instance.",
 			},
 
 			"ip": {
@@ -62,6 +67,7 @@ func dataSourceDatabaseInstance() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Description: "IP address of the instance.",
 			},
 
 			"datastore": {
@@ -71,20 +77,24 @@ func dataSourceDatabaseInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"version": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Version of the datastore.",
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Type of the datastore.",
 						},
 					},
 				},
+				Description: "Object that represents datastore of the instance.",
 			},
 
 			"status": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Instance status.",
 			},
 
 			"volume": {
@@ -95,26 +105,31 @@ func dataSourceDatabaseInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"size": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Size of the instance volume.",
 						},
 
 						"used": {
-							Type:     schema.TypeFloat,
-							Required: true,
+							Type:        schema.TypeFloat,
+							Required:    true,
+							Description: "Size of the used volume space.",
 						},
 
 						"volume_id": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "ID of the instance volume.",
 						},
 
 						"volume_type": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Type of the instance volume.",
 						},
 					},
 				},
+				Description: "Object that describes volume of the instance.",
 			},
 			"backup_schedule": {
 				Type:     schema.TypeList,
@@ -122,29 +137,36 @@ func dataSourceDatabaseInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Name of the schedule.",
 						},
 						"start_hours": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Hours part of timestamp of initial backup.",
 						},
 						"start_minutes": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Minutes part of timestamp of initial backup.",
 						},
 						"interval_hours": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.",
 						},
 						"keep_count": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Number of backups to be stored.",
 						},
 					},
 				},
+				Description: "Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4**.",
 			},
 		},
+		Description: "Use this data source to get the information on a db instance resource.",
 	}
 }
 

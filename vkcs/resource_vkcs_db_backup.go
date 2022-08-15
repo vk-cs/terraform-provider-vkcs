@@ -42,57 +42,67 @@ func resourceDatabaseBackup() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The name of the backup. Changing this creates a new backup",
 			},
 
 			"dbms_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "ID of the instance or cluster, to create backup of.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The description of the backup",
 			},
 
 			"container_prefix": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Prefix of S3 bucket ([prefix] - [project_id]) to store backup data. Default: databasebackups",
 			},
 			// Computed fields
 			"dbms_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of dbms for the backup, can be \"instance\" or \"cluster\".",
 			},
 
 			"location_ref": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Location of backup data on backup storage",
 			},
 
 			"created": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Backup creation timestamp",
 			},
 
 			"updated": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Timestamp of backup's last update",
 			},
 
 			"size": {
-				Type:     schema.TypeFloat,
-				Computed: true,
+				Type:        schema.TypeFloat,
+				Computed:    true,
+				Description: "Backup's volume size",
 			},
 
 			"wal_size": {
-				Type:     schema.TypeFloat,
-				Computed: true,
+				Type:        schema.TypeFloat,
+				Computed:    true,
+				Description: "Backup's WAL volume size",
 			},
 
 			"datastore": {
@@ -101,22 +111,27 @@ func resourceDatabaseBackup() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"version": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of the datastore. Changing this creates a new instance.",
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Version of the datastore. Changing this creates a new instance.",
 						},
 					},
 				},
+				Description: "Object that represents datastore of backup",
 			},
 
 			"meta": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Metadata of the backup",
 			},
 		},
+		Description: "Provides a db backup resource. This can be used to create and delete db backup.\n**New since v.0.1.4**.",
 	}
 }
 

@@ -1,12 +1,11 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: db_backup"
-subcategory: ""
+page_title: "vkcs: vkcs_db_backup"
 description: |-
   Manages a db backup.
 ---
 
-# vkcs\_db\_backup
+# vkcs_db_backup
 
 Provides a db backup resource. This can be used to create and delete db backup.
 **New since v.0.1.4**.
@@ -14,20 +13,18 @@ Provides a db backup resource. This can be used to create and delete db backup.
 ## Example Usage
 
 ```terraform
-
 resource "vkcs_db_instance" "db-instance" {
-  name = "db-instance"
+  name        = "db-instance"
 
-  datastore {
-    type    = "postgresql"
-    version = "13"
-  }
-
-  floating_ip_enabled = true
-
-  flavor_id         = "c8c42890-1ae9-411f-8cce-42e2d7c9b7d0"
   availability_zone = "GZ1"
 
+  datastore {
+    type    = "mysql"
+    version = "5.7"
+  }
+
+  flavor_id   = data.vkcs_compute_flavor.db.id
+  
   size        = 8
   volume_type = "ceph-ssd"
   disk_autoexpand {
@@ -36,62 +33,72 @@ resource "vkcs_db_instance" "db-instance" {
   }
 
   network {
-    uuid = "4a6883c9-dd84-488d-a48f-afa5e37d3e2f"
+    uuid = vkcs_networking_network.db.id
   }
 
   capabilities {
     name = "node_exporter"
+    settings = {
+      "listen_port" : "9100"
+    }
   }
 
-  capabilities {
-    name = "postgres_extensions"
-  }
+  depends_on = [
+    vkcs_networking_network.db,
+    vkcs_networking_subnet.db
+  ]
 }
 
 resource "vkcs_db_backup" "db-backup" {
-    name = "db-backup"
-    dbms_id = vkcs_db_instance.db-instance.id
-    description = "tf-backup"
+  name = "db-backup"
+  dbms_id = vkcs_db_instance.db-instance.id
 }
 ```
 ## Argument Reference
+- `dbms_id` **String** (***Required***) ID of the instance or cluster, to create backup of.
 
-The following arguments are supported:
+- `name` **String** (***Required***) The name of the backup. Changing this creates a new backup
 
-* `name` - (Required) The name of the backup. Changing this creates a new backup
+- `container_prefix` **String** (*Optional*) Prefix of S3 bucket ([prefix] - [project_id]) to store backup data. Default: databasebackups
 
-* `dbms_id` - (Required) ID of the instance or cluster, to create backup of.
+- `description` **String** (*Optional*) The description of the backup
 
-* `description` - The description of the backup
 
-* `container_prefix` - Prefix of S3 bucket (<prefix>-<project_id>) to store backup data. Default: databasebackups
+## Attributes Reference
+- `dbms_id` **String** See Argument Reference above.
 
-## Attributes reference
+- `name` **String** See Argument Reference above.
 
-The following attributes are exported:
+- `container_prefix` **String** See Argument Reference above.
 
-* `location_ref` - Location of backup data on backup storage
+- `description` **String** See Argument Reference above.
 
-* `created` - Backup creation timestamp
+- `created` **String** Backup creation timestamp
 
-* `updated` - Timestamp of backup's last update
+- `datastore` **Object** Object that represents datastore of backup
 
-* `size` - Backup's volume size
+- `dbms_type` **String** Type of dbms for the backup, can be "instance" or "cluster".
 
-* `wal_size` - Backup's WAL volume size
+- `id` **String** ID of the resource.
 
-* `datastore` - Object that represents datastore of backup
-    * `type` - (Required) Type of the datastore. Changing this creates a new instance.
-    * `version` - (Required) Version of the datastore. Changing this creates a new instance.
+- `location_ref` **String** Location of backup data on backup storage
 
-* `meta` - Metadata of the backup
+- `meta` **String** Metadata of the backup
+
+- `size` **Number** Backup's volume size
+
+- `updated` **String** Timestamp of backup's last update
+
+- `wal_size` **Number** Backup's WAL volume size
+
+
 
 ## Import
 
 Backups can be imported using the `id`, e.g.
 
-```
-$ terraform import vkcs_db_backup.mybackup 67b86ce7-0924-48a6-8a18-683cfc6b4183
+```shell
+terraform import vkcs_db_backup.mybackup 67b86ce7-0924-48a6-8a18-683cfc6b4183
 ```
 
 After the import you can use ```terraform show``` to view imported fields and write their values to your .tf file.

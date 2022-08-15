@@ -1,22 +1,21 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: db_cluster"
-subcategory: ""
+page_title: "vkcs: vkcs_db_cluster"
 description: |-
   Manages a db cluster.
 ---
 
-# vkcs\_db\_cluster (Resource)
+# vkcs_db_cluster
 
 Provides a db cluster resource. This can be used to create, modify and delete db cluster for galera_mysql, postgresql, tarantool datastores.
 
 ## Example Usage
 ### Basic cluster
 ```terraform
+resource "vkcs_db_cluster" "db-cluster" {
+  name        = "db-cluster"
 
-resource "vkcs_db_cluster" "mydb-cluster" {
-  name        = "mydb-cluster"
-
+  availability_zone = "GZ1"
   datastore {
     type    = "postgresql"
     version = "12"
@@ -24,19 +23,24 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
   cluster_size = 3
 
-  flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
+  flavor_id   = data.vkcs_compute_flavor.db.id
 
   volume_size = 10
   volume_type = "ceph-ssd"
 
   network {
-    uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
+    uuid = vkcs_networking_network.db.id
   }
+
+  depends_on = [
+    vkcs_networking_network.db,
+    vkcs_networking_subnet.db
+  ]
 }
 ```
+
 ### Cluster restored from backup
 ```terraform
-
 resource "vkcs_db_cluster" "mydb-cluster" {
   name        = "mydb-cluster"
 
@@ -50,7 +54,7 @@ resource "vkcs_db_cluster" "mydb-cluster" {
   flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
 
   volume_size = 10
-  volume_type = "ceph-ssd"
+  volume_type = "MS1"
 
   network {
     uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
@@ -61,9 +65,9 @@ resource "vkcs_db_cluster" "mydb-cluster" {
   }
 }
 ```
+
 ### Cluster with scheduled PITR backup
 ```terraform
-
 resource "vkcs_db_cluster" "mydb-cluster" {
   name        = "mydb-cluster"
 
@@ -77,7 +81,7 @@ resource "vkcs_db_cluster" "mydb-cluster" {
   flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
 
   volume_size = 10
-  volume_type = "ceph-ssd"
+  volume_type = "MS1"
 
   network {
     uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
@@ -93,71 +97,158 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 }
 ```
 ## Argument Reference
+- `cluster_size` **Number** (***Required***) The number of instances in the cluster.
 
-The following arguments are supported:
+- `datastore` (***Required***) Object that represents datastore of the cluster. Changing this creates a new cluster.
+  - `type` **String** (***Required***) Type of the datastore. Changing this creates a new cluster. Type of the datastore can either be "galera_mysql", "postgresql" or "tarantool".
 
-* `name` - (Required) The name of the cluster. Changing this creates a new cluster
+  - `version` **String** (***Required***) Version of the datastore. Changing this creates a new cluster.
 
-* `datastore` - (Required) Object that represents datastore of the cluster. Changing this creates a new cluster. It has following attributes:
-    * `type` - (Required) Type of the datastore. Changing this creates a new cluster. Type of the datastore can either be "galera_mysql", "postgresql" or "tarantool".
-    * `version` - (Required) Version of the datastore. Changing this creates a new cluster.
+- `flavor_id` **String** (***Required***) The ID of flavor for the cluster.
 
-* `cluster_size` - (Required) The number of instances in the cluster.
+- `name` **String** (***Required***) The name of the cluster. Changing this creates a new cluster.
 
-* `keypair` - Name of the keypair to be attached to cluster. Changing this creates a new cluster.
+- `volume_size` **Number** (***Required***) Size of the cluster instance volume.
 
-* `floating_ip_enabled` - Boolean field that indicates whether floating ip is created for cluster. Changing this creates a new cluster.
+- `volume_type` **String** (***Required***) The type of the cluster instance volume. Changing this creates a new cluster.
 
-* `flavor_id` - (Required) The ID of flavor for the cluster.
+- `availability_zone` **String** (*Optional*) The name of the availability zone of the cluster. Changing this creates a new cluster.
 
-* `availability_zone` - The name of the availability zone of the cluster. Changing this creates a new cluster.
+- `backup_schedule` (*Optional*) Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4**
+  - `interval_hours` **Number** (***Required***) Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.
 
-* `volume_size` - (Required) Size of the cluster instance volume.
+  - `keep_count` **Number** (***Required***) Number of backups to be stored.
 
-* `volume_type` - (Required) The type of the cluster instance volume. Changing this creates a new cluster.
+  - `name` **String** (***Required***) Name of the schedule.
 
-* `disk_autoexpand` - Object that represents autoresize properties of the cluster. It has following attributes:
-    * `autoexpand` - Boolean field that indicates whether autoresize is enabled.
-    * `max_disk_size` - Maximum disk size for autoresize.
+  - `start_hours` **Number** (***Required***) Hours part of timestamp of initial backup.
 
-* `wal_volume` - Object that represents wal volume of the cluster. Changing this creates a new cluster. It has following attributes:
-    * `size` - (Required) Size of the instance wal volume.
-    * `volume_type` - (Required) The type of the cluster wal volume. Changing this creates a new cluster.
-    * `autoexpand` - Boolean field that indicates whether wal volume autoresize is enabled.
-    * `max_disk_size` - Maximum disk size for wal volume autoresize.
+  - `start_minutes` **Number** (***Required***) Minutes part of timestamp of initial backup.
 
-* `network` -  Object that represents network of the cluster. Changing this creates a new cluster. It has following attributes:
-    * `uuid` - The id of the network. Changing this creates a new cluster.
-    * `port` - The port id of the network. Changing this creates a new cluster.
+- `capabilities` (*Optional*) Object that represents capability applied to cluster. There can be several instances of this object.
+  - `name` **String** (***Required***) The name of the capability to apply.
 
-* `root_enabled` - Boolean field that indicates whether root user is enabled for the cluster.
+  - `settings` <strong>Map of </strong>**String** (*Optional*) Map of key-value settings of the capability.
 
-* `root_password` - Password for the root user of the cluster.
+- `configuration_id` **String** (*Optional*) The id of the configuration attached to cluster.
 
-* `configuration_id` - The id of the configuration attached to cluster.
+- `disk_autoexpand` (*Optional*) Object that represents autoresize properties of the cluster.
+  - `autoexpand` **Boolean** (*Optional*) Indicates whether autoresize is enabled.
 
-* `capabilities` - Object that represents capability applied to cluster. There can be several instances of this object. Each instance of this object has following attributes:
-    * `name` - (Required) The name of the capability to apply.
-    * `settings` - Map of key-value settings of the capability.
+  - `max_disk_size` **Number** (*Optional*) Maximum disk size for autoresize.
 
-* `restore_point` - Object that represents backup to restore cluster from. **New since v.0.1.4**. It has following attributes:
-    * `backup_id` - (Required) ID of the backup.
-    * `target` - Used only for restoring from PITR backups. Timestamp of needed backup in format "2021-10-06 01:02:00". You can specify "latest" to use most recent backup. 
+- `floating_ip_enabled` **Boolean** (*Optional*) Indicates whether floating ip is created for cluster. Changing this creates a new cluster.
 
-* `backup_schedule` - Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4** This object has following attributes:
-    * `name` - Name of the schedule.
-    * `start_hours` - Hours part of timestamp of initial backup
-    * `start_minutes` - Minutes part of timestamp of initial backup
-    * `interval_hours` - Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.
-    * `keep_count` - Number of backups to be stored.
+- `keypair` **String** (*Optional*) Name of the keypair to be attached to cluster. Changing this creates a new cluster.
+
+- `network` (*Optional*) Object that represents network of the cluster. Changing this creates a new cluster.
+  - `port` **String** (*Optional*) The port id of the network. Changing this creates a new cluster.
+
+  - `uuid` **String** (*Optional*) The id of the network. Changing this creates a new cluster.
+
+- `region` **String** (*Optional*) Region to create resource in.
+
+- `restore_point` (*Optional*) Object that represents backup to restore cluster from. **New since v.0.1.4**.
+  - `backup_id` **String** (***Required***) ID of the backup.
+
+  - `target` **String** (*Optional*) Used only for restoring from PITR backups. Timestamp of needed backup in format "2021-10-06 01:02:00". You can specify "latest" to use most recent backup.
+
+- `root_enabled` **Boolean** (*Optional*) Indicates whether root user is enabled for the cluster.
+
+- `root_password` **String** (*Optional* Sensitive) Password for the root user of the cluster.
+
+- `wal_disk_autoexpand` (*Optional*) Object that represents autoresize properties of wal volume of the cluster.
+  - `autoexpand` **Boolean** (*Optional*) Indicates whether wal volume autoresize is enabled.
+
+  - `max_disk_size` **Number** (*Optional*) Maximum disk size for wal volume autoresize.
+
+- `wal_volume` (*Optional*) Object that represents wal volume of the cluster. Changing this creates a new cluster.
+  - `size` **Number** (***Required***) Size of the instance wal volume.
+
+  - `volume_type` **String** (***Required***) The type of the cluster wal volume. Changing this creates a new cluster.
+
+
+## Attributes Reference
+- `cluster_size` **Number** See Argument Reference above.
+
+- `datastore`  See Argument Reference above.
+  - `type` **String** See Argument Reference above.
+
+  - `version` **String** See Argument Reference above.
+
+- `flavor_id` **String** See Argument Reference above.
+
+- `name` **String** See Argument Reference above.
+
+- `volume_size` **Number** See Argument Reference above.
+
+- `volume_type` **String** See Argument Reference above.
+
+- `availability_zone` **String** See Argument Reference above.
+
+- `backup_schedule`  See Argument Reference above.
+  - `interval_hours` **Number** See Argument Reference above.
+
+  - `keep_count` **Number** See Argument Reference above.
+
+  - `name` **String** See Argument Reference above.
+
+  - `start_hours` **Number** See Argument Reference above.
+
+  - `start_minutes` **Number** See Argument Reference above.
+
+- `capabilities`  See Argument Reference above.
+  - `name` **String** See Argument Reference above.
+
+  - `settings` <strong>Map of </strong>**String** See Argument Reference above.
+
+- `configuration_id` **String** See Argument Reference above.
+
+- `disk_autoexpand`  See Argument Reference above.
+  - `autoexpand` **Boolean** See Argument Reference above.
+
+  - `max_disk_size` **Number** See Argument Reference above.
+
+- `floating_ip_enabled` **Boolean** See Argument Reference above.
+
+- `keypair` **String** See Argument Reference above.
+
+- `network`  See Argument Reference above.
+  - `port` **String** See Argument Reference above.
+
+  - `uuid` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `restore_point`  See Argument Reference above.
+  - `backup_id` **String** See Argument Reference above.
+
+  - `target` **String** See Argument Reference above.
+
+- `root_enabled` **Boolean** See Argument Reference above.
+
+- `root_password` **String** See Argument Reference above.
+
+- `wal_disk_autoexpand`  See Argument Reference above.
+  - `autoexpand` **Boolean** See Argument Reference above.
+
+  - `max_disk_size` **Number** See Argument Reference above.
+
+- `wal_volume`  See Argument Reference above.
+  - `size` **Number** See Argument Reference above.
+
+  - `volume_type` **String** See Argument Reference above.
+
+- `id` **String** ID of the resource.
+
 
 
 ## Import
 
 Clusters can be imported using the `id`, e.g.
 
-```
-$ terraform import vkcs_db_cluster.mycluster 708a74a1-6b00-4a96-938c-28a8a6d98590
+```shell
+terraform import vkcs_db_cluster.mycluster 708a74a1-6b00-4a96-938c-28a8a6d98590
 ```
 
 After the import you can use ```terraform show``` to view imported fields and write their values to your .tf file.

@@ -14,18 +14,21 @@ func dataSourceDatabaseBackup() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"backup_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The UUID of the backup.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the backup.",
 			},
 
 			"dbms_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the backed up instance or cluster",
 			},
 
 			"description": {
@@ -35,33 +38,39 @@ func dataSourceDatabaseBackup() *schema.Resource {
 			},
 
 			"dbms_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of dbms of the backup, can be \"instance\" or \"cluster\".",
 			},
 
 			"location_ref": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Location of backup data on backup storage",
 			},
 
 			"created": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Backup creation timestamp",
 			},
 
 			"updated": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Timestamp of backup's last update",
 			},
 
 			"size": {
-				Type:     schema.TypeFloat,
-				Computed: true,
+				Type:        schema.TypeFloat,
+				Computed:    true,
+				Description: "Backup's volume size",
 			},
 
 			"wal_size": {
-				Type:     schema.TypeFloat,
-				Computed: true,
+				Type:        schema.TypeFloat,
+				Computed:    true,
+				Description: "Backup's WAL volume size",
 			},
 
 			"datastore": {
@@ -70,22 +79,27 @@ func dataSourceDatabaseBackup() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"version": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Version of the datastore.",
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Type of the datastore.",
 						},
 					},
 				},
+				Description: "Object that represents datastore of backup",
 			},
 
 			"meta": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Metadata of the backup",
 			},
 		},
+		Description: "Use this data source to get the information on a db backup resource.",
 	}
 }
 
