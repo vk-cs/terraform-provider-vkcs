@@ -1,4 +1,4 @@
 [submodule "automation"]
 	path = automation
 	url = ../terraform-provider-ci.git
-	branch = master
+	branch = checks
