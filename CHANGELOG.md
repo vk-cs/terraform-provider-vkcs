@@ -10,6 +10,7 @@ description: |-
 #### v0.1.12
 - Removed image_id attribute from resource_vkcs_images_image and hidden attribute from vkcs_images_image resource and data_source
 - Removed tags attribute from vkcs_networking_floatingip resource and data_source
+- Fix getting OS_USERNAME, OS_REGION_NAME and OS_USER_DOMAIN_NAME from environment
 
 #### v0.1.11
 - Fixed error of creating resource_vkcs_blockstorage_volume with high-iops volume type
