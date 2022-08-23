@@ -29,9 +29,9 @@ func dataSourceDatabaseBackup() *schema.Resource {
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The description of the backup",
 			},
 
 			"dbms_type": {
