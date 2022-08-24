@@ -47,27 +47,31 @@ func resourceBlockStorageSnapshot() *schema.Resource {
 			},
 
 			"volume_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "ID of the volume to create snapshot for. Changing this creates a new snapshot.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "The name of the snapshot.",
 			},
 
 			"force": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "Allows or disallows snapshot of a volume when the volume is attached to an instance.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "The description of the volume.",
 			},
 
 			"metadata": {
@@ -75,10 +79,12 @@ func resourceBlockStorageSnapshot() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Optional: true,
-				ForceNew: false,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "Map of key-value metadata of the volume.",
 			},
 		},
+		Description: "Provides a blockstorage snapshot resource. This can be used to create, modify and delete blockstorage snapshot.",
 	}
 }
 

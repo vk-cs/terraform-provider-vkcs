@@ -1,0 +1,1 @@
+terraform import vkcs_blockstorage_volume.myvolume 64f3cfc5-226e-4388-a9b8-365b1441b94f

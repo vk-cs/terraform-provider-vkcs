@@ -1,17 +1,17 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: blockstorage_snapshot"
+page_title: "vkcs: vkcs_blockstorage_snapshot"
 description: |-
   Get information on an VKCS Volume Snapshot.
 ---
 
-# vkcs\_blockstorage\_snapshot
+# vkcs_blockstorage_snapshot
 
 Use this data source to get information about an existing snapshot.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "vkcs_blockstorage_snapshot" "snapshot_1" {
   name        = "snapshot_1"
   most_recent = true
@@ -19,28 +19,34 @@ data "vkcs_blockstorage_snapshot" "snapshot_1" {
 ```
 
 ## Argument Reference
+- `most_recent` **Boolean** (*Optional*) Pick the most recently created snapshot if there are multiple results.
 
-* `region` - (Optional) The region in which to obtain the Block Storage
-    client. If omitted, the `region` argument of the provider is used.
+- `name` **String** (*Optional*) The name of the snapshot.
 
-* `name` - (Optional) The name of the snapshot.
+- `region` **String** (*Optional*) The region in which to obtain the Block Storage client. If omitted, the `region` argument of the provider is used.
 
-* `status` - (Optional) The status of the snapshot.
+- `status` **String** (*Optional*) The status of the snapshot.
 
-* `volume_id` - (Optional) The ID of the snapshot's volume.
-
-* `most_recent` - (Optional) Pick the most recently created snapshot if there
-    are multiple results.
+- `volume_id` **String** (*Optional*) The ID of the snapshot's volume.
 
 
 ## Attributes Reference
+- `most_recent` **Boolean** See Argument Reference above.
 
-The following attributes are exported:
+- `name` **String** See Argument Reference above.
 
-* `region` - See Argument Reference above.
-* `name` - See Argument Reference above.
-* `status` - See Argument Reference above.
-* `volume_id` - See Argument Reference above.
-* `description` - The snapshot's description.
-* `size` - The size of the snapshot.
-* `metadata` - The snapshot's metadata.
+- `region` **String** See Argument Reference above.
+
+- `status` **String** See Argument Reference above.
+
+- `volume_id` **String** See Argument Reference above.
+
+- `description` **String** The snapshot's description.
+
+- `id` **String** ID of the resource.
+
+- `metadata` <strong>Map of </strong>**String** The snapshot's metadata.
+
+- `size` **Number** The size of the snapshot.
+
+

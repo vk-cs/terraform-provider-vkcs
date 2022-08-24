@@ -44,39 +44,45 @@ func resourceBlockStorageVolume() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "Region to create resource in.",
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "The name of the volume.",
 			},
 
 			"size": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: false,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    false,
+				Description: "The size of the volume.",
 			},
 
 			"volume_type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    false,
+				Description: "The type of the volume.",
 			},
 
 			"availability_zone": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    false,
+				Description: "The name of the availability zone of the volume.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "The description of the volume.",
 			},
 
 			"metadata": {
@@ -84,9 +90,10 @@ func resourceBlockStorageVolume() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Optional: true,
-				ForceNew: false,
-				Computed: true,
+				Optional:    true,
+				ForceNew:    false,
+				Computed:    true,
+				Description: "Map of key-value metadata of the volume.",
 			},
 
 			"snapshot_id": {
@@ -94,6 +101,7 @@ func resourceBlockStorageVolume() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"source_vol_id", "image_id"},
+				Description:   "ID of the snapshot of volume. Changing this creates a new volume. Only one of snapshot_id, source_volume_id, image_id fields may be set.",
 			},
 
 			"source_vol_id": {
@@ -101,6 +109,7 @@ func resourceBlockStorageVolume() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"snapshot_id", "image_id"},
+				Description:   "ID of the source volume. Changing this creates a new volume. Only one of snapshot_id, source_volume_id, image_id fields may be set.",
 			},
 
 			"image_id": {
@@ -108,8 +117,10 @@ func resourceBlockStorageVolume() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"snapshot_id", "source_vol_id"},
+				Description:   "ID of the image to create volume with. Changing this creates a new volume. Only one of snapshot_id, source_volume_id, image_id fields may be set.",
 			},
 		},
+		Description: "Provides a blockstorage volume resource. This can be used to create, modify and delete blockstorage volume.",
 	}
 }
 
