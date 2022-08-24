@@ -1,0 +1,1 @@
+terraform import vkcs_blockstorage_snapshot.myvolumesnapshot 0b4f5a9b-554e-4e80-b553-82aba6502315
