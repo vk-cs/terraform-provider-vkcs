@@ -14,18 +14,36 @@ import (
 )
 
 var (
-	osFlavorID         = os.Getenv("OS_FLAVOR_ID")
-	osNewFlavorID      = os.Getenv("OS_NEW_FLAVOR_ID")
-	osNetworkID        = os.Getenv("OS_NETWORK_ID")
+	osFlavorName       = os.Getenv("OS_FLAVOR_NAME")
+	osNewFlavorName    = os.Getenv("OS_NEW_FLAVOR_NAME")
+	osImageName        = os.Getenv("OS_IMAGE_NAME")
 	osRegionName       = os.Getenv("OS_REGION_NAME")
-	osPoolName         = os.Getenv("OS_POOL_NAME")
 	osProjectID        = os.Getenv("OS_PROJECT_ID")
-	osExtGwID          = os.Getenv("OS_EXTGW_ID")
-	osPrivateDNSDomain = os.Getenv("OS_PRIVATE_DNS_DOMAIN")
-	osKeypairName      = os.Getenv("OS_KEYPAIR_NAME")
-	clusterTemplateID  = os.Getenv("CLUSTER_TEMPLATE_ID")
-	osSubnetworkID     = os.Getenv("OS_SUBNETWORK_ID")
+	osExtNetName       = os.Getenv("OS_EXT_NET_NAME")
+	osAvailabilityZone = os.Getenv("OS_AVAILABILITY_ZONE")
+	osVolumeType       = os.Getenv("OS_VOLUME_TYPE")
+	// Kubernetes-related environment variables
+	osFlavorID        = os.Getenv("OS_FLAVOR_ID")
+	osNewFlavorID     = os.Getenv("OS_NEW_FLAVOR_ID")
+	osNetworkID       = os.Getenv("OS_NETWORK_ID")
+	osSubnetworkID    = os.Getenv("OS_SUBNETWORK_ID")
+	osKeypairName     = os.Getenv("OS_KEYPAIR_NAME")
+	clusterTemplateID = os.Getenv("CLUSTER_TEMPLATE_ID")
 )
+
+var testAccValues map[string]string = map[string]string{
+	"BaseNetwork":      testAccBaseNetwork,
+	"BaseExtNetwork":   testAccBaseExtNetwork(),
+	"BaseImage":        testAccBaseImage(),
+	"BaseFlavor":       testAccBaseFlavor(),
+	"BaseNewFlavor":    testAccBaseNewFlavor(),
+	"AvailabilityZone": osAvailabilityZone,
+	"VolumeType":       osVolumeType,
+	"FlavorName":       osFlavorName,
+	"NewFlavorName":    osNewFlavorName,
+	"ImageName":        osImageName,
+	"ExtNetName":       osExtNetName,
+}
 
 var testAccProviders map[string]func() (*schema.Provider, error)
 var testAccProvider *schema.Provider
@@ -36,6 +54,22 @@ func init() {
 		"vkcs": func() (*schema.Provider, error) {
 			return testAccProvider, nil
 		},
+	}
+}
+
+func testAccPreCheck(t *testing.T) {
+	vars := map[string]interface{}{
+		"OS_VOLUME_TYPE":       osVolumeType,
+		"OS_AVAILABILITY_ZONE": osAvailabilityZone,
+		"OS_FLAVOR_NAME":       osFlavorName,
+		"OS_NEW_FLAVOR_NAME":   osNewFlavorName,
+		"OS_IMAGE_NAME":        osImageName,
+		"OS_EXT_NET_NAME":      osExtNetName,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
 	}
 }
 

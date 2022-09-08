@@ -14,6 +14,7 @@ import (
 func TestAccVPNaaSService_basic(t *testing.T) {
 	var service services.Service
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckServiceDestroy,
 		Steps: []resource.TestStep{

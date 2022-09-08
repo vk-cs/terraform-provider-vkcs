@@ -14,6 +14,7 @@ func TestAccBlockStorageVolume_basic(t *testing.T) {
 	var volume volumes.Volume
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
@@ -45,6 +46,7 @@ func TestAccBlockStorageVolume_basic(t *testing.T) {
 
 func TestAccBlockStorageVolume_online_resize(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
@@ -70,6 +72,7 @@ func TestAccBlockStorageVolume_image(t *testing.T) {
 	var volume volumes.Volume
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{

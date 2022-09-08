@@ -14,6 +14,7 @@ func TestAccNetworkingRouter_basic(t *testing.T) {
 	var router routers.Router
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingRouterDestroy,
 		Steps: []resource.TestStep{
@@ -42,6 +43,7 @@ func TestAccNetworkingRouter_updateExternalGateway(t *testing.T) {
 	var router routers.Router
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingRouterDestroy,
 		Steps: []resource.TestStep{
@@ -66,6 +68,7 @@ func TestAccNetworkingRouter_vendor_opts(t *testing.T) {
 	var router routers.Router
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingRouterDestroy,
 		Steps: []resource.TestStep{

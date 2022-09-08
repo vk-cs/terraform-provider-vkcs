@@ -14,6 +14,7 @@ func TestAccNetworkingSubnet_basic(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
 		Steps: []resource.TestStep{
@@ -51,6 +52,7 @@ func TestAccNetworkingSubnet_enableDHCP(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
 		Steps: []resource.TestStep{
@@ -70,6 +72,7 @@ func TestAccNetworkingSubnet_disableDHCP(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
 		Steps: []resource.TestStep{
@@ -89,6 +92,7 @@ func TestAccNetworkingSubnet_noGateway(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
 		Steps: []resource.TestStep{
@@ -108,6 +112,7 @@ func TestAccNetworkingSubnet_impliedGateway(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
 		Steps: []resource.TestStep{
@@ -127,6 +132,7 @@ func TestAccNetworkingSubnet_timeout(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
 		Steps: []resource.TestStep{
@@ -142,6 +148,7 @@ func TestAccNetworkingSubnet_timeout(t *testing.T) {
 
 func TestAccNetworkingSubnet_multipleAllocationPools(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
 		Steps: []resource.TestStep{
@@ -174,6 +181,7 @@ func TestAccNetworkingSubnet_clearDNSNameservers(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
 		Steps: []resource.TestStep{

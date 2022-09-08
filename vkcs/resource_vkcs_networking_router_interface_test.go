@@ -18,6 +18,7 @@ func TestAccNetworkingRouterInterface_basic_subnet(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingRouterInterfaceDestroy,
 		Steps: []resource.TestStep{
@@ -43,6 +44,7 @@ func TestAccNetworkingRouterInterface_v6_subnet(t *testing.T) {
 	var subnet2 subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingRouterInterfaceDestroy,
 		Steps: []resource.TestStep{
@@ -74,6 +76,7 @@ func TestAccNetworkingRouterInterface_basic_port(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingRouterInterfaceDestroy,
 		Steps: []resource.TestStep{
@@ -97,6 +100,7 @@ func TestAccNetworkingRouterInterface_timeout(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingRouterInterfaceDestroy,
 		Steps: []resource.TestStep{

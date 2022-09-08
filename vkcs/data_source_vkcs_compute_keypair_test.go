@@ -10,6 +10,7 @@ import (
 
 func TestAccComputeKeypairDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeKeypairDestroy,
 		Steps: []resource.TestStep{

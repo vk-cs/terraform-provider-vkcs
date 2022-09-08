@@ -13,6 +13,7 @@ func TestAccComputeVolumeAttach_basic(t *testing.T) {
 	var va volumeattach.VolumeAttachment
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeVolumeAttachDestroy,
 		Steps: []resource.TestStep{
