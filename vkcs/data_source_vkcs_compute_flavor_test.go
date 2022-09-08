@@ -10,6 +10,7 @@ import (
 
 func TestAccComputeFlavorDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -36,6 +37,7 @@ func TestAccComputeFlavorDataSource_basic(t *testing.T) {
 
 func TestAccComputeFlavorDataSource_testQueries(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -116,6 +118,7 @@ func TestAccComputeFlavorDataSource_testQueries(t *testing.T) {
 
 func TestAccComputeFlavorDataSource_extraSpecs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{

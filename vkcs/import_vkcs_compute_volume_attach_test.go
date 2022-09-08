@@ -10,6 +10,7 @@ func TestAccComputeVolumeAttach_importBasic(t *testing.T) {
 	resourceName := "vkcs_compute_volume_attach.va_1"
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeVolumeAttachDestroy,
 		Steps: []resource.TestStep{

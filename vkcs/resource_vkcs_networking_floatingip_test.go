@@ -14,6 +14,7 @@ func TestAccNetworkingFloatingIP_basic(t *testing.T) {
 	var fip floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{
@@ -32,6 +33,7 @@ func TestAccNetworkingFloatingIP_fixedip_bind(t *testing.T) {
 	var fip floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{
@@ -59,6 +61,7 @@ func TestAccNetworkingFloatingIP_fixedip_bind(t *testing.T) {
 
 func TestAccNetworkingFloatingIP_subnetIDs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{
@@ -76,6 +79,7 @@ func TestAccNetworkingFloatingIP_timeout(t *testing.T) {
 	var fip floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{

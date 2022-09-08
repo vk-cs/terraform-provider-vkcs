@@ -10,6 +10,7 @@ func TestAccNetworkingFloatingIP_importBasic(t *testing.T) {
 	resourceName := "vkcs_networking_floatingip.fip_1"
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{

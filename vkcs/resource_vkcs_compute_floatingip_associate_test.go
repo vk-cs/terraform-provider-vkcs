@@ -16,6 +16,7 @@ func TestAccComputeFloatingIPAssociate_basic(t *testing.T) {
 	var fip floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
@@ -44,6 +45,7 @@ func TestAccComputeV2FloatingIPAssociate_fixedIP(t *testing.T) {
 	var fip floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
@@ -65,6 +67,7 @@ func TestAccComputeFloatingIPAssociate_attachNew(t *testing.T) {
 	var floatingIP2 floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
@@ -95,6 +98,7 @@ func TestAccComputeFloatingIPAssociate_waitUntilAssociated(t *testing.T) {
 	var fip floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{

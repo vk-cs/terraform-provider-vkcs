@@ -15,6 +15,7 @@ func TestAccComputeServerGroup_basic(t *testing.T) {
 	var sg servergroups.ServerGroup
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeServerGroupDestroy,
 		Steps: []resource.TestStep{
@@ -37,6 +38,7 @@ func TestAccComputeServerGroup_affinity(t *testing.T) {
 	var sg servergroups.ServerGroup
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeServerGroupDestroy,
 		Steps: []resource.TestStep{
@@ -61,6 +63,7 @@ func TestAccComputeServerGroup_soft_affinity(t *testing.T) {
 	var sg servergroups.ServerGroup
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckComputeServerGroupDestroy,
 		Steps: []resource.TestStep{

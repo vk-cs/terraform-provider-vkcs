@@ -10,6 +10,7 @@ import (
 
 func TestAccNetworkingNetworkDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -35,6 +36,7 @@ func TestAccNetworkingNetworkDataSource_basic(t *testing.T) {
 
 func TestAccNetworkingNetworkDataSource_subnet(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -60,6 +62,7 @@ func TestAccNetworkingNetworkDataSource_subnet(t *testing.T) {
 
 func TestAccNetworkingNetworkDataSource_networkID(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -83,6 +86,7 @@ func TestAccNetworkingNetworkDataSource_networkID(t *testing.T) {
 
 func TestAccNetworkingNetworkDataSource_externalExplicit(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -105,6 +109,7 @@ func TestAccNetworkingNetworkDataSource_externalExplicit(t *testing.T) {
 
 func TestAccNetworkingNetworkDataSource_externalImplicit(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
