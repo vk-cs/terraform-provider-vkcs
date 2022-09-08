@@ -12,6 +12,7 @@ func TestAccDatabaseConfigGroup_basic(t *testing.T) {
 	var configGroup dbConfigGroupResp
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseConfigGroupDestroy,
 		Steps: []resource.TestStep{

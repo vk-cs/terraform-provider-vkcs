@@ -10,6 +10,7 @@ func TestAccDatabaseInstance_importBasic(t *testing.T) {
 	resourceName := "vkcs_db_instance.basic"
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{

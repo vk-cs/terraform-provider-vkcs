@@ -15,6 +15,7 @@ func TestAccDatabaseUser_basic(t *testing.T) {
 	var instance instanceResp
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseUserDestroy,
 		Steps: []resource.TestStep{
@@ -38,6 +39,7 @@ func TestAccDatabaseUser_update_and_delete(t *testing.T) {
 	var instance instanceResp
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseUserDestroy,
 		Steps: []resource.TestStep{
