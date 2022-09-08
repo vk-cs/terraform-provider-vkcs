@@ -1,10 +1,12 @@
 package vkcs
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
 	"testing"
+	"text/template"
 
 	"github.com/gophercloud/utils/terraform/auth"
 	"github.com/gophercloud/utils/terraform/mutexkv"
@@ -285,4 +287,74 @@ func envVarFile(varName string) (string, error) {
 		return "", fmt.Errorf("error closing temp file: %s", err)
 	}
 	return tmpFile.Name(), nil
+}
+
+func testAccBaseExtNetwork() string {
+	return fmt.Sprintf(`
+	data "vkcs_networking_network" "extnet" {
+		name = "%s"
+	  }
+	`, osExtNetName)
+}
+
+func testAccBaseFlavor() string {
+	return fmt.Sprintf(`
+	data "vkcs_compute_flavor" "base" {
+		name = "%s"
+	}
+`, osFlavorName)
+}
+
+func testAccBaseNewFlavor() string {
+	return fmt.Sprintf(`
+	data "vkcs_compute_flavor" "base" {
+		name = "%s"
+	}
+`, osNewFlavorName)
+}
+
+func testAccBaseImage() string {
+	return fmt.Sprintf(`
+	data "vkcs_images_image" "base" {
+		name = "%s"
+	}
+`, osImageName)
+}
+
+const testAccBaseNetwork string = `
+
+data "vkcs_networking_network" "extnet" {
+	name = "ext-net"
+  }
+  
+  resource "vkcs_networking_network" "base" {
+	name           = "base-net"
+	admin_state_up = true
+  }
+  
+  resource "vkcs_networking_subnet" "base" {
+	name       = "subnet_1"
+	network_id = vkcs_networking_network.base.id
+	cidr       = "192.168.199.0/24"
+	ip_version = 4
+  }
+  
+  resource "vkcs_networking_router" "base" {
+	name                = "base-router"
+	admin_state_up      = true
+	external_network_id = data.vkcs_networking_network.extnet.id
+  }
+  
+  resource "vkcs_networking_router_interface" "base" {
+	router_id = vkcs_networking_router.base.id
+	subnet_id = vkcs_networking_subnet.base.id
+  }
+`
+
+func testAccRenderConfig(testConfig string, values map[string]string) string {
+	t := template.Must(template.New("acc").Option("missingkey=error").Parse(testConfig))
+	buf := &bytes.Buffer{}
+	_ = t.Execute(buf, values)
+
+	return buf.String()
 }

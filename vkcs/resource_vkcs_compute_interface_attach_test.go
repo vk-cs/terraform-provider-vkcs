@@ -18,7 +18,7 @@ func TestAccComputeInterfaceAttach_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInterfaceAttachDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeInterfaceAttachBasic(),
+				Config: testAccRenderConfig(testAccComputeInterfaceAttachBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInterfaceAttachExists("vkcs_compute_interface_attach.ai_1", &ai),
 				),
@@ -36,7 +36,7 @@ func TestAccComputeInterfaceAttach_IP(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInterfaceAttachDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeInterfaceAttachIP(),
+				Config: testAccRenderConfig(testAccComputeInterfaceAttachIP, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInterfaceAttachExists("vkcs_compute_interface_attach.ai_1", &ai),
 					testAccCheckComputeInterfaceAttachIP(&ai, "192.168.1.100"),
@@ -122,13 +122,10 @@ func testAccCheckComputeInterfaceAttachIP(
 	}
 }
 
-func testAccComputeInterfaceAttachBasic() string {
-	return fmt.Sprintf(`
-%s
-
-%s
-
-%s
+const testAccComputeInterfaceAttachBasic = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
@@ -139,6 +136,7 @@ resource "vkcs_networking_port" "port_1" {
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
+  availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
   network {
     uuid = vkcs_networking_network.base.id
@@ -151,16 +149,12 @@ resource "vkcs_compute_interface_attach" "ai_1" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
   port_id = "${vkcs_networking_port.port_1.id}"
 }
-`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
-}
+`
 
-func testAccComputeInterfaceAttachIP() string {
-	return fmt.Sprintf(`
-%s
-
-%s
-
-%s
+const testAccComputeInterfaceAttachIP = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
 
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
@@ -178,6 +172,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
+  availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
   network {
     uuid = vkcs_networking_network.base.id
@@ -191,5 +186,4 @@ resource "vkcs_compute_interface_attach" "ai_1" {
   network_id = "${vkcs_networking_network.network_1.id}"
   fixed_ip = "192.168.1.100"
 }
-`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
-}
+`

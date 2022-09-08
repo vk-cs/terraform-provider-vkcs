@@ -15,7 +15,7 @@ func TestAccSiteConnection_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckSiteConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSiteConnectionBasic(),
+				Config: testAccRenderConfig(testAccSiteConnectionBasic, testAccValues),
 			},
 			{
 				ResourceName:      resourceName,

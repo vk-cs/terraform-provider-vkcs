@@ -14,7 +14,7 @@ func TestAccComputeInstance_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeInstanceBasic(),
+				Config: testAccRenderConfig(testAccComputeInstanceBasic, testAccValues),
 			},
 
 			{
@@ -39,7 +39,7 @@ func TestAccComputeInstance_importbootFromVolumeForceNew_1(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeInstanceBootFromVolumeForceNew1(),
+				Config: testAccRenderConfig(testAccComputeInstanceBootFromVolumeForceNew1, testAccValues),
 			},
 			{
 				ResourceName:      resourceName,
@@ -62,7 +62,7 @@ func TestAccComputeInstance_importbootFromVolumeImage(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeInstanceBootFromVolumeImage(),
+				Config: testAccRenderConfig(testAccComputeInstanceBootFromVolumeImage, testAccValues),
 			},
 			{
 				ResourceName:      resourceName,

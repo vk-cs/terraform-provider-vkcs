@@ -54,10 +54,10 @@ func TestAccNetworkingRouter_updateExternalGateway(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccNetworkingRouterUpdateExternalGateway2(),
+				Config: testAccRenderConfig(testAccNetworkingRouterUpdateExternalGateway2, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"vkcs_networking_router.router_1", "external_network_id", osExtGwID),
+					resource.TestCheckResourceAttrPair(
+						"vkcs_networking_router.router_1", "external_network_id", "data.vkcs_networking_network.extnet", "id"),
 				),
 			},
 		},
@@ -73,11 +73,11 @@ func TestAccNetworkingRouter_vendor_opts(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingRouterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingRouterVendorOpts(),
+				Config: testAccRenderConfig(testAccNetworkingRouterVendorOpts, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingRouterExists("vkcs_networking_router.router_1", &router),
-					resource.TestCheckResourceAttr(
-						"vkcs_networking_router.router_1", "external_network_id", osExtGwID),
+					resource.TestCheckResourceAttrPair(
+						"vkcs_networking_router.router_1", "external_network_id", "data.vkcs_networking_network.extnet", "id"),
 				),
 			},
 		},
@@ -162,20 +162,18 @@ resource "vkcs_networking_router" "router_1" {
 }
 `
 
-func testAccNetworkingRouterVendorOpts() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingRouterVendorOpts = `
+{{.BaseExtNetwork}}
 
 resource "vkcs_networking_router" "router_1" {
   name = "router_1"
   admin_state_up = "true"
-  external_network_id = data.vkcs_networking_network.extnet.id
+  external_network_id = "${data.vkcs_networking_network.extnet.id}"
   vendor_options {
     set_router_gateway_after_create = true
   }
 }
-`, testAccBaseExtNetwork)
-}
+`
 
 const testAccNetworkingRouterUpdateExternalGateway1 = `
 resource "vkcs_networking_router" "router_1" {
@@ -184,14 +182,12 @@ resource "vkcs_networking_router" "router_1" {
 }
 `
 
-func testAccNetworkingRouterUpdateExternalGateway2() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingRouterUpdateExternalGateway2 = `
+{{.BaseExtNetwork}}
 
 resource "vkcs_networking_router" "router_1" {
   name = "router"
   admin_state_up = "true"
-  external_network_id = data.vkcs_networking_network.extnet.id
+  external_network_id = "${data.vkcs_networking_network.extnet.id}"
 }
-`, testAccBaseExtNetwork)
-}
+`
