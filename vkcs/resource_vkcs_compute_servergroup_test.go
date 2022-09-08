@@ -43,7 +43,7 @@ func TestAccComputeServerGroup_affinity(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeServerGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeServerGroupAffinity(),
+				Config: testAccRenderConfig(testAccComputeServerGroupAffinity, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeServerGroupExists("vkcs_compute_servergroup.sg_1", &sg),
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
@@ -68,7 +68,7 @@ func TestAccComputeServerGroup_soft_affinity(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeServerGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeServerGroupSoftAffinity(),
+				Config: testAccRenderConfig(testAccComputeServerGroupSoftAffinity, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeServerGroupExists("vkcs_compute_servergroup.sg_1", &sg),
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
@@ -157,13 +157,12 @@ resource "vkcs_compute_servergroup" "sg_1" {
 }
 `
 
-func testAccComputeServerGroupAffinity() string {
-	return fmt.Sprintf(`
-%s
+const testAccComputeServerGroupAffinity = `
+{{ .BaseNetwork}}
 
-%s
-
-%s
+{{ .BaseImage}}
+			
+{{ .BaseFlavor}}
 
 resource "vkcs_compute_servergroup" "sg_1" {
   name = "sg_1"
@@ -173,6 +172,7 @@ resource "vkcs_compute_servergroup" "sg_1" {
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
+  availability_zone = "{{ .AvailabilityZone}}"
   security_groups = ["default"]
   scheduler_hints {
     group = "${vkcs_compute_servergroup.sg_1.id}"
@@ -183,16 +183,14 @@ resource "vkcs_compute_instance" "instance_1" {
   image_id = data.vkcs_images_image.base.id
   flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
-}
+`
 
-func testAccComputeServerGroupSoftAffinity() string {
-	return fmt.Sprintf(`
-%s
+const testAccComputeServerGroupSoftAffinity = `
+{{ .BaseNetwork}}
 
-%s
-
-%s
+{{ .BaseImage}}
+			
+{{ .BaseFlavor}}
 
 resource "vkcs_compute_servergroup" "sg_1" {
   name = "sg_1"
@@ -202,6 +200,7 @@ resource "vkcs_compute_servergroup" "sg_1" {
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_subnet.base"]
   name = "instance_1"
+  availability_zone = "{{ .AvailabilityZone}}"
   security_groups = ["default"]
   scheduler_hints {
     group = "${vkcs_compute_servergroup.sg_1.id}"
@@ -212,5 +211,4 @@ resource "vkcs_compute_instance" "instance_1" {
   image_id = data.vkcs_images_image.base.id
   flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
-}
+`

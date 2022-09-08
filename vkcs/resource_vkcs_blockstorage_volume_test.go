@@ -19,7 +19,7 @@ func TestAccBlockStorageVolume_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBlockStorageVolumeBasic,
+				Config: testAccRenderConfig(testAccBlockStorageVolumeBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
 					testAccCheckBlockStorageVolumeMetadata(&volume, "foo", "bar"),
@@ -30,7 +30,7 @@ func TestAccBlockStorageVolume_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccBlockStorageVolumeUpdate,
+				Config: testAccRenderConfig(testAccBlockStorageVolumeUpdate, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
 					testAccCheckBlockStorageVolumeMetadata(&volume, "foo", "bar"),
@@ -51,14 +51,14 @@ func TestAccBlockStorageVolume_online_resize(t *testing.T) {
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBlockStorageVolumeOnlineResize(),
+				Config: testAccRenderConfig(testAccBlockStorageVolumeOnlineResize, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"vkcs_blockstorage_volume.volume_1", "size", "1"),
 				),
 			},
 			{
-				Config: testAccBlockStorageVolumeOnlineResizeUpdate(),
+				Config: testAccRenderConfig(testAccBlockStorageVolumeOnlineResizeUpdate, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"vkcs_blockstorage_volume.volume_1", "size", "2"),
@@ -77,7 +77,7 @@ func TestAccBlockStorageVolume_image(t *testing.T) {
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBlockStorageVolumeImage(),
+				Config: testAccRenderConfig(testAccBlockStorageVolumeImage, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
 					resource.TestCheckResourceAttr(
@@ -164,7 +164,7 @@ func testAccCheckBlockStorageVolumeMetadata(
 	}
 }
 
-const testAccBlockStorageVolumeBasic string = `
+const testAccBlockStorageVolumeBasic = `
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   description = "first test volume"
@@ -172,19 +172,16 @@ resource "vkcs_blockstorage_volume" "volume_1" {
     foo = "bar"
   }
   size = 1
-  availability_zone = "GZ1"
-  volume_type = "ceph-ssd"
+  availability_zone = "{{ .AvailabilityZone}}"
+  volume_type = "{{ .VolumeType}}"
 }`
 
-func testAccBlockStorageVolumeOnlineResize() string {
-	return fmt.Sprintf(`
-%s
-
-%s
+const testAccBlockStorageVolumeOnlineResize = `
+{{ .BaseImage}}
 
 resource "vkcs_compute_instance" "basic" {
   name          = "instance_1"
-  flavor_name   = data.vkcs_compute_flavor.base.name
+  flavor_name   = "{{ .FlavorName}}"
   image_id      = data.vkcs_images_image.base.id
   network_mode  = "none"
 }
@@ -193,44 +190,39 @@ resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   description = "test volume"
   size = 1
-  availability_zone = "GZ1"
-  volume_type = "ceph-ssd"
+  availability_zone = "{{ .AvailabilityZone}}"
+  volume_type = "{{ .VolumeType}}"
 }
 
 resource "vkcs_compute_volume_attach" "va_1" {
   instance_id = "${vkcs_compute_instance.basic.id}"
   volume_id   = "${vkcs_blockstorage_volume.volume_1.id}"
 }
-`, testAccBaseFlavor, testAccBaseImage)
-}
+`
 
-func testAccBlockStorageVolumeOnlineResizeUpdate() string {
-	return fmt.Sprintf(`
-%s
-
-%s
+const testAccBlockStorageVolumeOnlineResizeUpdate = `
+{{ .BaseImage}}
 
 resource "vkcs_compute_instance" "basic" {
-  name            = "instance_1"
-  flavor_name     = data.vkcs_compute_flavor.base.name
+  name          = "instance_1"
+  flavor_name   = "{{ .FlavorName}}"
   image_id      = data.vkcs_images_image.base.id
-  network_mode = "none"
+  network_mode  = "none"
 }
 
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   description = "test volume"
   size = 2
-  availability_zone = "GZ1"
-  volume_type = "ceph-ssd"
+  availability_zone = "{{ .AvailabilityZone}}"
+  volume_type = "{{ .VolumeType}}"
 }
 
 resource "vkcs_compute_volume_attach" "va_1" {
   instance_id = "${vkcs_compute_instance.basic.id}"
   volume_id   = "${vkcs_blockstorage_volume.volume_1.id}"
 }
-`, testAccBaseFlavor, testAccBaseImage)
-}
+`
 
 const testAccBlockStorageVolumeUpdate = `
 resource "vkcs_blockstorage_volume" "volume_1" {
@@ -240,21 +232,19 @@ resource "vkcs_blockstorage_volume" "volume_1" {
     foo = "bar"
   }
   size = 2
-  availability_zone = "GZ1"
-  volume_type = "ceph-ssd"
+  availability_zone = "{{ .AvailabilityZone}}"
+  volume_type = "{{ .VolumeType}}"
 }
 `
 
-func testAccBlockStorageVolumeImage() string {
-	return fmt.Sprintf(`
-%s
+const testAccBlockStorageVolumeImage = `
+{{ .BaseImage}}
 
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   size = 5
   image_id = data.vkcs_images_image.base.id
-  availability_zone = "GZ1"
-  volume_type = "ceph-ssd"
+  availability_zone = "{{ .AvailabilityZone}}"
+  volume_type = "{{ .VolumeType}}"
 }
-`, testAccBaseImage)
-}
+`

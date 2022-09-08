@@ -14,7 +14,7 @@ func TestAccNetworkingFloatingIPV2DataSource_address(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingFloatingIPV2DataSourceFloatingIP(),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPV2DataSourceFloatingIP, testAccValues),
 			},
 			{
 				Config: testAccNetworkingFloatingIPV2DataSourceAddress(),
@@ -49,16 +49,12 @@ func testAccCheckNetworkingFloatingIPV2DataSourceID(n string) resource.TestCheck
 	}
 }
 
-func testAccNetworkingFloatingIPV2DataSourceFloatingIP() string {
-	return fmt.Sprintf(`
-%s
-
+const testAccNetworkingFloatingIPV2DataSourceFloatingIP = `
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{ .ExtNetName}}"
   description = "test fip"
 }
-`, testAccBaseExtNetwork)
-}
+`
 
 func testAccNetworkingFloatingIPV2DataSourceAddress() string {
 	return fmt.Sprintf(`
@@ -68,5 +64,5 @@ data "vkcs_networking_floatingip" "fip_1" {
   address = "${vkcs_networking_floatingip.fip_1.address}"
   description = "test fip"
 }
-`, testAccNetworkingFloatingIPV2DataSourceFloatingIP())
+`, testAccRenderConfig(testAccNetworkingFloatingIPV2DataSourceFloatingIP, testAccValues))
 }

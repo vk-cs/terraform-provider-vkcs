@@ -19,7 +19,7 @@ func TestAccNetworkingFloatingIP_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingFloatingIPBasic(),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
 					resource.TestCheckResourceAttr("vkcs_networking_floatingip.fip_1", "description", "test floating IP"),
@@ -38,7 +38,7 @@ func TestAccNetworkingFloatingIP_fixedip_bind(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingFloatingIPFixedIPBind1(),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPFixedIPBind1, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
 					testAccCheckNetworkingFloatingIPBoundToCorrectIP(&fip, "192.168.199.20"),
@@ -47,7 +47,7 @@ func TestAccNetworkingFloatingIP_fixedip_bind(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccNetworkingFloatingIPFixedipBind2(),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPFixedipBind2, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
 					testAccCheckNetworkingFloatingIPBoundToCorrectIP(&fip, "192.168.199.10"),
@@ -66,7 +66,7 @@ func TestAccNetworkingFloatingIP_subnetIDs(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingFloatingIPSubnetIDs(),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPSubnetIDs, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_networking_floatingip.fip_1", "description", "test"),
 				),
@@ -84,7 +84,7 @@ func TestAccNetworkingFloatingIP_timeout(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingFloatingIPTimeout(),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPTimeout, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
 				),
@@ -156,20 +156,15 @@ func testAccCheckNetworkingFloatingIPBoundToCorrectIP(fip *floatingips.FloatingI
 	}
 }
 
-func testAccNetworkingFloatingIPBasic() string {
-	return fmt.Sprintf(`
-%s
-
+const testAccNetworkingFloatingIPBasic = `
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{ .ExtNetName}}"
   description = "test floating IP"
 }
-`, testAccBaseExtNetwork)
-}
+`
 
-func testAccNetworkingFloatingIPFixedIPBind1() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingFloatingIPFixedIPBind1 = `
+{{ .BaseExtNetwork}}
 
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
@@ -190,7 +185,7 @@ resource "vkcs_networking_router_interface" "router_interface_1" {
 
 resource "vkcs_networking_router" "router_1" {
   name = "router_1"
-  external_network_id = data.vkcs_networking_network.extnet.id
+  external_network_id = "${data.vkcs_networking_network.extnet.id}"
 }
 
 resource "vkcs_networking_port" "port_1" {
@@ -209,17 +204,15 @@ resource "vkcs_networking_port" "port_1" {
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{ .ExtNetName}}"
   description = "test"
   port_id = "${vkcs_networking_port.port_1.id}"
   fixed_ip = "${vkcs_networking_port.port_1.fixed_ip.1.ip_address}"
 }
-`, testAccBaseExtNetwork)
-}
+`
 
-func testAccNetworkingFloatingIPFixedipBind2() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingFloatingIPFixedipBind2 = `
+{{ .BaseExtNetwork}}
 
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
@@ -240,7 +233,7 @@ resource "vkcs_networking_router_interface" "router_interface_1" {
 
 resource "vkcs_networking_router" "router_1" {
   name = "router_1"
-  external_network_id = data.vkcs_networking_network.extnet.id
+  external_network_id = "${data.vkcs_networking_network.extnet.id}"
 }
 
 resource "vkcs_networking_port" "port_1" {
@@ -259,39 +252,34 @@ resource "vkcs_networking_port" "port_1" {
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{ .ExtNetName}}"
   port_id = "${vkcs_networking_port.port_1.id}"
   fixed_ip = "${vkcs_networking_port.port_1.fixed_ip.0.ip_address}"
 }
-`, testAccBaseExtNetwork)
-}
+`
 
-func testAccNetworkingFloatingIPTimeout() string {
-	return fmt.Sprintf(`
-%s
-
+const testAccNetworkingFloatingIPTimeout = `
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{ .ExtNetName}}"
   timeouts {
     create = "5m"
     delete = "5m"
   }
 }
-`, testAccBaseExtNetwork)
-}
+`
 
-func testAccNetworkingFloatingIPSubnetIDs() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingFloatingIPSubnetIDs = `
+data "vkcs_networking_network" "ext_network" {
+	name = "{{ .ExtNetName}}"
+}	
 
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = data.vkcs_networking_network.ext_network.name
   description = "test"
   subnet_ids = flatten([
-    data.vkcs_networking_network.extnet.id, # wrong UUID
-    data.vkcs_networking_network.extnet.subnets,
-    data.vkcs_networking_network.extnet.id, # wrong UUID again
+    data.vkcs_networking_network.ext_network.id, # wrong UUID
+    data.vkcs_networking_network.ext_network.subnets,
+    data.vkcs_networking_network.ext_network.id, # wrong UUID again
   ])
 }
-`, testAccBaseExtNetwork)
-}
+`

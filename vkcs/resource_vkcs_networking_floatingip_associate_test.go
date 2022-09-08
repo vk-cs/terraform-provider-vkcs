@@ -20,7 +20,7 @@ func TestAccNetworkingFloatingIPAssociate_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingFloatingIPAssociateBasic(),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPAssociateBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists(
 						"vkcs_networking_floatingip_associate.fip_1", &fip),
@@ -43,7 +43,7 @@ func TestAccNetworkingFloatingIPAssociate_twoFixedIPs(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingFloatingIPAssociateTwoFixedIPs1(),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPAssociateTwoFixedIPs1, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists(
 						"vkcs_networking_floatingip_associate.fip_1", &fip),
@@ -56,7 +56,7 @@ func TestAccNetworkingFloatingIPAssociate_twoFixedIPs(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccNetworkingFloatingIPAssociateTwoFixedIPs2(),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPAssociateTwoFixedIPs2, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists(
 						"vkcs_networking_floatingip_associate.fip_1", &fip),
@@ -101,9 +101,8 @@ func testAccCheckNetworkingFloatingIPAssociateDestroy(s *terraform.State) error 
 	return nil
 }
 
-func testAccNetworkingFloatingIPAssociateBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingFloatingIPAssociateBasic = `
+{{ .BaseExtNetwork}}
 
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
@@ -124,7 +123,7 @@ resource "vkcs_networking_router_interface" "router_interface_1" {
 
 resource "vkcs_networking_router" "router_1" {
   name = "router_1"
-  external_network_id = data.vkcs_networking_network.extnet.id
+  external_network_id = "${data.vkcs_networking_network.extnet.id}"
 }
 
 resource "vkcs_networking_port" "port_1" {
@@ -139,7 +138,7 @@ resource "vkcs_networking_port" "port_1" {
 
 resource "vkcs_networking_floatingip" "fip_1" {
   depends_on = ["vkcs_networking_router.router_1"]
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{ .ExtNetName}}"
 }
 
 resource "vkcs_networking_floatingip_associate" "fip_1" {
@@ -147,12 +146,10 @@ resource "vkcs_networking_floatingip_associate" "fip_1" {
   floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
   port_id = "${vkcs_networking_port.port_1.id}"
 }
-`, testAccBaseExtNetwork)
-}
+`
 
-func testAccNetworkingFloatingIPAssociateTwoFixedIPs1() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingFloatingIPAssociateTwoFixedIPs1 = `
+{{ .BaseExtNetwork}}
 
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
@@ -173,7 +170,7 @@ resource "vkcs_networking_router_interface" "router_interface_1" {
 
 resource "vkcs_networking_router" "router_1" {
   name = "router_1"
-  external_network_id = data.vkcs_networking_network.extnet.id
+  external_network_id = "${data.vkcs_networking_network.extnet.id}"
 }
 
 resource "vkcs_networking_port" "port_1" {
@@ -193,7 +190,7 @@ resource "vkcs_networking_port" "port_1" {
 
 resource "vkcs_networking_floatingip" "fip_1" {
   depends_on = ["vkcs_networking_router.router_1"]
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{ .ExtNetName}}"
 }
 
 resource "vkcs_networking_floatingip_associate" "fip_1" {
@@ -202,12 +199,10 @@ resource "vkcs_networking_floatingip_associate" "fip_1" {
   port_id = "${vkcs_networking_port.port_1.id}"
   fixed_ip = "192.168.199.20"
 }
-`, testAccBaseExtNetwork)
-}
+`
 
-func testAccNetworkingFloatingIPAssociateTwoFixedIPs2() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingFloatingIPAssociateTwoFixedIPs2 = `
+{{ .BaseExtNetwork}}
 
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
@@ -228,7 +223,7 @@ resource "vkcs_networking_router_interface" "router_interface_1" {
 
 resource "vkcs_networking_router" "router_1" {
   name = "router_1"
-  external_network_id = data.vkcs_networking_network.extnet.id
+  external_network_id = "${data.vkcs_networking_network.extnet.id}"
 }
 
 resource "vkcs_networking_port" "port_1" {
@@ -248,7 +243,7 @@ resource "vkcs_networking_port" "port_1" {
 
 resource "vkcs_networking_floatingip" "fip_1" {
   depends_on = ["vkcs_networking_router.router_1"]
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{ .ExtNetName}}"
 }
 
 resource "vkcs_networking_floatingip_associate" "fip_1" {
@@ -257,5 +252,4 @@ resource "vkcs_networking_floatingip_associate" "fip_1" {
   port_id = "${vkcs_networking_port.port_1.id}"
   fixed_ip = "192.168.199.21"
 }
-`, testAccBaseExtNetwork)
-}
+`

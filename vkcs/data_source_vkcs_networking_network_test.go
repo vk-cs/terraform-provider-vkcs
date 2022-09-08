@@ -90,7 +90,7 @@ func TestAccNetworkingNetworkDataSource_externalExplicit(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingNetworkDataSourceExternalExplicit(),
+				Config: testAccRenderConfig(testAccNetworkingNetworkDataSourceExternalExplicit, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkDataSourceID("data.vkcs_networking_network.network_1"),
 					resource.TestCheckResourceAttr(
@@ -113,7 +113,7 @@ func TestAccNetworkingNetworkDataSource_externalImplicit(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingNetworkDataSourceExternalImplicit(),
+				Config: testAccRenderConfig(testAccNetworkingNetworkDataSourceExternalImplicit, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkDataSourceID("data.vkcs_networking_network.network_1"),
 					resource.TestCheckResourceAttr(
@@ -189,22 +189,18 @@ data "vkcs_networking_network" "network_1" {
 `, testAccNetworkingNetworkDataSourceNetwork)
 }
 
-func testAccNetworkingNetworkDataSourceExternalExplicit() string {
-	return fmt.Sprintf(`
+const testAccNetworkingNetworkDataSourceExternalExplicit = `
 data "vkcs_networking_network" "network_1" {
-  name = "%s"
+  name = "{{ .PoolName}}"
   external = "true"
 }
-`, osPoolName)
-}
+`
 
-func testAccNetworkingNetworkDataSourceExternalImplicit() string {
-	return fmt.Sprintf(`
+const testAccNetworkingNetworkDataSourceExternalImplicit = `
 data "vkcs_networking_network" "network_1" {
-  name = "%s"
+  name = "{{ .PoolName}}"
 }
-`, osPoolName)
-}
+`
 
 func testAccNetworkingNetworkDataSourceNetworkID() string {
 	return fmt.Sprintf(`

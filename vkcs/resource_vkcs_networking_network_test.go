@@ -89,7 +89,7 @@ func TestAccNetworkingNetwork_fullstack(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingNetworkFullstack(),
+				Config: testAccRenderConfig(testAccNetworkingNetworkFullstack, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
 					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
@@ -327,7 +327,7 @@ func TestAccNetworkingNetwork_privateDnsDomain(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingNetworkPrivateDNSDomain(),
+				Config: testAccRenderConfig(testAccNetworkingNetworkPrivateDNSDomain, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
 					resource.TestCheckResourceAttr(
@@ -482,11 +482,10 @@ resource "vkcs_networking_router_interface" "ri_1" {
 }
 `
 
-func testAccNetworkingNetworkFullstack() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingNetworkFullstack = `
+{{ .BaseImage}}
 
-%s
+{{ .BaseFlavor}}
 
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
@@ -533,8 +532,7 @@ resource "vkcs_compute_instance" "instance_1" {
   image_id = data.vkcs_images_image.base.id
   flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, testAccBaseImage, testAccBaseFlavor)
-}
+`
 
 const testAccNetworkingNetworkTimeout = `
 resource "vkcs_networking_network" "network_1" {
@@ -582,13 +580,11 @@ resource "vkcs_networking_network" "network_1" {
 }
 `
 
-func testAccNetworkingNetworkPrivateDNSDomain() string {
-	return fmt.Sprintf(`
+const testAccNetworkingNetworkPrivateDNSDomain = `
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
   description = "my network description"
   admin_state_up = "true"
-  private_dns_domain = "%s"
+  private_dns_domain = "{{ .PrivateDNSDomain}}"
 }
-`, osPrivateDNSDomain)
-}
+`
