@@ -15,6 +15,7 @@ func TestAccDatabaseDatabase_basic(t *testing.T) {
 	var instance instanceResp
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseDatabaseDestroy,
 		Steps: []resource.TestStep{

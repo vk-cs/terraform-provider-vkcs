@@ -12,6 +12,7 @@ func TestAccDatabaseInstance_basic(t *testing.T) {
 	var instance instanceResp
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -40,6 +41,7 @@ func TestAccDatabaseInstance_basic(t *testing.T) {
 func TestAccDatabaseInstance_rootUser(t *testing.T) {
 	var instance instanceResp
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -60,6 +62,7 @@ func TestAccDatabaseInstance_wal(t *testing.T) {
 	var instance instanceResp
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -80,6 +83,7 @@ func TestAccDatabaseInstance_wal_no_update(t *testing.T) {
 	var instance instanceResp
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{

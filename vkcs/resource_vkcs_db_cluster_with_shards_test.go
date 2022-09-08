@@ -12,6 +12,7 @@ func TestAccDatabaseClusterWithShards_basic(t *testing.T) {
 	var cluster dbClusterResp
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseClusterWithShardsDestroy,
 		Steps: []resource.TestStep{
