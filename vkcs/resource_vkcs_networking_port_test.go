@@ -27,6 +27,7 @@ func TestAccNetworkingPort_basic(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -48,6 +49,7 @@ func TestAccNetworkingPort_noIP(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -79,6 +81,7 @@ func TestAccNetworkingPort_multipleNoIP(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -101,6 +104,7 @@ func TestAccNetworkingPort_allowedAddressPairs(t *testing.T) {
 	var vrrpPort1, vrrpPort2, instancePort ports.Port
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -171,6 +175,7 @@ func TestAccNetworkingPort_allowedAddressPairsNoMAC(t *testing.T) {
 	var vrrpPort1, vrrpPort2, instancePort ports.Port
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -195,6 +200,7 @@ func TestAccNetworkingPort_multipleFixedIPs(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -217,6 +223,7 @@ func TestAccNetworkingPort_timeout(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -234,6 +241,7 @@ func TestAccNetworkingPort_timeout(t *testing.T) {
 
 func TestAccNetworkingPort_fixedIPs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -257,6 +265,7 @@ func TestAccNetworkingPort_updateSecurityGroups(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -336,6 +345,7 @@ func TestAccNetworkingPort_noSecurityGroups(t *testing.T) {
 	var subnet subnets.Subnet
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -399,6 +409,7 @@ func TestAccNetworkingPort_noFixedIP(t *testing.T) {
 	var port ports.Port
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -452,6 +463,7 @@ func TestAccNetworkingPort_createExtraDHCPOpts(t *testing.T) {
 	var port ports.Port
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -475,6 +487,7 @@ func TestAccNetworkingPort_updateExtraDHCPOpts(t *testing.T) {
 	var port ports.Port
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -554,6 +567,7 @@ func TestAccNetworkingPort_adminStateUp_omit(t *testing.T) {
 	var port ports.Port
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -574,6 +588,7 @@ func TestAccNetworkingPort_adminStateUp_true(t *testing.T) {
 	var port ports.Port
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -594,6 +609,7 @@ func TestAccNetworkingPort_adminStateUp_false(t *testing.T) {
 	var port ports.Port
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -614,6 +630,7 @@ func TestAccNetworkingPort_adminStateUp_update(t *testing.T) {
 	var port ports.Port
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -643,6 +660,7 @@ func TestAccNetworkingPort_portSecurity_omit(t *testing.T) {
 	var port testPortWithExtensions
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -681,6 +699,7 @@ func TestAccNetworkingPort_portSecurity_disabled(t *testing.T) {
 	var port testPortWithExtensions
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
@@ -710,6 +729,7 @@ func TestAccNetworkingPort_portSecurity_enabled(t *testing.T) {
 	var port testPortWithExtensions
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingPortDestroy,
 		Steps: []resource.TestStep{
