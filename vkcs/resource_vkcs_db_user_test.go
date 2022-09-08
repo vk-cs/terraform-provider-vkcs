@@ -20,7 +20,7 @@ func TestAccDatabaseUser_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseUserBasic,
+				Config: testAccRenderConfig(testAccDatabaseUserBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -44,7 +44,7 @@ func TestAccDatabaseUser_update_and_delete(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseUserBasic,
+				Config: testAccRenderConfig(testAccDatabaseUserBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -55,7 +55,7 @@ func TestAccDatabaseUser_update_and_delete(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccDatabaseUserAddDatabase,
+				Config: testAccRenderConfig(testAccDatabaseUserAddDatabase, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseUserExists(
 						"vkcs_db_user.basic", &instance, &user),
@@ -63,7 +63,7 @@ func TestAccDatabaseUser_update_and_delete(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccDatabaseUserBasic,
+				Config: testAccRenderConfig(testAccDatabaseUserBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseUserExists(
 						"vkcs_db_user.basic", &instance, &user),
@@ -171,16 +171,15 @@ func testAccCheckDatabaseUserDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccDatabaseUserBasic = fmt.Sprintf(`
-%s
-
-%s
+const testAccDatabaseUserBasic = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
 
 resource "vkcs_db_instance" "basic" {
   name = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 10
-  volume_type = "ceph-ssd"
+  volume_type = "{{.VolumeType}}"
 
   datastore {
     version = "13"
@@ -190,7 +189,7 @@ resource "vkcs_db_instance" "basic" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "GZ1"
+  availability_zone = "{{.AvailabilityZone}}"
   depends_on = [
     vkcs_networking_network.base,
     vkcs_networking_subnet.base
@@ -215,18 +214,17 @@ resource "vkcs_db_user" "basic" {
 	"${vkcs_db_database.testdb1.name}"
   ]
 }
-`, testAccBaseFlavor, testAccBaseNetwork)
+`
 
-var testAccDatabaseUserAddDatabase = fmt.Sprintf(`
-%s
-
-%s
+const testAccDatabaseUserAddDatabase = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
 
 resource "vkcs_db_instance" "basic" {
   name = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 10
-  volume_type = "ceph-ssd"
+  volume_type = "{{.VolumeType}}"
 
   datastore {
     version = "13"
@@ -236,7 +234,7 @@ resource "vkcs_db_instance" "basic" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "GZ1"
+  availability_zone = "{{.AvailabilityZone}}"
   depends_on = [
     vkcs_networking_network.base,
     vkcs_networking_subnet.base
@@ -262,4 +260,4 @@ resource "vkcs_db_user" "basic" {
 	  "${vkcs_db_database.testdb1.name}"
   ]
 }
-`, testAccBaseFlavor, testAccBaseNetwork)
+`

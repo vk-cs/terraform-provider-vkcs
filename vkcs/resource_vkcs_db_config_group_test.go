@@ -17,7 +17,7 @@ func TestAccDatabaseConfigGroup_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseConfigGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseConfigGroupBasic,
+				Config: testAccRenderConfig(testAccDatabaseConfigGroupBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseConfigGroupExists(
 						"vkcs_db_config_group.basic", &configGroup),
@@ -28,7 +28,7 @@ func TestAccDatabaseConfigGroup_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccDatabaseConfigGroupUpdate,
+				Config: testAccRenderConfig(testAccDatabaseConfigGroupUpdate, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseConfigGroupExists(
 						"vkcs_db_config_group.basic", &configGroup),
@@ -108,18 +108,26 @@ resource "vkcs_db_config_group" "basic" {
 }
 `
 
-var testAccDatabaseConfigGroupBasic = fmt.Sprintf(`
-%s
+const testAccDatabaseConfigGroupBasic = `
+{{.BaseNetwork}}	
+{{.BaseFlavor}}
 
-%s
-
-%s
+resource "vkcs_db_config_group" "basic" {
+	name = "basic"
+	datastore {
+		version = "13"
+		type = "postgresql"
+	}
+	values = {
+		max_connections: "100"
+	}
+}
 
 resource "vkcs_db_instance" "basic" {
   name             = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 8
-  volume_type = "ceph-ssd"
+  volume_type = "{{.VolumeType}}"
   configuration_id = vkcs_db_config_group.basic.id
   datastore {
     version = "13"
@@ -129,7 +137,7 @@ resource "vkcs_db_instance" "basic" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "GZ1"
+  availability_zone = "{{.AvailabilityZone}}"
   floating_ip_enabled = true
 
   disk_autoexpand {
@@ -141,12 +149,11 @@ resource "vkcs_db_instance" "basic" {
     vkcs_networking_subnet.base
   ]
 }
-`, testAccDatabaseConfigGroupResource, testAccBaseNetwork, testAccBaseFlavor)
+`
 
-var testAccDatabaseConfigGroupUpdate = fmt.Sprintf(`
-%s
-
-%s
+const testAccDatabaseConfigGroupUpdate = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
 
 resource "vkcs_db_config_group" "basic" {
 	name = "basic"
@@ -163,7 +170,7 @@ resource "vkcs_db_instance" "basic" {
   name             = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 8
-  volume_type = "ceph-ssd"
+  volume_type = "{{.VolumeType}}"
   configuration_id = vkcs_db_config_group.basic.id
   datastore {
     version = "13"
@@ -173,7 +180,7 @@ resource "vkcs_db_instance" "basic" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "GZ1"
+  availability_zone = "{{.AvailabilityZone}}"
   floating_ip_enabled = true
 
   disk_autoexpand {
@@ -185,4 +192,4 @@ resource "vkcs_db_instance" "basic" {
     vkcs_networking_subnet.base
   ]
 }
-`, testAccBaseNetwork, testAccBaseFlavor)
+`
