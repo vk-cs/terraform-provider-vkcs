@@ -130,7 +130,7 @@ resource "vkcs_blockstorage_snapshot" "snapshot_1" {
     foo = "bar"
   }
 }
-`, testAccBlockStorageVolumeBasic)
+`, testAccRenderConfig(testAccBlockStorageVolumeBasic, testAccValues))
 }
 
 func testAccBlockStorageSnapshotUpdate() string {
@@ -145,5 +145,5 @@ resource "vkcs_blockstorage_snapshot" "snapshot_1" {
     foo = "bar"
   }
 }
-`, testAccBlockStorageVolumeBasic)
+`, testAccRenderConfig(testAccBlockStorageVolumeBasic, testAccValues))
 }

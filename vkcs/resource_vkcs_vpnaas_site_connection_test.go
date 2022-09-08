@@ -18,7 +18,7 @@ func TestAccVPNaaSSiteConnection_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckSiteConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSiteConnectionBasic(),
+				Config: testAccRenderConfig(testAccSiteConnectionBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSiteConnectionExists("vkcs_vpnaas_site_connection.conn_1", &conn),
 					resource.TestCheckResourceAttrPtr("vkcs_vpnaas_site_connection.conn_1", "ikepolicy_id", &conn.IKEPolicyID),
@@ -89,10 +89,9 @@ func testAccCheckSiteConnectionExists(n string, conn *siteconnections.Connection
 	}
 }
 
-func testAccSiteConnectionBasic() string {
-	return fmt.Sprintf(`
-%s
-
+const testAccSiteConnectionBasic = `
+	{{.BaseExtNetwork}}
+	
 	resource "vkcs_networking_network" "network_1" {
 		name           = "tf_test_network"
   		admin_state_up = "true"
@@ -106,7 +105,7 @@ func testAccSiteConnectionBasic() string {
 
 	resource "vkcs_networking_router" "router_1" {
   		name             = "my_router"
-  		external_network_id = data.vkcs_networking_network.extnet.id
+  		external_network_id = "${data.vkcs_networking_network.extnet.id}"
 	}
 
 	resource "vkcs_networking_router_interface" "router_interface_1" {
@@ -151,5 +150,4 @@ func testAccSiteConnectionBasic() string {
 		}
 		depends_on = ["vkcs_networking_router_interface.router_interface_1"]
 	}
-	`, testAccBaseExtNetwork)
-}
+	`

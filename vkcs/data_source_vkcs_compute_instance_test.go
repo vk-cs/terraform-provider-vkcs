@@ -14,7 +14,7 @@ func TestAccComputeInstanceDataSource(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeInstanceDataSourceBasic(),
+				Config: testAccRenderConfig(testAccComputeInstanceDataSourceBasic, testAccValues),
 			},
 			{
 				Config: testAccComputeInstanceDataSourceSource(),
@@ -44,13 +44,10 @@ func testAccCheckComputeInstanceDataSourceID(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccComputeInstanceDataSourceBasic() string {
-	return fmt.Sprintf(`
-%s
-
-%s
-
-%s
+const testAccComputeInstanceDataSourceBasic = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_subnet.base"]
@@ -65,8 +62,7 @@ resource "vkcs_compute_instance" "instance_1" {
   image_id = data.vkcs_images_image.base.id
   flavor_id = data.vkcs_compute_flavor.base.id
 }
-`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
-}
+`
 
 func testAccComputeInstanceDataSourceSource() string {
 	return fmt.Sprintf(`
@@ -75,5 +71,5 @@ func testAccComputeInstanceDataSourceSource() string {
 data "vkcs_compute_instance" "source_1" {
   id = "${vkcs_compute_instance.instance_1.id}"
 }
-`, testAccComputeInstanceDataSourceBasic())
+`, testAccRenderConfig(testAccComputeInstanceDataSourceBasic, testAccValues))
 }
