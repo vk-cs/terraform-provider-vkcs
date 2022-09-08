@@ -15,7 +15,7 @@ func TestAccDatabaseCluster_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseClusterBasic,
+				Config: testAccRenderConfig(testAccDatabaseClusterBasic, testAccValues),
 			},
 
 			{

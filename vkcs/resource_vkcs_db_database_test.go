@@ -20,7 +20,7 @@ func TestAccDatabaseDatabase_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseDatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseDatabaseBasic,
+				Config: testAccRenderConfig(testAccDatabaseDatabaseBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -120,16 +120,15 @@ func testAccCheckDatabaseDatabaseDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccDatabaseDatabaseBasic = fmt.Sprintf(`
-%s
-
-%s
+const testAccDatabaseDatabaseBasic = `
+{{.BaseNetwork}}	
+{{.BaseFlavor}}
 
 resource "vkcs_db_instance" "basic" {
   name = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 10
-  volume_type = "ceph-ssd"
+  volume_type = "{{.VolumeType}}"
 
   datastore {
     version = "13"
@@ -139,7 +138,7 @@ resource "vkcs_db_instance" "basic" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "GZ1"
+  availability_zone = "{{.AvailabilityZone}}"
   depends_on = [
     vkcs_networking_network.base,
     vkcs_networking_subnet.base
@@ -150,4 +149,4 @@ resource "vkcs_db_database" "basic" {
   name        = "basic"
   dbms_id = "${vkcs_db_instance.basic.id}"
 }
-`, testAccBaseFlavor, testAccBaseNetwork)
+`

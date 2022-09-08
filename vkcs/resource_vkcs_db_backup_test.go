@@ -91,4 +91,4 @@ resource "vkcs_db_backup" "basic" {
     description = "basic description"
 
 }
-`, testAccDatabaseInstanceBasic)
+`, testAccRenderConfig(testAccDatabaseInstanceBasic, testAccValues))

@@ -49,4 +49,4 @@ var testAccDataSourceDatabaseDatabaseBasic = fmt.Sprintf(`
 data "vkcs_db_database" "basic" {
 	id = "${vkcs_db_database.basic.id}"
 }
-`, testAccDatabaseDatabaseBasic)
+`, testAccRenderConfig(testAccDatabaseDatabaseBasic, testAccValues))
