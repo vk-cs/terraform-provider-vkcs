@@ -19,7 +19,7 @@ func TestAccVPNaaSService_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckServiceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServiceBasic(),
+				Config: testAccRenderConfig(testAccServiceBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckServiceExists("vkcs_vpnaas_service.service_1", &service),
 					resource.TestCheckResourceAttrPtr("vkcs_vpnaas_service.service_1", "router_id", &service.RouterID),
@@ -80,19 +80,17 @@ func testAccCheckServiceExists(n string, serv *services.Service) resource.TestCh
 	}
 }
 
-func testAccServiceBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccServiceBasic = `
+{{.BaseExtNetwork}}
 
 	resource "vkcs_networking_router" "router_1" {
 	  name = "router_1"
 	  admin_state_up = "true"
-	  external_network_id = data.vkcs_networking_network.extnet.id
+	  external_network_id = "${data.vkcs_networking_network.extnet.id}"
 	}
 
 	resource "vkcs_vpnaas_service" "service_1" {
 		router_id = "${vkcs_networking_router.router_1.id}"
 		admin_state_up = "false"
 	}
-	`, testAccBaseExtNetwork)
-}
+	`

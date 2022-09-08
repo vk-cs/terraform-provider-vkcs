@@ -21,7 +21,7 @@ func TestAccComputeFloatingIPAssociate_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeFloatingIPAssociateBasic(),
+				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
@@ -29,7 +29,7 @@ func TestAccComputeFloatingIPAssociate_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccComputeFloatingIPAssociateUpdate(),
+				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateUpdate, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
@@ -50,7 +50,7 @@ func TestAccComputeV2FloatingIPAssociate_fixedIP(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeFloatingIPAssociateFixedIP(),
+				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateFixedIP, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
@@ -72,7 +72,7 @@ func TestAccComputeFloatingIPAssociate_attachNew(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeFloatingIPAssociateAttachNew1(),
+				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateAttachNew1, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &floatingIP1),
@@ -81,7 +81,7 @@ func TestAccComputeFloatingIPAssociate_attachNew(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccComputeFloatingIPAssociateAttachNew2(),
+				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateAttachNew2, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &floatingIP1),
@@ -103,7 +103,7 @@ func TestAccComputeFloatingIPAssociate_waitUntilAssociated(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeFloatingIPAssociateWaitUntilAssociated(),
+				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateWaitUntilAssociated, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
@@ -188,13 +188,10 @@ func testAccCheckComputeFloatingIPAssociateAssociated(
 	}
 }
 
-func testAccComputeFloatingIPAssociateBasic() string {
-	return fmt.Sprintf(`
-%s
-
-%s
-
-%s
+const testAccComputeFloatingIPAssociateBasic = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
@@ -207,23 +204,19 @@ resource "vkcs_compute_instance" "instance_1" {
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{.ExtNetName}}"
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
   floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
   instance_id = "${vkcs_compute_instance.instance_1.id}"
 }
-`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
-}
+`
 
-func testAccComputeFloatingIPAssociateUpdate() string {
-	return fmt.Sprintf(`
-%s
-
-%s
-
-%s
+const testAccComputeFloatingIPAssociateUpdate = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
@@ -236,7 +229,7 @@ resource "vkcs_compute_instance" "instance_1" {
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{.ExtNetName}}"
   description = "test"
 }
 
@@ -244,16 +237,12 @@ resource "vkcs_compute_floatingip_associate" "fip_1" {
   floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
   instance_id = "${vkcs_compute_instance.instance_1.id}"
 }
-`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
-}
+`
 
-func testAccComputeFloatingIPAssociateFixedIP() string {
-	return fmt.Sprintf(`
-%s
-
-%s
-
-%s
+const testAccComputeFloatingIPAssociateFixedIP = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
@@ -266,7 +255,7 @@ resource "vkcs_compute_instance" "instance_1" {
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
-	pool = data.vkcs_networking_network.extnet.name
+	pool = "{{.ExtNetName}}"
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
@@ -274,16 +263,12 @@ resource "vkcs_compute_floatingip_associate" "fip_1" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
   fixed_ip = "${vkcs_compute_instance.instance_1.access_ip_v4}"
 }
-`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
-}
+`
 
-func testAccComputeFloatingIPAssociateAttachNew1() string {
-	return fmt.Sprintf(`
-%s
-
-%s
-
-%s
+const testAccComputeFloatingIPAssociateAttachNew1 = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
@@ -296,27 +281,23 @@ resource "vkcs_compute_instance" "instance_1" {
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{.ExtNetName}}"
 }
 
 resource "vkcs_networking_floatingip" "fip_2" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{.ExtNetName}}"
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
   floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
   instance_id = "${vkcs_compute_instance.instance_1.id}"
 }
-`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
-}
+`
 
-func testAccComputeFloatingIPAssociateAttachNew2() string {
-	return fmt.Sprintf(`
-%s
-
-%s
-
-%s
+const testAccComputeFloatingIPAssociateAttachNew2 = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
@@ -329,27 +310,23 @@ resource "vkcs_compute_instance" "instance_1" {
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{.ExtNetName}}"
 }
 
 resource "vkcs_networking_floatingip" "fip_2" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{.ExtNetName}}"
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
   floating_ip = "${vkcs_networking_floatingip.fip_2.address}"
   instance_id = "${vkcs_compute_instance.instance_1.id}"
 }
-`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
-}
+`
 
-func testAccComputeFloatingIPAssociateWaitUntilAssociated() string {
-	return fmt.Sprintf(`
-%s
-
-%s
-
-%s
+const testAccComputeFloatingIPAssociateWaitUntilAssociated = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
   name = "instance_1"
@@ -362,7 +339,7 @@ resource "vkcs_compute_instance" "instance_1" {
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = data.vkcs_networking_network.extnet.name
+  pool = "{{.ExtNetName}}"
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
@@ -371,5 +348,4 @@ resource "vkcs_compute_floatingip_associate" "fip_1" {
 
   wait_until_associated = true
 }
-`, testAccBaseFlavor, testAccBaseImage, testAccBaseNetwork)
-}
+`
