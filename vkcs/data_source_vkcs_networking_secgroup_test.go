@@ -10,6 +10,7 @@ import (
 
 func TestAccNetworkingSecGroupDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -35,6 +36,7 @@ func TestAccNetworkingSecGroupDataSource_basic(t *testing.T) {
 
 func TestAccNetworkingSecGroupDataSource_secGroupID(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{

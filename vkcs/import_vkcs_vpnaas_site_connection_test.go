@@ -10,6 +10,7 @@ func TestAccSiteConnection_importBasic(t *testing.T) {
 	resourceName := "vkcs_vpnaas_site_connection.conn_1"
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckSiteConnectionDestroy,
 		Steps: []resource.TestStep{

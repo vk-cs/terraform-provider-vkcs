@@ -15,6 +15,7 @@ func TestAccNetworkingFloatingIPAssociate_basic(t *testing.T) {
 	var fip floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
@@ -37,6 +38,7 @@ func TestAccNetworkingFloatingIPAssociate_twoFixedIPs(t *testing.T) {
 	var fip floatingips.FloatingIP
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckNetworkingFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
