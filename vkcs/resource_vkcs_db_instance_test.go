@@ -17,7 +17,7 @@ func TestAccDatabaseInstance_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseInstanceBasic,
+				Config: testAccRenderConfig(testAccDatabaseInstanceBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -26,7 +26,7 @@ func TestAccDatabaseInstance_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccDatabaseInstanceUpdate,
+				Config: testAccRenderConfig(testAccDatabaseInstanceUpdate, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -46,7 +46,7 @@ func TestAccDatabaseInstance_rootUser(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseInstanceRootUser,
+				Config: testAccRenderConfig(testAccDatabaseInstanceRootUser, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -67,7 +67,7 @@ func TestAccDatabaseInstance_wal(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseInstanceWal,
+				Config: testAccRenderConfig(testAccDatabaseInstanceWal, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -88,7 +88,7 @@ func TestAccDatabaseInstance_wal_no_update(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseInstanceWal,
+				Config: testAccRenderConfig(testAccDatabaseInstanceWal, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -97,7 +97,7 @@ func TestAccDatabaseInstance_wal_no_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccDatabaseInstanceWal,
+				Config: testAccRenderConfig(testAccDatabaseInstanceWal, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -192,16 +192,15 @@ func testAccCheckDatabaseRootUserExists(n string, instance *instanceResp) resour
 	}
 }
 
-var testAccDatabaseInstanceBasic = fmt.Sprintf(`
-%s
-
-%s
+const testAccDatabaseInstanceBasic = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
 
 resource "vkcs_db_instance" "basic" {
   name             = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 8
-  volume_type = "ceph-ssd"
+  volume_type = "{{.VolumeType}}"
 
   datastore {
     version = "13"
@@ -211,7 +210,7 @@ resource "vkcs_db_instance" "basic" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "GZ1"
+  availability_zone = "{{.AvailabilityZone}}"
   floating_ip_enabled = true
 
   disk_autoexpand {
@@ -222,20 +221,18 @@ resource "vkcs_db_instance" "basic" {
     vkcs_networking_network.base,
     vkcs_networking_subnet.base
   ]
-
 }
-`, testAccBaseFlavor, testAccBaseNetwork)
+`
 
-var testAccDatabaseInstanceUpdate = fmt.Sprintf(`
-%s
-
-%s
+const testAccDatabaseInstanceUpdate = `
+{{.BaseNetwork}}
+{{.BaseNewFlavor}}
 
 resource "vkcs_db_instance" "basic" {
   name             = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 9
-  volume_type = "ceph-ssd"
+  volume_type = "{{.VolumeType}}"
 
   datastore {
     version = "13"
@@ -245,7 +242,7 @@ resource "vkcs_db_instance" "basic" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "GZ1"
+  availability_zone = "{{.AvailabilityZone}}"
   floating_ip_enabled = true
 
   disk_autoexpand {
@@ -258,18 +255,17 @@ resource "vkcs_db_instance" "basic" {
   ]
 
 }
-`, testAccBaseFlavorSecond, testAccBaseNetwork)
+`
 
-var testAccDatabaseInstanceRootUser = fmt.Sprintf(`
-%s
-
-%s
+const testAccDatabaseInstanceRootUser = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
 
 resource "vkcs_db_instance" "basic" {
   name = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 10
-  volume_type = "ceph-ssd"
+  volume_type = "{{.VolumeType}}"
 
   datastore {
     version = "13"
@@ -285,18 +281,17 @@ resource "vkcs_db_instance" "basic" {
     vkcs_networking_subnet.base
   ]
 }
-`, testAccBaseFlavor, testAccBaseNetwork)
+`
 
-var testAccDatabaseInstanceWal = fmt.Sprintf(`
-%s
-
-%s
+const testAccDatabaseInstanceWal = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
 
 resource "vkcs_db_instance" "basic" {
   name             = "basic_wal"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 8
-  volume_type = "ceph-ssd"
+  volume_type = "{{.VolumeType}}"
 
   datastore {
     version = "13"
@@ -306,7 +301,7 @@ resource "vkcs_db_instance" "basic" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  availability_zone = "GZ1"
+  availability_zone = "{{.AvailabilityZone}}"
   floating_ip_enabled = true
 
   disk_autoexpand {
@@ -316,7 +311,7 @@ resource "vkcs_db_instance" "basic" {
 
   wal_volume {
 	  size = 8
-	  volume_type = "ceph-ssd"
+	  volume_type = "{{.VolumeType}}"
   }
 
   wal_disk_autoexpand {
@@ -325,4 +320,4 @@ resource "vkcs_db_instance" "basic" {
   }
 
 }
-`, testAccBaseFlavor, testAccBaseNetwork)
+`

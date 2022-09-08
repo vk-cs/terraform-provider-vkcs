@@ -15,7 +15,7 @@ func TestAccDatabaseClusterWithShards_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseClusterWithShardsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseClusterWithShardsBasic,
+				Config: testAccRenderConfig(testAccDatabaseClusterWithShardsBasic, testAccValues),
 			},
 
 			{

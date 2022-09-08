@@ -17,7 +17,7 @@ func TestAccDatabaseClusterWithShards_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseClusterWithShardsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseClusterWithShardsBasic,
+				Config: testAccRenderConfig(testAccDatabaseClusterWithShardsBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster_with_shards.basic", &cluster),
@@ -50,10 +50,9 @@ func testAccCheckDatabaseClusterWithShardsDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccDatabaseClusterWithShardsBasic = fmt.Sprintf(`
-%s
-
-%s
+const testAccDatabaseClusterWithShardsBasic = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
 
  resource "vkcs_db_cluster_with_shards" "basic" {
 	name      = "basic"
@@ -69,11 +68,11 @@ var testAccDatabaseClusterWithShardsBasic = fmt.Sprintf(`
 	  shard_id = "shard0"
 	  flavor_id = data.vkcs_compute_flavor.base.id
 	  volume_size      = 8
-	  volume_type = "ceph-ssd"
+	  volume_type = "{{.VolumeType}}"
 	  network {
 		  uuid = vkcs_networking_network.base.id
 	  }
-	  availability_zone = "GZ1"
+	  availability_zone = "{{.AvailabilityZone}}"
 	}
 
 	depends_on = [
@@ -81,4 +80,4 @@ var testAccDatabaseClusterWithShardsBasic = fmt.Sprintf(`
 		vkcs_networking_subnet.base
 	]
  }
-`, testAccBaseFlavor, testAccBaseNetwork)
+`

@@ -17,7 +17,7 @@ func TestAccDatabaseCluster_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseClusterBasic,
+				Config: testAccRenderConfig(testAccDatabaseClusterBasic, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster.basic", &cluster),
@@ -26,7 +26,7 @@ func TestAccDatabaseCluster_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccDatabaseClusterUpdate,
+				Config: testAccRenderConfig(testAccDatabaseClusterUpdate, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster.basic", &cluster),
@@ -47,7 +47,7 @@ func TestAccDatabaseCluster_wal(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseClusterWal,
+				Config: testAccRenderConfig(testAccDatabaseClusterWal, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster.basic", &cluster),
@@ -68,7 +68,7 @@ func TestAccDatabaseCluster_wal_no_update(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseClusterWal,
+				Config: testAccRenderConfig(testAccDatabaseClusterWal, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster.basic", &cluster),
@@ -77,7 +77,7 @@ func TestAccDatabaseCluster_wal_no_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccDatabaseClusterWal,
+				Config: testAccRenderConfig(testAccDatabaseClusterWal, testAccValues),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster.basic", &cluster),
@@ -140,16 +140,15 @@ func testAccCheckDatabaseClusterDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccDatabaseClusterBasic = fmt.Sprintf(`
-%s
-
-%s
+const testAccDatabaseClusterBasic = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
 
  resource "vkcs_db_cluster" "basic" {
    name      = "basic"
    flavor_id = data.vkcs_compute_flavor.base.id
    volume_size      = 8
-   volume_type = "ceph-ssd"
+   volume_type = "{{.VolumeType}}"
    cluster_size = 3
    datastore {
 	version = "13"
@@ -160,25 +159,24 @@ var testAccDatabaseClusterBasic = fmt.Sprintf(`
      uuid = vkcs_networking_network.base.id
    }
 	
-   availability_zone = "GZ1"
+   availability_zone = "{{.AvailabilityZone}}"
 
    depends_on = [
     vkcs_networking_network.base,
     vkcs_networking_subnet.base
   ]
  }
-`, testAccBaseFlavor, testAccBaseNetwork)
+`
 
-var testAccDatabaseClusterUpdate = fmt.Sprintf(`
-%s
-
-%s
+const testAccDatabaseClusterUpdate = `
+{{.BaseNetwork}}
+{{.BaseNewFlavor}}
 
 resource "vkcs_db_cluster" "basic" {
 	name      = "basic"
 	flavor_id = data.vkcs_compute_flavor.base.id
 	volume_size      = 9
-	volume_type = "ceph-ssd"
+	volume_type = "{{.VolumeType}}"
 	cluster_size = 3
 	datastore {
 	 version = "13"
@@ -189,25 +187,25 @@ resource "vkcs_db_cluster" "basic" {
 	  uuid = vkcs_networking_network.base.id
 	}
 	 
-	availability_zone = "GZ1"
+	availability_zone = "{{.AvailabilityZone}}"
 
 	depends_on = [
 		vkcs_networking_network.base,
 		vkcs_networking_subnet.base
 	  ]
   }
-`, testAccBaseFlavorSecond, testAccBaseNetwork)
+`
 
-var testAccDatabaseClusterWal = fmt.Sprintf(`
-%s
-
-%s
+const testAccDatabaseClusterWal = `
+{{.BaseNetwork}}
+				
+{{.BaseFlavor}}
 
  resource "vkcs_db_cluster" "basic" {
    name      = "basic"
    flavor_id = data.vkcs_compute_flavor.base.id
    volume_size      = 8
-   volume_type = "ceph-ssd"
+   volume_type = "{{.VolumeType}}"
    cluster_size = 3
    datastore {
 	version = "13"
@@ -218,10 +216,10 @@ var testAccDatabaseClusterWal = fmt.Sprintf(`
      uuid = vkcs_networking_network.base.id
    }
 	
-   availability_zone = "GZ1"
+   availability_zone = "{{.AvailabilityZone}}"
    wal_volume {
 	size = 8
-	volume_type = "ceph-ssd"
+	volume_type = {{.VolumeType}}
    }
 
    wal_disk_autoexpand {
@@ -234,4 +232,4 @@ var testAccDatabaseClusterWal = fmt.Sprintf(`
     vkcs_networking_subnet.base
   ]
  }
-`, testAccBaseFlavor, testAccBaseNetwork)
+`
