@@ -13,6 +13,7 @@ func TestAccDatabaseDataSourceDatabase_basic(t *testing.T) {
 	datasourceName := "data.vkcs_db_database.basic"
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckDatabaseDatabaseDestroy,
 		Steps: []resource.TestStep{
