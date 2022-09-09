@@ -61,7 +61,7 @@ func testAccNetworkingFloatingIPV2DataSourceAddress() string {
 %s
 
 data "vkcs_networking_floatingip" "fip_1" {
-  address = "${vkcs_networking_floatingip.fip_1.address}"
+  address = vkcs_networking_floatingip.fip_1.address
   description = "test fip"
 }
 `, testAccRenderConfig(testAccNetworkingFloatingIPV2DataSourceFloatingIP, testAccValues))

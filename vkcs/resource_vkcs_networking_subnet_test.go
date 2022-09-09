@@ -288,7 +288,7 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   description = "my subnet description"
   cidr = "192.168.199.0/24"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   dns_nameservers = ["10.0.16.4", "213.186.33.99"]
 
@@ -309,7 +309,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   gateway_ip = "192.168.199.1"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id}
 
   dns_nameservers = ["10.0.16.4", "213.186.33.99"]
 
@@ -331,7 +331,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   cidr = "192.168.199.0/24"
   gateway_ip = "192.168.199.1"
   enable_dhcp = true
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 `
 
@@ -345,7 +345,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   enable_dhcp = false
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 `
 
@@ -359,7 +359,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   no_gateway = true
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 `
 
@@ -371,7 +371,7 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 `
 
@@ -383,7 +383,7 @@ resource "vkcs_networking_network" "network_1" {
 
 resource "vkcs_networking_subnet" "subnet_1" {
   cidr = "192.168.199.0/24"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   allocation_pool {
     start = "192.168.199.100"
@@ -406,7 +406,7 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "10.3.0.0/16"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   allocation_pool {
     start = "10.3.0.2"
@@ -429,7 +429,7 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "10.3.0.0/16"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   allocation_pool {
     start = "10.3.255.0"
@@ -452,7 +452,7 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "10.3.0.0/16"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   allocation_pool {
     start = "10.3.255.10"
@@ -474,7 +474,7 @@ resource "vkcs_networking_network" "network_1" {
 
 resource "vkcs_networking_subnet" "subnet_1" {
   cidr = "192.168.199.0/24"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   dns_nameservers = ["10.0.16.4", "213.186.33.99"]
 
@@ -494,7 +494,7 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   allocation_pool {
     start = "192.168.199.100"

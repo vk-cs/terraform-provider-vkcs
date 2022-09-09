@@ -111,7 +111,7 @@ resource "vkcs_sharedfilesystem_share" "share_1" {
   share_proto      = "NFS"
   share_type       = "default_share_type"
   size             = 1
-  share_network_id = "${vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id}"
+  share_network_id = vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id
 }
 `, testAccSFSShareNetworkConfigBasic())
 }
@@ -125,7 +125,7 @@ resource "vkcs_sharedfilesystem_share" "share_1" {
   share_proto      = "NFS"
   share_type       = "default_share_type"
   size             = 1
-  share_network_id = "${vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id}"
+  share_network_id = vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id
 }
 `, testAccSFSShareNetworkConfigBasic())
 }
@@ -139,7 +139,7 @@ resource "vkcs_sharedfilesystem_share" "share_1" {
   share_proto      = "NFS"
   share_type       = "default_share_type"
   size             = 2
-  share_network_id = "${vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id}"
+  share_network_id = vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id
 }
 `, testAccSFSShareNetworkConfigBasic())
 }

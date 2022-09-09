@@ -208,8 +208,8 @@ resource "vkcs_networking_floatingip" "fip_1" {
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
-  floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
-  instance_id = "${vkcs_compute_instance.instance_1.id}"
+  floating_ip = vkcs_networking_floatingip.fip_1.address
+  instance_id = vkcs_compute_instance.instance_1.id
 }
 `
 
@@ -234,8 +234,8 @@ resource "vkcs_networking_floatingip" "fip_1" {
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
-  floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
-  instance_id = "${vkcs_compute_instance.instance_1.id}"
+  floating_ip = vkcs_networking_floatingip.fip_1.address
+  instance_id = vkcs_compute_instance.instance_1.id
 }
 `
 
@@ -259,9 +259,9 @@ resource "vkcs_networking_floatingip" "fip_1" {
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
-  floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
-  instance_id = "${vkcs_compute_instance.instance_1.id}"
-  fixed_ip = "${vkcs_compute_instance.instance_1.access_ip_v4}"
+  floating_ip = vkcs_networking_floatingip.fip_1.address
+  instance_id = vkcs_compute_instance.instance_1.id
+  fixed_ip = vkcs_compute_instance.instance_1.access_ip_v4
 }
 `
 
@@ -289,8 +289,8 @@ resource "vkcs_networking_floatingip" "fip_2" {
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
-  floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
-  instance_id = "${vkcs_compute_instance.instance_1.id}"
+  floating_ip = vkcs_networking_floatingip.fip_1.address
+  instance_id = vkcs_compute_instance.instance_1.id
 }
 `
 
@@ -318,8 +318,8 @@ resource "vkcs_networking_floatingip" "fip_2" {
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
-  floating_ip = "${vkcs_networking_floatingip.fip_2.address}"
-  instance_id = "${vkcs_compute_instance.instance_1.id}"
+  floating_ip = vkcs_networking_floatingip.fip_2.address
+  instance_id = vkcs_compute_instance.instance_1.id
 }
 `
 
@@ -343,8 +343,8 @@ resource "vkcs_networking_floatingip" "fip_1" {
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_1" {
-  floating_ip = "${vkcs_networking_floatingip.fip_1.address}"
-  instance_id = "${vkcs_compute_instance.instance_1.id}"
+  floating_ip = vkcs_networking_floatingip.fip_1.address
+  instance_id = vkcs_compute_instance.instance_1.id
 
   wait_until_associated = true
 }

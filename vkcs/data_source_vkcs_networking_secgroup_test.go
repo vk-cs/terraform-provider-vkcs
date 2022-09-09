@@ -89,7 +89,7 @@ func testAccNetworkingSecGroupDataSourceBasic() string {
 %s
 
 data "vkcs_networking_secgroup" "secgroup_1" {
-  name = "${vkcs_networking_secgroup.secgroup_1.name}"
+  name = vkcs_networking_secgroup.secgroup_1.name
   tags = [
     "bar",
   ]
@@ -102,7 +102,7 @@ func testAccNetworkingSecGroupDataSourceSecGroupID() string {
 %s
 
 data "vkcs_networking_secgroup" "secgroup_1" {
-  secgroup_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  secgroup_id = vkcs_networking_secgroup.secgroup_1.id
   tags = [
     "foo",
   ]

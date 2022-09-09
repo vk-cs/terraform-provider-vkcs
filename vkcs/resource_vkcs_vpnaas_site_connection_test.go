@@ -98,23 +98,23 @@ const testAccSiteConnectionBasic = `
 	}
 
 	resource "vkcs_networking_subnet" "subnet_1" {
-  		network_id = "${vkcs_networking_network.network_1.id}"
+  		network_id = vkcs_networking_network.network_1.id
   		cidr       = "192.168.199.0/24"
   		ip_version = 4
 	}
 
 	resource "vkcs_networking_router" "router_1" {
   		name             = "my_router"
-  		external_network_id = "${data.vkcs_networking_network.extnet.id}"
+  		external_network_id = data.vkcs_networking_network.extnet.id
 	}
 
 	resource "vkcs_networking_router_interface" "router_interface_1" {
-  		router_id = "${vkcs_networking_router.router_1.id}"
-  		subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  		router_id = vkcs_networking_router.router_1.id
+  		subnet_id = vkcs_networking_subnet.subnet_1.id
 	}
 
 	resource "vkcs_vpnaas_service" "service_1" {
-		router_id = "${vkcs_networking_router.router_1.id}"
+		router_id = vkcs_networking_router.router_1.id
 		admin_state_up = "false"
 	}
 
@@ -130,19 +130,19 @@ const testAccSiteConnectionBasic = `
 	}
 	resource "vkcs_vpnaas_endpoint_group" "group_2" {
 		type = "subnet"
-		endpoints = [ "${vkcs_networking_subnet.subnet_1.id}" ]
+		endpoints = [ vkcs_networking_subnet.subnet_1.id ]
 	}
 
 	resource "vkcs_vpnaas_site_connection" "conn_1" {
 		name = "connection_1"
-		ikepolicy_id = "${vkcs_vpnaas_ike_policy.policy_2.id}"
-		ipsecpolicy_id = "${vkcs_vpnaas_ipsec_policy.policy_1.id}"
-		vpnservice_id = "${vkcs_vpnaas_service.service_1.id}"
+		ikepolicy_id = vkcs_vpnaas_ike_policy.policy_2.id
+		ipsecpolicy_id = vkcs_vpnaas_ipsec_policy.policy_1.id
+		vpnservice_id = vkcs_vpnaas_service.service_1.id
 		psk = "secret"
 		peer_address = "192.168.10.1"
 		peer_id = "192.168.10.1"
-		local_ep_group_id = "${vkcs_vpnaas_endpoint_group.group_2.id}"
-		peer_ep_group_id = "${vkcs_vpnaas_endpoint_group.group_1.id}"
+		local_ep_group_id = vkcs_vpnaas_endpoint_group.group_2.id
+		peer_ep_group_id = vkcs_vpnaas_endpoint_group.group_1.id
 		dpd {
 			action   = "restart"
 			timeout  = 42

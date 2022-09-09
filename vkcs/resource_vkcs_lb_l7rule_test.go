@@ -223,12 +223,12 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  vip_subnet_id = vkcs_networking_subnet.subnet_1.id
 
   timeouts {
     create = "15m"
@@ -241,7 +241,7 @@ resource "vkcs_lb_listener" "listener_1" {
   name = "listener_1"
   protocol = "HTTP"
   protocol_port = 8080
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 }
 
 resource "vkcs_lb_l7policy" "l7policy_1" {
@@ -249,7 +249,7 @@ resource "vkcs_lb_l7policy" "l7policy_1" {
   action       = "REDIRECT_TO_URL"
   description  = "test description"
   position     = 1
-  listener_id  = "${vkcs_lb_listener.listener_1.id}"
+  listener_id  = vkcs_lb_listener.listener_1.id
   redirect_url = "http://www.example.com"
 }
 `
@@ -259,7 +259,7 @@ func testAccCheckLbL7RuleConfigBasic() string {
 %s
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
-  l7policy_id  = "${vkcs_lb_l7policy.l7policy_1.id}"
+  l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
   type         = "PATH"
   compare_type = "EQUAL_TO"
   value        = "/api"
@@ -272,7 +272,7 @@ func testAccCheckLbL7RuleConfigUpdate1() string {
 %s
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
-  l7policy_id  = "${vkcs_lb_l7policy.l7policy_1.id}"
+  l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
   type         = "HOST_NAME"
   compare_type = "EQUAL_TO"
   value        = "www.example.com"
@@ -286,7 +286,7 @@ func testAccCheckLbL7RuleConfigUpdate2() string {
 %s
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
-  l7policy_id  = "${vkcs_lb_l7policy.l7policy_1.id}"
+  l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
   type         = "HOST_NAME"
   compare_type = "EQUAL_TO"
   value        = "www.example.com"
@@ -300,7 +300,7 @@ func testAccCheckLbL7RuleConfigUpdate3() string {
 %s
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
-  l7policy_id  = "${vkcs_lb_l7policy.l7policy_1.id}"
+  l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
   type         = "HEADER"
   compare_type = "EQUAL_TO"
   key          = "Host"
@@ -314,7 +314,7 @@ func testAccCheckLbL7RuleConfigUpdate4() string {
 %s
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
-  l7policy_id  = "${vkcs_lb_l7policy.l7policy_1.id}"
+  l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
   type         = "HOST_NAME"
   compare_type = "EQUAL_TO"
   value        = "www.example.com"
@@ -327,7 +327,7 @@ func testAccCheckLbL7RuleConfigUpdate5() string {
 %s
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
-  l7policy_id  = "${vkcs_lb_l7policy.l7policy_1.id}"
+  l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
   type         = "COOKIE"
   compare_type = "EQUAL_TO"
   key          = "X-Ref"
@@ -341,7 +341,7 @@ func testAccCheckLbL7RuleConfigUpdate6() string {
 %s
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
-  l7policy_id  = "${vkcs_lb_l7policy.l7policy_1.id}"
+  l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
   type         = "PATH"
   compare_type = "STARTS_WITH"
   value        = "/images"

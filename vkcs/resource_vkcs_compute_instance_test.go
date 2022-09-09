@@ -869,7 +869,7 @@ resource "vkcs_compute_instance" "instance_1" {
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
   block_device {
-    uuid = "${vkcs_blockstorage_volume.vol_1.id}"
+    uuid = vkcs_blockstorage_volume.vol_1.id
     source_type = "volume"
     boot_index = 0
     destination_type = "volume"
@@ -1024,7 +1024,7 @@ resource "vkcs_compute_instance" "instance_1" {
     delete_on_termination = true
   }
   block_device {
-    uuid = "${vkcs_blockstorage_volume.volume_1.id}"
+    uuid = vkcs_blockstorage_volume.volume_1.id
     source_type = "volume"
     destination_type = "volume"
     boot_index = 1
@@ -1075,7 +1075,7 @@ resource "vkcs_networking_network" "network_1" {
 
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   cidr = "192.168.1.0/24"
   ip_version = 4
   enable_dhcp = true
@@ -1094,7 +1094,7 @@ resource "vkcs_compute_instance" "instance_1" {
   }
 
   network {
-    uuid = "${vkcs_networking_network.network_1.id}"
+    uuid = vkcs_networking_network.network_1.id
     fixed_ip_v4 = "192.168.1.100"
     access_network = true
   }
@@ -1270,7 +1270,7 @@ resource "vkcs_networking_network" "network_1" {
 
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   cidr = "192.168.1.0/24"
   ip_version = 4
   enable_dhcp = true
@@ -1289,7 +1289,7 @@ resource "vkcs_compute_instance" "instance_1" {
   }
 
   network {
-    name = "${vkcs_networking_network.network_1.name}"
+    name = vkcs_networking_network.network_1.name
   }
   image_id = data.vkcs_images_image.base.id
   flavor_id = data.vkcs_compute_flavor.base.id
@@ -1308,7 +1308,7 @@ resource "vkcs_networking_network" "network_1" {
 
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   cidr = "192.168.1.0/24"
   ip_version = 4
   enable_dhcp = true
@@ -1321,7 +1321,7 @@ resource "vkcs_networking_network" "network_2" {
 
 resource "vkcs_networking_subnet" "subnet_2" {
   name = "subnet_2"
-  network_id = "${vkcs_networking_network.network_2.id}"
+  network_id = vkcs_networking_network.network_2.id
   cidr = "192.168.2.0/24"
   ip_version = 4
   enable_dhcp = true
@@ -1330,44 +1330,44 @@ resource "vkcs_networking_subnet" "subnet_2" {
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   admin_state_up = "true"
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.1.103"
   }
 }
 
 resource "vkcs_networking_port" "port_2" {
   name = "port_2"
-  network_id = "${vkcs_networking_network.network_2.id}"
+  network_id = vkcs_networking_network.network_2.id
   admin_state_up = "true"
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_2.id}"
+    subnet_id = vkcs_networking_subnet.subnet_2.id
     ip_address = "192.168.2.103"
   }
 }
 
 resource "vkcs_networking_port" "port_3" {
   name = "port_3"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   admin_state_up = "true"
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.1.104"
   }
 }
 
 resource "vkcs_networking_port" "port_4" {
   name = "port_4"
-  network_id = "${vkcs_networking_network.network_2.id}"
+  network_id = vkcs_networking_network.network_2.id
   admin_state_up = "true"
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_2.id}"
+    subnet_id = vkcs_networking_subnet.subnet_2.id
     ip_address = "192.168.2.104"
   }
 }
@@ -1390,39 +1390,39 @@ resource "vkcs_compute_instance" "instance_1" {
   }
 
   network {
-    uuid = "${vkcs_networking_network.network_1.id}"
+    uuid = vkcs_networking_network.network_1.id
     fixed_ip_v4 = "192.168.1.100"
   }
 
   network {
-    uuid = "${vkcs_networking_network.network_2.id}"
+    uuid = vkcs_networking_network.network_2.id
     fixed_ip_v4 = "192.168.2.100"
   }
 
   network {
-    uuid = "${vkcs_networking_network.network_1.id}"
+    uuid = vkcs_networking_network.network_1.id
     fixed_ip_v4 = "192.168.1.101"
   }
 
   network {
-    uuid = "${vkcs_networking_network.network_2.id}"
+    uuid = vkcs_networking_network.network_2.id
     fixed_ip_v4 = "192.168.2.101"
   }
 
   network {
-    port = "${vkcs_networking_port.port_1.id}"
+    port = vkcs_networking_port.port_1.id
   }
 
   network {
-    port = "${vkcs_networking_port.port_2.id}"
+    port = vkcs_networking_port.port_2.id
   }
 
   network {
-    port = "${vkcs_networking_port.port_3.id}"
+    port = vkcs_networking_port.port_3.id
   }
 
   network {
-    port = "${vkcs_networking_port.port_4.id}"
+    port = vkcs_networking_port.port_4.id
   }
 
   image_id = data.vkcs_images_image.base.id

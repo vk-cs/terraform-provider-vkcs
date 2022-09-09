@@ -52,6 +52,6 @@ resource "vkcs_compute_keypair" "kp" {
 }
 
 data "vkcs_compute_keypair" "kp" {
-  name = "${vkcs_compute_keypair.kp.name}"
+  name = vkcs_compute_keypair.kp.name
 }
 `

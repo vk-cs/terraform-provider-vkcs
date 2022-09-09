@@ -278,12 +278,12 @@ const testAccLbLoadBalancerConfigBasic = `
       name = "subnet_1"
       cidr = "192.168.199.0/24"
       ip_version = 4
-      network_id = "${vkcs_networking_network.network_1.id}"
+      network_id = vkcs_networking_network.network_1.id
     }
 
     resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
       name = "loadbalancer_1"
-      vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+      vip_subnet_id = vkcs_networking_subnet.subnet_1.id
 	  tags = ["tag1"]
 
       timeouts {
@@ -303,13 +303,13 @@ const testAccLbLoadBalancerConfigUpdate = `
       name = "subnet_1"
       cidr = "192.168.199.0/24"
       ip_version = 4
-      network_id = "${vkcs_networking_network.network_1.id}"
+      network_id = vkcs_networking_network.network_1.id
     }
 
     resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
       name = "loadbalancer_1_updated"
       admin_state_up = "true"
-      vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+      vip_subnet_id = vkcs_networking_subnet.subnet_1.id
 	  tags = ["tag1", "tag2"]
 
       timeouts {
@@ -337,15 +337,15 @@ resource "vkcs_networking_network" "network_1" {
 
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   cidr = "192.168.199.0/24"
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
     name = "loadbalancer_1"
-    vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    vip_subnet_id = vkcs_networking_subnet.subnet_1.id
     security_group_ids = [
-      "${vkcs_networking_secgroup.secgroup_1.id}"
+      vkcs_networking_secgroup.secgroup_1.id
     ]
 
     timeouts {
@@ -374,16 +374,16 @@ resource "vkcs_networking_network" "network_1" {
 
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   cidr = "192.168.199.0/24"
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  vip_subnet_id = vkcs_networking_subnet.subnet_1.id
   security_group_ids = [
-    "${vkcs_networking_secgroup.secgroup_1.id}",
-    "${vkcs_networking_secgroup.secgroup_2.id}"
+    vkcs_networking_secgroup.secgroup_1.id,
+    vkcs_networking_secgroup.secgroup_2.id
   ]
 
   timeouts {
@@ -412,15 +412,15 @@ resource "vkcs_networking_network" "network_1" {
 
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   cidr = "192.168.199.0/24"
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  vip_subnet_id = vkcs_networking_subnet.subnet_1.id
   security_group_ids = [
-    "${vkcs_networking_secgroup.secgroup_2.id}"
+    vkcs_networking_secgroup.secgroup_2.id
   ]
   depends_on = ["vkcs_networking_secgroup.secgroup_1"]
 
@@ -442,12 +442,12 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_network_id = "${vkcs_networking_network.network_1.id}"
+  vip_network_id = vkcs_networking_network.network_1.id
   depends_on = ["vkcs_networking_subnet.subnet_1"]
   timeouts {
     create = "15m"
@@ -467,19 +467,19 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name           = "port_1"
-  network_id     = "${vkcs_networking_network.network_1.id}"
+  network_id     = vkcs_networking_network.network_1.id
   admin_state_up = "true"
   depends_on = ["vkcs_networking_subnet.subnet_1"]
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_port_id = "${vkcs_networking_port.port_1.id}"
+  vip_port_id = vkcs_networking_port.port_1.id
   depends_on = ["vkcs_networking_port.port_1"]
   timeouts {
     create = "15m"

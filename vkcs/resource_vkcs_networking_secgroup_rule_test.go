@@ -293,7 +293,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
   port_range_min = 22
   protocol = "tcp"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 	description = "secgroup_rule_1"
 }
 
@@ -303,8 +303,8 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_2" {
   port_range_max = 80
   port_range_min = 80
   protocol = "tcp"
-  remote_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_2.id}"
+  remote_group_id = vkcs_networking_secgroup.secgroup_1.id
+  security_group_id = vkcs_networking_secgroup.secgroup_2.id
 }
 `
 
@@ -321,7 +321,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
   port_range_min = 22
   protocol = "tcp"
   remote_ip_prefix = "2001:558:FC00::/39"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 `
 
@@ -343,7 +343,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
   port_range_min = 22
   protocol = "tcp"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 
   timeouts {
     delete = "5m"
@@ -356,8 +356,8 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_2" {
   port_range_max = 80
   port_range_min = 80
   protocol = "tcp"
-  remote_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_2.id}"
+  remote_group_id = vkcs_networking_secgroup.secgroup_1.id
+  security_group_id = vkcs_networking_secgroup.secgroup_2.id
 
   timeouts {
     delete = "5m"
@@ -376,7 +376,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_ah" {
   ethertype = "IPv4"
   protocol = "ah"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_dccp" {
@@ -384,7 +384,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_dccp" {
   ethertype = "IPv4"
   protocol = "dccp"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_egp" {
@@ -392,7 +392,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_egp" {
   ethertype = "IPv4"
   protocol = "egp"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_esp" {
@@ -400,7 +400,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_esp" {
   ethertype = "IPv4"
   protocol = "esp"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_gre" {
@@ -408,7 +408,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_gre" {
   ethertype = "IPv4"
   protocol = "gre"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_igmp" {
@@ -416,7 +416,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_igmp" {
   ethertype = "IPv4"
   protocol = "igmp"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_encap" {
@@ -424,7 +424,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_encap" {
   ethertype = "IPv6"
   protocol = "ipv6-encap"
   remote_ip_prefix = "::/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_frag" {
@@ -432,7 +432,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_frag" {
   ethertype = "IPv6"
   protocol = "ipv6-frag"
   remote_ip_prefix = "::/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_icmp" {
@@ -440,7 +440,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_icmp" {
   ethertype = "IPv6"
   protocol = "ipv6-icmp"
   remote_ip_prefix = "::/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_nonxt" {
@@ -448,7 +448,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_nonxt" {
   ethertype = "IPv6"
   protocol = "ipv6-nonxt"
   remote_ip_prefix = "::/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_opts" {
@@ -456,7 +456,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_opts" {
   ethertype = "IPv6"
   protocol = "ipv6-opts"
   remote_ip_prefix = "::/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_route" {
@@ -464,7 +464,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_route" {
   ethertype = "IPv6"
   protocol = "ipv6-route"
   remote_ip_prefix = "::/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_ospf" {
@@ -472,7 +472,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_ospf" {
   ethertype = "IPv4"
   protocol = "ospf"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_pgm" {
@@ -480,7 +480,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_pgm" {
   ethertype = "IPv4"
   protocol = "pgm"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_rsvp" {
@@ -488,7 +488,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_rsvp" {
   ethertype = "IPv4"
   protocol = "rsvp"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_sctp" {
@@ -496,7 +496,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_sctp" {
   ethertype = "IPv4"
   protocol = "sctp"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_udplite" {
@@ -504,7 +504,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_udplite" {
   ethertype = "IPv4"
   protocol = "udplite"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 
 resource "vkcs_networking_secgroup_rule" "secgroup_rule_vrrp" {
@@ -512,7 +512,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_vrrp" {
   ethertype = "IPv4"
   protocol = "vrrp"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 `
 
@@ -529,6 +529,6 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
   port_range_min = 22
   protocol = "6"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 `

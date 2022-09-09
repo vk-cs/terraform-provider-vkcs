@@ -37,7 +37,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
 	name = "subnet_1"
 	cidr = "192.168.199.0/24"
 	ip_version = 4
-	network_id = "${vkcs_networking_network.network_1.id}"
+	network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_sharedfilesystem_securityservice" "securityservice_1" {
@@ -62,33 +62,33 @@ resource "vkcs_sharedfilesystem_securityservice" "securityservice_2" {
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
 	name                = "test_sharenetwork_secure"
 	description         = "share the secure love"
-	neutron_net_id      = "${vkcs_networking_network.network_1.id}"
-	neutron_subnet_id   = "${vkcs_networking_subnet.subnet_1.id}"
+	neutron_net_id      = vkcs_networking_network.network_1.id
+	neutron_subnet_id   = vkcs_networking_subnet.subnet_1.id
 	security_service_ids = [
-		"${vkcs_sharedfilesystem_securityservice.securityservice_1.id}",
-		"${vkcs_sharedfilesystem_securityservice.securityservice_2.id}",
+		vkcs_sharedfilesystem_securityservice.securityservice_1.id,
+		vkcs_sharedfilesystem_securityservice.securityservice_2.id,
 	]
 }
 
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_2" {
 	name                = "test_sharenetwork_secure"
 	description         = "share the less secure love"
-	neutron_net_id      = "${vkcs_networking_network.network_1.id}"
-	neutron_subnet_id   = "${vkcs_networking_subnet.subnet_1.id}"
+	neutron_net_id      = vkcs_networking_network.network_1.id
+	neutron_subnet_id   = vkcs_networking_subnet.subnet_1.id
 	security_service_ids = [
-		"${vkcs_sharedfilesystem_securityservice.securityservice_1.id}",
+		vkcs_sharedfilesystem_securityservice.securityservice_1.id,
 	]
 }
 
 data "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
-	name                = "${vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.name}"
-	security_service_id = "${vkcs_sharedfilesystem_securityservice.securityservice_2.id}"
-	ip_version          = "${vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.ip_version}"
+	name                = vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.name
+	security_service_id = vkcs_sharedfilesystem_securityservice.securityservice_2.id
+	ip_version          = vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.ip_version
 }
 
 data "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_2" {
 	name                = "test_sharenetwork_secure"
-	description         = "${vkcs_sharedfilesystem_sharenetwork.sharenetwork_2.description}"
-	security_service_id = "${vkcs_sharedfilesystem_securityservice.securityservice_1.id}"
+	description         = vkcs_sharedfilesystem_sharenetwork.sharenetwork_2.description
+	security_service_id = vkcs_sharedfilesystem_securityservice.securityservice_1.id
 }
 `

@@ -225,7 +225,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 `
 
@@ -236,8 +236,8 @@ func testAccSFSShareNetworkConfigBasic() string {
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   name                = "test_sharenetwork"
   description         = "share the love"
-  neutron_net_id      = "${vkcs_networking_network.network_1.id}"
-  neutron_subnet_id   = "${vkcs_networking_subnet.subnet_1.id}"
+  neutron_net_id      = vkcs_networking_network.network_1.id
+  neutron_subnet_id   = vkcs_networking_subnet.subnet_1.id
 }
 `, testAccSFSShareNetworkConfig)
 }
@@ -255,14 +255,14 @@ resource "vkcs_networking_subnet" "subnet_2" {
   name = "subnet_2"
   cidr = "192.168.198.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_2.id}"
+  network_id = vkcs_networking_network.network_2.id
 }
 
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   name                = "test_sharenetwork_new_net"
   description         = ""
-  neutron_net_id      = "${vkcs_networking_network.network_2.id}"
-  neutron_subnet_id   = "${vkcs_networking_subnet.subnet_2.id}"
+  neutron_net_id      = vkcs_networking_network.network_2.id
+  neutron_subnet_id   = vkcs_networking_subnet.subnet_2.id
 }
 `, testAccSFSShareNetworkConfig)
 }
@@ -297,10 +297,10 @@ func testAccSFSShareNetworkConfigSecService1() string {
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   name                = "test_sharenetwork_secure"
   description         = "share the secure love"
-  neutron_net_id      = "${vkcs_networking_network.network_1.id}"
-  neutron_subnet_id   = "${vkcs_networking_subnet.subnet_1.id}"
+  neutron_net_id      = vkcs_networking_network.network_1.id
+  neutron_subnet_id   = vkcs_networking_subnet.subnet_1.id
   security_service_ids = [
-    "${vkcs_sharedfilesystem_securityservice.securityservice_1.id}",
+    vkcs_sharedfilesystem_securityservice.securityservice_1.id,
   ]
 }
 `, testAccSFSShareNetworkConfig, testAccSFSShareNetworkConfigSecService)
@@ -315,11 +315,11 @@ func testAccSFSShareNetworkConfigSecService2() string {
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   name                = "test_sharenetwork_secure"
   description         = "share the secure love"
-  neutron_net_id      = "${vkcs_networking_network.network_1.id}"
-  neutron_subnet_id   = "${vkcs_networking_subnet.subnet_1.id}"
+  neutron_net_id      = vkcs_networking_network.network_1.id
+  neutron_subnet_id   = vkcs_networking_subnet.subnet_1.id
   security_service_ids = [
-    "${vkcs_sharedfilesystem_securityservice.securityservice_1.id}",
-    "${vkcs_sharedfilesystem_securityservice.securityservice_2.id}",
+    vkcs_sharedfilesystem_securityservice.securityservice_1.id,
+    vkcs_sharedfilesystem_securityservice.securityservice_2.id,
   ]
 }
 `, testAccSFSShareNetworkConfig, testAccSFSShareNetworkConfigSecService)
@@ -334,10 +334,10 @@ func testAccSFSShareNetworkConfigSecService3() string {
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   name                = "test_sharenetwork_secure"
   description         = "share the secure love"
-  neutron_net_id      = "${vkcs_networking_network.network_1.id}"
-  neutron_subnet_id   = "${vkcs_networking_subnet.subnet_1.id}"
+  neutron_net_id      = vkcs_networking_network.network_1.id
+  neutron_subnet_id   = vkcs_networking_subnet.subnet_1.id
   security_service_ids = [
-    "${vkcs_sharedfilesystem_securityservice.securityservice_2.id}",
+    vkcs_sharedfilesystem_securityservice.securityservice_2.id,
   ]
 }
 `, testAccSFSShareNetworkConfig, testAccSFSShareNetworkConfigSecService)
@@ -352,8 +352,8 @@ func testAccSFSShareNetworkConfigSecService4() string {
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   name                = "test_sharenetwork"
   description         = "share the love"
-  neutron_net_id      = "${vkcs_networking_network.network_1.id}"
-  neutron_subnet_id   = "${vkcs_networking_subnet.subnet_1.id}"
+  neutron_net_id      = vkcs_networking_network.network_1.id
+  neutron_subnet_id   = vkcs_networking_subnet.subnet_1.id
 }
 `, testAccSFSShareNetworkConfig, testAccSFSShareNetworkConfigSecService)
 }
