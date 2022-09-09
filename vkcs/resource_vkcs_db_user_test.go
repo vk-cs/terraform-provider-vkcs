@@ -173,6 +173,7 @@ func testAccCheckDatabaseUserDestroy(s *terraform.State) error {
 
 const testAccDatabaseUserBasic = `
 {{.BaseNetwork}}
+				
 {{.BaseFlavor}}
 
 resource "vkcs_db_instance" "basic" {
@@ -198,20 +199,20 @@ resource "vkcs_db_instance" "basic" {
 
 resource "vkcs_db_database" "testdb1" {
   name = "testdb1"
-  dbms_id = "${vkcs_db_instance.basic.id}"
+  dbms_id = vkcs_db_instance.basic.id
 }
   
 resource "vkcs_db_database" "testdb2" {
   name = "testdb2"
-  dbms_id = "${vkcs_db_instance.basic.id}"
+  dbms_id = vkcs_db_instance.basic.id
 }
 
 resource "vkcs_db_user" "basic" {
   name        = "basic"
-  dbms_id = "${vkcs_db_instance.basic.id}"
+  dbms_id = vkcs_db_instance.basic.id
   password    = "Qw!weZ12$"
   databases = [
-	"${vkcs_db_database.testdb1.name}"
+	vkcs_db_database.testdb1.name
   ]
 }
 `
@@ -243,21 +244,21 @@ resource "vkcs_db_instance" "basic" {
 
 resource "vkcs_db_database" "testdb1" {
 	name = "testdb1"
-	dbms_id= "${vkcs_db_instance.basic.id}"
+	dbms_id= vkcs_db_instance.basic.id
 }
   
 resource "vkcs_db_database" "testdb2" {
 	name = "testdb2"
-	dbms_id = "${vkcs_db_instance.basic.id}"
+	dbms_id = vkcs_db_instance.basic.id
 }
 
 resource "vkcs_db_user" "basic" {
   name        = "basic"
-  dbms_id = "${vkcs_db_instance.basic.id}"
+  dbms_id = vkcs_db_instance.basic.id
   password    = "Qw!weZ12$"
   databases = [
-	  "${vkcs_db_database.testdb2.name}",
-	  "${vkcs_db_database.testdb1.name}"
+	  vkcs_db_database.testdb2.name,
+	  vkcs_db_database.testdb1.name
   ]
 }
 `

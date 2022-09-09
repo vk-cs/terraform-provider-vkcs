@@ -121,7 +121,8 @@ func testAccCheckDatabaseDatabaseDestroy(s *terraform.State) error {
 }
 
 const testAccDatabaseDatabaseBasic = `
-{{.BaseNetwork}}	
+{{.BaseNetwork}}
+				
 {{.BaseFlavor}}
 
 resource "vkcs_db_instance" "basic" {
@@ -147,6 +148,6 @@ resource "vkcs_db_instance" "basic" {
 
 resource "vkcs_db_database" "basic" {
   name        = "basic"
-  dbms_id = "${vkcs_db_instance.basic.id}"
+  dbms_id = vkcs_db_instance.basic.id
 }
 `

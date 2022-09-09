@@ -48,7 +48,7 @@ func testAccCheckComputeQuotasetDataSourceID(n string) resource.TestCheckFunc {
 func testAccComputeQuotasetDataSourceSource() string {
 	return fmt.Sprintf(`
 data "vkcs_compute_quotaset" "source" {
-  project_id = "%s"
+  project_id = "{{.ProjectID}}"
 }
 `, osProjectID)
 }

@@ -48,6 +48,6 @@ var testAccDataSourceDatabaseConfigGroupBasic = fmt.Sprintf(`
 %s
 
 data "vkcs_db_config_group" "basic" {
-	config_group_id = "${vkcs_db_config_group.basic.id}"
+	config_group_id = vkcs_db_config_group.basic.id
 }
 `, testAccDatabaseConfigGroupResource)
