@@ -160,7 +160,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "tf_test_subnet"
   cidr = "192.168.199.0/24"
   no_gateway = true
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 `
 
@@ -169,8 +169,8 @@ func testAccNetworkingNetworkDataSourceBasic() string {
 %s
 
 data "vkcs_networking_network" "network_1" {
-  name = "${vkcs_networking_network.network_1.name}"
-  description = "${vkcs_networking_network.network_1.description}"
+  name = vkcs_networking_network.network_1.name
+  description = vkcs_networking_network.network_1.description
 }
 `, testAccNetworkingNetworkDataSourceNetwork)
 }
@@ -180,7 +180,7 @@ func testAccNetworkingNetworkDataSourceSubnet() string {
 %s
 
 data "vkcs_networking_network" "network_1" {
-  matching_subnet_cidr = "${vkcs_networking_subnet.subnet_1.cidr}"
+  matching_subnet_cidr = vkcs_networking_subnet.subnet_1.cidr
   tags = [
     "foo",
     "bar",
@@ -207,7 +207,7 @@ func testAccNetworkingNetworkDataSourceNetworkID() string {
 %s
 
 data "vkcs_networking_network" "network_1" {
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 `, testAccNetworkingNetworkDataSourceNetwork)
 }

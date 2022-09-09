@@ -205,12 +205,12 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  vip_subnet_id = vkcs_networking_subnet.subnet_1.id
 
   timeouts {
     create = "15m"
@@ -223,15 +223,15 @@ resource "vkcs_lb_pool" "pool_1" {
   name            = "pool_1"
   protocol        = "HTTP"
   lb_method       = "ROUND_ROBIN"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 }
 
 resource "vkcs_lb_listener" "listener_1" {
   name = "listener_1"
   protocol = "HTTP"
   protocol_port = 8080
-  default_pool_id = "${vkcs_lb_pool.pool_1.id}"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  default_pool_id = vkcs_lb_pool.pool_1.id
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 
   timeouts {
     create = "5m"
@@ -251,12 +251,12 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  vip_subnet_id = vkcs_networking_subnet.subnet_1.id
 
   timeouts {
     create = "15m"
@@ -271,7 +271,7 @@ resource "vkcs_lb_listener" "listener_1" {
   protocol_port = 8080
   connection_limit = 100
   admin_state_up = "true"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 
   timeouts {
     create = "5m"
@@ -291,12 +291,12 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  vip_subnet_id = vkcs_networking_subnet.subnet_1.id
 
   timeouts {
     create = "15m"
@@ -309,7 +309,7 @@ resource "vkcs_lb_pool" "pool_1" {
   name            = "pool_1"
   protocol        = "HTTP"
   lb_method       = "ROUND_ROBIN"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 }
 
 resource "vkcs_lb_listener" "listener_1" {
@@ -321,8 +321,8 @@ resource "vkcs_lb_listener" "listener_1" {
   timeout_member_connect = 2000
   timeout_member_data = 3000
   timeout_tcp_inspect = 4000
-  default_pool_id = "${vkcs_lb_pool.pool_1.id}"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  default_pool_id = vkcs_lb_pool.pool_1.id
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 
   timeouts {
     create = "5m"
@@ -342,12 +342,12 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  vip_subnet_id = vkcs_networking_subnet.subnet_1.id
 
   timeouts {
     create = "15m"
@@ -360,7 +360,7 @@ resource "vkcs_lb_pool" "pool_1" {
   name            = "pool_1"
   protocol        = "HTTP"
   lb_method       = "ROUND_ROBIN"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 }
 
 resource "vkcs_lb_listener" "listener_1" {
@@ -373,8 +373,8 @@ resource "vkcs_lb_listener" "listener_1" {
   timeout_member_data = 2000
   timeout_tcp_inspect = 1000
   admin_state_up = "true"
-  default_pool_id = "${vkcs_lb_pool.pool_1.id}"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  default_pool_id = vkcs_lb_pool.pool_1.id
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 
   timeouts {
     create = "5m"
@@ -394,12 +394,12 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  vip_subnet_id = vkcs_networking_subnet.subnet_1.id
 
   timeouts {
     create = "15m"
@@ -412,15 +412,15 @@ resource "vkcs_lb_pool" "pool_1" {
   name            = "pool_1"
   protocol        = "UDP"
   lb_method       = "ROUND_ROBIN"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 }
 
 resource "vkcs_lb_listener" "listener_1" {
   name = "listener_1"
   protocol = "UDP"
   protocol_port = 53
-  default_pool_id = "${vkcs_lb_pool.pool_1.id}"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  default_pool_id = vkcs_lb_pool.pool_1.id
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 
   timeouts {
     create = "5m"
@@ -440,12 +440,12 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  vip_subnet_id = vkcs_networking_subnet.subnet_1.id
 
   timeouts {
     create = "15m"
@@ -458,15 +458,15 @@ resource "vkcs_lb_pool" "pool_1" {
   name            = "pool_1"
   protocol        = "HTTP"
   lb_method       = "ROUND_ROBIN"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 }
 
 resource "vkcs_lb_listener" "listener_1" {
   name = "listener_1"
   protocol = "HTTP"
   protocol_port = 8080
-  default_pool_id = "${vkcs_lb_pool.pool_1.id}"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  default_pool_id = vkcs_lb_pool.pool_1.id
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 
   insert_headers = {
     X-Forwarded-For = "true"
@@ -491,12 +491,12 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  vip_subnet_id = vkcs_networking_subnet.subnet_1.id
 
   timeouts {
     create = "15m"
@@ -509,15 +509,15 @@ resource "vkcs_lb_pool" "pool_1" {
   name            = "pool_1"
   protocol        = "HTTP"
   lb_method       = "ROUND_ROBIN"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 }
 
 resource "vkcs_lb_listener" "listener_1" {
   name = "listener_1"
   protocol = "HTTP"
   protocol_port = 8080
-  default_pool_id = "${vkcs_lb_pool.pool_1.id}"
-  loadbalancer_id = "${vkcs_lb_loadbalancer.loadbalancer_1.id}"
+  default_pool_id = vkcs_lb_pool.pool_1.id
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
 
   insert_headers = {
     X-Forwarded-For = "false"

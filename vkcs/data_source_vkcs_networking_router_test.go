@@ -70,7 +70,7 @@ func testAccNetworkingRouterDataSourceName() string {
 %s
 
 data "vkcs_networking_router" "router" {
-  name           = "${vkcs_networking_router.router.name}"
+  name           = vkcs_networking_router.router.name
   description    = "description"
   admin_state_up = "true"
   tags = [

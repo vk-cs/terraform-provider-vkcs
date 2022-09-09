@@ -373,7 +373,7 @@ resource "vkcs_keymanager_secret" "secret_1" {
   bit_length = 256
   mode = "cbc"
   name = "mysecret"
-  payload = "${base64encode("base64foobar ")}"
+  payload = base64encode("base64foobar ")
   payload_content_type = "application/octet-stream"
   payload_content_encoding = "base64"
   secret_type = "passphrase"
@@ -385,7 +385,7 @@ resource "vkcs_keymanager_secret" "secret_1" {
   bit_length = 256
   mode = "cbc"
   name = "mysecret"
-  payload = "${base64encode("base64foobar ")}"
+  payload = base64encode("base64foobar ")
   payload_content_type = "application/octet-stream"
   payload_content_encoding = "base64"
   secret_type = "passphrase"
@@ -418,7 +418,7 @@ resource "vkcs_keymanager_secret" "secret_1" {
   bit_length = 256
   mode = "cbc"
   name = "mysecret"
-  payload = "${base64encode("base64foobar ")}"
+  payload = base64encode("base64foobar ")
   payload_content_type = "application/octet-stream"
   payload_content_encoding = "base64"
   secret_type = "passphrase"
@@ -460,7 +460,7 @@ resource "vkcs_keymanager_secret" "secret_1" {
   bit_length = 256
   mode = "cbc"
   name = "mysecret"
-  payload = "${base64encode("base64foobar ")}"
+  payload = base64encode("base64foobar ")
   payload_content_type = "application/octet-stream"
   payload_content_encoding = "base64"
   secret_type = "passphrase"

@@ -904,16 +904,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -929,16 +929,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
   }
 }
 `
@@ -953,13 +953,13 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 `
 
@@ -973,24 +973,24 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
   }
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
   }
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
   }
 }
 `
@@ -1005,7 +1005,7 @@ resource "vkcs_networking_subnet" "vrrp_subnet" {
   name = "vrrp_subnet"
   cidr = "10.0.0.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   allocation_pool {
     start = "10.0.0.2"
@@ -1023,18 +1023,18 @@ resource "vkcs_networking_router" "vrrp_router" {
 }
 
 resource "vkcs_networking_router_interface" "vrrp_interface" {
-  router_id = "${vkcs_networking_router.vrrp_router.id}"
-  subnet_id = "${vkcs_networking_subnet.vrrp_subnet.id}"
+  router_id = vkcs_networking_router.vrrp_router.id
+  subnet_id = vkcs_networking_subnet.vrrp_subnet.id
 }
 
 resource "vkcs_networking_port" "vrrp_port_1" {
   name = "vrrp_port_1"
   description = "test vrrp port"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.vrrp_subnet.id}"
+    subnet_id =  vkcs_networking_subnet.vrrp_subnet.id
     ip_address = "10.0.0.202"
   }
 }
@@ -1042,10 +1042,10 @@ resource "vkcs_networking_port" "vrrp_port_1" {
 resource "vkcs_networking_port" "vrrp_port_2" {
   name = "vrrp_port_2"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.vrrp_subnet.id}"
+    subnet_id =  vkcs_networking_subnet.vrrp_subnet.id
     ip_address = "10.0.0.201"
   }
 }
@@ -1053,16 +1053,16 @@ resource "vkcs_networking_port" "vrrp_port_2" {
 resource "vkcs_networking_port" "instance_port" {
   name = "instance_port"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   allowed_address_pairs {
-    ip_address = "${vkcs_networking_port.vrrp_port_1.fixed_ip.0.ip_address}"
-    mac_address = "${vkcs_networking_port.vrrp_port_1.mac_address}"
+    ip_address = vkcs_networking_port.vrrp_port_1.fixed_ip.0.ip_address
+    mac_address = vkcs_networking_port.vrrp_port_1.mac_address
   }
 
   allowed_address_pairs {
-    ip_address = "${vkcs_networking_port.vrrp_port_2.fixed_ip.0.ip_address}"
-    mac_address = "${vkcs_networking_port.vrrp_port_2.mac_address}"
+    ip_address = vkcs_networking_port.vrrp_port_2.fixed_ip.0.ip_address
+    mac_address = vkcs_networking_port.vrrp_port_2.mac_address
   }
 }
 `
@@ -1077,7 +1077,7 @@ resource "vkcs_networking_subnet" "vrrp_subnet" {
   name = "vrrp_subnet"
   cidr = "10.0.0.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   allocation_pool {
     start = "10.0.0.2"
@@ -1095,17 +1095,17 @@ resource "vkcs_networking_router" "vrrp_router" {
 }
 
 resource "vkcs_networking_router_interface" "vrrp_interface" {
-  router_id = "${vkcs_networking_router.vrrp_router.id}"
-  subnet_id = "${vkcs_networking_subnet.vrrp_subnet.id}"
+  router_id = vkcs_networking_router.vrrp_router.id
+  subnet_id = vkcs_networking_subnet.vrrp_subnet.id
 }
 
 resource "vkcs_networking_port" "vrrp_port_1" {
   name = "vrrp_port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.vrrp_subnet.id}"
+    subnet_id =  vkcs_networking_subnet.vrrp_subnet.id
     ip_address = "10.0.0.202"
   }
 }
@@ -1113,10 +1113,10 @@ resource "vkcs_networking_port" "vrrp_port_1" {
 resource "vkcs_networking_port" "vrrp_port_2" {
   name = "vrrp_port_2"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.vrrp_subnet.id}"
+    subnet_id =  vkcs_networking_subnet.vrrp_subnet.id
     ip_address = "10.0.0.201"
   }
 }
@@ -1124,16 +1124,16 @@ resource "vkcs_networking_port" "vrrp_port_2" {
 resource "vkcs_networking_port" "instance_port" {
   name = "instance_port"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   allowed_address_pairs {
-    ip_address = "${vkcs_networking_port.vrrp_port_1.fixed_ip.0.ip_address}"
-    mac_address = "${vkcs_networking_port.vrrp_port_1.mac_address}"
+    ip_address = vkcs_networking_port.vrrp_port_1.fixed_ip.0.ip_address
+    mac_address = vkcs_networking_port.vrrp_port_1.mac_address
   }
 
   allowed_address_pairs {
-    ip_address = "${vkcs_networking_port.vrrp_port_2.fixed_ip.0.ip_address}"
-    mac_address = "${vkcs_networking_port.vrrp_port_2.mac_address}"
+    ip_address = vkcs_networking_port.vrrp_port_2.fixed_ip.0.ip_address
+    mac_address = vkcs_networking_port.vrrp_port_2.mac_address
   }
 }
 `
@@ -1148,7 +1148,7 @@ resource "vkcs_networking_subnet" "vrrp_subnet" {
   name = "vrrp_subnet"
   cidr = "10.0.0.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   allocation_pool {
     start = "10.0.0.2"
@@ -1166,17 +1166,17 @@ resource "vkcs_networking_router" "vrrp_router" {
 }
 
 resource "vkcs_networking_router_interface" "vrrp_interface" {
-  router_id = "${vkcs_networking_router.vrrp_router.id}"
-  subnet_id = "${vkcs_networking_subnet.vrrp_subnet.id}"
+  router_id = vkcs_networking_router.vrrp_router.id
+  subnet_id = vkcs_networking_subnet.vrrp_subnet.id
 }
 
 resource "vkcs_networking_port" "vrrp_port_1" {
   name = "vrrp_port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.vrrp_subnet.id}"
+    subnet_id =  vkcs_networking_subnet.vrrp_subnet.id
     ip_address = "10.0.0.202"
   }
 }
@@ -1184,10 +1184,10 @@ resource "vkcs_networking_port" "vrrp_port_1" {
 resource "vkcs_networking_port" "vrrp_port_2" {
   name = "vrrp_port_2"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.vrrp_subnet.id}"
+    subnet_id =  vkcs_networking_subnet.vrrp_subnet.id
     ip_address = "10.0.0.201"
   }
 }
@@ -1195,17 +1195,17 @@ resource "vkcs_networking_port" "vrrp_port_2" {
 resource "vkcs_networking_port" "instance_port" {
   name = "instance_port"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
-  security_group_ids = ["${vkcs_networking_secgroup.secgroup_1.id}"]
+  network_id = vkcs_networking_network.vrrp_network.id
+  security_group_ids = [vkcs_networking_secgroup.secgroup_1.id]
 
   allowed_address_pairs {
-    ip_address = "${vkcs_networking_port.vrrp_port_1.fixed_ip.0.ip_address}"
-    mac_address = "${vkcs_networking_port.vrrp_port_1.mac_address}"
+    ip_address = vkcs_networking_port.vrrp_port_1.fixed_ip.0.ip_address
+    mac_address = vkcs_networking_port.vrrp_port_1.mac_address
   }
 
   allowed_address_pairs {
-    ip_address = "${vkcs_networking_port.vrrp_port_2.fixed_ip.0.ip_address}"
-    mac_address = "${vkcs_networking_port.vrrp_port_2.mac_address}"
+    ip_address = vkcs_networking_port.vrrp_port_2.fixed_ip.0.ip_address
+    mac_address = vkcs_networking_port.vrrp_port_2.mac_address
   }
 }
 `
@@ -1220,7 +1220,7 @@ resource "vkcs_networking_subnet" "vrrp_subnet" {
   name = "vrrp_subnet"
   cidr = "10.0.0.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   allocation_pool {
     start = "10.0.0.2"
@@ -1238,17 +1238,17 @@ resource "vkcs_networking_router" "vrrp_router" {
 }
 
 resource "vkcs_networking_router_interface" "vrrp_interface" {
-  router_id = "${vkcs_networking_router.vrrp_router.id}"
-  subnet_id = "${vkcs_networking_subnet.vrrp_subnet.id}"
+  router_id = vkcs_networking_router.vrrp_router.id
+  subnet_id = vkcs_networking_subnet.vrrp_subnet.id
 }
 
 resource "vkcs_networking_port" "vrrp_port_1" {
   name = "vrrp_port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.vrrp_subnet.id}"
+    subnet_id =  vkcs_networking_subnet.vrrp_subnet.id
     ip_address = "10.0.0.202"
   }
 }
@@ -1256,10 +1256,10 @@ resource "vkcs_networking_port" "vrrp_port_1" {
 resource "vkcs_networking_port" "vrrp_port_2" {
   name = "vrrp_port_2"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.vrrp_subnet.id}"
+    subnet_id =  vkcs_networking_subnet.vrrp_subnet.id
     ip_address = "10.0.0.201"
   }
 }
@@ -1267,12 +1267,12 @@ resource "vkcs_networking_port" "vrrp_port_2" {
 resource "vkcs_networking_port" "instance_port" {
   name = "instance_port"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
-  security_group_ids = ["${vkcs_networking_secgroup.secgroup_1.id}"]
+  network_id = vkcs_networking_network.vrrp_network.id
+  security_group_ids = [vkcs_networking_secgroup.secgroup_1.id]
 
   allowed_address_pairs {
-    ip_address = "${vkcs_networking_port.vrrp_port_1.fixed_ip.0.ip_address}"
-    mac_address = "${vkcs_networking_port.vrrp_port_1.mac_address}"
+    ip_address = vkcs_networking_port.vrrp_port_1.fixed_ip.0.ip_address
+    mac_address = vkcs_networking_port.vrrp_port_1.mac_address
   }
 }
 `
@@ -1287,7 +1287,7 @@ resource "vkcs_networking_subnet" "vrrp_subnet" {
   name = "vrrp_subnet"
   cidr = "10.0.0.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   allocation_pool {
     start = "10.0.0.2"
@@ -1305,17 +1305,17 @@ resource "vkcs_networking_router" "vrrp_router" {
 }
 
 resource "vkcs_networking_router_interface" "vrrp_interface" {
-  router_id = "${vkcs_networking_router.vrrp_router.id}"
-  subnet_id = "${vkcs_networking_subnet.vrrp_subnet.id}"
+  router_id = vkcs_networking_router.vrrp_router.id
+  subnet_id = vkcs_networking_subnet.vrrp_subnet.id
 }
 
 resource "vkcs_networking_port" "vrrp_port_1" {
   name = "vrrp_port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.vrrp_subnet.id}"
+    subnet_id =  vkcs_networking_subnet.vrrp_subnet.id
     ip_address = "10.0.0.202"
   }
 }
@@ -1323,10 +1323,10 @@ resource "vkcs_networking_port" "vrrp_port_1" {
 resource "vkcs_networking_port" "vrrp_port_2" {
   name = "vrrp_port_2"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.vrrp_subnet.id}"
+    subnet_id =  vkcs_networking_subnet.vrrp_subnet.id
     ip_address = "10.0.0.201"
   }
 }
@@ -1334,7 +1334,7 @@ resource "vkcs_networking_port" "vrrp_port_2" {
 resource "vkcs_networking_port" "instance_port" {
   name = "instance_port"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 }
 `
 
@@ -1348,26 +1348,26 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.20"
   }
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.40"
   }
 }
@@ -1383,16 +1383,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 
@@ -1413,21 +1413,21 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.24"
   }
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -1443,7 +1443,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_secgroup" "secgroup_1" {
@@ -1459,10 +1459,10 @@ resource "vkcs_networking_secgroup" "secgroup_2" {
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -1478,7 +1478,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_secgroup" "secgroup_1" {
@@ -1494,11 +1494,11 @@ resource "vkcs_networking_secgroup" "secgroup_2" {
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
-  security_group_ids = ["${vkcs_networking_secgroup.secgroup_1.id}"]
+  network_id = vkcs_networking_network.network_1.id
+  security_group_ids = [vkcs_networking_secgroup.secgroup_1.id]
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -1514,7 +1514,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_secgroup" "secgroup_1" {
@@ -1530,14 +1530,14 @@ resource "vkcs_networking_secgroup" "secgroup_2" {
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   security_group_ids = [
-    "${vkcs_networking_secgroup.secgroup_1.id}",
-    "${vkcs_networking_secgroup.secgroup_2.id}"
+    vkcs_networking_secgroup.secgroup_1.id,
+    vkcs_networking_secgroup.secgroup_2.id
   ]
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -1553,7 +1553,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_secgroup" "secgroup_1" {
@@ -1569,11 +1569,11 @@ resource "vkcs_networking_secgroup" "secgroup_2" {
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
-  security_group_ids = ["${vkcs_networking_secgroup.secgroup_2.id}"]
+  network_id = vkcs_networking_network.network_1.id
+  security_group_ids = [vkcs_networking_secgroup.secgroup_2.id]
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -1589,7 +1589,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_secgroup" "secgroup_1" {
@@ -1605,11 +1605,11 @@ resource "vkcs_networking_secgroup" "secgroup_2" {
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   security_group_ids = []
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -1625,7 +1625,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_secgroup" "secgroup_1" {
@@ -1641,11 +1641,11 @@ resource "vkcs_networking_secgroup" "secgroup_2" {
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   no_security_groups = true
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -1661,7 +1661,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_secgroup" "secgroup_1" {
@@ -1677,12 +1677,12 @@ resource "vkcs_networking_secgroup" "secgroup_2" {
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   no_security_groups = false
-  security_group_ids = ["${vkcs_networking_secgroup.secgroup_1.id}"]
+  security_group_ids = [vkcs_networking_secgroup.secgroup_1.id]
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -1698,7 +1698,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_secgroup" "secgroup_1" {
@@ -1714,15 +1714,15 @@ resource "vkcs_networking_secgroup" "secgroup_2" {
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   no_security_groups = false
   security_group_ids = [
-    "${vkcs_networking_secgroup.secgroup_1.id}",
-    "${vkcs_networking_secgroup.secgroup_2.id}"
+    vkcs_networking_secgroup.secgroup_1.id,
+    vkcs_networking_secgroup.secgroup_2.id
   ]
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -1738,7 +1738,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_secgroup" "secgroup_1" {
@@ -1754,11 +1754,11 @@ resource "vkcs_networking_secgroup" "secgroup_2" {
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   no_security_groups = true
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -1774,7 +1774,7 @@ resource "vkcs_networking_subnet" "vrrp_subnet" {
   name = "vrrp_subnet"
   cidr = "10.0.0.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   allocation_pool {
     start = "10.0.0.2"
@@ -1792,17 +1792,17 @@ resource "vkcs_networking_router" "vrrp_router" {
 }
 
 resource "vkcs_networking_router_interface" "vrrp_interface" {
-  router_id = "${vkcs_networking_router.vrrp_router.id}"
-  subnet_id = "${vkcs_networking_subnet.vrrp_subnet.id}"
+  router_id = vkcs_networking_router.vrrp_router.id
+  subnet_id = vkcs_networking_subnet.vrrp_subnet.id
 }
 
 resource "vkcs_networking_port" "vrrp_port_1" {
   name = "vrrp_port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.vrrp_subnet.id}"
+    subnet_id =  vkcs_networking_subnet.vrrp_subnet.id
     ip_address = "10.0.0.202"
   }
 }
@@ -1810,10 +1810,10 @@ resource "vkcs_networking_port" "vrrp_port_1" {
 resource "vkcs_networking_port" "vrrp_port_2" {
   name = "vrrp_port_2"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.vrrp_subnet.id}"
+    subnet_id =  vkcs_networking_subnet.vrrp_subnet.id
     ip_address = "10.0.0.201"
   }
 }
@@ -1821,14 +1821,14 @@ resource "vkcs_networking_port" "vrrp_port_2" {
 resource "vkcs_networking_port" "instance_port" {
   name = "instance_port"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.vrrp_network.id}"
+  network_id = vkcs_networking_network.vrrp_network.id
 
   allowed_address_pairs {
-    ip_address = "${vkcs_networking_port.vrrp_port_1.fixed_ip.0.ip_address}"
+    ip_address = vkcs_networking_port.vrrp_port_1.fixed_ip.0.ip_address
   }
 
   allowed_address_pairs {
-    ip_address = "${vkcs_networking_port.vrrp_port_2.fixed_ip.0.ip_address}"
+    ip_address = vkcs_networking_port.vrrp_port_2.fixed_ip.0.ip_address
   }
 }
 `
@@ -1843,13 +1843,13 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   no_fixed_ip = true
 }
 `
@@ -1864,16 +1864,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -1889,21 +1889,21 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.24"
   }
 }
@@ -1919,16 +1919,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 
@@ -1954,16 +1954,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 
@@ -1984,16 +1984,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 
@@ -2019,16 +2019,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 
@@ -2054,16 +2054,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 
@@ -2089,16 +2089,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 
@@ -2124,16 +2124,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -2148,15 +2148,15 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -2171,16 +2171,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -2195,16 +2195,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "false"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -2219,16 +2219,16 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   no_security_groups = true
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -2243,17 +2243,17 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   no_security_groups = true
   port_security_enabled = false
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }
@@ -2268,17 +2268,17 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   no_security_groups = true
   port_security_enabled = true
 
   fixed_ip {
-    subnet_id =  "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.23"
   }
 }

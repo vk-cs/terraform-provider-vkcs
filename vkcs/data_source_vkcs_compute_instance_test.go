@@ -69,7 +69,7 @@ func testAccComputeInstanceDataSourceSource() string {
 %s
 
 data "vkcs_compute_instance" "source_1" {
-  id = "${vkcs_compute_instance.instance_1.id}"
+  id = vkcs_compute_instance.instance_1.id
 }
 `, testAccRenderConfig(testAccComputeInstanceDataSourceBasic, testAccValues))
 }

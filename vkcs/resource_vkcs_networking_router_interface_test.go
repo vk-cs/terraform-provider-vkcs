@@ -175,8 +175,8 @@ resource "vkcs_networking_router" "router_1" {
 }
 
 resource "vkcs_networking_router_interface" "int_1" {
-  subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
-  router_id = "${vkcs_networking_router.router_1.id}"
+  subnet_id = vkcs_networking_subnet.subnet_1.id
+  router_id = vkcs_networking_router.router_1.id
 }
 
 resource "vkcs_networking_network" "network_1" {
@@ -187,7 +187,7 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 `
 
@@ -198,8 +198,8 @@ resource "vkcs_networking_router" "router_1" {
 }
 
 resource "vkcs_networking_router_interface" "int_1" {
-  subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
-  router_id = "${vkcs_networking_router.router_1.id}"
+  subnet_id = vkcs_networking_subnet.subnet_1.id
+  router_id = vkcs_networking_router.router_1.id
 }
 
 resource "vkcs_networking_network" "network_1" {
@@ -210,20 +210,20 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   cidr = "fd00:0:0:1::/64"
   ip_version = 6
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_subnet" "subnet_2" {
   cidr = "fd00:0:0:2::/64"
   ip_version = 6
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 `
 
 const testAccNetworkingRouterInterfaceV6SubnetSecondInterface = `
 resource "vkcs_networking_router_interface" "int_2" {
-  subnet_id = "${vkcs_networking_subnet.subnet_2.id}"
-  router_id = "${vkcs_networking_router.router_1.id}"
+  subnet_id = vkcs_networking_subnet.subnet_2.id
+  router_id = vkcs_networking_router.router_1.id
 }
 `
 
@@ -234,8 +234,8 @@ resource "vkcs_networking_router" "router_1" {
 }
 
 resource "vkcs_networking_router_interface" "int_1" {
-  router_id = "${vkcs_networking_router.router_1.id}"
-  port_id = "${vkcs_networking_port.port_1.id}"
+  router_id = vkcs_networking_router.router_1.id
+  port_id = vkcs_networking_port.port_1.id
 }
 
 resource "vkcs_networking_network" "network_1" {
@@ -246,16 +246,16 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.1"
   }
 }
@@ -268,8 +268,8 @@ resource "vkcs_networking_router" "router_1" {
 }
 
 resource "vkcs_networking_router_interface" "int_1" {
-  subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
-  router_id = "${vkcs_networking_router.router_1.id}"
+  subnet_id = vkcs_networking_subnet.subnet_1.id
+  router_id = vkcs_networking_router.router_1.id
 
   timeouts {
     create = "5m"
@@ -285,6 +285,6 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 `

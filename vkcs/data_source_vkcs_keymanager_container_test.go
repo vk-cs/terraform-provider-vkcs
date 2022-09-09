@@ -2,8 +2,9 @@ package vkcs
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccKeyManagerContainerDataSource_basic(t *testing.T) {
@@ -57,7 +58,7 @@ func testAccKeyManagerContainerDataSourceBasic() string {
 %s
 
 data "vkcs_keymanager_container" "container_1" {
-  name = "${vkcs_keymanager_container.container_1.name}"
+  name = vkcs_keymanager_container.container_1.name
 }
 `, testAccKeyManagerContainerBasic())
 }
@@ -67,7 +68,7 @@ func testAccKeyManagerContainerDataSourceAcls() string {
 %s
 
 data "vkcs_keymanager_container" "container_1" {
-  name = "${vkcs_keymanager_container.container_1.name}"
+  name = vkcs_keymanager_container.container_1.name
 }
 `, testAccKeyManagerContainerAcls())
 }

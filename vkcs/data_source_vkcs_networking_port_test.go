@@ -42,7 +42,7 @@ resource "vkcs_networking_network" "network_1" {
 
 resource "vkcs_networking_subnet" "subnet_1" {
   name       = "subnet_1"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   cidr       = "10.0.0.0/24"
   ip_version = 4
 }
@@ -54,26 +54,26 @@ data "vkcs_networking_secgroup" "default" {
 resource "vkcs_networking_port" "port_1" {
   name           = "port"
   description    = "test port"
-  network_id     = "${vkcs_networking_network.network_1.id}"
+  network_id     = vkcs_networking_network.network_1.id
   admin_state_up = "true"
 
   security_group_ids = [
-    "${data.vkcs_networking_secgroup.default.id}",
+    data.vkcs_networking_secgroup.default.id,
   ]
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
   }
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
   }
 }
 
 resource "vkcs_networking_port" "port_2" {
   name               = "port"
   description        = "test port"
-  network_id         = "${vkcs_networking_network.network_1.id}"
+  network_id         = vkcs_networking_network.network_1.id
   admin_state_up     = "true"
   no_security_groups = "true"
 
@@ -94,17 +94,17 @@ resource "vkcs_networking_port" "port_2" {
 }
 
 data "vkcs_networking_port" "port_1" {
-  name           = "${vkcs_networking_port.port_1.name}"
-  admin_state_up = "${vkcs_networking_port.port_2.admin_state_up}"
+  name           = vkcs_networking_port.port_1.name
+  admin_state_up = vkcs_networking_port.port_2.admin_state_up
 
   security_group_ids = [
-    "${data.vkcs_networking_secgroup.default.id}",
+    data.vkcs_networking_secgroup.default.id,
   ]
 }
 
 data "vkcs_networking_port" "port_2" {
-  name           = "${vkcs_networking_port.port_1.name}"
-  admin_state_up = "${vkcs_networking_port.port_2.admin_state_up}"
+  name           = vkcs_networking_port.port_1.name
+  admin_state_up = vkcs_networking_port.port_2.admin_state_up
 
   tags = [
     "foo",
@@ -113,6 +113,6 @@ data "vkcs_networking_port" "port_2" {
 }
 
 data "vkcs_networking_port" "port_3" {
-  fixed_ip = "${vkcs_networking_port.port_1.all_fixed_ips.1}"
+  fixed_ip = vkcs_networking_port.port_1.all_fixed_ips.1
 }
 `

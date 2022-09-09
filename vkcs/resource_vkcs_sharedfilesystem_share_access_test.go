@@ -159,7 +159,7 @@ resource "vkcs_sharedfilesystem_share" "share_1" {
   share_proto      = "NFS"
   share_type       = "default_share_type"
   size             = 1
-  share_network_id = "${vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id}"
+  share_network_id = vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id
 }
 `
 
@@ -170,14 +170,14 @@ func testAccSFSShareAccessConfigBasic() string {
 %s
 
 resource "vkcs_sharedfilesystem_share_access" "share_access_1" {
-  share_id     = "${vkcs_sharedfilesystem_share.share_1.id}"
+  share_id     = vkcs_sharedfilesystem_share.share_1.id
   access_type  = "ip"
   access_to    = "192.168.199.10"
   access_level = "rw"
 }
 
 resource "vkcs_sharedfilesystem_share_access" "share_access_2" {
-  share_id     = "${vkcs_sharedfilesystem_share.share_1.id}"
+  share_id     = vkcs_sharedfilesystem_share.share_1.id
   access_type  = "ip"
   access_to    = "192.168.199.11"
   access_level = "rw"
@@ -192,14 +192,14 @@ func testAccSFSShareAccessConfigUpdate() string {
 %s
 
 resource "vkcs_sharedfilesystem_share_access" "share_access_1" {
-  share_id     = "${vkcs_sharedfilesystem_share.share_1.id}"
+  share_id     = vkcs_sharedfilesystem_share.share_1.id
   access_type  = "ip"
   access_to    = "192.168.199.10"
   access_level = "ro"
 }
 
 resource "vkcs_sharedfilesystem_share_access" "share_access_2" {
-  share_id     = "${vkcs_sharedfilesystem_share.share_1.id}"
+  share_id     = vkcs_sharedfilesystem_share.share_1.id
   access_type  = "ip"
   access_to    = "192.168.199.11"
   access_level = "ro"
