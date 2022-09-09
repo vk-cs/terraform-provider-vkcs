@@ -173,7 +173,7 @@ resource "vkcs_compute_instance" "instance_1" {
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
   scheduler_hints {
-    group = "${vkcs_compute_servergroup.sg_1.id}"
+    group = vkcs_compute_servergroup.sg_1.id
   }
   network {
     uuid = vkcs_networking_network.base.id
@@ -199,7 +199,7 @@ resource "vkcs_compute_instance" "instance_1" {
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
   scheduler_hints {
-    group = "${vkcs_compute_servergroup.sg_1.id}"
+    group = vkcs_compute_servergroup.sg_1.id
   }
   network {
     uuid = vkcs_networking_network.base.id

@@ -308,10 +308,10 @@ func testAccNetworkingPortSecGroupAssociateManifestUpdate0() string {
 %s
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
-  port_id = "${data.vkcs_networking_port.hidden_port_1.id}"
+  port_id = data.vkcs_networking_port.hidden_port_1.id
   enforce = "false"
   security_group_ids = [
-    "${vkcs_networking_secgroup.secgroup_1.id}",
+    vkcs_networking_secgroup.secgroup_1.id,
   ]
 }
 `, testAccNetworkingPortSecGroupAssociate)
@@ -328,10 +328,10 @@ func testAccNetworkingPortSecGroupAssociateManifestUpdate2() string {
 %s
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
-  port_id = "${data.vkcs_networking_port.hidden_port_1.id}"
+  port_id = data.vkcs_networking_port.hidden_port_1.id
   enforce = "true"
   security_group_ids = [
-    "${vkcs_networking_secgroup.secgroup_1.id}",
+    vkcs_networking_secgroup.secgroup_1.id,
   ]
 }
 `, testAccNetworkingPortSecGroupAssociate)
@@ -342,12 +342,12 @@ func testAccNetworkingPortSecGroupAssociateManifestUpdate3() string {
 %s
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
-  port_id = "${data.vkcs_networking_port.hidden_port_1.id}"
+  port_id = data.vkcs_networking_port.hidden_port_1.id
   enforce = "true"
   security_group_ids = [
-    "${vkcs_networking_secgroup.secgroup_1.id}",
-    "${vkcs_networking_secgroup.secgroup_2.id}",
-    "${data.vkcs_networking_secgroup.default_2.id}",
+    vkcs_networking_secgroup.secgroup_1.id,
+    vkcs_networking_secgroup.secgroup_2.id,
+    data.vkcs_networking_secgroup.default_2.id,
   ]
 }
 `, testAccNetworkingPortSecGroupAssociate)
@@ -358,10 +358,10 @@ func testAccNetworkingPortSecGroupAssociateManifestUpdate4() string {
 %s
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
-  port_id = "${data.vkcs_networking_port.hidden_port_1.id}"
+  port_id = data.vkcs_networking_port.hidden_port_1.id
   enforce = "true"
   security_group_ids = [
-    "${vkcs_networking_secgroup.secgroup_2.id}",
+    vkcs_networking_secgroup.secgroup_2.id,
   ]
 }
 `, testAccNetworkingPortSecGroupAssociate)
@@ -372,11 +372,11 @@ func testAccNetworkingPortSecGroupAssociateManifestUpdate5() string {
 %s
 
 data "vkcs_networking_port" "port_1" {
-  port_id = "${vkcs_networking_port_secgroup_associate.port_1.id}"
+  port_id = vkcs_networking_port_secgroup_associate.port_1.id
 }
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
-  port_id = "${data.vkcs_networking_port.hidden_port_1.id}"
+  port_id = data.vkcs_networking_port.hidden_port_1.id
   enforce = "true"
   security_group_ids = []
 }
@@ -388,10 +388,10 @@ func testAccNetworkingPortSecGroupAssociateManifestUpdate6() string {
 %s
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
-  port_id = "${data.vkcs_networking_port.hidden_port_1.id}"
+  port_id = data.vkcs_networking_port.hidden_port_1.id
   enforce = "true"
   security_group_ids = [
-    "${data.vkcs_networking_secgroup.default_2.id}",
+    data.vkcs_networking_secgroup.default_2.id,
   ]
 }
 `, testAccNetworkingPortSecGroupAssociate)
@@ -402,10 +402,10 @@ func testAccNetworkingPortSecGroupAssociateManifestUpdate7() string {
 %s
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
-  port_id = "${data.vkcs_networking_port.hidden_port_1.id}"
+  port_id = data.vkcs_networking_port.hidden_port_1.id
   enforce = "false"
   security_group_ids = [
-    "${vkcs_networking_secgroup.secgroup_1.id}",
+    vkcs_networking_secgroup.secgroup_1.id,
   ]
 }
 `, testAccNetworkingPortSecGroupAssociate)
@@ -416,12 +416,12 @@ func testAccNetworkingPortSecGroupAssociateManifestUpdate8() string {
 %s
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
-  port_id = "${data.vkcs_networking_port.hidden_port_1.id}"
+  port_id = data.vkcs_networking_port.hidden_port_1.id
   enforce = "false"
   security_group_ids = [
-    "${vkcs_networking_secgroup.secgroup_1.id}",
-    "${vkcs_networking_secgroup.secgroup_2.id}",
-    "${data.vkcs_networking_secgroup.default_2.id}",
+    vkcs_networking_secgroup.secgroup_1.id,
+    vkcs_networking_secgroup.secgroup_2.id,
+    data.vkcs_networking_secgroup.default_2.id,
   ]
 }
 `, testAccNetworkingPortSecGroupAssociate)
@@ -432,10 +432,10 @@ func testAccNetworkingPortSecGroupAssociateManifestUpdate9() string {
 %s
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
-  port_id = "${data.vkcs_networking_port.hidden_port_1.id}"
+  port_id = data.vkcs_networking_port.hidden_port_1.id
   enforce = "false"
   security_group_ids = [
-    "${vkcs_networking_secgroup.secgroup_2.id}",
+    vkcs_networking_secgroup.secgroup_2.id,
   ]
 }
 `, testAccNetworkingPortSecGroupAssociate)
@@ -446,7 +446,7 @@ func testAccNetworkingPortSecGroupAssociateManifestUpdate10() string {
 %s
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
-  port_id = "${data.vkcs_networking_port.hidden_port_1.id}"
+  port_id = data.vkcs_networking_port.hidden_port_1.id
   enforce = "false"
   security_group_ids = []
 }
@@ -458,10 +458,10 @@ func testAccNetworkingPortSecGroupAssociateManifestUpdate11() string {
 %s
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
-  port_id = "${data.vkcs_networking_port.hidden_port_1.id}"
+  port_id = data.vkcs_networking_port.hidden_port_1.id
   enforce = "false"
   security_group_ids = [
-    "${data.vkcs_networking_secgroup.default_2.id}",
+    data.vkcs_networking_secgroup.default_2.id,
   ]
 }
 `, testAccNetworkingPortSecGroupAssociate)

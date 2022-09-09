@@ -86,11 +86,11 @@ const testAccServiceBasic = `
 	resource "vkcs_networking_router" "router_1" {
 	  name = "router_1"
 	  admin_state_up = "true"
-	  external_network_id = "${data.vkcs_networking_network.extnet.id}"
+	  external_network_id = data.vkcs_networking_network.extnet.id
 	}
 
 	resource "vkcs_vpnaas_service" "service_1" {
-		router_id = "${vkcs_networking_router.router_1.id}"
+		router_id = vkcs_networking_router.router_1.id
 		admin_state_up = "false"
 	}
 	`

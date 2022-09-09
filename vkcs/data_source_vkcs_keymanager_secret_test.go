@@ -92,14 +92,14 @@ resource "vkcs_keymanager_secret" "secret_2" {
 }
 
 data "vkcs_keymanager_secret" "secret_1" {
-  bit_length  = "${vkcs_keymanager_secret.secret_1.bit_length}"
+  bit_length  = vkcs_keymanager_secret.secret_1.bit_length
   secret_type = "passphrase"
 }
 
 data "vkcs_keymanager_secret" "secret_2" {
   mode              = "cbc"
   secret_type       = "passphrase"
-  expiration_filter = "${vkcs_keymanager_secret.secret_2.expiration}"
+  expiration_filter = vkcs_keymanager_secret.secret_2.expiration
 }
 `
 
@@ -142,13 +142,13 @@ resource "vkcs_keymanager_secret" "secret_2" {
 }
 
 data "vkcs_keymanager_secret" "secret_1" {
-  bit_length  = "${vkcs_keymanager_secret.secret_1.bit_length}"
+  bit_length  = vkcs_keymanager_secret.secret_1.bit_length
   secret_type = "passphrase"
 }
 
 data "vkcs_keymanager_secret" "secret_2" {
   mode              = "cbc"
   secret_type       = "passphrase"
-  expiration_filter = "${vkcs_keymanager_secret.secret_2.expiration}"
+  expiration_filter = vkcs_keymanager_secret.secret_2.expiration
 }
 `

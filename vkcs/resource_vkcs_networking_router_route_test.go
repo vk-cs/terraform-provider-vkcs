@@ -171,23 +171,23 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.1"
   }
 }
 
 resource "vkcs_networking_router_interface" "int_1" {
-  router_id = "${vkcs_networking_router.router_1.id}"
-  port_id = "${vkcs_networking_port.port_1.id}"
+  router_id = vkcs_networking_router.router_1.id
+  port_id = vkcs_networking_port.port_1.id
 }
 
 resource "vkcs_networking_network" "network_2" {
@@ -198,23 +198,23 @@ resource "vkcs_networking_network" "network_2" {
 resource "vkcs_networking_subnet" "subnet_2" {
   cidr = "192.168.200.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_2.id}"
+  network_id = vkcs_networking_network.network_2.id
 }
 
 resource "vkcs_networking_port" "port_2" {
   name = "port_2"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_2.id}"
+  network_id = vkcs_networking_network.network_2.id
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_2.id}"
+    subnet_id = vkcs_networking_subnet.subnet_2.id
     ip_address = "192.168.200.1"
   }
 }
 
 resource "vkcs_networking_router_interface" "int_2" {
-  router_id = "${vkcs_networking_router.router_1.id}"
-  port_id = "${vkcs_networking_port.port_2.id}"
+  router_id = vkcs_networking_router.router_1.id
+  port_id = vkcs_networking_port.port_2.id
   depends_on = [vkcs_networking_router_interface.int_1]
 }
 
@@ -223,7 +223,7 @@ resource "vkcs_networking_router_route" "router_route_1" {
   next_hop = "192.168.199.254"
 
   depends_on = [vkcs_networking_router_interface.int_1, vkcs_networking_router_interface.int_2]
-  router_id = "${vkcs_networking_router.router_1.id}"
+  router_id = vkcs_networking_router.router_1.id
 }
 `
 
@@ -241,23 +241,23 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.1"
   }
 }
 
 resource "vkcs_networking_router_interface" "int_1" {
-  router_id = "${vkcs_networking_router.router_1.id}"
-  port_id = "${vkcs_networking_port.port_1.id}"
+  router_id = vkcs_networking_router.router_1.id
+  port_id = vkcs_networking_port.port_1.id
 }
 
 resource "vkcs_networking_network" "network_2" {
@@ -268,23 +268,23 @@ resource "vkcs_networking_network" "network_2" {
 resource "vkcs_networking_subnet" "subnet_2" {
   cidr = "192.168.200.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_2.id}"
+  network_id = vkcs_networking_network.network_2.id
 }
 
 resource "vkcs_networking_port" "port_2" {
   name = "port_2"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_2.id}"
+  network_id = vkcs_networking_network.network_2.id
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_2.id}"
+    subnet_id = vkcs_networking_subnet.subnet_2.id
     ip_address = "192.168.200.1"
   }
 }
 
 resource "vkcs_networking_router_interface" "int_2" {
-  router_id = "${vkcs_networking_router.router_1.id}"
-  port_id = "${vkcs_networking_port.port_2.id}"
+  router_id = vkcs_networking_router.router_1.id
+  port_id = vkcs_networking_port.port_2.id
   depends_on = [vkcs_networking_router_interface.int_1]
 }
 
@@ -293,7 +293,7 @@ resource "vkcs_networking_router_route" "router_route_1" {
   next_hop = "192.168.199.254"
 
   depends_on = [vkcs_networking_router_interface.int_1, vkcs_networking_router_interface.int_2]
-  router_id = "${vkcs_networking_router.router_1.id}"
+  router_id = vkcs_networking_router.router_1.id
 }
 
 resource "vkcs_networking_router_route" "router_route_2" {
@@ -301,7 +301,7 @@ resource "vkcs_networking_router_route" "router_route_2" {
   next_hop = "192.168.200.254"
 
   depends_on = [vkcs_networking_router_interface.int_1, vkcs_networking_router_interface.int_2]
-  router_id = "${vkcs_networking_router.router_1.id}"
+  router_id = vkcs_networking_router.router_1.id
 }
 `
 
@@ -319,23 +319,23 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.1"
   }
 }
 
 resource "vkcs_networking_router_interface" "int_1" {
-  router_id = "${vkcs_networking_router.router_1.id}"
-  port_id = "${vkcs_networking_port.port_1.id}"
+  router_id = vkcs_networking_router.router_1.id
+  port_id = vkcs_networking_port.port_1.id
 }
 
 resource "vkcs_networking_network" "network_2" {
@@ -346,22 +346,22 @@ resource "vkcs_networking_network" "network_2" {
 resource "vkcs_networking_subnet" "subnet_2" {
   ip_version = 4
   cidr = "192.168.200.0/24"
-  network_id = "${vkcs_networking_network.network_2.id}"
+  network_id = vkcs_networking_network.network_2.id
 }
 
 resource "vkcs_networking_port" "port_2" {
   name = "port_2"
   admin_state_up = "true"
-  network_id = "${vkcs_networking_network.network_2.id}"
+  network_id = {vkcs_networking_network.network_2.id
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_2.id}"
+    subnet_id = vkcs_networking_subnet.subnet_2.id
     ip_address = "192.168.200.1"
   }
 }
 
 resource "vkcs_networking_router_interface" "int_2" {
-  router_id = "${vkcs_networking_router.router_1.id}"
-  port_id = "${vkcs_networking_port.port_2.id}"
+  router_id = vkcs_networking_router.router_1.id
+  port_id = vkcs_networking_port.port_2.id
 }
 `

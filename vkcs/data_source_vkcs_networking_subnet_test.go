@@ -132,7 +132,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   description = "my subnet description"
   cidr = "192.168.199.0/24"
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   tags = [
     "foo",
     "bar",
@@ -145,7 +145,7 @@ func testAccNetworkingSubnetDataSourceBasic() string {
 %s
 
 data "vkcs_networking_subnet" "subnet_1" {
-  name = "${vkcs_networking_subnet.subnet_1.name}"
+  name = vkcs_networking_subnet.subnet_1.name
 }
 `, testAccNetworkingSubnetDataSourceSubnet)
 }
@@ -166,7 +166,7 @@ func testAccNetworkingSubnetDataSourceDhcpEnabled() string {
 %s
 
 data "vkcs_networking_subnet" "subnet_1" {
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   dhcp_enabled = true
   tags = [
     "bar",
@@ -180,7 +180,7 @@ func testAccNetworkingSubnetDataSourceIPVersion() string {
 %s
 
 data "vkcs_networking_subnet" "subnet_1" {
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
   ip_version = 4
 }
 `, testAccNetworkingSubnetDataSourceSubnet)
@@ -191,7 +191,7 @@ func testAccNetworkingSubnetDataSourceGatewayIP() string {
 %s
 
 data "vkcs_networking_subnet" "subnet_1" {
-  gateway_ip = "${vkcs_networking_subnet.subnet_1.gateway_ip}"
+  gateway_ip = vkcs_networking_subnet.subnet_1.gateway_ip
 }
 `, testAccNetworkingSubnetDataSourceSubnet)
 }

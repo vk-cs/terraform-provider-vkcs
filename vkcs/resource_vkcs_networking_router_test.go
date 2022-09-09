@@ -168,7 +168,7 @@ const testAccNetworkingRouterVendorOpts = `
 resource "vkcs_networking_router" "router_1" {
   name = "router_1"
   admin_state_up = "true"
-  external_network_id = "${data.vkcs_networking_network.extnet.id}"
+  external_network_id = data.vkcs_networking_network.extnet.id
   vendor_options {
     set_router_gateway_after_create = true
   }
@@ -188,6 +188,6 @@ const testAccNetworkingRouterUpdateExternalGateway2 = `
 resource "vkcs_networking_router" "router_1" {
   name = "router"
   admin_state_up = "true"
-  external_network_id = "${data.vkcs_networking_network.extnet.id}"
+  external_network_id = data.vkcs_networking_network.extnet.id
 }
 `

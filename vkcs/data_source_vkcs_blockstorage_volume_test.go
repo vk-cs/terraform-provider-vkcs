@@ -31,7 +31,7 @@ func testAccBlockStorageVolumeDataSourceBasic() string {
 %s
 
     data "vkcs_blockstorage_volume" "volume_1" {
-      name = "${vkcs_blockstorage_volume.volume_1.name}"
+      name = vkcs_blockstorage_volume.volume_1.name
     }
   `, testAccRenderConfig(testAccBlockStorageVolumeBasic, testAccValues))
 }

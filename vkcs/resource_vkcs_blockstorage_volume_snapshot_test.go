@@ -123,7 +123,7 @@ func testAccBlockStorageSnapshotBasic() string {
 %s
 
 resource "vkcs_blockstorage_snapshot" "snapshot_1" {
-  volume_id = "${vkcs_blockstorage_volume.volume_1.id}"
+  volume_id = vkcs_blockstorage_volume.volume_1.id
   name = "snapshot_1"
   description = "first test snapshot"
   metadata = {
@@ -138,7 +138,7 @@ func testAccBlockStorageSnapshotUpdate() string {
 %s
 
 resource "vkcs_blockstorage_snapshot" "snapshot_1" {
-  volume_id = "${vkcs_blockstorage_volume.volume_1.id}"
+  volume_id = vkcs_blockstorage_volume.volume_1.id
   name = "snapshot_1-updated"
   description = "first test snapshot-updated"
   metadata = {

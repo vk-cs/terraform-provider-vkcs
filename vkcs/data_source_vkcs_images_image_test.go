@@ -124,7 +124,7 @@ func testAccImagesImageDataSourceBasic() string {
 
 data "vkcs_images_image" "image_1" {
 	most_recent = true
-	name = "${vkcs_images_image.image_1.name}"
+	name = vkcs_images_image.image_1.name
 }
 `, testAccImagesImageDataSourceCirros)
 }

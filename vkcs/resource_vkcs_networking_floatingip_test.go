@@ -175,30 +175,30 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_router_interface" "router_interface_1" {
-  router_id = "${vkcs_networking_router.router_1.id}"
-  subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  router_id = vkcs_networking_router.router_1.id
+  subnet_id = vkcs_networking_subnet.subnet_1.id
 }
 
 resource "vkcs_networking_router" "router_1" {
   name = "router_1"
-  external_network_id = "${data.vkcs_networking_network.extnet.id}"
+  external_network_id = data.vkcs_networking_network.extnet.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   admin_state_up = "true"
-  network_id = "${vkcs_networking_subnet.subnet_1.network_id}"
+  network_id = vkcs_networking_subnet.subnet_1.network_id
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.10"
   }
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.20"
   }
 }
@@ -206,8 +206,8 @@ resource "vkcs_networking_port" "port_1" {
 resource "vkcs_networking_floatingip" "fip_1" {
   pool = "{{.ExtNetName}}"
   description = "test"
-  port_id = "${vkcs_networking_port.port_1.id}"
-  fixed_ip = "${vkcs_networking_port.port_1.fixed_ip.1.ip_address}"
+  port_id = vkcs_networking_port.port_1.id
+  fixed_ip = vkcs_networking_port.port_1.fixed_ip.1.ip_address
 }
 `
 
@@ -223,38 +223,38 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${vkcs_networking_network.network_1.id}"
+  network_id = vkcs_networking_network.network_1.id
 }
 
 resource "vkcs_networking_router_interface" "router_interface_1" {
-  router_id = "${vkcs_networking_router.router_1.id}"
-  subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+  router_id = vkcs_networking_router.router_1.id
+  subnet_id = vkcs_networking_subnet.subnet_1.id
 }
 
 resource "vkcs_networking_router" "router_1" {
   name = "router_1"
-  external_network_id = "${data.vkcs_networking_network.extnet.id}"
+  external_network_id = data.vkcs_networking_network.extnet.id
 }
 
 resource "vkcs_networking_port" "port_1" {
   admin_state_up = "true"
-  network_id = "${vkcs_networking_subnet.subnet_1.network_id}"
+  network_id = vkcs_networking_subnet.subnet_1.network_id
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.10"
   }
 
   fixed_ip {
-    subnet_id = "${vkcs_networking_subnet.subnet_1.id}"
+    subnet_id = vkcs_networking_subnet.subnet_1.id
     ip_address = "192.168.199.20"
   }
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
   pool = "{{.ExtNetName}}"
-  port_id = "${vkcs_networking_port.port_1.id}"
-  fixed_ip = "${vkcs_networking_port.port_1.fixed_ip.0.ip_address}"
+  port_id = vkcs_networking_port.port_1.id
+  fixed_ip = vkcs_networking_port.port_1.fixed_ip.0.ip_address
 }
 `
 

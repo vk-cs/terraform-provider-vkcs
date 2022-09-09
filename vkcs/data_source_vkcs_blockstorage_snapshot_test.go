@@ -47,7 +47,7 @@ func testAccBlockStorageSnapshotDataSourceBasic() string {
 %s
 
     data "vkcs_blockstorage_snapshot" "snapshot_1" {
-      name = "${vkcs_blockstorage_snapshot.snapshot_1.name}"
+      name = vkcs_blockstorage_snapshot.snapshot_1.name
     }
   `, testAccBlockStorageSnapshotBasic())
 }
