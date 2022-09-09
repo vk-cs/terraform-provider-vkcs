@@ -47,6 +47,6 @@ var testAccDataSourceDatabaseBackupBasic = fmt.Sprintf(`
 %s
 
 data "vkcs_db_backup" "basic" {
-	backup_id = "${vkcs_db_backup.basic.id}"
+	backup_id = vkcs_db_backup.basic.id
 }
 `, testAccDatabaseBackupBasic)
