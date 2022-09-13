@@ -17,7 +17,7 @@ func TestAccNetworkingNetworkDataSource_basic(t *testing.T) {
 				Config: testAccNetworkingNetworkDataSourceNetwork,
 			},
 			{
-				Config: testAccNetworkingNetworkDataSourceBasic(),
+				Config: testAccRenderConfig(testAccNetworkingNetworkDataSourceBasic, map[string]string{"TestAccNetworkingNetworkDataSourceNetwork": testAccNetworkingNetworkDataSourceNetwork}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkDataSourceID("data.vkcs_networking_network.network_1"),
 					resource.TestCheckResourceAttr(
@@ -43,7 +43,7 @@ func TestAccNetworkingNetworkDataSource_subnet(t *testing.T) {
 				Config: testAccNetworkingNetworkDataSourceNetwork,
 			},
 			{
-				Config: testAccNetworkingNetworkDataSourceSubnet(),
+				Config: testAccRenderConfig(testAccNetworkingNetworkDataSourceSubnet, map[string]string{"TestAccNetworkingNetworkDataSourceNetwork": testAccNetworkingNetworkDataSourceNetwork}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkDataSourceID("data.vkcs_networking_network.network_1"),
 					resource.TestCheckResourceAttr(
@@ -69,7 +69,7 @@ func TestAccNetworkingNetworkDataSource_networkID(t *testing.T) {
 				Config: testAccNetworkingNetworkDataSourceNetwork,
 			},
 			{
-				Config: testAccNetworkingNetworkDataSourceNetworkID(),
+				Config: testAccRenderConfig(testAccNetworkingNetworkDataSourceNetworkID, map[string]string{"TestAccNetworkingNetworkDataSourceNetwork": testAccNetworkingNetworkDataSourceNetwork}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkDataSourceID("data.vkcs_networking_network.network_1"),
 					resource.TestCheckResourceAttr(
@@ -90,7 +90,7 @@ func TestAccNetworkingNetworkDataSource_externalExplicit(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingNetworkDataSourceExternalExplicit, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingNetworkDataSourceExternalExplicit),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkDataSourceID("data.vkcs_networking_network.network_1"),
 					resource.TestCheckResourceAttr(
@@ -113,7 +113,7 @@ func TestAccNetworkingNetworkDataSource_externalImplicit(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingNetworkDataSourceExternalImplicit, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingNetworkDataSourceExternalImplicit),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkDataSourceID("data.vkcs_networking_network.network_1"),
 					resource.TestCheckResourceAttr(
@@ -164,20 +164,17 @@ resource "vkcs_networking_subnet" "subnet_1" {
 }
 `
 
-func testAccNetworkingNetworkDataSourceBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingNetworkDataSourceBasic = `
+{{.TestAccNetworkingNetworkDataSourceNetwork}}
 
 data "vkcs_networking_network" "network_1" {
   name = vkcs_networking_network.network_1.name
   description = vkcs_networking_network.network_1.description
 }
-`, testAccNetworkingNetworkDataSourceNetwork)
-}
+`
 
-func testAccNetworkingNetworkDataSourceSubnet() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingNetworkDataSourceSubnet = `
+	{{.TestAccNetworkingNetworkDataSourceNetwork}}
 
 data "vkcs_networking_network" "network_1" {
   matching_subnet_cidr = vkcs_networking_subnet.subnet_1.cidr
@@ -186,8 +183,7 @@ data "vkcs_networking_network" "network_1" {
     "bar",
   ]
 }
-`, testAccNetworkingNetworkDataSourceNetwork)
-}
+`
 
 const testAccNetworkingNetworkDataSourceExternalExplicit = `
 data "vkcs_networking_network" "network_1" {
@@ -202,12 +198,10 @@ data "vkcs_networking_network" "network_1" {
 }
 `
 
-func testAccNetworkingNetworkDataSourceNetworkID() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingNetworkDataSourceNetworkID = `
+{{.TestAccNetworkingNetworkDataSourceNetwork}}
 
 data "vkcs_networking_network" "network_1" {
   network_id = vkcs_networking_network.network_1.id
 }
-`, testAccNetworkingNetworkDataSourceNetwork)
-}
+`

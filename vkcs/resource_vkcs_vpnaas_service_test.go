@@ -19,7 +19,7 @@ func TestAccVPNaaSService_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckServiceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccServiceBasic, testAccValues),
+				Config: testAccRenderConfig(testAccServiceBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckServiceExists("vkcs_vpnaas_service.service_1", &service),
 					resource.TestCheckResourceAttrPtr("vkcs_vpnaas_service.service_1", "router_id", &service.RouterID),

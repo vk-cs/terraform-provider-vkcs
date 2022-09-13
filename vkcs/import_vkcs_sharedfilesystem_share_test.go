@@ -14,7 +14,7 @@ func TestAccSFSShare_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckSFSShareDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSFSShareConfigBasic(),
+				Config: testAccRenderConfig(testAccSFSShareConfigBasic, map[string]string{"TestAccSFSShareNetworkConfigBasic": testAccRenderConfig(testAccSFSShareNetworkConfigBasic, map[string]string{"TestAccSFSShareNetworkConfig": testAccSFSShareNetworkConfig})}),
 			},
 
 			{

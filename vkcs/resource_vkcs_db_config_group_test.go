@@ -17,7 +17,7 @@ func TestAccDatabaseConfigGroup_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseConfigGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseConfigGroupBasic, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseConfigGroupBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseConfigGroupExists(
 						"vkcs_db_config_group.basic", &configGroup),
@@ -28,7 +28,7 @@ func TestAccDatabaseConfigGroup_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccDatabaseConfigGroupUpdate, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseConfigGroupUpdate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseConfigGroupExists(
 						"vkcs_db_config_group.basic", &configGroup),

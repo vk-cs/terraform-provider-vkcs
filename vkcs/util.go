@@ -228,3 +228,9 @@ func ensureOnlyOnePresented(d *schema.ResourceData, keys ...string) (string, err
 
 	return keyPresented, nil
 }
+
+func copyToMap(dst, src *map[string]string) {
+	for k, v := range *src {
+		(*dst)[k] = v
+	}
+}

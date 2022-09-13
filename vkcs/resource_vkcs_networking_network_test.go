@@ -89,7 +89,7 @@ func TestAccNetworkingNetwork_fullstack(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingNetworkFullstack, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingNetworkFullstack),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
 					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
@@ -327,7 +327,7 @@ func TestAccNetworkingNetwork_privateDnsDomain(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingNetworkPrivateDNSDomain, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingNetworkPrivateDNSDomain),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
 					resource.TestCheckResourceAttr(
@@ -497,17 +497,6 @@ resource "vkcs_networking_subnet" "subnet_1" {
   ip_version = 4
   network_id = vkcs_networking_network.network_1.id
 }
-
-// resource "vkcs_compute_secgroup" "secgroup_1" {
-//   name = "secgroup_1"
-//   description = "a security group"
-//   rule {
-//     from_port = 22
-//     to_port = 22
-//     ip_protocol = "tcp"
-//     cidr = "0.0.0.0/0"
-//   }
-// }
 
 resource "vkcs_networking_port" "port_1" {
   name = "port_1"

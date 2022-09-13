@@ -19,7 +19,7 @@ func TestAccLBL7Rule_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckLBL7RuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLbL7RuleConfigBasic(),
+				Config: testAccRenderConfig(testAccCheckLbL7RuleConfigBasic, map[string]string{"TestAccCheckLbL7RuleConfig": testAccCheckLbL7RuleConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBL7RuleExists("vkcs_lb_l7rule.l7rule_1", &l7rule),
 					resource.TestCheckResourceAttr(
@@ -37,7 +37,7 @@ func TestAccLBL7Rule_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLbL7RuleConfigUpdate1(),
+				Config: testAccRenderConfig(testAccCheckLbL7RuleConfigUpdate1, map[string]string{"TestAccCheckLbL7RuleConfig": testAccCheckLbL7RuleConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBL7RuleExists("vkcs_lb_l7rule.l7rule_1", &l7rule),
 					resource.TestCheckResourceAttr(
@@ -57,7 +57,7 @@ func TestAccLBL7Rule_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLbL7RuleConfigUpdate2(),
+				Config: testAccRenderConfig(testAccCheckLbL7RuleConfigUpdate2, map[string]string{"TestAccCheckLbL7RuleConfig": testAccCheckLbL7RuleConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBL7RuleExists("vkcs_lb_l7rule.l7rule_1", &l7rule),
 					resource.TestCheckResourceAttr(
@@ -71,7 +71,7 @@ func TestAccLBL7Rule_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLbL7RuleConfigUpdate3(),
+				Config: testAccRenderConfig(testAccCheckLbL7RuleConfigUpdate3, map[string]string{"TestAccCheckLbL7RuleConfig": testAccCheckLbL7RuleConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBL7RuleExists("vkcs_lb_l7rule.l7rule_1", &l7rule),
 					resource.TestCheckResourceAttr(
@@ -87,7 +87,7 @@ func TestAccLBL7Rule_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLbL7RuleConfigUpdate4(),
+				Config: testAccRenderConfig(testAccCheckLbL7RuleConfigUpdate4, map[string]string{"TestAccCheckLbL7RuleConfig": testAccCheckLbL7RuleConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBL7RuleExists("vkcs_lb_l7rule.l7rule_1", &l7rule),
 					resource.TestCheckResourceAttr(
@@ -103,7 +103,7 @@ func TestAccLBL7Rule_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLbL7RuleConfigUpdate5(),
+				Config: testAccRenderConfig(testAccCheckLbL7RuleConfigUpdate5, map[string]string{"TestAccCheckLbL7RuleConfig": testAccCheckLbL7RuleConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBL7RuleExists("vkcs_lb_l7rule.l7rule_1", &l7rule),
 					resource.TestCheckResourceAttr(
@@ -119,7 +119,7 @@ func TestAccLBL7Rule_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLbL7RuleConfigUpdate6(),
+				Config: testAccRenderConfig(testAccCheckLbL7RuleConfigUpdate6, map[string]string{"TestAccCheckLbL7RuleConfig": testAccCheckLbL7RuleConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBL7RuleExists("vkcs_lb_l7rule.l7rule_1", &l7rule),
 					resource.TestCheckResourceAttr(
@@ -254,9 +254,8 @@ resource "vkcs_lb_l7policy" "l7policy_1" {
 }
 `
 
-func testAccCheckLbL7RuleConfigBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccCheckLbL7RuleConfigBasic = `
+{{.TestAccCheckLbL7RuleConfig}}
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
   l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
@@ -264,12 +263,10 @@ resource "vkcs_lb_l7rule" "l7rule_1" {
   compare_type = "EQUAL_TO"
   value        = "/api"
 }
-`, testAccCheckLbL7RuleConfig)
-}
+`
 
-func testAccCheckLbL7RuleConfigUpdate1() string {
-	return fmt.Sprintf(`
-%s
+const testAccCheckLbL7RuleConfigUpdate1 = `
+{{.TestAccCheckLbL7RuleConfig}}
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
   l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
@@ -278,12 +275,10 @@ resource "vkcs_lb_l7rule" "l7rule_1" {
   value        = "www.example.com"
   invert       = true
 }
-`, testAccCheckLbL7RuleConfig)
-}
+`
 
-func testAccCheckLbL7RuleConfigUpdate2() string {
-	return fmt.Sprintf(`
-%s
+const testAccCheckLbL7RuleConfigUpdate2 = `
+{{.TestAccCheckLbL7RuleConfig}}
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
   l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
@@ -292,12 +287,10 @@ resource "vkcs_lb_l7rule" "l7rule_1" {
   value        = "www.example.com"
   invert       = true
 }
-`, testAccCheckLbL7RuleConfig)
-}
+`
 
-func testAccCheckLbL7RuleConfigUpdate3() string {
-	return fmt.Sprintf(`
-%s
+const testAccCheckLbL7RuleConfigUpdate3 = `
+{{.TestAccCheckLbL7RuleConfig}}
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
   l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
@@ -306,12 +299,10 @@ resource "vkcs_lb_l7rule" "l7rule_1" {
   key          = "Host"
   value        = "www.example.com"
 }
-`, testAccCheckLbL7RuleConfig)
-}
+`
 
-func testAccCheckLbL7RuleConfigUpdate4() string {
-	return fmt.Sprintf(`
-%s
+const testAccCheckLbL7RuleConfigUpdate4 = `
+{{.TestAccCheckLbL7RuleConfig}}
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
   l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
@@ -319,12 +310,10 @@ resource "vkcs_lb_l7rule" "l7rule_1" {
   compare_type = "EQUAL_TO"
   value        = "www.example.com"
 }
-`, testAccCheckLbL7RuleConfig)
-}
+`
 
-func testAccCheckLbL7RuleConfigUpdate5() string {
-	return fmt.Sprintf(`
-%s
+const testAccCheckLbL7RuleConfigUpdate5 = `
+{{.TestAccCheckLbL7RuleConfig}}
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
   l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
@@ -333,12 +322,10 @@ resource "vkcs_lb_l7rule" "l7rule_1" {
   key          = "X-Ref"
   value        = "foo"
 }
-`, testAccCheckLbL7RuleConfig)
-}
+`
 
-func testAccCheckLbL7RuleConfigUpdate6() string {
-	return fmt.Sprintf(`
-%s
+const testAccCheckLbL7RuleConfigUpdate6 = `
+{{.TestAccCheckLbL7RuleConfig}}
 
 resource "vkcs_lb_l7rule" "l7rule_1" {
   l7policy_id  = vkcs_lb_l7policy.l7policy_1.id
@@ -346,5 +333,4 @@ resource "vkcs_lb_l7rule" "l7rule_1" {
   compare_type = "STARTS_WITH"
   value        = "/images"
 }
-`, testAccCheckLbL7RuleConfig)
-}
+`

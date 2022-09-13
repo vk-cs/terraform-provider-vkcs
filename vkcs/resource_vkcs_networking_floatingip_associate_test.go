@@ -20,7 +20,7 @@ func TestAccNetworkingFloatingIPAssociate_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingFloatingIPAssociateBasic, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPAssociateBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists(
 						"vkcs_networking_floatingip_associate.fip_1", &fip),
@@ -43,7 +43,7 @@ func TestAccNetworkingFloatingIPAssociate_twoFixedIPs(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingFloatingIPAssociateTwoFixedIPs1, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPAssociateTwoFixedIPs1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists(
 						"vkcs_networking_floatingip_associate.fip_1", &fip),
@@ -56,7 +56,7 @@ func TestAccNetworkingFloatingIPAssociate_twoFixedIPs(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccNetworkingFloatingIPAssociateTwoFixedIPs2, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPAssociateTwoFixedIPs2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists(
 						"vkcs_networking_floatingip_associate.fip_1", &fip),

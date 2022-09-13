@@ -17,7 +17,7 @@ func TestAccNetworkingSubnetDataSource_basic(t *testing.T) {
 				Config: testAccNetworkingSubnetDataSourceSubnet,
 			},
 			{
-				Config: testAccNetworkingSubnetDataSourceBasic(),
+				Config: testAccRenderConfig(testAccNetworkingSubnetDataSourceBasic, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
 					testAccCheckNetworkingSubnetDataSourceGoodNetwork("data.vkcs_networking_subnet.subnet_1", "vkcs_networking_network.network_1"),
@@ -40,7 +40,7 @@ func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 				Config: testAccNetworkingSubnetDataSourceSubnet,
 			},
 			{
-				Config: testAccNetworkingSubnetDataSourceCidr(),
+				Config: testAccRenderConfig(testAccNetworkingSubnetDataSourceCidr, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
 					resource.TestCheckResourceAttr(
@@ -50,7 +50,7 @@ func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccNetworkingSubnetDataSourceDhcpEnabled(),
+				Config: testAccRenderConfig(testAccNetworkingSubnetDataSourceDhcpEnabled, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
 					resource.TestCheckResourceAttr(
@@ -60,7 +60,7 @@ func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccNetworkingSubnetDataSourceIPVersion(),
+				Config: testAccRenderConfig(testAccNetworkingSubnetDataSourceIPVersion, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
 					resource.TestCheckResourceAttr(
@@ -68,7 +68,7 @@ func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccNetworkingSubnetDataSourceGatewayIP(),
+				Config: testAccRenderConfig(testAccNetworkingSubnetDataSourceGatewayIP, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
 					resource.TestCheckResourceAttr(
@@ -140,30 +140,25 @@ resource "vkcs_networking_subnet" "subnet_1" {
 }
 `
 
-func testAccNetworkingSubnetDataSourceBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingSubnetDataSourceBasic = `
+{{.TestAccNetworkingSubnetDataSourceSubnet}}
 
 data "vkcs_networking_subnet" "subnet_1" {
   name = vkcs_networking_subnet.subnet_1.name
 }
-`, testAccNetworkingSubnetDataSourceSubnet)
-}
+`
 
-func testAccNetworkingSubnetDataSourceCidr() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingSubnetDataSourceCidr = `
+{{.TestAccNetworkingSubnetDataSourceSubnet}}
 
 data "vkcs_networking_subnet" "subnet_1" {
   cidr = "192.168.199.0/24"
   tags = []
 }
-`, testAccNetworkingSubnetDataSourceSubnet)
-}
+`
 
-func testAccNetworkingSubnetDataSourceDhcpEnabled() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingSubnetDataSourceDhcpEnabled = `
+{{.TestAccNetworkingSubnetDataSourceSubnet}}
 
 data "vkcs_networking_subnet" "subnet_1" {
   network_id = vkcs_networking_network.network_1.id
@@ -172,26 +167,21 @@ data "vkcs_networking_subnet" "subnet_1" {
     "bar",
   ]
 }
-`, testAccNetworkingSubnetDataSourceSubnet)
-}
+`
 
-func testAccNetworkingSubnetDataSourceIPVersion() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingSubnetDataSourceIPVersion = `
+{{.TestAccNetworkingSubnetDataSourceSubnet}}
 
 data "vkcs_networking_subnet" "subnet_1" {
   network_id = vkcs_networking_network.network_1.id
   ip_version = 4
 }
-`, testAccNetworkingSubnetDataSourceSubnet)
-}
+`
 
-func testAccNetworkingSubnetDataSourceGatewayIP() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingSubnetDataSourceGatewayIP = `
+{{.TestAccNetworkingSubnetDataSourceSubnet}}
 
 data "vkcs_networking_subnet" "subnet_1" {
   gateway_ip = vkcs_networking_subnet.subnet_1.gateway_ip
 }
-`, testAccNetworkingSubnetDataSourceSubnet)
-}
+`

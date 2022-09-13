@@ -19,7 +19,7 @@ func TestAccBlockStorageVolume_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccBlockStorageVolumeBasic, testAccValues),
+				Config: testAccRenderConfig(testAccBlockStorageVolumeBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
 					testAccCheckBlockStorageVolumeMetadata(&volume, "foo", "bar"),
@@ -30,7 +30,7 @@ func TestAccBlockStorageVolume_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccBlockStorageVolumeUpdate, testAccValues),
+				Config: testAccRenderConfig(testAccBlockStorageVolumeUpdate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
 					testAccCheckBlockStorageVolumeMetadata(&volume, "foo", "bar"),
@@ -51,14 +51,14 @@ func TestAccBlockStorageVolume_online_resize(t *testing.T) {
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccBlockStorageVolumeOnlineResize, testAccValues),
+				Config: testAccRenderConfig(testAccBlockStorageVolumeOnlineResize),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"vkcs_blockstorage_volume.volume_1", "size", "1"),
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccBlockStorageVolumeOnlineResizeUpdate, testAccValues),
+				Config: testAccRenderConfig(testAccBlockStorageVolumeOnlineResizeUpdate),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"vkcs_blockstorage_volume.volume_1", "size", "2"),
@@ -77,7 +77,7 @@ func TestAccBlockStorageVolume_image(t *testing.T) {
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccBlockStorageVolumeImage, testAccValues),
+				Config: testAccRenderConfig(testAccBlockStorageVolumeImage),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
 					resource.TestCheckResourceAttr(

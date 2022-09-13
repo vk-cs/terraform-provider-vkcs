@@ -18,7 +18,7 @@ func TestAccKeyManagerContainer_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckContainerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccKeyManagerContainerBasic(),
+				Config: testAccRenderConfig(testAccKeyManagerContainerBasic, map[string]string{"TestAccKeyManagerContainer": testAccKeyManagerContainer}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckContainerExists(
 						"vkcs_keymanager_container.container_1", &container),
@@ -38,7 +38,7 @@ func TestAccKeyManagerContainer_acls(t *testing.T) {
 		CheckDestroy:      testAccCheckSecretDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccKeyManagerContainerAcls(),
+				Config: testAccRenderConfig(testAccKeyManagerContainerAcls, map[string]string{"TestAccKeyManagerContainer": testAccKeyManagerContainer}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckContainerExists(
 						"vkcs_keymanager_container.container_1", &container),
@@ -60,7 +60,7 @@ func TestAccKeyManagerContainer_certificate_type(t *testing.T) {
 		CheckDestroy:      testAccCheckSecretDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccKeyManagerContainerCertificateType(),
+				Config: testAccRenderConfig(testAccKeyManagerContainerCertificateType, map[string]string{"TestAccKeyManagerContainer": testAccKeyManagerContainer}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckContainerExists(
 						"vkcs_keymanager_container.container_1", &container),
@@ -80,7 +80,7 @@ func TestAccKeyManagerContainer_acls_update(t *testing.T) {
 		CheckDestroy:      testAccCheckSecretDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccKeyManagerContainerAcls(),
+				Config: testAccRenderConfig(testAccKeyManagerContainerAcls, map[string]string{"TestAccKeyManagerContainer": testAccKeyManagerContainer}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckContainerExists(
 						"vkcs_keymanager_container.container_1", &container),
@@ -92,7 +92,7 @@ func TestAccKeyManagerContainer_acls_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccKeyManagerContainerAclsUpdate(),
+				Config: testAccRenderConfig(testAccKeyManagerContainerAclsUpdate, map[string]string{"TestAccKeyManagerContainer": testAccKeyManagerContainer}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckContainerExists(
 						"vkcs_keymanager_container.container_1", &container),
@@ -180,9 +180,8 @@ resource "vkcs_keymanager_secret" "intermediate_1" {
 }
 `
 
-func testAccKeyManagerContainerBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccKeyManagerContainerBasic = `
+{{.TestAccKeyManagerContainer}}
 
 resource "vkcs_keymanager_container" "container_1" {
   name = "generic"
@@ -203,12 +202,10 @@ resource "vkcs_keymanager_container" "container_1" {
     secret_ref = vkcs_keymanager_secret.intermediate_1.secret_ref
   }
 }
-`, testAccKeyManagerContainer)
-}
+`
 
-func testAccKeyManagerContainerAcls() string {
-	return fmt.Sprintf(`
-%s
+const testAccKeyManagerContainerAcls = `
+{{.TestAccKeyManagerContainer}}
 
 resource "vkcs_keymanager_container" "container_1" {
   name = "generic"
@@ -239,12 +236,10 @@ resource "vkcs_keymanager_container" "container_1" {
     }
   }
 }
-`, testAccKeyManagerContainer)
-}
+`
 
-func testAccKeyManagerContainerAclsUpdate() string {
-	return fmt.Sprintf(`
-%s
+const testAccKeyManagerContainerAclsUpdate = `
+{{.TestAccKeyManagerContainer}}
 
 resource "vkcs_keymanager_container" "container_1" {
   name = "generic"
@@ -269,12 +264,10 @@ resource "vkcs_keymanager_container" "container_1" {
     read {}
   }
 }
-`, testAccKeyManagerContainer)
-}
+`
 
-func testAccKeyManagerContainerCertificateType() string {
-	return fmt.Sprintf(`
-%s
+const testAccKeyManagerContainerCertificateType = `
+{{.TestAccKeyManagerContainer}}
 
 resource "vkcs_keymanager_container" "container_1" {
   name = "generic"
@@ -295,5 +288,4 @@ resource "vkcs_keymanager_container" "container_1" {
     secret_ref = vkcs_keymanager_secret.intermediate_1.secret_ref
   }
 }
-`, testAccKeyManagerContainer)
-}
+`

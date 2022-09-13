@@ -17,7 +17,7 @@ func TestAccBlockStorageSnapshotDataSource_basic(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBlockStorageSnapshotDataSourceBasic(),
+				Config: testAccRenderConfig(testAccBlockStorageSnapshotDataSourceBasic, map[string]string{"TestAccBlockStorageSnapshotBasic": testAccRenderConfig(testAccBlockStorageSnapshotBasic, map[string]string{"TestAccBlockStorageVolumeBasic": testAccRenderConfig(testAccBlockStorageVolumeBasic)})}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageSnapshotDataSourceID(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", snapshotName),
@@ -42,12 +42,10 @@ func testAccCheckBlockStorageSnapshotDataSourceID(n string) resource.TestCheckFu
 	}
 }
 
-func testAccBlockStorageSnapshotDataSourceBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccBlockStorageSnapshotDataSourceBasic = `
+{{.TestAccBlockStorageSnapshotBasic}}
 
     data "vkcs_blockstorage_snapshot" "snapshot_1" {
       name = vkcs_blockstorage_snapshot.snapshot_1.name
     }
-  `, testAccBlockStorageSnapshotBasic())
-}
+`

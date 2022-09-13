@@ -18,7 +18,7 @@ func TestAccBlockStorageSnapshot_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckBlockStorageSnapshotDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBlockStorageSnapshotBasic(),
+				Config: testAccRenderConfig(testAccBlockStorageSnapshotBasic, map[string]string{"TestAccBlockStorageVolumeBasic": testAccRenderConfig(testAccBlockStorageVolumeBasic)}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageSnapshotExists("vkcs_blockstorage_snapshot.snapshot_1", &snapshot),
 					testAccCheckBlockStorageSnapshotMetadata(&snapshot, "foo", "bar"),
@@ -29,7 +29,7 @@ func TestAccBlockStorageSnapshot_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccBlockStorageSnapshotUpdate(),
+				Config: testAccRenderConfig(testAccBlockStorageSnapshotUpdate, map[string]string{"TestAccBlockStorageVolumeBasic": testAccRenderConfig(testAccBlockStorageVolumeBasic)}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageSnapshotExists("vkcs_blockstorage_snapshot.snapshot_1", &snapshot),
 					testAccCheckBlockStorageSnapshotMetadata(&snapshot, "foo", "bar"),
@@ -118,9 +118,8 @@ func testAccCheckBlockStorageSnapshotMetadata(
 	}
 }
 
-func testAccBlockStorageSnapshotBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccBlockStorageSnapshotBasic = `
+{{.TestAccBlockStorageVolumeBasic}}
 
 resource "vkcs_blockstorage_snapshot" "snapshot_1" {
   volume_id = vkcs_blockstorage_volume.volume_1.id
@@ -130,12 +129,10 @@ resource "vkcs_blockstorage_snapshot" "snapshot_1" {
     foo = "bar"
   }
 }
-`, testAccRenderConfig(testAccBlockStorageVolumeBasic, testAccValues))
-}
+`
 
-func testAccBlockStorageSnapshotUpdate() string {
-	return fmt.Sprintf(`
-%s
+const testAccBlockStorageSnapshotUpdate = `
+{{.TestAccBlockStorageVolumeBasic}}
 
 resource "vkcs_blockstorage_snapshot" "snapshot_1" {
   volume_id = vkcs_blockstorage_volume.volume_1.id
@@ -145,5 +142,4 @@ resource "vkcs_blockstorage_snapshot" "snapshot_1" {
     foo = "bar"
   }
 }
-`, testAccRenderConfig(testAccBlockStorageVolumeBasic, testAccValues))
-}
+`

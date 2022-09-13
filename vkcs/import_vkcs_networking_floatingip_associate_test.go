@@ -15,7 +15,7 @@ func TestAccNetworkingFloatingIPAssociate_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingFloatingIPAssociateBasic, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPAssociateBasic),
 			},
 
 			{

@@ -17,7 +17,7 @@ func TestAccLBL7Rule_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckLBL7RuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLbL7RuleConfigBasic(),
+				Config: testAccRenderConfig(testAccCheckLbL7RuleConfigBasic, map[string]string{"TestAccCheckLbL7RuleConfig": testAccCheckLbL7RuleConfig}),
 			},
 
 			{

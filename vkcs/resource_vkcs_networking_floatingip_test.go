@@ -19,7 +19,7 @@ func TestAccNetworkingFloatingIP_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingFloatingIPBasic, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
 					resource.TestCheckResourceAttr("vkcs_networking_floatingip.fip_1", "description", "test floating IP"),
@@ -38,7 +38,7 @@ func TestAccNetworkingFloatingIP_fixedip_bind(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingFloatingIPFixedIPBind1, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPFixedIPBind1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
 					testAccCheckNetworkingFloatingIPBoundToCorrectIP(&fip, "192.168.199.20"),
@@ -47,7 +47,7 @@ func TestAccNetworkingFloatingIP_fixedip_bind(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccNetworkingFloatingIPFixedipBind2, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPFixedipBind2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
 					testAccCheckNetworkingFloatingIPBoundToCorrectIP(&fip, "192.168.199.10"),
@@ -66,7 +66,7 @@ func TestAccNetworkingFloatingIP_subnetIDs(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingFloatingIPSubnetIDs, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPSubnetIDs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_networking_floatingip.fip_1", "description", "test"),
 				),
@@ -84,7 +84,7 @@ func TestAccNetworkingFloatingIP_timeout(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingFloatingIPTimeout, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPTimeout),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
 				),

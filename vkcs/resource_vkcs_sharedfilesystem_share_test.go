@@ -18,7 +18,7 @@ func TestAccSFSShare_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckSFSShareDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSFSShareConfigBasic(),
+				Config: testAccRenderConfig(testAccSFSShareConfigBasic, map[string]string{"TestAccSFSShareNetworkConfigBasic": testAccRenderConfig(testAccSFSShareNetworkConfigBasic, map[string]string{"TestAccSFSShareNetworkConfig": testAccSFSShareNetworkConfig})}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSFSShareExists("vkcs_sharedfilesystem_share.share_1", &share),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_share.share_1", "name", "nfs_share"),
@@ -27,7 +27,7 @@ func TestAccSFSShare_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccSFSShareConfigUpdate(),
+				Config: testAccRenderConfig(testAccSFSShareConfigUpdate, map[string]string{"TestAccSFSShareNetworkConfigBasic": testAccRenderConfig(testAccSFSShareNetworkConfigBasic, map[string]string{"TestAccSFSShareNetworkConfig": testAccSFSShareNetworkConfig})}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSFSShareExists("vkcs_sharedfilesystem_share.share_1", &share),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_share.share_1", "name", "nfs_share_updated"),
@@ -36,7 +36,7 @@ func TestAccSFSShare_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccSFSShareConfigExtend(),
+				Config: testAccRenderConfig(testAccSFSShareConfigExtend, map[string]string{"TestAccSFSShareNetworkConfigBasic": testAccRenderConfig(testAccSFSShareNetworkConfigBasic, map[string]string{"TestAccSFSShareNetworkConfig": testAccSFSShareNetworkConfig})}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSFSShareExists("vkcs_sharedfilesystem_share.share_1", &share),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_share.share_1", "name", "nfs_share_extended"),
@@ -101,9 +101,8 @@ func testAccCheckSFSShareExists(n string, share *shares.Share) resource.TestChec
 	}
 }
 
-func testAccSFSShareConfigBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccSFSShareConfigBasic = `
+{{.TestAccSFSShareNetworkConfigBasic}}
 
 resource "vkcs_sharedfilesystem_share" "share_1" {
   name             = "nfs_share"
@@ -113,12 +112,10 @@ resource "vkcs_sharedfilesystem_share" "share_1" {
   size             = 1
   share_network_id = vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id
 }
-`, testAccSFSShareNetworkConfigBasic())
-}
+`
 
-func testAccSFSShareConfigUpdate() string {
-	return fmt.Sprintf(`
-%s
+const testAccSFSShareConfigUpdate = `
+{{.TestAccSFSShareNetworkConfigBasic}}
 
 resource "vkcs_sharedfilesystem_share" "share_1" {
   name             = "nfs_share_updated"
@@ -127,12 +124,10 @@ resource "vkcs_sharedfilesystem_share" "share_1" {
   size             = 1
   share_network_id = vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id
 }
-`, testAccSFSShareNetworkConfigBasic())
-}
+`
 
-func testAccSFSShareConfigExtend() string {
-	return fmt.Sprintf(`
-%s
+const testAccSFSShareConfigExtend = `
+{{.TestAccSFSShareNetworkConfigBasic}}
 
 resource "vkcs_sharedfilesystem_share" "share_1" {
   name             = "nfs_share_extended"
@@ -141,5 +136,4 @@ resource "vkcs_sharedfilesystem_share" "share_1" {
   size             = 2
   share_network_id = vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.id
 }
-`, testAccSFSShareNetworkConfigBasic())
-}
+`

@@ -18,7 +18,7 @@ func TestAccComputeVolumeAttach_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeVolumeAttachDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeVolumeAttachBasic, testAccValues),
+				Config: testAccRenderConfig(testAccComputeVolumeAttachBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeVolumeAttachExists("vkcs_compute_volume_attach.va_1", &va),
 				),

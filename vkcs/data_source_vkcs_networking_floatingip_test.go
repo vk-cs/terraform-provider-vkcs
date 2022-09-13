@@ -14,10 +14,10 @@ func TestAccNetworkingFloatingIPV2DataSource_address(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingFloatingIPV2DataSourceFloatingIP, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPV2DataSourceFloatingIP),
 			},
 			{
-				Config: testAccNetworkingFloatingIPV2DataSourceAddress(),
+				Config: testAccRenderConfig(testAccNetworkingFloatingIPV2DataSourceAddress, map[string]string{"TestAccNetworkingFloatingIPV2DataSourceFloatingIP": testAccRenderConfig(testAccNetworkingFloatingIPV2DataSourceFloatingIP)}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingFloatingIPV2DataSourceID("data.vkcs_networking_floatingip.fip_1"),
 					resource.TestCheckResourceAttrSet(
@@ -56,13 +56,11 @@ resource "vkcs_networking_floatingip" "fip_1" {
 }
 `
 
-func testAccNetworkingFloatingIPV2DataSourceAddress() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingFloatingIPV2DataSourceAddress = `
+{{.TestAccNetworkingFloatingIPV2DataSourceFloatingIP}}
 
 data "vkcs_networking_floatingip" "fip_1" {
   address = vkcs_networking_floatingip.fip_1.address
   description = "test fip"
 }
-`, testAccRenderConfig(testAccNetworkingFloatingIPV2DataSourceFloatingIP, testAccValues))
-}
+`

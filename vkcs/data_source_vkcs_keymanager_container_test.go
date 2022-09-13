@@ -1,7 +1,6 @@
 package vkcs
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -13,7 +12,7 @@ func TestAccKeyManagerContainerDataSource_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckContainerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccKeyManagerContainerDataSourceBasic(),
+				Config: testAccRenderConfig(testAccKeyManagerContainerDataSourceBasic, map[string]string{"TestAccKeyManagerContainerBasic": testAccRenderConfig(testAccKeyManagerContainerBasic, map[string]string{"TestAccKeyManagerContainer": testAccKeyManagerContainer})}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"data.vkcs_keymanager_container.container_1", "id",
@@ -35,7 +34,7 @@ func TestAccKeyManagerContainerDataSource_acls(t *testing.T) {
 		CheckDestroy:      testAccCheckContainerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccKeyManagerContainerDataSourceAcls(),
+				Config: testAccRenderConfig(testAccKeyManagerContainerDataSourceAcls, map[string]string{"TestAccKeyManagerContainerAcls": testAccRenderConfig(testAccKeyManagerContainerAcls, map[string]string{"TestAccKeyManagerContainer": testAccKeyManagerContainer})}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"data.vkcs_keymanager_container.container_1", "id",
@@ -53,22 +52,18 @@ func TestAccKeyManagerContainerDataSource_acls(t *testing.T) {
 	})
 }
 
-func testAccKeyManagerContainerDataSourceBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccKeyManagerContainerDataSourceBasic = `
+{{.TestAccKeyManagerContainerBasic}}
 
 data "vkcs_keymanager_container" "container_1" {
   name = vkcs_keymanager_container.container_1.name
 }
-`, testAccKeyManagerContainerBasic())
-}
+`
 
-func testAccKeyManagerContainerDataSourceAcls() string {
-	return fmt.Sprintf(`
-%s
+const testAccKeyManagerContainerDataSourceAcls = `
+{{.TestAccKeyManagerContainerAcls}}
 
 data "vkcs_keymanager_container" "container_1" {
   name = vkcs_keymanager_container.container_1.name
 }
-`, testAccKeyManagerContainerAcls())
-}
+`

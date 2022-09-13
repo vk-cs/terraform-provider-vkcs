@@ -14,7 +14,7 @@ func TestAccComputeQuotasetDataSource(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccComputeQuotasetDataSourceSource(),
+				Config: testAccRenderConfig(testAccComputeQuotasetDataSourceSource),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeQuotasetDataSourceID("data.vkcs_compute_quotaset.source"),
 					resource.TestCheckResourceAttrSet("data.vkcs_compute_quotaset.source", "key_pairs"),
@@ -45,10 +45,8 @@ func testAccCheckComputeQuotasetDataSourceID(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccComputeQuotasetDataSourceSource() string {
-	return fmt.Sprintf(`
+const testAccComputeQuotasetDataSourceSource = `
 data "vkcs_compute_quotaset" "source" {
   project_id = "{{.ProjectID}}"
 }
-`, osProjectID)
-}
+`

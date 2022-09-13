@@ -17,7 +17,7 @@ func TestAccNetworkingRouterDataSource_name(t *testing.T) {
 				Config: testAccNetworkingRouterDataSourceRouter,
 			},
 			{
-				Config: testAccNetworkingRouterDataSourceName(),
+				Config: testAccRenderConfig(testAccNetworkingRouterDataSourceName, map[string]string{"TestAccNetworkingRouterDataSourceRouter": testAccNetworkingRouterDataSourceRouter}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingRouterDataSourceID("data.vkcs_networking_router.router"),
 					resource.TestCheckResourceAttrSet(
@@ -65,9 +65,8 @@ resource "vkcs_networking_router" "router" {
 }
 `
 
-func testAccNetworkingRouterDataSourceName() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingRouterDataSourceName = `
+{{.TestAccNetworkingRouterDataSourceRouter}}
 
 data "vkcs_networking_router" "router" {
   name           = vkcs_networking_router.router.name
@@ -77,5 +76,4 @@ data "vkcs_networking_router" "router" {
     "foo",
   ]
 }
-`, testAccNetworkingRouterDataSourceRouter)
-}
+`

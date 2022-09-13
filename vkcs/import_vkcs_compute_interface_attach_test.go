@@ -15,7 +15,7 @@ func TestAccComputeInterfaceAttachImport_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInterfaceAttachDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInterfaceAttachBasic, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInterfaceAttachBasic),
 			},
 			{
 				ResourceName:      resourceName,

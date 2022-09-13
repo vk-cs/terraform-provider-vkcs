@@ -54,7 +54,7 @@ func TestAccNetworkingRouter_updateExternalGateway(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccNetworkingRouterUpdateExternalGateway2, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingRouterUpdateExternalGateway2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"vkcs_networking_router.router_1", "external_network_id", "data.vkcs_networking_network.extnet", "id"),
@@ -73,7 +73,7 @@ func TestAccNetworkingRouter_vendor_opts(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingRouterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccNetworkingRouterVendorOpts, testAccValues),
+				Config: testAccRenderConfig(testAccNetworkingRouterVendorOpts),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingRouterExists("vkcs_networking_router.router_1", &router),
 					resource.TestCheckResourceAttrPair(

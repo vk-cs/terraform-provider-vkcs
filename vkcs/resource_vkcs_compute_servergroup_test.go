@@ -43,7 +43,7 @@ func TestAccComputeServerGroup_affinity(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeServerGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeServerGroupAffinity, testAccValues),
+				Config: testAccRenderConfig(testAccComputeServerGroupAffinity),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeServerGroupExists("vkcs_compute_servergroup.sg_1", &sg),
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
@@ -68,7 +68,7 @@ func TestAccComputeServerGroup_soft_affinity(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeServerGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeServerGroupSoftAffinity, testAccValues),
+				Config: testAccRenderConfig(testAccComputeServerGroupSoftAffinity),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeServerGroupExists("vkcs_compute_servergroup.sg_1", &sg),
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),

@@ -15,7 +15,7 @@ func TestAccDatabaseInstance_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseInstanceBasic, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseInstanceBasic),
 			},
 
 			{
