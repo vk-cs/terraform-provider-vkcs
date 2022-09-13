@@ -15,7 +15,7 @@ func TestAccBlockStorageSnapshot_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckBlockStorageSnapshotDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBlockStorageSnapshotBasic(),
+				Config: testAccRenderConfig(testAccBlockStorageSnapshotBasic, map[string]string{"TestAccBlockStorageVolumeBasic": testAccRenderConfig(testAccBlockStorageVolumeBasic)}),
 			},
 
 			{

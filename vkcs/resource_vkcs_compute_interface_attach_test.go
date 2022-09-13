@@ -18,7 +18,7 @@ func TestAccComputeInterfaceAttach_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInterfaceAttachDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInterfaceAttachBasic, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInterfaceAttachBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInterfaceAttachExists("vkcs_compute_interface_attach.ai_1", &ai),
 				),
@@ -36,7 +36,7 @@ func TestAccComputeInterfaceAttach_IP(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInterfaceAttachDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInterfaceAttachIP, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInterfaceAttachIP),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInterfaceAttachExists("vkcs_compute_interface_attach.ai_1", &ai),
 					testAccCheckComputeInterfaceAttachIP(&ai, "192.168.1.100"),

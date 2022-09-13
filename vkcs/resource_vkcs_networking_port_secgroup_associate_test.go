@@ -31,14 +31,14 @@ func TestAccNetworkingPortSecGroupAssociate_update(t *testing.T) {
 		Steps: []resource.TestStep{
 			// enforce = false
 			{ // step 0
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate0(),
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate0, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("vkcs_networking_port_secgroup_associate.port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 3),
 				),
 			},
 			{ // step 1
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate1(), // unset user defined security groups only
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate1, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}), // unset user defined security groups only
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("data.vkcs_networking_port.hidden_port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 2),
@@ -46,35 +46,35 @@ func TestAccNetworkingPortSecGroupAssociate_update(t *testing.T) {
 			},
 			// enforce = true
 			{ // step 2
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate2(),
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate2, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("vkcs_networking_port_secgroup_associate.port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 1),
 				),
 			},
 			{ // step 3
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate3(),
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate3, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("vkcs_networking_port_secgroup_associate.port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 3),
 				),
 			},
 			{ // step 4
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate4(),
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate4, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("vkcs_networking_port_secgroup_associate.port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 1),
 				),
 			},
 			{ // step 5
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate5(),
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate5, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("vkcs_networking_port_secgroup_associate.port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 0),
 				),
 			},
 			{ // step 6
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate6(),
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate6, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("vkcs_networking_port_secgroup_associate.port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 1),
@@ -82,42 +82,42 @@ func TestAccNetworkingPortSecGroupAssociate_update(t *testing.T) {
 			},
 			// enforce = false
 			{ // step 7
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate7(),
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate7, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("vkcs_networking_port_secgroup_associate.port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 1),
 				),
 			},
 			{ // step 8
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate8(),
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate8, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("vkcs_networking_port_secgroup_associate.port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 3),
 				),
 			},
 			{ // step 9
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate9(),
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate9, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("vkcs_networking_port_secgroup_associate.port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 1),
 				),
 			},
 			{ // step 10
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate10(),
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate10, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("vkcs_networking_port_secgroup_associate.port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 0),
 				),
 			},
 			{ // step 11
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate11(),
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate11, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("vkcs_networking_port_secgroup_associate.port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 1),
 				),
 			},
 			{ // step 12
-				Config: testAccNetworkingPortSecGroupAssociateManifestUpdate12(), // cleanup all the ports
+				Config: testAccRenderConfig(testAccNetworkingPortSecGroupAssociateManifestUpdate12, map[string]string{"TestAccNetworkingPortSecGroupAssociate": testAccNetworkingPortSecGroupAssociate}), // cleanup all the ports
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingPortSecGroupAssociateExists("data.vkcs_networking_port.hidden_port_1", &port),
 					testAccCheckNetworkingPortSecGroupAssociateCountSecurityGroups(&port, 0),
@@ -303,9 +303,8 @@ data "vkcs_networking_port" "hidden_port_1" {
 }
 `
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate0() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingPortSecGroupAssociateManifestUpdate0 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
   port_id = data.vkcs_networking_port.hidden_port_1.id
@@ -314,18 +313,14 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
     vkcs_networking_secgroup.secgroup_1.id,
   ]
 }
-`, testAccNetworkingPortSecGroupAssociate)
-}
+`
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate1() string {
-	return fmt.Sprintf(`
-%s
-`, testAccNetworkingPortSecGroupAssociate)
-}
+const testAccNetworkingPortSecGroupAssociateManifestUpdate1 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
+`
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate2() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingPortSecGroupAssociateManifestUpdate2 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
   port_id = data.vkcs_networking_port.hidden_port_1.id
@@ -334,12 +329,10 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
     vkcs_networking_secgroup.secgroup_1.id,
   ]
 }
-`, testAccNetworkingPortSecGroupAssociate)
-}
+`
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate3() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingPortSecGroupAssociateManifestUpdate3 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
   port_id = data.vkcs_networking_port.hidden_port_1.id
@@ -350,12 +343,10 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
     data.vkcs_networking_secgroup.default_2.id,
   ]
 }
-`, testAccNetworkingPortSecGroupAssociate)
-}
+`
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate4() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingPortSecGroupAssociateManifestUpdate4 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
   port_id = data.vkcs_networking_port.hidden_port_1.id
@@ -364,12 +355,10 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
     vkcs_networking_secgroup.secgroup_2.id,
   ]
 }
-`, testAccNetworkingPortSecGroupAssociate)
-}
+`
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate5() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingPortSecGroupAssociateManifestUpdate5 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
 
 data "vkcs_networking_port" "port_1" {
   port_id = vkcs_networking_port_secgroup_associate.port_1.id
@@ -380,12 +369,10 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
   enforce = "true"
   security_group_ids = []
 }
-`, testAccNetworkingPortSecGroupAssociate)
-}
+`
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate6() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingPortSecGroupAssociateManifestUpdate6 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
   port_id = data.vkcs_networking_port.hidden_port_1.id
@@ -394,12 +381,10 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
     data.vkcs_networking_secgroup.default_2.id,
   ]
 }
-`, testAccNetworkingPortSecGroupAssociate)
-}
+`
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate7() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingPortSecGroupAssociateManifestUpdate7 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
   port_id = data.vkcs_networking_port.hidden_port_1.id
@@ -408,12 +393,10 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
     vkcs_networking_secgroup.secgroup_1.id,
   ]
 }
-`, testAccNetworkingPortSecGroupAssociate)
-}
+`
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate8() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingPortSecGroupAssociateManifestUpdate8 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
   port_id = data.vkcs_networking_port.hidden_port_1.id
@@ -424,12 +407,10 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
     data.vkcs_networking_secgroup.default_2.id,
   ]
 }
-`, testAccNetworkingPortSecGroupAssociate)
-}
+`
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate9() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingPortSecGroupAssociateManifestUpdate9 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
   port_id = data.vkcs_networking_port.hidden_port_1.id
@@ -438,24 +419,20 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
     vkcs_networking_secgroup.secgroup_2.id,
   ]
 }
-`, testAccNetworkingPortSecGroupAssociate)
-}
+`
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate10() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingPortSecGroupAssociateManifestUpdate10 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
   port_id = data.vkcs_networking_port.hidden_port_1.id
   enforce = "false"
   security_group_ids = []
 }
-`, testAccNetworkingPortSecGroupAssociate)
-}
+`
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate11() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingPortSecGroupAssociateManifestUpdate11 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {
   port_id = data.vkcs_networking_port.hidden_port_1.id
@@ -464,11 +441,8 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
     data.vkcs_networking_secgroup.default_2.id,
   ]
 }
-`, testAccNetworkingPortSecGroupAssociate)
-}
+`
 
-func testAccNetworkingPortSecGroupAssociateManifestUpdate12() string {
-	return fmt.Sprintf(`
-%s
-`, testAccNetworkingPortSecGroupAssociate)
-}
+const testAccNetworkingPortSecGroupAssociateManifestUpdate12 = `
+{{.TestAccNetworkingPortSecGroupAssociate}}
+`

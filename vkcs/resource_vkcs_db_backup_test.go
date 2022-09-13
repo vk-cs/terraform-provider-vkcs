@@ -17,7 +17,7 @@ func TestAccDatabaseBackup_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseBackupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDatabaseBackupBasic,
+				Config: testAccRenderConfig(testAccDatabaseBackupBasic, map[string]string{"TestAccDatabaseInstanceBasic": testAccRenderConfig(testAccDatabaseInstanceBasic)}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseBackupExists(
 						"vkcs_db_backup.basic", &backup),
@@ -82,8 +82,8 @@ func testAccCheckDatabaseBackupDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccDatabaseBackupBasic = fmt.Sprintf(`
-%s
+const testAccDatabaseBackupBasic = `
+{{.TestAccDatabaseInstanceBasic}}
 
 resource "vkcs_db_backup" "basic" {
     name = "basic"
@@ -91,4 +91,4 @@ resource "vkcs_db_backup" "basic" {
     description = "basic description"
 
 }
-`, testAccRenderConfig(testAccDatabaseInstanceBasic, testAccValues))
+`

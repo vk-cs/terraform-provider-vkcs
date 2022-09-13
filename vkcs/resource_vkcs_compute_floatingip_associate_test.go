@@ -21,7 +21,7 @@ func TestAccComputeFloatingIPAssociate_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateBasic, testAccValues),
+				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
@@ -29,7 +29,7 @@ func TestAccComputeFloatingIPAssociate_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateUpdate, testAccValues),
+				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateUpdate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
@@ -50,7 +50,7 @@ func TestAccComputeV2FloatingIPAssociate_fixedIP(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateFixedIP, testAccValues),
+				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateFixedIP),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),
@@ -72,7 +72,7 @@ func TestAccComputeFloatingIPAssociate_attachNew(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateAttachNew1, testAccValues),
+				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateAttachNew1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &floatingIP1),
@@ -81,7 +81,7 @@ func TestAccComputeFloatingIPAssociate_attachNew(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateAttachNew2, testAccValues),
+				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateAttachNew2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &floatingIP1),
@@ -103,7 +103,7 @@ func TestAccComputeFloatingIPAssociate_waitUntilAssociated(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeFloatingIPAssociateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateWaitUntilAssociated, testAccValues),
+				Config: testAccRenderConfig(testAccComputeFloatingIPAssociateWaitUntilAssociated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingFloatingIPExists("vkcs_networking_floatingip.fip_1", &fip),

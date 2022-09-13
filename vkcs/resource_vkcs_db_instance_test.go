@@ -17,7 +17,7 @@ func TestAccDatabaseInstance_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseInstanceBasic, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseInstanceBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -26,7 +26,7 @@ func TestAccDatabaseInstance_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccDatabaseInstanceUpdate, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseInstanceUpdate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -46,7 +46,7 @@ func TestAccDatabaseInstance_rootUser(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseInstanceRootUser, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseInstanceRootUser),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -67,7 +67,7 @@ func TestAccDatabaseInstance_wal(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseInstanceWal, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseInstanceWal),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -88,7 +88,7 @@ func TestAccDatabaseInstance_wal_no_update(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseInstanceWal, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseInstanceWal),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -97,7 +97,7 @@ func TestAccDatabaseInstance_wal_no_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccDatabaseInstanceWal, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseInstanceWal),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),

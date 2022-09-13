@@ -14,10 +14,10 @@ func TestAccComputeInstanceDataSource(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceDataSourceBasic, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceDataSourceBasic),
 			},
 			{
-				Config: testAccComputeInstanceDataSourceSource(),
+				Config: testAccRenderConfig(testAccComputeInstanceDataSourceSource, map[string]string{"TestAccComputeInstanceDataSourceSource": testAccRenderConfig(testAccComputeInstanceDataSourceBasic)}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceDataSourceID("data.vkcs_compute_instance.source_1"),
 					resource.TestCheckResourceAttr("data.vkcs_compute_instance.source_1", "name", "instance_1"),
@@ -64,12 +64,10 @@ resource "vkcs_compute_instance" "instance_1" {
 }
 `
 
-func testAccComputeInstanceDataSourceSource() string {
-	return fmt.Sprintf(`
-%s
+const testAccComputeInstanceDataSourceSource = `
+{{.TestAccComputeInstanceDataSourceBasic}}
 
 data "vkcs_compute_instance" "source_1" {
   id = vkcs_compute_instance.instance_1.id
 }
-`, testAccRenderConfig(testAccComputeInstanceDataSourceBasic, testAccValues))
-}
+`

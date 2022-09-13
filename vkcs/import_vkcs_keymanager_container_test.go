@@ -14,7 +14,7 @@ func TestAccKeyManagerContainer_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckContainerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccKeyManagerContainerBasic(),
+				Config: testAccRenderConfig(testAccKeyManagerContainerBasic, map[string]string{"TestAccKeyManagerContainer": testAccKeyManagerContainer}),
 			},
 			{
 				ResourceName:      resourceName,
@@ -33,7 +33,7 @@ func TestAccKeyManagerContainer_importACLs(t *testing.T) {
 		CheckDestroy:      testAccCheckContainerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccKeyManagerContainerAcls(),
+				Config: testAccRenderConfig(testAccKeyManagerContainerAcls, map[string]string{"TestAccKeyManagerContainer": testAccKeyManagerContainer}),
 			},
 			{
 				ResourceName:      resourceName,

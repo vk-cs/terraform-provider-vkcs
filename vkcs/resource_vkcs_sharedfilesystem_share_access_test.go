@@ -20,7 +20,7 @@ func TestAccSFSShareAccess_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckSFSShareAccessDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSFSShareAccessConfigBasic(),
+				Config: testAccRenderConfig(testAccSFSShareAccessConfigBasic, map[string]string{"TestAccSFSShareNetworkConfigBasic": testAccRenderConfig(testAccSFSShareNetworkConfigBasic, map[string]string{"TestAccSFSShareNetworkConfig": testAccSFSShareNetworkConfig}), "TestAccSFSShareAccessConfig": testAccSFSShareAccessConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSFSShareAccessExists("vkcs_sharedfilesystem_share_access.share_access_1", &shareAccess1),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_share_access.share_access_1", "access_type", "ip"),
@@ -38,7 +38,7 @@ func TestAccSFSShareAccess_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccSFSShareAccessConfigUpdate(),
+				Config: testAccRenderConfig(testAccSFSShareAccessConfigUpdate, map[string]string{"TestAccSFSShareNetworkConfigBasic": testAccRenderConfig(testAccSFSShareNetworkConfigBasic, map[string]string{"TestAccSFSShareNetworkConfig": testAccSFSShareNetworkConfig}), "TestAccSFSShareAccessConfig": testAccSFSShareAccessConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSFSShareAccessExists("vkcs_sharedfilesystem_share_access.share_access_1", &shareAccess1),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_share_access.share_access_1", "access_type", "ip"),
@@ -163,11 +163,10 @@ resource "vkcs_sharedfilesystem_share" "share_1" {
 }
 `
 
-func testAccSFSShareAccessConfigBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccSFSShareAccessConfigBasic = `
+{{.TestAccSFSShareNetworkConfigBasic}}
 
-%s
+{{.TestAccSFSShareAccessConfig}}
 
 resource "vkcs_sharedfilesystem_share_access" "share_access_1" {
   share_id     = vkcs_sharedfilesystem_share.share_1.id
@@ -182,14 +181,12 @@ resource "vkcs_sharedfilesystem_share_access" "share_access_2" {
   access_to    = "192.168.199.11"
   access_level = "rw"
 }
-`, testAccSFSShareNetworkConfigBasic(), testAccSFSShareAccessConfig)
-}
+`
 
-func testAccSFSShareAccessConfigUpdate() string {
-	return fmt.Sprintf(`
-%s
+const testAccSFSShareAccessConfigUpdate = `
+{{.TestAccSFSShareNetworkConfigBasic}}
 
-%s
+{{.TestAccSFSShareAccessConfig}}
 
 resource "vkcs_sharedfilesystem_share_access" "share_access_1" {
   share_id     = vkcs_sharedfilesystem_share.share_1.id
@@ -204,5 +201,4 @@ resource "vkcs_sharedfilesystem_share_access" "share_access_2" {
   access_to    = "192.168.199.11"
   access_level = "ro"
 }
-`, testAccSFSShareNetworkConfigBasic(), testAccSFSShareAccessConfig)
-}
+`

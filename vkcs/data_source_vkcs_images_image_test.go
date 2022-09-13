@@ -16,7 +16,7 @@ func TestAccImagesImageDataSource_basic(t *testing.T) {
 				Config: testAccImagesImageDataSourceCirros,
 			},
 			{
-				Config: testAccImagesImageDataSourceBasic(),
+				Config: testAccRenderConfig(testAccImagesImageDataSourceBasic, map[string]string{"TestAccImagesImageDataSourceCirros": testAccImagesImageDataSourceCirros}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImagesDataSourceID("data.vkcs_images_image.image_1"),
 					resource.TestCheckResourceAttr(
@@ -47,25 +47,25 @@ func TestAccImagesImageDataSource_testQueries(t *testing.T) {
 				Config: testAccImagesImageDataSourceCirros,
 			},
 			{
-				Config: testAccImagesImageDataSourceQueryTag(),
+				Config: testAccRenderConfig(testAccImagesImageDataSourceQueryTag, map[string]string{"TestAccImagesImageDataSourceCirros": testAccImagesImageDataSourceCirros}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImagesDataSourceID("data.vkcs_images_image.image_1"),
 				),
 			},
 			{
-				Config: testAccImagesImageDataSourceQuerySizeMin(),
+				Config: testAccRenderConfig(testAccImagesImageDataSourceQuerySizeMin, map[string]string{"TestAccImagesImageDataSourceCirros": testAccImagesImageDataSourceCirros}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImagesDataSourceID("data.vkcs_images_image.image_1"),
 				),
 			},
 			{
-				Config: testAccImagesImageDataSourceQuerySizeMax(),
+				Config: testAccRenderConfig(testAccImagesImageDataSourceQuerySizeMax, map[string]string{"TestAccImagesImageDataSourceCirros": testAccImagesImageDataSourceCirros}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImagesDataSourceID("data.vkcs_images_image.image_1"),
 				),
 			},
 			{
-				Config: testAccImagesImageDataSourceProperty(),
+				Config: testAccRenderConfig(testAccImagesImageDataSourceProperty, map[string]string{"TestAccImagesImageDataSourceCirros": testAccImagesImageDataSourceCirros}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImagesDataSourceID("data.vkcs_images_image.image_1"),
 				),
@@ -118,56 +118,47 @@ resource "vkcs_images_image" "image_2" {
 }
 `
 
-func testAccImagesImageDataSourceBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccImagesImageDataSourceBasic = `
+{{.TestAccImagesImageDataSourceCirros}}
 
 data "vkcs_images_image" "image_1" {
 	most_recent = true
 	name = vkcs_images_image.image_1.name
 }
-`, testAccImagesImageDataSourceCirros)
-}
+`
 
-func testAccImagesImageDataSourceQueryTag() string {
-	return fmt.Sprintf(`
-%s
+const testAccImagesImageDataSourceQueryTag = `
+{{.TestAccImagesImageDataSourceCirros}}
 
 data "vkcs_images_image" "image_1" {
 	most_recent = true
 	visibility = "private"
 	tag = "cirros-tf_1"
 }
-`, testAccImagesImageDataSourceCirros)
-}
+`
 
-func testAccImagesImageDataSourceQuerySizeMin() string {
-	return fmt.Sprintf(`
-%s
+const testAccImagesImageDataSourceQuerySizeMin = `
+{{.TestAccImagesImageDataSourceCirros}}
 
 data "vkcs_images_image" "image_1" {
 	most_recent = true
 	visibility = "private"
 	size_min = "13000000"
 }
-`, testAccImagesImageDataSourceCirros)
-}
+`
 
-func testAccImagesImageDataSourceQuerySizeMax() string {
-	return fmt.Sprintf(`
-%s
+const testAccImagesImageDataSourceQuerySizeMax = `
+{{.TestAccImagesImageDataSourceCirros}}
 
 data "vkcs_images_image" "image_1" {
 	most_recent = true
 	visibility = "private"
 	size_max = "23000000"
 }
-`, testAccImagesImageDataSourceCirros)
-}
+`
 
-func testAccImagesImageDataSourceProperty() string {
-	return fmt.Sprintf(`
-%s
+const testAccImagesImageDataSourceProperty = `
+{{.TestAccImagesImageDataSourceCirros}}
 
 data "vkcs_images_image" "image_1" {
   properties = {
@@ -175,5 +166,4 @@ data "vkcs_images_image" "image_1" {
     bar = "foo"
   }
 }
-`, testAccImagesImageDataSourceCirros)
-}
+`

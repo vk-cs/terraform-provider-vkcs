@@ -352,7 +352,7 @@ resource "vkcs_networking_subnet" "subnet_2" {
 resource "vkcs_networking_port" "port_2" {
   name = "port_2"
   admin_state_up = "true"
-  network_id = {vkcs_networking_network.network_2.id
+  network_id = vkcs_networking_network.network_2.id
 
   fixed_ip {
     subnet_id = vkcs_networking_subnet.subnet_2.id

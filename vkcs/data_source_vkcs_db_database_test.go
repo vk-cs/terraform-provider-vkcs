@@ -18,7 +18,7 @@ func TestAccDatabaseDataSourceDatabase_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseDatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceDatabaseDatabaseBasic,
+				Config: testAccRenderConfig(testAccDataSourceDatabaseDatabaseBasic, map[string]string{"TestAccDatabaseDatabaseBasic": testAccRenderConfig(testAccDatabaseDatabaseBasic)}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceDatabaseDatabaseID(datasourceName),
 					resource.TestCheckResourceAttrPair(resourceName, "name", datasourceName, "name"),
@@ -43,10 +43,10 @@ func testAccDataSourceDatabaseDatabaseID(n string) resource.TestCheckFunc {
 	}
 }
 
-var testAccDataSourceDatabaseDatabaseBasic = fmt.Sprintf(`
-%s
+const testAccDataSourceDatabaseDatabaseBasic = `
+{{.TestAccDatabaseDatabaseBasic}}
 
 data "vkcs_db_database" "basic" {
 	id = vkcs_db_database.basic.id
 }
-`, testAccRenderConfig(testAccDatabaseDatabaseBasic, testAccValues))
+`

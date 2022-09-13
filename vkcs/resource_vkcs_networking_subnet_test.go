@@ -309,7 +309,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   gateway_ip = "192.168.199.1"
-  network_id = vkcs_networking_network.network_1.id}
+  network_id = vkcs_networking_network.network_1.id
 
   dns_nameservers = ["10.0.16.4", "213.186.33.99"]
 

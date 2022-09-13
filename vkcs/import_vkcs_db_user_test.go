@@ -15,7 +15,7 @@ func TestAccDatabaseUser_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseUserBasic, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseUserBasic),
 			},
 
 			{

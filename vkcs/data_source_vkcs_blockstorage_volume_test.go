@@ -1,7 +1,6 @@
 package vkcs
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -16,7 +15,7 @@ func TestAccBlockStorageVolumeDataSource_basic(t *testing.T) {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBlockStorageVolumeDataSourceBasic(),
+				Config: testAccRenderConfig(testAccBlockStorageVolumeDataSourceBasic, map[string]string{"TestAccBlockStorageVolumeBasic": testAccRenderConfig(testAccBlockStorageVolumeBasic)}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", volumeName),
 					resource.TestCheckResourceAttr(resourceName, "size", "1"),
@@ -26,12 +25,10 @@ func TestAccBlockStorageVolumeDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccBlockStorageVolumeDataSourceBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccBlockStorageVolumeDataSourceBasic = `
+{{.TestAccBlockStorageVolumeBasic}}
 
     data "vkcs_blockstorage_volume" "volume_1" {
       name = vkcs_blockstorage_volume.volume_1.name
     }
-  `, testAccRenderConfig(testAccBlockStorageVolumeBasic, testAccValues))
-}
+`

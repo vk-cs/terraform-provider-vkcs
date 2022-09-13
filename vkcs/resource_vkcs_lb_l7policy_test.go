@@ -19,7 +19,7 @@ func TestAccLBL7Policy_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckLBL7PolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLbL7PolicyConfigBasic(),
+				Config: testAccRenderConfig(testAccCheckLbL7PolicyConfigBasic, map[string]string{"TestAccCheckLbL7PolicyConfig": testAccCheckLbL7PolicyConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBL7PolicyExists("vkcs_lb_l7policy.l7policy_1", &l7Policy),
 					resource.TestCheckResourceAttr(
@@ -36,7 +36,7 @@ func TestAccLBL7Policy_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLbL7PolicyConfigUpdate1(),
+				Config: testAccRenderConfig(testAccCheckLbL7PolicyConfigUpdate1, map[string]string{"TestAccCheckLbL7PolicyConfig": testAccCheckLbL7PolicyConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBL7PolicyExists("vkcs_lb_l7policy.l7policy_1", &l7Policy),
 					resource.TestCheckResourceAttr(
@@ -55,7 +55,7 @@ func TestAccLBL7Policy_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLbL7PolicyConfigUpdate2(),
+				Config: testAccRenderConfig(testAccCheckLbL7PolicyConfigUpdate2, map[string]string{"TestAccCheckLbL7PolicyConfig": testAccCheckLbL7PolicyConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBL7PolicyExists("vkcs_lb_l7policy.l7policy_1", &l7Policy),
 					resource.TestCheckResourceAttr(
@@ -75,7 +75,7 @@ func TestAccLBL7Policy_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLbL7PolicyConfigUpdate3(),
+				Config: testAccRenderConfig(testAccCheckLbL7PolicyConfigUpdate3, map[string]string{"TestAccCheckLbL7PolicyConfig": testAccCheckLbL7PolicyConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBL7PolicyExists("vkcs_lb_l7policy.l7policy_1", &l7Policy),
 					resource.TestCheckResourceAttr(
@@ -180,9 +180,8 @@ resource "vkcs_lb_listener" "listener_1" {
 }
 `
 
-func testAccCheckLbL7PolicyConfigBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccCheckLbL7PolicyConfigBasic = `
+{{.TestAccCheckLbL7PolicyConfig}}
 
 resource "vkcs_lb_l7policy" "l7policy_1" {
   name         = "test"
@@ -191,12 +190,10 @@ resource "vkcs_lb_l7policy" "l7policy_1" {
   position     = 1
   listener_id  = vkcs_lb_listener.listener_1.id
 }
-`, testAccCheckLbL7PolicyConfig)
-}
+`
 
-func testAccCheckLbL7PolicyConfigUpdate1() string {
-	return fmt.Sprintf(`
-%s
+const testAccCheckLbL7PolicyConfigUpdate1 = `
+{{.TestAccCheckLbL7PolicyConfig}}
 
 resource "vkcs_lb_l7policy" "l7policy_1" {
   name         = "test"
@@ -206,12 +203,10 @@ resource "vkcs_lb_l7policy" "l7policy_1" {
   listener_id  = vkcs_lb_listener.listener_1.id
   redirect_url = "http://www.example.com"
 }
-`, testAccCheckLbL7PolicyConfig)
-}
+`
 
-func testAccCheckLbL7PolicyConfigUpdate2() string {
-	return fmt.Sprintf(`
-%s
+const testAccCheckLbL7PolicyConfigUpdate2 = `
+{{.TestAccCheckLbL7PolicyConfig}}
 
 resource "vkcs_lb_pool" "pool_1" {
   name            = "pool_1"
@@ -227,12 +222,10 @@ resource "vkcs_lb_l7policy" "l7policy_1" {
   listener_id      = vkcs_lb_listener.listener_1.id
   redirect_pool_id = vkcs_lb_pool.pool_1.id
 }
-`, testAccCheckLbL7PolicyConfig)
-}
+`
 
-func testAccCheckLbL7PolicyConfigUpdate3() string {
-	return fmt.Sprintf(`
-%s
+const testAccCheckLbL7PolicyConfigUpdate3 = `
+{{.TestAccCheckLbL7PolicyConfig}}
 
 resource "vkcs_lb_pool" "pool_1" {
   name            = "pool_1"
@@ -247,5 +240,4 @@ resource "vkcs_lb_l7policy" "l7policy_1" {
   position         = 1
   listener_id      = vkcs_lb_listener.listener_1.id
 }
-`, testAccCheckLbL7PolicyConfig)
-}
+`

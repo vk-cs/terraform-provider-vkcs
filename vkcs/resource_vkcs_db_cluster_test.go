@@ -17,7 +17,7 @@ func TestAccDatabaseCluster_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseClusterBasic, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseClusterBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster.basic", &cluster),
@@ -26,7 +26,7 @@ func TestAccDatabaseCluster_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccDatabaseClusterUpdate, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseClusterUpdate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster.basic", &cluster),
@@ -47,7 +47,7 @@ func TestAccDatabaseCluster_wal(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseClusterWal, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseClusterWal),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster.basic", &cluster),
@@ -68,7 +68,7 @@ func TestAccDatabaseCluster_wal_no_update(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseClusterWal, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseClusterWal),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster.basic", &cluster),
@@ -77,7 +77,7 @@ func TestAccDatabaseCluster_wal_no_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccDatabaseClusterWal, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseClusterWal),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster.basic", &cluster),
@@ -219,7 +219,7 @@ const testAccDatabaseClusterWal = `
    availability_zone = "{{.AvailabilityZone}}"
    wal_volume {
 	size = 8
-	volume_type = {{.VolumeType}}
+	volume_type = "{{.VolumeType}}"
    }
 
    wal_disk_autoexpand {

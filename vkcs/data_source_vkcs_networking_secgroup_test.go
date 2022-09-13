@@ -17,7 +17,7 @@ func TestAccNetworkingSecGroupDataSource_basic(t *testing.T) {
 				Config: testAccNetworkingSecGroupDataSourceGroup,
 			},
 			{
-				Config: testAccNetworkingSecGroupDataSourceBasic(),
+				Config: testAccRenderConfig(testAccNetworkingSecGroupDataSourceBasic, map[string]string{"TestAccNetworkingSecGroupDataSourceGroup": testAccNetworkingSecGroupDataSourceGroup}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSecGroupDataSourceID("data.vkcs_networking_secgroup.secgroup_1"),
 					resource.TestCheckResourceAttr(
@@ -43,7 +43,7 @@ func TestAccNetworkingSecGroupDataSource_secGroupID(t *testing.T) {
 				Config: testAccNetworkingSecGroupDataSourceGroup,
 			},
 			{
-				Config: testAccNetworkingSecGroupDataSourceSecGroupID(),
+				Config: testAccRenderConfig(testAccNetworkingSecGroupDataSourceSecGroupID, map[string]string{"TestAccNetworkingSecGroupDataSourceGroup": testAccNetworkingSecGroupDataSourceGroup}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSecGroupDataSourceID("data.vkcs_networking_secgroup.secgroup_1"),
 					resource.TestCheckResourceAttr(
@@ -84,9 +84,8 @@ resource "vkcs_networking_secgroup" "secgroup_1" {
 }
 `
 
-func testAccNetworkingSecGroupDataSourceBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingSecGroupDataSourceBasic = `
+{{.TestAccNetworkingSecGroupDataSourceGroup}}
 
 data "vkcs_networking_secgroup" "secgroup_1" {
   name = vkcs_networking_secgroup.secgroup_1.name
@@ -94,12 +93,10 @@ data "vkcs_networking_secgroup" "secgroup_1" {
     "bar",
   ]
 }
-`, testAccNetworkingSecGroupDataSourceGroup)
-}
+`
 
-func testAccNetworkingSecGroupDataSourceSecGroupID() string {
-	return fmt.Sprintf(`
-%s
+const testAccNetworkingSecGroupDataSourceSecGroupID = `
+	{{.TestAccNetworkingSecGroupDataSourceGroup}}
 
 data "vkcs_networking_secgroup" "secgroup_1" {
   secgroup_id = vkcs_networking_secgroup.secgroup_1.id
@@ -107,5 +104,4 @@ data "vkcs_networking_secgroup" "secgroup_1" {
     "foo",
   ]
 }
-`, testAccNetworkingSecGroupDataSourceGroup)
-}
+`

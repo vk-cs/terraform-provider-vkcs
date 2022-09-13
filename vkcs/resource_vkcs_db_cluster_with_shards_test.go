@@ -17,7 +17,7 @@ func TestAccDatabaseClusterWithShards_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseClusterWithShardsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseClusterWithShardsBasic, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseClusterWithShardsBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists(
 						"vkcs_db_cluster_with_shards.basic", &cluster),

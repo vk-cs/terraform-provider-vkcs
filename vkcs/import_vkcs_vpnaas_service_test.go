@@ -15,7 +15,7 @@ func TestAccService_importBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckServiceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccServiceBasic, testAccValues),
+				Config: testAccRenderConfig(testAccServiceBasic),
 			},
 			{
 				ResourceName:      resourceName,

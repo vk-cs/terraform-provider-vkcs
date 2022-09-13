@@ -24,7 +24,7 @@ func TestAccSFSShareNetwork_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckSFSShareNetworkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSFSShareNetworkConfigBasic(),
+				Config: testAccRenderConfig(testAccSFSShareNetworkConfigBasic, map[string]string{"TestAccSFSShareNetworkConfig": testAccSFSShareNetworkConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSFSShareNetworkExists("vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", &sharenetwork1),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "name", "test_sharenetwork"),
@@ -36,7 +36,7 @@ func TestAccSFSShareNetwork_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccSFSShareNetworkConfigUpdate(),
+				Config: testAccRenderConfig(testAccSFSShareNetworkConfigUpdate, map[string]string{"TestAccSFSShareNetworkConfig": testAccSFSShareNetworkConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSFSShareNetworkExists("vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", &sharenetwork2),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "name", "test_sharenetwork_new_net"),
@@ -60,7 +60,7 @@ func TestAccSFSShareNetwork_secservice(t *testing.T) {
 		CheckDestroy:      testAccCheckSFSShareNetworkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSFSShareNetworkConfigSecService1(),
+				Config: testAccRenderConfig(testAccSFSShareNetworkConfigSecService1, map[string]string{"TestAccSFSShareNetworkConfig": testAccSFSShareNetworkConfig, "TestAccSFSShareNetworkConfigSecService": testAccSFSShareNetworkConfigSecService}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSFSShareNetworkExists("vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", &sharenetwork),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "name", "test_sharenetwork_secure"),
@@ -70,7 +70,7 @@ func TestAccSFSShareNetwork_secservice(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccSFSShareNetworkConfigSecService2(),
+				Config: testAccRenderConfig(testAccSFSShareNetworkConfigSecService2, map[string]string{"TestAccSFSShareNetworkConfig": testAccSFSShareNetworkConfig, "TestAccSFSShareNetworkConfigSecService": testAccSFSShareNetworkConfigSecService}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSFSShareNetworkExists("vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", &sharenetwork),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "name", "test_sharenetwork_secure"),
@@ -80,7 +80,7 @@ func TestAccSFSShareNetwork_secservice(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccSFSShareNetworkConfigSecService3(),
+				Config: testAccRenderConfig(testAccSFSShareNetworkConfigSecService3, map[string]string{"TestAccSFSShareNetworkConfig": testAccSFSShareNetworkConfig, "TestAccSFSShareNetworkConfigSecService": testAccSFSShareNetworkConfigSecService}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSFSShareNetworkExists("vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", &sharenetwork),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "name", "test_sharenetwork_secure"),
@@ -90,7 +90,7 @@ func TestAccSFSShareNetwork_secservice(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccSFSShareNetworkConfigSecService4(),
+				Config: testAccRenderConfig(testAccSFSShareNetworkConfigSecService4, map[string]string{"TestAccSFSShareNetworkConfig": testAccSFSShareNetworkConfig, "TestAccSFSShareNetworkConfigSecService": testAccSFSShareNetworkConfigSecService}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSFSShareNetworkExists("vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", &sharenetwork),
 					resource.TestCheckResourceAttr("vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "name", "test_sharenetwork"),
@@ -229,9 +229,8 @@ resource "vkcs_networking_subnet" "subnet_1" {
 }
 `
 
-func testAccSFSShareNetworkConfigBasic() string {
-	return fmt.Sprintf(`
-%s
+const testAccSFSShareNetworkConfigBasic = `
+{{.TestAccSFSShareNetworkConfig}}
 
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   name                = "test_sharenetwork"
@@ -239,12 +238,10 @@ resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   neutron_net_id      = vkcs_networking_network.network_1.id
   neutron_subnet_id   = vkcs_networking_subnet.subnet_1.id
 }
-`, testAccSFSShareNetworkConfig)
-}
+`
 
-func testAccSFSShareNetworkConfigUpdate() string {
-	return fmt.Sprintf(`
-%s
+const testAccSFSShareNetworkConfigUpdate = `
+{{.TestAccSFSShareNetworkConfig}}
 
 resource "vkcs_networking_network" "network_2" {
   name = "network_2"
@@ -264,8 +261,7 @@ resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   neutron_net_id      = vkcs_networking_network.network_2.id
   neutron_subnet_id   = vkcs_networking_subnet.subnet_2.id
 }
-`, testAccSFSShareNetworkConfig)
-}
+`
 
 const testAccSFSShareNetworkConfigSecService = `
 resource "vkcs_sharedfilesystem_securityservice" "securityservice_1" {
@@ -288,11 +284,10 @@ resource "vkcs_sharedfilesystem_securityservice" "securityservice_2" {
 }
 `
 
-func testAccSFSShareNetworkConfigSecService1() string {
-	return fmt.Sprintf(`
-%s
+const testAccSFSShareNetworkConfigSecService1 = `
+{{.TestAccSFSShareNetworkConfig}}
 
-%s
+{{.TestAccSFSShareNetworkConfigSecService}}
 
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   name                = "test_sharenetwork_secure"
@@ -303,14 +298,12 @@ resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
     vkcs_sharedfilesystem_securityservice.securityservice_1.id,
   ]
 }
-`, testAccSFSShareNetworkConfig, testAccSFSShareNetworkConfigSecService)
-}
+`
 
-func testAccSFSShareNetworkConfigSecService2() string {
-	return fmt.Sprintf(`
-%s
+const testAccSFSShareNetworkConfigSecService2 = `
+{{.TestAccSFSShareNetworkConfig}}
 
-%s
+{{.TestAccSFSShareNetworkConfigSecService}}
 
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   name                = "test_sharenetwork_secure"
@@ -322,14 +315,12 @@ resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
     vkcs_sharedfilesystem_securityservice.securityservice_2.id,
   ]
 }
-`, testAccSFSShareNetworkConfig, testAccSFSShareNetworkConfigSecService)
-}
+`
 
-func testAccSFSShareNetworkConfigSecService3() string {
-	return fmt.Sprintf(`
-%s
+const testAccSFSShareNetworkConfigSecService3 = `
+{{.TestAccSFSShareNetworkConfig}}
 
-%s
+{{.TestAccSFSShareNetworkConfigSecService}}
 
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   name                = "test_sharenetwork_secure"
@@ -340,14 +331,12 @@ resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
     vkcs_sharedfilesystem_securityservice.securityservice_2.id,
   ]
 }
-`, testAccSFSShareNetworkConfig, testAccSFSShareNetworkConfigSecService)
-}
+`
 
-func testAccSFSShareNetworkConfigSecService4() string {
-	return fmt.Sprintf(`
-%s
+const testAccSFSShareNetworkConfigSecService4 = `
+{{.TestAccSFSShareNetworkConfig}}
 
-%s
+{{.TestAccSFSShareNetworkConfigSecService}}
 
 resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   name                = "test_sharenetwork"
@@ -355,5 +344,4 @@ resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   neutron_net_id      = vkcs_networking_network.network_1.id
   neutron_subnet_id   = vkcs_networking_subnet.subnet_1.id
 }
-`, testAccSFSShareNetworkConfig, testAccSFSShareNetworkConfigSecService)
-}
+`

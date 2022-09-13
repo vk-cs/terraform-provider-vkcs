@@ -27,7 +27,7 @@ func TestAccComputeInstance_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceBasic, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckComputeInstanceMetadata(&instance, "foo", "bar"),
@@ -50,7 +50,7 @@ func TestAccComputeInstance_initialStateActive(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceStateActive, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceStateActive),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					resource.TestCheckResourceAttr(
@@ -59,7 +59,7 @@ func TestAccComputeInstance_initialStateActive(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceStateShutoff, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceStateShutoff),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					resource.TestCheckResourceAttr(
@@ -68,7 +68,7 @@ func TestAccComputeInstance_initialStateActive(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceStateActive, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceStateActive),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					resource.TestCheckResourceAttr(
@@ -89,7 +89,7 @@ func TestAccComputeInstance_initialStateShutoff(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceStateShutoff, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceStateShutoff),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					resource.TestCheckResourceAttr(
@@ -98,7 +98,7 @@ func TestAccComputeInstance_initialStateShutoff(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceStateActive, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceStateActive),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					resource.TestCheckResourceAttr(
@@ -107,7 +107,7 @@ func TestAccComputeInstance_initialStateShutoff(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceStateShutoff, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceStateShutoff),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					resource.TestCheckResourceAttr(
@@ -128,7 +128,7 @@ func TestAccComputeInstance_initialShelve(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceStateActive, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceStateActive),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					resource.TestCheckResourceAttr(
@@ -137,7 +137,7 @@ func TestAccComputeInstance_initialShelve(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceStateShelve, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceStateShelve),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					resource.TestCheckResourceAttr(
@@ -146,7 +146,7 @@ func TestAccComputeInstance_initialShelve(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceStateActive, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceStateActive),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					resource.TestCheckResourceAttr(
@@ -167,7 +167,7 @@ func TestAccComputeInstance_bootFromVolumeImage(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceBootFromVolumeImage, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceBootFromVolumeImage),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckComputeInstanceBootVolumeAttachment(&instance),
@@ -186,7 +186,7 @@ func TestAccComputeInstance_bootFromVolumeVolume(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceBootFromVolumeVolume, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceBootFromVolumeVolume),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckComputeInstanceBootVolumeAttachment(&instance),
@@ -206,14 +206,14 @@ func TestAccComputeInstance_bootFromVolumeForceNew(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceBootFromVolumeForceNew1, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceBootFromVolumeForceNew1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists(
 						"vkcs_compute_instance.instance_1", &instance1),
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceBootFromVolumeForceNew2, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceBootFromVolumeForceNew2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists(
 						"vkcs_compute_instance.instance_1", &instance2),
@@ -233,7 +233,7 @@ func TestAccComputeInstance_blockDeviceNewVolume(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceBlockDeviceNewVolume, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceBlockDeviceNewVolume),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 				),
@@ -251,7 +251,7 @@ func TestAccComputeInstance_blockDeviceNewVolumeTypeAndBus(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceBlockDeviceNewVolumeTypeAndBus, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceBlockDeviceNewVolumeTypeAndBus),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 				),
@@ -270,7 +270,7 @@ func TestAccComputeInstance_blockDeviceExistingVolume(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceBlockDeviceExistingVolume, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceBlockDeviceExistingVolume),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckBlockStorageVolumeExists(
@@ -291,7 +291,7 @@ func TestAccComputeInstance_personality(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstancePersonality, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstancePersonality),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 				),
@@ -309,7 +309,7 @@ func TestAccComputeInstance_accessIPv4(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceAccessIPv4, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceAccessIPv4),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					resource.TestCheckResourceAttr(
@@ -330,14 +330,14 @@ func TestAccComputeInstance_changeFixedIP(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceChangeFixedIP1, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceChangeFixedIP1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists(
 						"vkcs_compute_instance.instance_1", &instance1),
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceChangeFixedIP2, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceChangeFixedIP2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists(
 						"vkcs_compute_instance.instance_1", &instance2),
@@ -356,7 +356,7 @@ func TestAccComputeInstance_stopBeforeDestroy(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceStopBeforeDestroy, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceStopBeforeDestroy),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 				),
@@ -374,7 +374,7 @@ func TestAccComputeInstance_metadataRemove(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceMetadataRemove1, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceMetadataRemove1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckComputeInstanceMetadata(&instance, "foo", "bar"),
@@ -386,7 +386,7 @@ func TestAccComputeInstance_metadataRemove(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceMetadataRemove2, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceMetadataRemove2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckComputeInstanceMetadata(&instance, "foo", "bar"),
@@ -410,7 +410,7 @@ func TestAccComputeInstance_forceDelete(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceForceDelete, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceForceDelete),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 				),
@@ -427,7 +427,7 @@ func TestAccComputeInstance_timeout(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceTimeout, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceTimeout),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 				),
@@ -444,7 +444,7 @@ func TestAccComputeInstance_networkModeNone(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceNetworkModeNone, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceNetworkModeNone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckComputeInstanceNetworkDoesNotExist("vkcs_compute_instance.instance_1", &instance),
@@ -463,7 +463,7 @@ func TestAccComputeInstance_networkNameToID(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceNetworkNameToID, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceNetworkNameToID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
@@ -490,7 +490,7 @@ func TestAccComputeInstance_crazyNICs(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceCrazyNICs, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceCrazyNICs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					testAccCheckNetworkingNetworkExists(
@@ -566,28 +566,28 @@ func TestAccComputeInstance_tags(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceTagsCreate, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceTagsCreate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists(resourceName, &instance),
 					testAccCheckComputeInstanceTags(resourceName, []string{"tag1", "tag2", "tag3"}),
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceTagsAdd, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceTagsAdd),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists(resourceName, &instance),
 					testAccCheckComputeInstanceTags(resourceName, []string{"tag1", "tag2", "tag3", "tag4"}),
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceTagsDelete, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceTagsDelete),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists(resourceName, &instance),
 					testAccCheckComputeInstanceTags(resourceName, []string{"tag2", "tag3"}),
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceTagsClear, testAccValues),
+				Config: testAccRenderConfig(testAccComputeInstanceTagsClear),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists(resourceName, &instance),
 					testAccCheckComputeInstanceTags(resourceName, nil),

@@ -18,7 +18,7 @@ func TestAccVPNaaSSiteConnection_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckSiteConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccSiteConnectionBasic, testAccValues),
+				Config: testAccRenderConfig(testAccSiteConnectionBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSiteConnectionExists("vkcs_vpnaas_site_connection.conn_1", &conn),
 					resource.TestCheckResourceAttrPtr("vkcs_vpnaas_site_connection.conn_1", "ikepolicy_id", &conn.IKEPolicyID),

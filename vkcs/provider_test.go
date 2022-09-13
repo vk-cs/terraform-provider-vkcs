@@ -45,6 +45,7 @@ var testAccValues map[string]string = map[string]string{
 	"NewFlavorName":    osNewFlavorName,
 	"ImageName":        osImageName,
 	"ExtNetName":       osExtNetName,
+	"ProjectID":        osProjectID,
 }
 
 var testAccProviders map[string]func() (*schema.Provider, error)
@@ -67,6 +68,7 @@ func testAccPreCheck(t *testing.T) {
 		"OS_NEW_FLAVOR_NAME":   osNewFlavorName,
 		"OS_IMAGE_NAME":        osImageName,
 		"OS_EXT_NET_NAME":      osExtNetName,
+		"OS_PROJECT_ID":        osProjectID,
 	}
 	for k, v := range vars {
 		if v == "" {
@@ -351,10 +353,17 @@ data "vkcs_networking_network" "extnet" {
   }
 `
 
-func testAccRenderConfig(testConfig string, values map[string]string) string {
+func testAccRenderConfig(testConfig string, values ...map[string]string) string {
 	t := template.Must(template.New("acc").Option("missingkey=error").Parse(testConfig))
 	buf := &bytes.Buffer{}
-	_ = t.Execute(buf, values)
+
+	tmplValues := map[string]string{}
+	copyToMap(&tmplValues, &testAccValues)
+	if len(values) > 0 {
+		copyToMap(&tmplValues, &values[0])
+	}
+
+	_ = t.Execute(buf, tmplValues)
 
 	return buf.String()
 }

@@ -20,7 +20,7 @@ func TestAccDatabaseDatabase_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseDatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseDatabaseBasic, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseDatabaseBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),

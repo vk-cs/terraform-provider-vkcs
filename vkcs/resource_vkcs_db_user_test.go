@@ -20,7 +20,7 @@ func TestAccDatabaseUser_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseUserBasic, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseUserBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -44,7 +44,7 @@ func TestAccDatabaseUser_update_and_delete(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRenderConfig(testAccDatabaseUserBasic, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseUserBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseInstanceExists(
 						"vkcs_db_instance.basic", &instance),
@@ -55,7 +55,7 @@ func TestAccDatabaseUser_update_and_delete(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccDatabaseUserAddDatabase, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseUserAddDatabase),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseUserExists(
 						"vkcs_db_user.basic", &instance, &user),
@@ -63,7 +63,7 @@ func TestAccDatabaseUser_update_and_delete(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccDatabaseUserBasic, testAccValues),
+				Config: testAccRenderConfig(testAccDatabaseUserBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseUserExists(
 						"vkcs_db_user.basic", &instance, &user),
