@@ -29,10 +29,11 @@ func resourceComputeInterfaceAttach() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to create the interface attachment. If omitted, the `region` argument of the provider is used. Changing this creates a new attachment.",
 			},
 
 			"port_id": {
@@ -41,6 +42,7 @@ func resourceComputeInterfaceAttach() *schema.Resource {
 				Computed:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"network_id"},
+				Description:   "The ID of the Port to attach to an Instance.\n_NOTE_: This option and `network_id` are mutually exclusive.",
 			},
 
 			"network_id": {
@@ -49,12 +51,14 @@ func resourceComputeInterfaceAttach() *schema.Resource {
 				Computed:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"port_id"},
+				Description:   "The ID of the Network to attach to an Instance. A port will be created automatically.\n_NOTE_: This option and `port_id` are mutually exclusive.",
 			},
 
 			"instance_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of the Instance to attach the Port or Network to.",
 			},
 
 			"fixed_ip": {
@@ -63,8 +67,10 @@ func resourceComputeInterfaceAttach() *schema.Resource {
 				Computed:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"port_id"},
+				Description:   "An IP address to assosciate with the port.\n_NOTE_: This option cannot be used with port_id. You must specify a network_id. The IP address must lie in a range on the supplied network.",
 			},
 		},
+		Description: "Attaches a Network Interface (a Port) to an Instance using the VKCS Compute API.",
 	}
 }
 

@@ -22,12 +22,14 @@ func dataSourceComputeAvailabilityZones() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Description: "The names of the availability zones, ordered alphanumerically, that match the queried `state`",
 			},
 
 			"region": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`",
 			},
 
 			"state": {
@@ -35,8 +37,15 @@ func dataSourceComputeAvailabilityZones() *schema.Resource {
 				Default:      "available",
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"available", "unavailable"}, true),
+				Description:  "The `state` of the availability zones to match, default (\"available\").",
+			},
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Hash of the returned zone list.",
 			},
 		},
+		Description: "Use this data source to get a list of availability zones from VKCS",
 	}
 }
 

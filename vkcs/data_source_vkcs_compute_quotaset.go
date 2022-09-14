@@ -16,68 +16,81 @@ func dataSourceComputeQuotaset() *schema.Resource {
 		ReadContext: dataSourceComputeQuotasetRead,
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Compute client. If omitted, the `region` argument of the provider is used.",
 			},
 
 			"project_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The id of the project to retrieve the quotaset.",
 			},
 
 			"injected_file_content_bytes": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of allowed bytes of content for each injected file.",
 			},
 
 			"injected_file_path_bytes": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of allowed bytes for each injected file path.",
 			},
 
 			"injected_files": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of allowed injected files.",
 			},
 
 			"key_pairs": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of allowed key pairs for each user.",
 			},
 
 			"metadata_items": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of allowed metadata items for each server.",
 			},
 
 			"ram": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The amount of allowed server RAM, in MiB.",
 			},
 
 			"cores": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of allowed server cores.",
 			},
 
 			"instances": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of allowed servers.",
 			},
 
 			"server_groups": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of allowed server groups.",
 			},
 
 			"server_group_members": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of allowed members for each server group.",
 			},
 		},
+		Description: "Use this data source to get the compute quotaset of an VKCS project.",
 	}
 }
 

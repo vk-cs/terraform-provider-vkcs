@@ -17,10 +17,11 @@ func dataSourceComputeFlavor() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Compute client. If omitted, the `region` argument of the provider is used.",
 			},
 
 			"flavor_id": {
@@ -28,6 +29,7 @@ func dataSourceComputeFlavor() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"name", "min_ram", "min_disk"},
+				Description:   "The ID of the flavor. Conflicts with the `name`, `min_ram` and `min_disk`",
 			},
 
 			"name": {
@@ -35,6 +37,7 @@ func dataSourceComputeFlavor() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"flavor_id"},
+				Description:   "The name of the flavor. Conflicts with the `flavor_id`.",
 			},
 
 			"min_ram": {
@@ -42,18 +45,21 @@ func dataSourceComputeFlavor() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"flavor_id"},
+				Description:   "The minimum amount of RAM (in megabytes). Conflicts with the `flavor_id`.",
 			},
 
 			"ram": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The exact amount of RAM (in megabytes).",
 			},
 
 			"vcpus": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The amount of VCPUs.",
 			},
 
 			"min_disk": {
@@ -61,38 +67,51 @@ func dataSourceComputeFlavor() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"flavor_id"},
+				Description:   "The minimum amount of disk (in gigabytes). Conflicts with the `flavor_id`.",
 			},
 
 			"disk": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The exact amount of disk (in gigabytes).",
 			},
 
 			"swap": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The amount of swap (in gigabytes).",
 			},
 
 			"rx_tx_factor": {
-				Type:     schema.TypeFloat,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeFloat,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The `rx_tx_factor` of the flavor.",
 			},
 
 			"is_public": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The flavor visibility.",
 			},
 
 			// Computed values
 			"extra_specs": {
-				Type:     schema.TypeMap,
-				Computed: true,
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "Key/Value pairs of metadata for the flavor.",
+			},
+
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the found flavor.",
 			},
 		},
+		Description: "Use this data source to get the ID of an available VKCS flavor.",
 	}
 }
 

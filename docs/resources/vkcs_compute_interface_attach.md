@@ -1,20 +1,17 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: compute_interface_attach"
+page_title: "vkcs: vkcs_compute_interface_attach"
 description: |-
   Attaches a Network Interface to an Instance.
 ---
 
-# vkcs\_compute\_interface\_attach
+# vkcs_compute_interface_attach
 
-Attaches a Network Interface (a Port) to an Instance using the VKCS
-Compute API.
+Attaches a Network Interface (a Port) to an Instance using the VKCS Compute API.
 
 ## Example Usage
-
 ### Basic Attachment
-
-```hcl
+```terraform
 resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
@@ -29,12 +26,10 @@ resource "vkcs_compute_interface_attach" "ai_1" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
   network_id  = "${vkcs_networking_port.network_1.id}"
 }
-
 ```
 
 ### Attachment Specifying a Fixed IP
-
-```hcl
+```terraform
 resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
@@ -50,13 +45,10 @@ resource "vkcs_compute_interface_attach" "ai_1" {
   network_id  = "${vkcs_networking_port.network_1.id}"
   fixed_ip    = "10.0.10.10"
 }
-
 ```
 
-
 ### Attachment Using an Existing Port
-
-```hcl
+```terraform
 resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
@@ -78,12 +70,10 @@ resource "vkcs_compute_interface_attach" "ai_1" {
   instance_id = "${vkcs_compute_instance.instance_1.id}"
   port_id     = "${vkcs_networking_port.port_1.id}"
 }
-
 ```
 
 ### Attaching Multiple Interfaces
-
-```hcl
+```terraform
 resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
@@ -108,14 +98,10 @@ resource "vkcs_compute_interface_attach" "attachments" {
 }
 ```
 
-Note that the above example will not guarantee that the ports are attached in
-a deterministic manner. The ports will be attached in a seemingly random
-order.
+Note that the above example will not guarantee that the ports are attached in a deterministic manner. The ports will be attached in a seemingly random order.
 
-If you want to ensure that the ports are attached in a given order, create
-explicit dependencies between the ports, such as:
-
-```hcl
+If you want to ensure that the ports are attached in a given order, create explicit dependencies between the ports, such as:
+```terraform
 resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
@@ -143,41 +129,39 @@ resource "vkcs_compute_interface_attach" "ai_2" {
   port_id     = "${vkcs_networking_port.ports.*.id[1]}"
 }
 ```
-
 ## Argument Reference
+- `instance_id` **String** (***Required***) The ID of the Instance to attach the Port or Network to.
 
-The following arguments are supported:
+- `fixed_ip` **String** (*Optional*) An IP address to assosciate with the port.
+_NOTE_: This option cannot be used with port_id. You must specify a network_id. The IP address must lie in a range on the supplied network.
 
-* `region` - (Optional) The region in which to create the interface attachment.
-    If omitted, the `region` argument of the provider is used. Changing this
-    creates a new attachment.
+- `network_id` **String** (*Optional*) The ID of the Network to attach to an Instance. A port will be created automatically.
+_NOTE_: This option and `port_id` are mutually exclusive.
 
-* `instance_id` - (Required) The ID of the Instance to attach the Port or Network to.
+- `port_id` **String** (*Optional*) The ID of the Port to attach to an Instance.
+_NOTE_: This option and `network_id` are mutually exclusive.
 
-* `port_id` - (Optional) The ID of the Port to attach to an Instance.
-   _NOTE_: This option and `network_id` are mutually exclusive.
+- `region` **String** (*Optional*) The region in which to create the interface attachment. If omitted, the `region` argument of the provider is used. Changing this creates a new attachment.
 
-* `network_id` - (Optional) The ID of the Network to attach to an Instance. A port will be created automatically.
-   _NOTE_: This option and `port_id` are mutually exclusive.
-
-* `fixed_ip` - (Optional) An IP address to assosciate with the port.
-   _NOTE_: This option cannot be used with port_id. You must specifiy a network_id. The IP address must lie in a range on the supplied network.
 
 ## Attributes Reference
+- `instance_id` **String** See Argument Reference above.
 
-The following attributes are exported:
+- `fixed_ip` **String** See Argument Reference above.
 
-* `region` - See Argument Reference above.
-* `instance_id` - See Argument Reference above.
-* `port_id` - See Argument Reference above.
-* `network_id` - See Argument Reference above.
-* `fixed_ip`  - See Argument Reference above.
+- `network_id` **String** See Argument Reference above.
+
+- `port_id` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `id` **String** ID of the resource.
+
+
 
 ## Import
 
-Interface Attachments can be imported using the Instance ID and Port ID
-separated by a slash, e.g.
-
-```
-$ terraform import vkcs_compute_interface_attach.ai_1 89c60255-9bd6-460c-822a-e2b959ede9d2/45670584-225f-46c3-b33e-6707b589b666
+Interface Attachments can be imported using the Instance ID and Port ID separated by a slash, e.g.
+```shell
+terraform import vkcs_compute_interface_attach.ai_1 89c60255-9bd6-460c-822a-e2b959ede9d2/45670584-225f-46c3-b33e-6707b589b666
 ```

@@ -1,20 +1,17 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: compute_volume_attach"
+page_title: "vkcs: vkcs_compute_volume_attach"
 description: |-
   Attaches a Block Storage Volume to an Instance.
 ---
 
-# vkcs\_compute\_volume\_attach
+# vkcs_compute_volume_attach
 
-Attaches a Block Storage Volume to an Instance using the VKCS
-Compute API.
+Attaches a Block Storage Volume to an Instance using the VKCS Compute API.
 
 ## Example Usage
-
 ### Basic attachment of a single volume to a single instance
-
-```hcl
+```terraform
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
   size = 1
@@ -32,8 +29,7 @@ resource "vkcs_compute_volume_attach" "va_1" {
 ```
 
 ### Attaching multiple volumes to a single instance
-
-```hcl
+```terraform
 resource "vkcs_blockstorage_volume" "volumes" {
   count = 2
   name  = "${format("vol-%02d", count.index + 1)}"
@@ -63,7 +59,7 @@ order.
 If you want to ensure that the volumes are attached in a given order, create
 explicit dependencies between the volumes, such as:
 
-```hcl
+```terraform
 resource "vkcs_blockstorage_volume" "volumes" {
   count = 2
   name  = "${format("vol-%02d", count.index + 1)}"
@@ -91,33 +87,29 @@ output "volume_devices" {
   value = "${vkcs_compute_volume_attach.attachments.*.device}"
 }
 ```
-
 ## Argument Reference
+- `instance_id` **String** (***Required***) The ID of the Instance to attach the Volume to.
 
-The following arguments are supported:
+- `volume_id` **String** (***Required***) The ID of the Volume to attach to an Instance.
 
-* `region` - (Optional) The region in which to obtain the Compute client.
-    A Compute client is needed to create a volume attachment. If omitted, the
-    `region` argument of the provider is used. Changing this creates a
-    new volume attachment.
+- `region` **String** (*Optional*) The region in which to obtain the Compute client. A Compute client is needed to create a volume attachment. If omitted, the `region` argument of the provider is used. Changing this creates a new volume attachment.
 
-* `instance_id` - (Required) The ID of the Instance to attach the Volume to.
-
-* `volume_id` - (Required) The ID of the Volume to attach to an Instance.
 
 ## Attributes Reference
+- `instance_id` **String** See Argument Reference above.
 
-The following attributes are exported:
+- `volume_id` **String** See Argument Reference above.
 
-* `region` - See Argument Reference above.
-* `instance_id` - See Argument Reference above.
-* `volume_id` - See Argument Reference above.
+- `region` **String** See Argument Reference above.
+
+- `id` **String** ID of the resource.
+
+
 
 ## Import
 
-Volume Attachments can be imported using the Instance ID and Volume ID
-separated by a slash, e.g.
+Volume Attachments can be imported using the Instance ID and Volume ID separated by a slash, e.g.
 
-```
-$ terraform import vkcs_compute_volume_attach.va_1 89c60255-9bd6-460c-822a-e2b959ede9d2/45670584-225f-46c3-b33e-6707b589b666
+```shell
+terraform import vkcs_compute_volume_attach.va_1 89c60255-9bd6-460c-822a-e2b959ede9d2/45670584-225f-46c3-b33e-6707b589b666
 ```
