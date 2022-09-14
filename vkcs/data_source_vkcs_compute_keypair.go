@@ -16,27 +16,32 @@ func dataSourceComputeKeypair() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The region in which to obtain the Compute client. If omitted, the `region` argument of the provider is used.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The unique name of the keypair.",
 			},
 
 			// computed-only
 			"fingerprint": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The fingerprint of the OpenSSH key.",
 			},
 
 			"public_key": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The OpenSSH-formatted public key of the keypair.",
 			},
 		},
+		Description: "Use this data source to get the ID and public key of an VKCS keypair.",
 	}
 }
 

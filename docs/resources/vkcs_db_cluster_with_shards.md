@@ -94,6 +94,7 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
     backup_id = "7c8110f3-6f7f-4dc3-85c2-16feef9ddc2b"
   }
 }
+}
 ```
 ## Argument Reference
 - `datastore` (***Required***) Object that represents datastore of the cluster. Changing this creates a new cluster.

@@ -1,17 +1,17 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: compute_flavor"
+page_title: "vkcs: vkcs_compute_flavor"
 description: |-
   Get information on an VKCS Flavor.
 ---
 
-# vkcs\_compute\_flavor
+# vkcs_compute_flavor
 
 Use this data source to get the ID of an available VKCS flavor.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "vkcs_compute_flavor" "small" {
   vcpus = 1
   ram   = 512
@@ -19,37 +19,54 @@ data "vkcs_compute_flavor" "small" {
 ```
 
 ## Argument Reference
+- `disk` **Number** (*Optional*) The exact amount of disk (in gigabytes).
 
-* `region` - (Optional) The region in which to obtain the Compute client.
-    If omitted, the `region` argument of the provider is used.
+- `flavor_id` **String** (*Optional*) The ID of the flavor. Conflicts with the `name`, `min_ram` and `min_disk`
 
-* `flavor_id` - (Optional) The ID of the flavor. Conflicts with the `name`,
-    `min_ram` and `min_disk`
+- `is_public` **Boolean** (*Optional*) The flavor visibility.
 
-* `name` - (Optional) The name of the flavor. Conflicts with the `flavor_id`.
+- `min_disk` **Number** (*Optional*) The minimum amount of disk (in gigabytes). Conflicts with the `flavor_id`.
 
-* `min_ram` - (Optional) The minimum amount of RAM (in megabytes). Conflicts
-   with the `flavor_id`.
+- `min_ram` **Number** (*Optional*) The minimum amount of RAM (in megabytes). Conflicts with the `flavor_id`.
 
-* `ram` - (Optional) The exact amount of RAM (in megabytes).
+- `name` **String** (*Optional*) The name of the flavor. Conflicts with the `flavor_id`.
 
-* `min_disk` - (Optional) The minimum amount of disk (in gigabytes). Conflicts
-   with the `flavor_id`.
+- `ram` **Number** (*Optional*) The exact amount of RAM (in megabytes).
 
-* `disk` - (Optional) The exact amount of disk (in gigabytes).
+- `region` **String** (*Optional*) The region in which to obtain the Compute client. If omitted, the `region` argument of the provider is used.
 
-* `vcpus` - (Optional) The amount of VCPUs.
+- `rx_tx_factor` **Number** (*Optional*) The `rx_tx_factor` of the flavor.
 
-* `swap` - (Optional) The amount of swap (in gigabytes).
+- `swap` **Number** (*Optional*) The amount of swap (in gigabytes).
 
-* `rx_tx_factor` - (Optional) The `rx_tx_factor` of the flavor.
-
-* `is_public` - (Optional) The flavor visibility.
+- `vcpus` **Number** (*Optional*) The amount of VCPUs.
 
 
 ## Attributes Reference
+- `disk` **Number** See Argument Reference above.
 
-`id` is set to the ID of the found flavor. In addition, the following attributes
-are exported:
+- `flavor_id` **String** See Argument Reference above.
 
-* `extra_specs` - Key/Value pairs of metadata for the flavor.
+- `is_public` **Boolean** See Argument Reference above.
+
+- `min_disk` **Number** See Argument Reference above.
+
+- `min_ram` **Number** See Argument Reference above.
+
+- `name` **String** See Argument Reference above.
+
+- `ram` **Number** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `rx_tx_factor` **Number** See Argument Reference above.
+
+- `swap` **Number** See Argument Reference above.
+
+- `vcpus` **Number** See Argument Reference above.
+
+- `extra_specs` <strong>Map of </strong>**String** Key/Value pairs of metadata for the flavor.
+
+- `id` **String** ID of the found flavor.
+
+

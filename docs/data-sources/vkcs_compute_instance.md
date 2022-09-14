@@ -1,17 +1,17 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: compute_instance"
+page_title: "vkcs: vkcs_compute_instance"
 description: |-
   Get information on an VKCS Instance
 ---
 
-# vkcs\_compute\_instance
+# vkcs_compute_instance
 
 Use this data source to get the details of a running server
 
 ## Example Usage
 
-```hcl
+```terraform
 data "vkcs_compute_instance" "instance" {
   # Randomly generated UUID, for demonstration purposes
   id = "2ba26dc6-a12d-4889-8f25-794ea5bf4453"
@@ -19,53 +19,57 @@ data "vkcs_compute_instance" "instance" {
 ```
 
 ## Argument Reference
+- `id` **String** (***Required***) The UUID of the instance
 
-* `id` - (Required) The UUID of the instance
+- `region` **String** (*Optional*) The region in which to obtain the Compute client. If omitted, the `region` argument of the provider is used.
+
+- `user_data` **String** (*Optional*) The user data added when the server was created.
 
 
 ## Attributes Reference
+- `id` **String** See Argument Reference above.
 
-In addition to the above, the following attributes are exported:
+- `region` **String** See Argument Reference above.
 
-* `name` - The name of the server.
+- `user_data` **String** See Argument Reference above.
 
-* `image_id` - The image ID used to create the server.
+- `access_ip_v4` **String** The first IPv4 address assigned to this server.
 
-* `image_name` - The image name used to create the server.
+- `access_ip_v6` **String** The first IPv6 address assigned to this server.
 
-* `flavor_id` - The flavor ID used to create the server.
+- `availability_zone` **String** The availability zone of this server.
 
-* `flavor_name` - The flavor name used to create the server.
+- `flavor_id` **String** The flavor ID used to create the server.
 
-* `user_data` - The user data added when the server was created.
+- `flavor_name` **String** The flavor name used to create the server.
 
-* `security_groups` - An array of security group names associated with this server.
+- `image_id` **String** The image ID used to create the server.
 
-* `availability_zone` - The availability zone of this server.
+- `image_name` **String** The image name used to create the server.
 
-* `network` - An array of maps, detailed below.
+- `key_pair` **String** The name of the key pair assigned to this server.
 
-* `access_ip_v4` - The first IPv4 address assigned to this server.
+- `metadata` <strong>Map of </strong>**String** A set of key/value pairs made available to the server.
 
-* `access_ip_v6` - The first IPv6 address assigned to this server.
+- `name` **String** The name of the server.
 
-* `key_pair` - The name of the key pair assigned to this server.
+- `network`  An array of maps, detailed below.
+  - `fixed_ip_v4` **String** The IPv4 address assigned to this network port.
 
-* `tags` - A set of string tags assigned to this server.
+  - `fixed_ip_v6` **String** The IPv6 address assigned to this network port.
 
-* `metadata` - A set of key/value pairs made available to the server.
+  - `mac` **String** The MAC address assigned to this network interface.
+
+  - `name` **String** The name of the network
+
+  - `port` **String** The port UUID for this network
+
+  - `uuid` **String** The UUID of the network
+
+- `power_state` **String** VM state
+
+- `security_groups` <strong>Set of </strong>**String** An array of security group names associated with this server.
+
+- `tags` <strong>Set of </strong>**String** A set of string tags for the instance.
 
 
-The `network` block is defined as:
-
-* `uuid` - The UUID of the network
-
-* `name` - The name of the network
-
-* `fixed_ip_v4` - The IPv4 address assigned to this network port.
-
-* `fixed_ip_v6` - The IPv6 address assigned to this network port.
-
-* `port` - The port UUID for this network
-
-* `mac` - The MAC address assigned to this network interface.
