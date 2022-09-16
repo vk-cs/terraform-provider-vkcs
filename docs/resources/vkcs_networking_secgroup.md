@@ -1,17 +1,16 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: networking_secgroup"
+page_title: "vkcs: vkcs_networking_secgroup"
 description: |-
   Manages a security group resource within VKCS.
 ---
 
-# vkcs\_networking\_secgroup
+# vkcs_networking_secgroup
 
 Manages a security group resource within VKCS.
 
 ## Example Usage
-
-```hcl
+```terraform
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name        = "secgroup_1"
   description = "My security group"
@@ -19,37 +18,37 @@ resource "vkcs_networking_secgroup" "secgroup_1" {
 ```
 
 ## Argument Reference
+- `name` **String** (***Required***) A unique name for the security group.
 
-The following arguments are supported:
+- `delete_default_rules` **Boolean** (*Optional*) Whether or not to delete the default egress security rules. This is `false` by default. See the below note for more information.
 
-* `region` - (Optional) The region in which to obtain the networking client.
-    A networking client is needed to create a port. If omitted, the
-    `region` argument of the provider is used. Changing this creates a new
-    security group.
+- `description` **String** (*Optional*) A unique name for the security group.
 
-* `name` - (Required) A unique name for the security group.
+- `region` **String** (*Optional*) The region in which to obtain the networking client. A networking client is needed to create a port. If omitted, the `region` argument of the provider is used. Changing this creates a new security group.
 
-* `description` - (Optional) A unique name for the security group.
+- `sdn` **String** (*Optional*) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
-* `delete_default_rules` - (Optional) Whether or not to delete the default
-    egress security rules. This is `false` by default. See the below note
-    for more information.
+- `tags` <strong>Set of </strong>**String** (*Optional*) A set of string tags for the security group.
 
-* `tags` - (Optional) A set of string tags for the security group.
-
-* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
 ## Attributes Reference
+- `name` **String** See Argument Reference above.
 
-The following attributes are exported:
+- `delete_default_rules` **Boolean** See Argument Reference above.
 
-* `region` - See Argument Reference above.
-* `name` - See Argument Reference above.
-* `description` - See Argument Reference above.
-* `tags` - See Argument Reference above.
-* `all_tags` - The collection of tags assigned on the security group, which have
-  been explicitly and implicitly added.
-* `sdn` - See Argument Reference above.
+- `description` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `sdn` **String** See Argument Reference above.
+
+- `tags` <strong>Set of </strong>**String** See Argument Reference above.
+
+- `all_tags` <strong>Set of </strong>**String** The collection of tags assigned on the security group, which have been explicitly and implicitly added.
+
+- `id` **String** ID of the resource.
+
+
 
 ## Default Security Group Rules
 
@@ -77,6 +76,6 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_v6" {
 
 Security Groups can be imported using the `id`, e.g.
 
-```
-$ terraform import vkcs_networking_secgroup.secgroup_1 38809219-5e8a-4852-9139-6f461c90e8bc
+```shell
+terraform import vkcs_networking_secgroup.secgroup_1 38809219-5e8a-4852-9139-6f461c90e8bc
 ```

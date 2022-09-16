@@ -1,17 +1,16 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: networking_router_interface"
+page_title: "vkcs: vkcs_networking_router_interface"
 description: |-
   Manages a router interface resource within VKCS.
 ---
 
-# vkcs\_networking\_router\_interface
+# vkcs_networking_router_interface
 
 Manages a router interface resource within VKCS.
 
 ## Example Usage
-
-```hcl
+```terraform
 resource "vkcs_networking_network" "network_1" {
   name           = "tf_test_network"
   admin_state_up = "true"
@@ -35,40 +34,37 @@ resource "vkcs_networking_router_interface" "router_interface_1" {
 ```
 
 ## Argument Reference
+- `router_id` **String** (***Required***) ID of the router this interface belongs to. Changing this creates a new router interface.
 
-The following arguments are supported:
+- `port_id` **String** (*Optional*) ID of the port this interface connects to. Changing this creates a new router interface.
 
-* `region` - (Optional) The region in which to obtain the networking client.
-    A networking client is needed to create a router. If omitted, the
-    `region` argument of the provider is used. Changing this creates a new
-    router interface.
+- `region` **String** (*Optional*) The region in which to obtain the networking client. A networking client is needed to create a router. If omitted, the `region` argument of the provider is used. Changing this creates a new router interface.
 
-* `router_id` - (Required) ID of the router this interface belongs to. Changing
-    this creates a new router interface.
+- `sdn` **String** (*Optional*) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
-* `subnet_id` - ID of the subnet this interface connects to. Changing
-    this creates a new router interface.
+- `subnet_id` **String** (*Optional*) ID of the subnet this interface connects to. Changing this creates a new router interface.
 
-* `port_id` - ID of the port this interface connects to. Changing
-    this creates a new router interface.
-
-* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
 ## Attributes Reference
+- `router_id` **String** See Argument Reference above.
 
-The following attributes are exported:
+- `port_id` **String** See Argument Reference above.
 
-* `region` - See Argument Reference above.
-* `router_id` - See Argument Reference above.
-* `subnet_id` - See Argument Reference above.
-* `port_id` - See Argument Reference above.
-* `sdn` - See Argument Reference above.
+- `region` **String** See Argument Reference above.
+
+- `sdn` **String** See Argument Reference above.
+
+- `subnet_id` **String** See Argument Reference above.
+
+- `id` **String** ID of the resource.
+
+
 
 ## Import
 
 Router Interfaces can be imported using the port `id`, e.g.
 
-```
-$ openstack port list --router <router name or id>
-$ terraform import vkcs_networking_router_interface.int_1 <port id from above output>
+```shell
+openstack port list --router <router name or id>
+terraform import vkcs_networking_router_interface.int_1 <port id from above output>
 ```

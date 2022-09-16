@@ -1,17 +1,16 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: networking_router"
+page_title: "vkcs: vkcs_networking_router"
 description: |-
   Manages a router resource within VKCS.
 ---
 
-# vkcs\_networking\_router
+# vkcs_networking_router
 
 Manages a router resource within VKCS.
 
 ## Example Usage
-
-```hcl
+```terraform
 resource "vkcs_networking_router" "router_1" {
   name                = "my_router"
   admin_state_up      = true
@@ -20,62 +19,56 @@ resource "vkcs_networking_router" "router_1" {
 ```
 
 ## Argument Reference
+- `admin_state_up` **Boolean** (*Optional*) Administrative up/down status for the router (must be "true" or "false" if provided). Changing this updates the `admin_state_up` of an existing router.
 
-The following arguments are supported:
+- `description` **String** (*Optional*) Human-readable description for the router.
 
-* `region` - (Optional) The region in which to obtain the networking client.
-  A networking client is needed to create a router. If omitted, the
-  `region` argument of the provider is used. Changing this creates a new
-  router.
+- `external_network_id` **String** (*Optional*) The network UUID of an external gateway for the router. A router with an external gateway is required if any compute instances or load balancers will be using floating IPs. Changing this updates the external gateway of the router.
 
-* `name` - (Optional) A unique name for the router. Changing this
-  updates the `name` of an existing router.
+- `name` **String** (*Optional*) A unique name for the router. Changing this updates the `name` of an existing router.
 
-* `description` - (Optional) Human-readable description for the router.
+- `region` **String** (*Optional*) The region in which to obtain the networking client. A networking client is needed to create a router. If omitted, the `region` argument of the provider is used. Changing this creates a new router.
 
-* `admin_state_up` - (Optional) Administrative up/down status for the router
-  (must be "true" or "false" if provided). Changing this updates the
-  `admin_state_up` of an existing router.
+- `sdn` **String** (*Optional*) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
-* `external_network_id` - (Optional) The network UUID of an external gateway
-  for the router. A router with an external gateway is required if any
-  compute instances or load balancers will be using floating IPs. Changing
-  this updates the external gateway of the router.
+- `tags` <strong>Set of </strong>**String** (*Optional*) A set of string tags for the router.
 
-* `value_specs` - (Optional) Map of additional driver-specific options.
+- `value_specs` <strong>Map of </strong>**String** (*Optional*) Map of additional driver-specific options.
 
-* `tags` - (Optional) A set of string tags for the router.
+- `vendor_options` (*Optional*) Map of additional vendor-specific options. Supported options are described below.
+  - `set_router_gateway_after_create` **Boolean** (*Optional*) Boolean to control whether the Router gateway is assigned during creation or updated after creation.
 
-* `vendor_options` - (Optional) Map of additional vendor-specific options.
-  Supported options are described below.
-
-* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
-
-The `vendor_options` block supports:
-
-* `set_router_gateway_after_create` - (Optional) Boolean to control whether
-  the Router gateway is assigned during creation or updated after creation.
 
 ## Attributes Reference
+- `admin_state_up` **Boolean** See Argument Reference above.
 
-The following attributes are exported:
+- `description` **String** See Argument Reference above.
 
-* `id` - ID of the router.
-* `region` - See Argument Reference above.
-* `name` - See Argument Reference above.
-* `description` - See Argument Reference above.
-* `admin_state_up` - See Argument Reference above.
-* `external_network_id` - See Argument Reference above.
-* `value_specs` - See Argument Reference above.
-* `tags` - See Argument Reference above.
-* `all_tags` - The collection of tags assigned on the router, which have been
-  explicitly and implicitly added.
-* `sdn` - See Argument Reference above.
+- `external_network_id` **String** See Argument Reference above.
+
+- `name` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `sdn` **String** See Argument Reference above.
+
+- `tags` <strong>Set of </strong>**String** See Argument Reference above.
+
+- `value_specs` <strong>Map of </strong>**String** See Argument Reference above.
+
+- `vendor_options`  See Argument Reference above.
+  - `set_router_gateway_after_create` **Boolean** See Argument Reference above.
+
+- `all_tags` <strong>Set of </strong>**String** The collection of tags assigned on the router, which have been explicitly and implicitly added.
+
+- `id` **String** ID of the resource.
+
+
 
 ## Import
 
 Routers can be imported using the `id`, e.g.
 
-```
-$ terraform import vkcs_networking_router.router_1 014395cd-89fc-4c9b-96b7-13d1ee79dad2
+```shell
+terraform import vkcs_networking_router.router_1 014395cd-89fc-4c9b-96b7-13d1ee79dad2
 ```

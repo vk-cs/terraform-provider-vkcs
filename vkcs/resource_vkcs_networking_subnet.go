@@ -33,16 +33,18 @@ func resourceNetworkingSubnet() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Networking client. A Networking client is needed to create a subnet. If omitted, the `region` argument of the provider is used. Changing this creates a new subnet.",
 			},
 
 			"network_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The UUID of the parent network. Changing this creates a new subnet.",
 			},
 
 			"cidr": {
@@ -55,6 +57,7 @@ func resourceNetworkingSubnet() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.IsCIDR,
 				},
+				Description: "CIDR representing IP range for this subnet, based on IP version. You can omit this option if you are creating a subnet from a subnet pool.",
 			},
 
 			"prefix_length": {
@@ -62,18 +65,21 @@ func resourceNetworkingSubnet() *schema.Resource {
 				ConflictsWith: []string{"cidr"},
 				Optional:      true,
 				ForceNew:      true,
+				Description:   "The prefix length to use when creating a subnet from a subnet pool. The default subnet pool prefix length that was defined when creating the subnet pool will be used if not provided. Changing this creates a new subnet.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "The name of the subnet. Changing this updates the name of the existing subnet.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "Human-readable description of the subnet. Changing this updates the name of the existing subnet.",
 			},
 
 			"allocation_pool": {
@@ -83,15 +89,18 @@ func resourceNetworkingSubnet() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"start": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The starting address.",
 						},
 						"end": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The ending address.",
 						},
 					},
 				},
+				Description: "A block declaring the start and end range of the IP addresses available for use with DHCP in this subnet. Multiple `allocation_pool` blocks can be declared, providing the subnet with more than one range of IP addresses to use with DHCP. However, each IP range must be from the same CIDR that the subnet is part of. The `allocation_pool` block is documented below.",
 			},
 
 			"gateway_ip": {
@@ -100,6 +109,7 @@ func resourceNetworkingSubnet() *schema.Resource {
 				Optional:      true,
 				ForceNew:      false,
 				Computed:      true,
+				Description:   "Default gateway used by devices in this subnet. Leaving this blank and not setting `no_gateway` will cause a default gateway of `.1` to be used. Changing this updates the gateway IP of the existing subnet.",
 			},
 
 			"no_gateway": {
@@ -108,6 +118,7 @@ func resourceNetworkingSubnet() *schema.Resource {
 				Optional:      true,
 				Default:       false,
 				ForceNew:      false,
+				Description:   "Do not set a gateway IP on this subnet. Changing this removes or adds a default gateway IP of the existing subnet.",
 			},
 
 			"ip_version": {
@@ -116,20 +127,23 @@ func resourceNetworkingSubnet() *schema.Resource {
 				Default:      4,
 				ForceNew:     true,
 				ValidateFunc: validation.IntInSlice([]int{4, 6}),
+				Description:  "IP version, either 4 (default) or 6. Changing this creates a new subnet.",
 			},
 
 			"enable_dhcp": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: false,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    false,
+				Default:     true,
+				Description: "The administrative state of the network. Acceptable values are \"true\" and \"false\". Changing this value enables or disables the DHCP capabilities of the existing subnet. Defaults to true.",
 			},
 
 			"dns_nameservers": {
-				Type:     schema.TypeList,
-				Optional: true,
-				ForceNew: false,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Optional:    true,
+				ForceNew:    false,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "An array of DNS name server names used by hosts in this subnet. Changing this updates the DNS name servers for the existing subnet.",
 			},
 
 			"ipv6_address_mode": {
@@ -140,6 +154,7 @@ func resourceNetworkingSubnet() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"slaac", "dhcpv6-stateful", "dhcpv6-stateless",
 				}, false),
+				Description: "The IPv6 address mode. Valid values are `dhcpv6-stateful`, `dhcpv6-stateless`, or `slaac`.",
 			},
 
 			"ipv6_ra_mode": {
@@ -150,30 +165,35 @@ func resourceNetworkingSubnet() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"slaac", "dhcpv6-stateful", "dhcpv6-stateless",
 				}, false),
+				Description: "The IPv6 Router Advertisement mode. Valid values are `dhcpv6-stateful`, `dhcpv6-stateless`, or `slaac`.",
 			},
 
 			"subnetpool_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The ID of the subnetpool associated with the subnet.",
 			},
 
 			"value_specs": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeMap,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Map of additional options.",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "A set of string tags for the subnet.",
 			},
 
 			"all_tags": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The collection of ags assigned on the subnet, which have been explicitly and implicitly added.",
 			},
 
 			"sdn": {
@@ -182,8 +202,10 @@ func resourceNetworkingSubnet() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: validateSDN(),
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
 			},
 		},
+		Description: "Manages a subnet resource within VKCS.",
 	}
 }
 

@@ -1,0 +1,30 @@
+---
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a port resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+### Simple port
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+Ports can be imported using the `id`, e.g.
+
+{{codefile "shell" "templates/resources/vkcs_networking_port/import.sh"}}
+
+## Notes
+
+### Ports and Instances
+
+There are some notes to consider when connecting Instances to networks using
+Ports. Please see the `vkcs_compute_instance` documentation for further
+documentation.

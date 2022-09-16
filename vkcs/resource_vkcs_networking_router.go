@@ -31,42 +31,48 @@ func resourceNetworkingRouter() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The region in which to obtain the networking client. A networking client is needed to create a router. If omitted, the `region` argument of the provider is used. Changing this creates a new router.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "A unique name for the router. Changing this updates the `name` of an existing router.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "Human-readable description for the router.",
 			},
 
 			"admin_state_up": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: false,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    false,
+				Computed:    true,
+				Description: "Administrative up/down status for the router (must be \"true\" or \"false\" if provided). Changing this updates the `admin_state_up` of an existing router.",
 			},
 
 			"external_network_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: false,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
+				Computed:    true,
+				Description: "The network UUID of an external gateway for the router. A router with an external gateway is required if any compute instances or load balancers will be using floating IPs. Changing this updates the external gateway of the router.",
 			},
 
 			"value_specs": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeMap,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Map of additional driver-specific options.",
 			},
 
 			"vendor_options": {
@@ -77,24 +83,28 @@ func resourceNetworkingRouter() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"set_router_gateway_after_create": {
-							Type:     schema.TypeBool,
-							Default:  false,
-							Optional: true,
+							Type:        schema.TypeBool,
+							Default:     false,
+							Optional:    true,
+							Description: "Boolean to control whether the Router gateway is assigned during creation or updated after creation.",
 						},
 					},
 				},
+				Description: "Map of additional vendor-specific options. Supported options are described below.",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "A set of string tags for the router.",
 			},
 
 			"all_tags": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The collection of tags assigned on the router, which have been explicitly and implicitly added.",
 			},
 
 			"sdn": {
@@ -103,8 +113,10 @@ func resourceNetworkingRouter() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: validateSDN(),
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
 			},
 		},
+		Description: "Manages a router resource within VKCS.",
 	}
 }
 

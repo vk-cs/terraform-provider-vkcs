@@ -1,19 +1,16 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: networking_floatingip_associate"
+page_title: "vkcs: vkcs_networking_floatingip_associate"
 description: |-
   Associates a Floating IP to a Port
 ---
 
-# vkcs\_networking\_floatingip\_associate
+# vkcs_networking_floatingip_associate
 
-Associates a floating IP to a port. This is useful for situations
-where you have a pre-allocated floating IP or are unable to use the
-`vkcs_networking_floatingip` resource to create a floating IP.
+Associates a floating IP to a port. This is useful for situations where you have a pre-allocated floating IP or are unable to use the `vkcs_networking_floatingip` resource to create a floating IP.
 
 ## Example Usage
-
-```hcl
+```terraform
 resource "vkcs_networking_port" "port_1" {
   network_id = "a5bbd213-e1d3-49b6-aed1-9df60ea94b9a"
 }
@@ -23,37 +20,37 @@ resource "vkcs_networking_floatingip_associate" "fip_1" {
   port_id     = "${vkcs_networking_port.port_1.id}"
 }
 ```
-
 ## Argument Reference
+- `floating_ip` **String** (***Required***) IP Address of an existing floating IP.
 
-The following arguments are supported:
+- `port_id` **String** (***Required***) ID of an existing port with at least one IP address to associate with this floating IP.
 
-* `region` - (Optional) The region in which to obtain the Networking client.
-    A Networking client is needed to create a floating IP that can be used with
-    another networking resource, such as a load balancer. If omitted, the
-    `region` argument of the provider is used. Changing this creates a new
-    floating IP (which may or may not have a different address).
+- `fixed_ip` **String** (*Optional*) One of the port's IP addresses.
 
-* `floating_ip` - (Required) IP Address of an existing floating IP.
+- `region` **String** (*Optional*) The region in which to obtain the Networking client. A Networking client is needed to create a floating IP that can be used with another networking resource, such as a load balancer. If omitted, the `region` argument of the provider is used. Changing this creates a new floating IP (which may or may not have a different address).
 
-* `port_id` - (Required) ID of an existing port with at least one IP address to
-    associate with this floating IP.
+- `sdn` **String** (*Optional*) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
-* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
 ## Attributes Reference
+- `floating_ip` **String** See Argument Reference above.
 
-The following attributes are exported:
+- `port_id` **String** See Argument Reference above.
 
-* `region` - See Argument Reference above.
-* `floating_ip` - See Argument Reference above.
-* `port_id` - See Argument Reference above.
-* `sdn` - See Argument Reference above.
+- `fixed_ip` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `sdn` **String** See Argument Reference above.
+
+- `id` **String** ID of the resource.
+
+
 
 ## Import
 
 Floating IP associations can be imported using the `id` of the floating IP, e.g.
 
-```
-$ terraform import vkcs_networking_floatingip_associate.fip 2c7f39f3-702b-48d1-940c-b50384177ee1
+```shell
+terraform import vkcs_networking_floatingip_associate.fip 2c7f39f3-702b-48d1-940c-b50384177ee1
 ```

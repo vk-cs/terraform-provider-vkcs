@@ -18,41 +18,45 @@ func dataSourceNetworkingSubnet() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Network client. A Network client is needed to retrieve subnet ids. If omitted, the `region` argument of the provider is used.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The name of the subnet.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "Human-readable description of the subnet.",
 			},
 
 			"dhcp_enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "If the subnet has DHCP enabled.",
 			},
 
 			"network_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The ID of the network the subnet belongs to.",
 			},
 
 			"tenant_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
-				Description: "The ID of the Tenant (Identity v2) or Project (Identity v3)\n" +
-					"to login with.",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The owner of the subnet.",
 			},
 
 			"ip_version": {
@@ -60,24 +64,28 @@ func dataSourceNetworkingSubnet() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.IntInSlice([]int{4, 6}),
+				Description:  "The IP version of the subnet (either 4 or 6).",
 			},
 
 			"gateway_ip": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The IP of the subnet's gateway.",
 			},
 
 			"cidr": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The CIDR of the subnet.",
 			},
 
 			"subnet_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The ID of the subnet.",
 			},
 
 			// Computed values
@@ -87,26 +95,31 @@ func dataSourceNetworkingSubnet() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"start": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The starting address.",
 						},
 						"end": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ending address.",
 						},
 					},
 				},
+				Description: "Allocation pools of the subnet.",
 			},
 
 			"enable_dhcp": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Whether the subnet has DHCP enabled or not.",
 			},
 
 			"dns_nameservers": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "DNS Nameservers of the subnet.",
 			},
 
 			"host_routes": {
@@ -124,6 +137,7 @@ func dataSourceNetworkingSubnet() *schema.Resource {
 						},
 					},
 				},
+				Description: "Host Routes of the subnet.",
 			},
 
 			"ipv6_address_mode": {
@@ -134,6 +148,7 @@ func dataSourceNetworkingSubnet() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"slaac", "dhcpv6-stateful", "dhcpv6-stateless",
 				}, false),
+				Description: "The IPv6 address mode. Valid values are `dhcpv6-stateful`, `dhcpv6-stateless`, or `slaac`.",
 			},
 
 			"ipv6_ra_mode": {
@@ -144,32 +159,44 @@ func dataSourceNetworkingSubnet() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"slaac", "dhcpv6-stateful", "dhcpv6-stateless",
 				}, false),
+				Description: "The IPv6 Router Advertisement mode. Valid values are `dhcpv6-stateful`, `dhcpv6-stateless`, or `slaac`.",
 			},
 
 			"subnetpool_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The ID of the subnetpool associated with the subnet.",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The list of subnet tags to filter.",
 			},
 
 			"all_tags": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "A set of string tags applied on the subnet.",
 			},
 
 			"sdn": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: validateSDN(),
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+			},
+
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the found subnet.",
 			},
 		},
+		Description: "Use this data source to get the ID of an available VKCS subnet.",
 	}
 }
 

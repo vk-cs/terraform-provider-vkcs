@@ -1,26 +1,19 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: networking_port_secgroup_associate"
+page_title: "vkcs: vkcs_networking_port_secgroup_associate"
 description: |-
   Manages a port's security groups within VKCS.
 ---
 
-# vkcs\_networking\_port\_secgroup\_associate
+# vkcs_networking_port_secgroup_associate
 
-Manages a port's security groups within VKCS. Useful, when the port was
-created not by Terraform. It should not be used, when the
-port was created directly within Terraform.
+Manages a port's security groups within VKCS. Useful, when the port was created not by Terraform. It should not be used, when the port was created directly within Terraform.
 
-When the resource is deleted, Terraform doesn't delete the port, but unsets the
-list of user defined security group IDs.  However, if `enforce` is set to `true`
-and the resource is deleted, Terraform will remove all assigned security group
-IDs.
+When the resource is deleted, Terraform doesn't delete the port, but unsets the list of user defined security group IDs.  However, if `enforce` is set to `true` and the resource is deleted, Terraform will remove all assigned security group IDs.
 
 ## Example Usage
-
 ### Append a security group to an existing port
-
-```hcl
+```terraform
 data "vkcs_networking_port" "system_port" {
   fixed_ip = "10.0.0.10"
 }
@@ -38,8 +31,7 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
 ```
 
 ### Enforce a security group to an existing port
-
-```hcl
+```terraform
 data "vkcs_networking_port" "system_port" {
   fixed_ip = "10.0.0.10"
 }
@@ -58,8 +50,7 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
 ```
 
 ### Remove all security groups from an existing port
-
-```hcl
+```terraform
 data "vkcs_networking_port" "system_port" {
   fixed_ip = "10.0.0.10"
 }
@@ -70,34 +61,31 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
   security_group_ids = []
 }
 ```
-
 ## Argument Reference
+- `port_id` **String** (***Required***) An UUID of the port to apply security groups to.
 
-The following arguments are supported:
+- `security_group_ids` <strong>Set of </strong>**String** (***Required***) A list of security group IDs to apply to the port. The security groups must be specified by ID and not name (as opposed to how they are configured with the Compute Instance).
 
-* `region` - (Optional) The region in which to obtain the networking client.
-    A networking client is needed to manage a port. If omitted, the
-    `region` argument of the provider is used. Changing this creates a new
-    resource.
+- `enforce` **Boolean** (*Optional*) Whether to replace or append the list of security groups, specified in the `security_group_ids`. Defaults to `false`.
 
-* `port_id` - (Required) An UUID of the port to apply security groups to.
+- `region` **String** (*Optional*) The region in which to obtain the networking client. A networking client is needed to manage a port. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.
 
-* `security_group_ids` - (Required) A list of security group IDs to apply to
-    the port. The security groups must be specified by ID and not name (as
-    opposed to how they are configured with the Compute Instance).
+- `sdn` **String** (*Optional*) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
-* `enforce` - (Optional) Whether to replace or append the list of security
-    groups, specified in the `security_group_ids`. Defaults to `false`.
-
-* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
 ## Attributes Reference
+- `port_id` **String** See Argument Reference above.
 
-The following attributes are exported:
+- `security_group_ids` <strong>Set of </strong>**String** See Argument Reference above.
 
-* `region` - See Argument Reference above.
-* `port_id` - See Argument Reference above.
-* `security_group_ids` - See Argument Reference above.
-* `all_security_group_ids` - The collection of Security Group IDs on the port
-  which have been explicitly and implicitly added.
-* `sdn` - See Argument Reference above.
+- `enforce` **Boolean** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `sdn` **String** See Argument Reference above.
+
+- `all_security_group_ids` <strong>Set of </strong>**String** The collection of Security Group IDs on the port which have been explicitly and implicitly added.
+
+- `id` **String** ID of the resource.
+
+
