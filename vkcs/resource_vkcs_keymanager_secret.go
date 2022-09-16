@@ -2,6 +2,7 @@ package vkcs
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -35,47 +36,54 @@ func resourceKeyManagerSecret() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the KeyManager client. A KeyManager client is needed to create a secret. If omitted, the `region` argument of the provider is used. Changing this creates a new V1 secret.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Human-readable name for the Secret. Does not have to be unique.",
 			},
 
 			"bit_length": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "Metadata provided by a user or system for informational purposes.",
 			},
 
 			"algorithm": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "Metadata provided by a user or system for informational purposes.",
 			},
 
 			"creator_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The creator of the secret.",
 			},
 
 			"mode": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "Metadata provided by a user or system for informational purposes.",
 			},
 
 			"secret_ref": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The secret reference / where to find the secret.",
 			},
 
 			"secret_type": {
@@ -86,11 +94,13 @@ func resourceKeyManagerSecret() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"symmetric", "public", "private", "passphrase", "certificate", "opaque",
 				}, false),
+				Description: "Used to indicate the type of secret being stored. For more information see [Secret types](https://docs.openstack.org/barbican/latest/api/reference/secret_types.html).",
 			},
 
 			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the secret.",
 			},
 
 			"payload": {
@@ -102,6 +112,7 @@ func resourceKeyManagerSecret() *schema.Resource {
 				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
 					return strings.TrimSpace(o) == strings.TrimSpace(n)
 				},
+				Description: "The secret's data to be stored. **payload\\_content\\_type** must also be supplied if **payload** is included.",
 			},
 
 			"payload_content_type": {
@@ -111,6 +122,7 @@ func resourceKeyManagerSecret() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"text/plain", "text/plain;charset=utf-8", "text/plain; charset=utf-8", "application/octet-stream", "application/pkcs8",
 				}, true),
+				Description: "(required if **payload** is included) The media type for the content of the payload. Must be one of `text/plain`, `text/plain;charset=utf-8`, `text/plain; charset=utf-8`, `application/octet-stream`, `application/pkcs8`.",
 			},
 
 			"payload_content_encoding": {
@@ -120,19 +132,22 @@ func resourceKeyManagerSecret() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"base64", "binary",
 				}, false),
+				Description: "(required if **payload** is encoded) The encoding used for the payload to be able to include it in the JSON request. Must be either `base64` or `binary`.",
 			},
 
 			"metadata": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeMap,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "Additional Metadata for the secret.",
 			},
 
 			"acl": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "Allows to control an access to a secret. Currently only the `read` operation is supported. If not specified, the secret is accessible project wide.",
 			},
 
 			"expiration": {
@@ -140,28 +155,34 @@ func resourceKeyManagerSecret() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsRFC3339Time,
+				Description:  "The expiration time of the secret in the RFC3339 timestamp format (e.g. `2019-03-09T12:58:49Z`). If omitted, a secret will never expire. Changing this creates a new secret.",
 			},
 
 			"created_at": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the secret ACL was created.",
 			},
 
 			"updated_at": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the secret ACL was last updated.",
 			},
 
 			"content_types": {
-				Type:     schema.TypeMap,
-				Computed: true,
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "The map of the content types, assigned on the secret.",
 			},
 
 			"all_metadata": {
-				Type:     schema.TypeMap,
-				Computed: true,
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "The map of metadata, assigned on the secret, which has been explicitly and implicitly added.",
 			},
 		},
+		Description: "Manages a key secret resource within VKCS.\n\n~> **Important Security Notice** The payload of this resource will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
 
 		CustomizeDiff: customdiff.Sequence(
 			// Clear the diff if the source payload is base64 encoded.
@@ -176,6 +197,7 @@ func resourceKeyManagerSecret() *schema.Resource {
 	}
 	for _, aclOp := range getSupportedACLOperations() {
 		elem.Schema[aclOp] = getACLSchema()
+		elem.Schema[aclOp].Description = fmt.Sprintf("Block that describes %s operation.", aclOp)
 	}
 	ret.Schema["acl"].Elem = elem
 

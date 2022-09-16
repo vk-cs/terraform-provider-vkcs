@@ -1,71 +1,51 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: keymanager_container"
+page_title: "vkcs: vkcs_keymanager_container"
 description: |-
   Get information on a Key container resource within VKCS.
 ---
 
-# vkcs\_keymanager\_container
+# vkcs_keymanager_container
 
 Use this data source to get the ID of an available Key container.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "vkcs_keymanager_container" "example" {
   name = "my_container"
 }
 ```
 
 ## Argument Reference
+- `name` **String** (*Optional*) The Container name.
 
-The following arguments are supported:
+- `region` **String** (*Optional*) The region in which to obtain the KeyManager client. A KeyManager client is needed to fetch a container. If omitted, the `region` argument of the provider is used.
 
-* `region` - (Optional) The region in which to obtain the KeyManager client.
-  A KeyManager client is needed to fetch a container. If omitted, the `region`
-  argument of the provider is used.
-
-* `name` - (Optional) The Container name.
 
 ## Attributes Reference
+- `name` **String** See Argument Reference above.
 
-The following attributes are exported:
+- `region` **String** See Argument Reference above.
 
-* `container_ref` - The container reference / where to find the container.
-* `region` - See Argument Reference above.
-* `name` - See Argument Reference above.
-* `type` - The container type.
-* `secret_refs` - A set of dictionaries containing references to secrets. The
-  structure is described below.
-* `creator_id` - The creator of the container.
-* `status` - The status of the container.
-* `created_at` - The date the container was created.
-* `updated_at` - The date the container was last updated.
-* `consumers` - The list of the container consumers. The structure is described
-  below.
-* `acl` - The list of ACLs assigned to a container. The `read` structure is
-  described below.
+- `acl` **Object** The list of ACLs assigned to a container.
 
-The `secret_refs` block supports:
+- `consumers` **Object** The list of the container consumers.
 
-* `name` - The name of the secret reference. The reference names must correspond
-  the container type.
+- `container_ref` **String** The container reference / where to find the container.
 
-* `secret_ref` - The secret reference / where to find the secret, URL.
+- `created_at` **String** The date the container was created.
 
-The `consumers` block supports:
+- `creator_id` **String** The creator of the container.
 
-* `name` - The name of the consumer.
+- `id` **String** ID of the resource.
 
-* `url` - The consumer URL.
+- `secret_refs` <strong>Set of </strong>**Object** A set of dictionaries containing references to secrets.
 
-The `acl` `read` attribute supports:
+- `status` **String** The status of the container.
 
-* `project_access` - Whether the container is accessible project wide.
+- `type` **String** The container type.
 
-* `users` - The list of user IDs, which are allowed to access the container,
-  when `project_access` is set to `false`.
+- `updated_at` **String** The date the container was last updated.
 
-* `created_at` - The date the container ACL was created.
 
-* `updated_at` - The date the container ACL was last updated.

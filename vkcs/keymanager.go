@@ -22,22 +22,26 @@ func getACLSchema() *schema.Schema {
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"project_access": {
-					Type:     schema.TypeBool,
-					Optional: true,
-					Default:  true, // defaults to true in VKCS Keymanager code
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     true, // defaults to true in VKCS Keymanager code
+					Description: "Whether the container is accessible project wide. Defaults to `true`.",
 				},
 				"users": {
-					Type:     schema.TypeSet,
-					Optional: true,
-					Elem:     &schema.Schema{Type: schema.TypeString},
+					Type:        schema.TypeSet,
+					Optional:    true,
+					Elem:        &schema.Schema{Type: schema.TypeString},
+					Description: "The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.",
 				},
 				"created_at": {
-					Type:     schema.TypeString,
-					Computed: true,
+					Type:        schema.TypeString,
+					Computed:    true,
+					Description: "The date the container ACL was created.",
 				},
 				"updated_at": {
-					Type:     schema.TypeString,
-					Computed: true,
+					Type:        schema.TypeString,
+					Computed:    true,
+					Description: "The date the container ACL was last updated.",
 				},
 			},
 		},

@@ -1,0 +1,1 @@
+terraform import vkcs_keymanager_secret.secret_1 8a7a79c2-cf17-4e65-b2ae-ddc8bfcf6c74

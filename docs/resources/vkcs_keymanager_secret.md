@@ -1,24 +1,19 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: keymanager_secret"
+page_title: "vkcs: vkcs_keymanager_secret"
 description: |-
   Manages a key secret resource within VKCS.
 ---
 
-# vkcs\_keymanager\_secret
+# vkcs_keymanager_secret
 
 Manages a key secret resource within VKCS.
 
-~> **Important Security Notice** The payload of this resource will be stored
-*unencrypted* in your Terraform state file. **Use of this resource for production
-deployments is *not* recommended**. [Read more about sensitive data in
-state](https://www.terraform.io/docs/language/state/sensitive-data.html).
+~> **Important Security Notice** The payload of this resource will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).
 
 ## Example Usage
-
 ### Simple secret
-
-```hcl
+```terraform
 resource "vkcs_keymanager_secret" "secret_1" {
   algorithm            = "aes"
   bit_length           = 256
@@ -35,8 +30,7 @@ resource "vkcs_keymanager_secret" "secret_1" {
 ```
 
 ### Secret with whitespaces
-
-```hcl
+```terraform
 resource "vkcs_keymanager_secret" "secret_1" {
   name                     = "password"
   payload                  = "${base64encode("password with the whitespace at the end ")}"
@@ -47,8 +41,7 @@ resource "vkcs_keymanager_secret" "secret_1" {
 ```
 
 ### Secret with the expiration date
-
-```hcl
+```terraform
 resource "vkcs_keymanager_secret" "secret_1" {
   name                 = "certificate"
   payload              = "${file("certificate.pem")}"
@@ -65,10 +58,8 @@ resource "vkcs_keymanager_secret" "secret_1" {
 ```
 
 ### Secret with the ACL
-
 ~> **Note** Only read ACLs are supported
-
-```hcl
+```terraform
 resource "vkcs_keymanager_secret" "secret_1" {
   name                 = "certificate"
   payload              = "${file("certificate.pem")}"
@@ -88,79 +79,90 @@ resource "vkcs_keymanager_secret" "secret_1" {
 ```
 
 ## Argument Reference
+- `acl` (*Optional*) Allows to control an access to a secret. Currently only the `read` operation is supported. If not specified, the secret is accessible project wide.
+  - `read` (*Optional*) Block that describes read operation.
+    - `project_access` **Boolean** (*Optional*) Whether the container is accessible project wide. Defaults to `true`.
 
-The following arguments are supported:
+    - `users` <strong>Set of </strong>**String** (*Optional*) The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.
 
-* `region` - (Optional) The region in which to obtain the KeyManager client.
-    A KeyManager client is needed to create a secret. If omitted, the
-    `region` argument of the provider is used. Changing this creates a new
-    V1 secret.
+- `algorithm` **String** (*Optional*) Metadata provided by a user or system for informational purposes.
 
-* `name` - (Optional) Human-readable name for the Secret. Does not have
-    to be unique.
-    
-* `bit_length` - (Optional) Metadata provided by a user or system for informational purposes.
+- `bit_length` **Number** (*Optional*) Metadata provided by a user or system for informational purposes.
 
-* `algorithm` - (Optional) Metadata provided by a user or system for informational purposes.
+- `expiration` **String** (*Optional*) The expiration time of the secret in the RFC3339 timestamp format (e.g. `2019-03-09T12:58:49Z`). If omitted, a secret will never expire. Changing this creates a new secret.
 
-* `mode` - (Optional) Metadata provided by a user or system for informational purposes.
+- `metadata` <strong>Map of </strong>**String** (*Optional*) Additional Metadata for the secret.
 
-* `secret_type` - (Optional) Used to indicate the type of secret being stored. For more information see [Secret types](https://docs.openstack.org/barbican/latest/api/reference/secret_types.html).
- 
-* `payload` - (Optional) The secret's data to be stored. **payload\_content\_type** must also be supplied if **payload** is included.
+- `mode` **String** (*Optional*) Metadata provided by a user or system for informational purposes.
 
-* `payload_content_type` - (Optional) (required if **payload** is included) The media type for the content of the payload. Must be one of `text/plain`, `text/plain;charset=utf-8`, `text/plain; charset=utf-8`, `application/octet-stream`, `application/pkcs8`.
+- `name` **String** (*Optional*) Human-readable name for the Secret. Does not have to be unique.
 
-* `payload_content_encoding` - (Optional) (required if **payload** is encoded) The encoding used for the payload to be able to include it in the JSON request. Must be either `base64` or `binary`.
+- `payload` **String** (*Optional* Sensitive) The secret's data to be stored. **payload\_content\_type** must also be supplied if **payload** is included.
 
-* `expiration` - (Optional) The expiration time of the secret in the RFC3339 timestamp format (e.g. `2019-03-09T12:58:49Z`). If omitted, a secret will never expire. Changing this creates a new secret.
+- `payload_content_encoding` **String** (*Optional*) (required if **payload** is encoded) The encoding used for the payload to be able to include it in the JSON request. Must be either `base64` or `binary`.
 
-* `metadata` - (Optional) Additional Metadata for the secret.
+- `payload_content_type` **String** (*Optional*) (required if **payload** is included) The media type for the content of the payload. Must be one of `text/plain`, `text/plain;charset=utf-8`, `text/plain; charset=utf-8`, `application/octet-stream`, `application/pkcs8`.
 
-* `acl` - (Optional) Allows to control an access to a secret. Currently only the
-  `read` operation is supported. If not specified, the secret is accessible
-  project wide.
+- `region` **String** (*Optional*) The region in which to obtain the KeyManager client. A KeyManager client is needed to create a secret. If omitted, the `region` argument of the provider is used. Changing this creates a new V1 secret.
 
-The `acl` `read` block supports:
+- `secret_type` **String** (*Optional*) Used to indicate the type of secret being stored. For more information see [Secret types](https://docs.openstack.org/barbican/latest/api/reference/secret_types.html).
 
-* `project_access` - (Optional) Whether the secret is accessible project wide.
-  Defaults to `true`.
-
-* `users` - (Optional) The list of user IDs, which are allowed to access the
-  secret, when `project_access` is set to `false`.
-
-* `created_at` - (Computed) The date the secret ACL was created.
-
-* `updated_at` - (Computed) The date the secret ACL was last updated.
 
 ## Attributes Reference
+- `acl`  See Argument Reference above.
+  - `read`  See Argument Reference above.
+    - `project_access` **Boolean** See Argument Reference above.
 
-The following attributes are exported:
+    - `users` <strong>Set of </strong>**String** See Argument Reference above.
 
-* `secret_ref` - The secret reference / where to find the secret.
-* `region` - See Argument Reference above.
-* `name` - See Argument Reference above.
-* `bit_length` - See Argument Reference above.
-* `algorithm` - See Argument Reference above.
-* `mode` - See Argument Reference above.
-* `secret_type` - See Argument Reference above.
-* `payload` - See Argument Reference above.
-* `payload_content_type` - See Argument Reference above.
-* `acl` - See Argument Reference above.
-* `payload_content_encoding` - See Argument Reference above.
-* `expiration` - See Argument Reference above.
-* `content_types` - The map of the content types, assigned on the secret.
-* `creator_id` - The creator of the secret.
-* `status` - The status of the secret.
-* `created_at` - The date the secret was created.
-* `updated_at` - The date the secret was last updated.
-* `all_metadata` - The map of metadata, assigned on the secret, which has been
-  explicitly and implicitly added.
+    - `created_at` **String** The date the container ACL was created.
+
+    - `updated_at` **String** The date the container ACL was last updated.
+
+- `algorithm` **String** See Argument Reference above.
+
+- `bit_length` **Number** See Argument Reference above.
+
+- `expiration` **String** See Argument Reference above.
+
+- `metadata` <strong>Map of </strong>**String** See Argument Reference above.
+
+- `mode` **String** See Argument Reference above.
+
+- `name` **String** See Argument Reference above.
+
+- `payload` **String** See Argument Reference above.
+
+- `payload_content_encoding` **String** See Argument Reference above.
+
+- `payload_content_type` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `secret_type` **String** See Argument Reference above.
+
+- `all_metadata` <strong>Map of </strong>**String** The map of metadata, assigned on the secret, which has been explicitly and implicitly added.
+
+- `content_types` <strong>Map of </strong>**String** The map of the content types, assigned on the secret.
+
+- `created_at` **String** The date the secret ACL was created.
+
+- `creator_id` **String** The creator of the secret.
+
+- `id` **String** ID of the resource.
+
+- `secret_ref` **String** The secret reference / where to find the secret.
+
+- `status` **String** The status of the secret.
+
+- `updated_at` **String** The date the secret ACL was last updated.
+
+
 
 ## Import
 
 Secrets can be imported using the secret id (the last part of the secret reference), e.g.:
 
-```
-$ terraform import vkcs_keymanager_secret.secret_1 8a7a79c2-cf17-4e65-b2ae-ddc8bfcf6c74
+```shell
+terraform import vkcs_keymanager_secret.secret_1 8a7a79c2-cf17-4e65-b2ae-ddc8bfcf6c74
 ```
