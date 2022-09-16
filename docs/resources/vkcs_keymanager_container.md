@@ -1,21 +1,18 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: keymanager_container"
+page_title: "vkcs: vkcs_keymanager_container"
 description: |-
   Manages a key container resource within VKCS.
 ---
 
-# vkcs\_keymanager\_container
+# vkcs_keymanager_container
 
 Manages a key container resource within VKCS.
 
 ## Example Usage
-
 ### Simple secret
-
 The container with the TLS certificates, which can be used by the loadbalancer HTTPS listener.
-
-```hcl
+```terraform
 resource "vkcs_keymanager_secret" "certificate_1" {
   name                 = "certificate"
   payload              = "${file("cert.pem")}"
@@ -76,10 +73,8 @@ resource "vkcs_lb_listener" "listener_1" {
 ```
 
 ### Container with the ACL
-
 ~> **Note** Only read ACLs are supported
-
-```hcl
+```terraform
 resource "vkcs_keymanager_container" "tls_1" {
   name = "tls"
   type = "certificate"
@@ -112,70 +107,66 @@ resource "vkcs_keymanager_container" "tls_1" {
 ```
 
 ## Argument Reference
+- `type` **String** (***Required***) Used to indicate the type of container. Must be one of `generic`, `rsa` or `certificate`.
 
-The following arguments are supported:
+- `acl` (*Optional*) Allows to control an access to a container. Currently only the `read` operation is supported. If not specified, the container is accessible project wide. The `read` structure is described below.
+  - `read` (*Optional*) Block that describes read operation.
+    - `project_access` **Boolean** (*Optional*) Whether the container is accessible project wide. Defaults to `true`.
 
-* `region` - (Optional) The region in which to obtain the KeyManager client.
-    A KeyManager client is needed to create a container. If omitted, the
-    `region` argument of the provider is used. Changing this creates a new
-    container.
+    - `users` <strong>Set of </strong>**String** (*Optional*) The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.
 
-* `name` - (Optional) Human-readable name for the Container. Does not have
-    to be unique.
+- `name` **String** (*Optional*) Human-readable name for the Container. Does not have to be unique.
 
-* `type` - (Required) Used to indicate the type of container. Must be one of `generic`, `rsa` or `certificate`.
+- `region` **String** (*Optional*) The region in which to obtain the KeyManager client. A KeyManager client is needed to create a container. If omitted, the `region` argument of the provider is used. Changing this creates a new container.
 
-* `secret_refs` - (Optional) A set of dictionaries containing references to secrets. The structure is described
-    below.
+- `secret_refs` (*Optional*) A set of dictionaries containing references to secrets. The structure is described below.
+  - `secret_ref` **String** (***Required***) The secret reference / where to find the secret, URL.
 
-* `acl` - (Optional) Allows to control an access to a container. Currently only
-  the `read` operation is supported. If not specified, the container is
-  accessible project wide. The `read` structure is described below.
+  - `name` **String** (*Optional*) The name of the secret reference. The reference names must correspond the container type, more details are available [here](https://docs.openstack.org/barbican/stein/api/reference/containers.html).
 
-The `secret_refs` block supports:
-
-* `name` - (Optional) The name of the secret reference. The reference names must correspond the container type, more details are available [here](https://docs.openstack.org/barbican/stein/api/reference/containers.html).
-
-* `secret_ref` - (Required) The secret reference / where to find the secret, URL.
-
-The `acl` `read` block supports:
-
-* `project_access` - (Optional) Whether the container is accessible project wide.
-  Defaults to `true`.
-
-* `users` - (Optional) The list of user IDs, which are allowed to access the
-  container, when `project_access` is set to `false`.
-
-* `created_at` - (Computed) The date the container ACL was created.
-
-* `updated_at` - (Computed) The date the container ACL was last updated.
 
 ## Attributes Reference
+- `type` **String** See Argument Reference above.
 
-The following attributes are exported:
+- `acl`  See Argument Reference above.
+  - `read`  See Argument Reference above.
+    - `project_access` **Boolean** See Argument Reference above.
 
-* `container_ref` - The container reference / where to find the container.
-* `region` - See Argument Reference above.
-* `name` - See Argument Reference above.
-* `type` - See Argument Reference above.
-* `secret_refs` - See Argument Reference above.
-* `acl` - See Argument Reference above.
-* `creator_id` - The creator of the container.
-* `status` - The status of the container.
-* `created_at` - The date the container was created.
-* `updated_at` - The date the container was last updated.
-* `consumers` - The list of the container consumers. The structure is described below.
+    - `users` <strong>Set of </strong>**String** See Argument Reference above.
 
-The `consumers` block supports:
+    - `created_at` **String** The date the container ACL was created.
 
-* `name` - The name of the consumer.
+    - `updated_at` **String** The date the container ACL was last updated.
 
-* `url` - The consumer URL.
+- `name` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `secret_refs`  See Argument Reference above.
+  - `secret_ref` **String** See Argument Reference above.
+
+  - `name` **String** See Argument Reference above.
+
+- `consumers` **Object** The list of the container consumers. The structure is described below.
+
+- `container_ref` **String** The container reference / where to find the container.
+
+- `created_at` **String** The date the container ACL was created.
+
+- `creator_id` **String** The creator of the container.
+
+- `id` **String** ID of the resource.
+
+- `status` **String** The status of the container.
+
+- `updated_at` **String** The date the container ACL was last updated.
+
+
 
 ## Import
 
 Containers can be imported using the container id (the last part of the container reference), e.g.:
 
-```
-$ terraform import vkcs_keymanager_container.container_1 0c6cd26a-c012-4d7b-8034-057c0f1c2953
+```shell
+terraform import vkcs_keymanager_container.container_1 0c6cd26a-c012-4d7b-8034-057c0f1c2953
 ```

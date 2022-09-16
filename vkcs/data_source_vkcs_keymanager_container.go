@@ -2,6 +2,7 @@ package vkcs
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -18,18 +19,21 @@ func dataSourceKeyManagerContainer() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The region in which to obtain the KeyManager client. A KeyManager client is needed to fetch a container. If omitted, the `region` argument of the provider is used.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Container name.",
 			},
 
 			"type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The container type.",
 			},
 
 			"secret_refs": {
@@ -47,16 +51,19 @@ func dataSourceKeyManagerContainer() *schema.Resource {
 						},
 					},
 				},
+				Description: "A set of dictionaries containing references to secrets.",
 			},
 
 			"container_ref": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The container reference / where to find the container.",
 			},
 
 			"creator_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The creator of the container.",
 			},
 
 			"consumers": {
@@ -65,37 +72,45 @@ func dataSourceKeyManagerContainer() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The name of the consumer.",
 						},
 						"url": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The consumer URL.",
 						},
 					},
 				},
+				Description: "The list of the container consumers.",
 			},
 
 			"acl": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The list of ACLs assigned to a container.",
 			},
 
 			"created_at": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the container was created.",
 			},
 
 			"updated_at": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the container was last updated.",
 			},
 
 			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the container.",
 			},
 		},
+		Description: "Use this data source to get the ID of an available Key container.",
 	}
 
 	elem := &schema.Resource{
@@ -103,6 +118,7 @@ func dataSourceKeyManagerContainer() *schema.Resource {
 	}
 	for _, aclOp := range getSupportedACLOperations() {
 		elem.Schema[aclOp] = getACLSchema()
+		elem.Schema[aclOp].Description = fmt.Sprintf("Block that describes %s operation.", aclOp)
 	}
 	ret.Schema["acl"].Elem = elem
 

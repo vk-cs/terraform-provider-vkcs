@@ -1,23 +1,19 @@
 ---
 layout: "vkcs"
-page_title: "vkcs keymanager_secret"
+page_title: "vkcs: vkcs_keymanager_secret"
 description: |-
   Get information on a Key secret resource within VKCS.
 ---
 
-# vkcs\_keymanager\_secret
+# vkcs_keymanager_secret
 
-Use this data source to get the ID and the payload of an available Key
-secret
+Use this data source to get the ID and the payload of an available Key secret
 
-~> **Important Security Notice** The payload of this data source will be stored
-*unencrypted* in your Terraform state file. **Use of this resource for
-production deployments is *not* recommended**. [Read more about sensitive data
-in state](https://www.terraform.io/docs/language/state/sensitive-data.html).
+~> **Important Security Notice** The payload of this data source will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).
 
 ## Example Usage
 
-```hcl
+```terraform
 data "vkcs_keymanager_secret" "example" {
   mode        = "cbc"
   secret_type = "passphrase"
@@ -25,38 +21,75 @@ data "vkcs_keymanager_secret" "example" {
 ```
 
 ## Argument Reference
+- `acl_only` **Boolean** (*Optional*) Select the Secret with an ACL that contains the user. Project scope is ignored. Defaults to `false`.
 
-The following arguments are supported:
+- `algorithm` **String** (*Optional*) The Secret algorithm.
 
-* `region` - (Optional) The region in which to obtain the KeyManager client.
-  A KeyManager client is needed to fetch a secret. If omitted, the `region`
-  argument of the provider is used.
+- `bit_length` **Number** (*Optional*) The Secret bit length.
 
-* `name` - (Optional) The Secret name.
+- `created_at_filter` **String** (*Optional*) Date filter to select the Secret with created matching the specified criteria. See Date Filters below for more detail.
 
-* `bit_length` - (Optional) The Secret bit length.
+- `expiration_filter` **String** (*Optional*) Date filter to select the Secret with expiration matching the specified criteria. See Date Filters below for more detail.
 
-* `algorithm` - (Optional) The Secret algorithm.
+- `mode` **String** (*Optional*) The Secret mode.
 
-* `mode` - (Optional) The Secret mode.
+- `name` **String** (*Optional*) The Secret name.
 
-* `secret_type` - (Optional) The Secret type. For more information see
-  [Secret types](https://docs.openstack.org/barbican/latest/api/reference/secret_types.html).
+- `region` **String** (*Optional*) The region in which to obtain the KeyManager client. A KeyManager client is needed to fetch a secret. If omitted, the `region` argument of the provider is used.
 
-* `acl_only` - (Optional) Select the Secret with an ACL that contains the user.
-  Project scope is ignored. Defaults to `false`.
+- `secret_type` **String** (*Optional*) The Secret type. For more information see [Secret types](https://docs.openstack.org/barbican/latest/api/reference/secret_types.html).
 
-* `expiration_filter` - (Optional) Date filter to select the Secret with
-  expiration matching the specified criteria. See Date Filters below for more
-  detail.
+- `updated_at_filter` **String** (*Optional*) Date filter to select the Secret with updated matching the specified criteria. See Date Filters below for more detail.
 
-* `created_at_filter` - (Optional) Date filter to select the Secret with
-  created matching the specified criteria. See Date Filters below for more
-  detail.
 
-* `updated_at_filter` - (Optional) Date filter to select the Secret with
-  updated matching the specified criteria. See Date Filters below for more
-  detail.
+## Attributes Reference
+- `acl_only` **Boolean** See Argument Reference above.
+
+- `algorithm` **String** See Argument Reference above.
+
+- `bit_length` **Number** See Argument Reference above.
+
+- `created_at_filter` **String** See Argument Reference above.
+
+- `expiration_filter` **String** See Argument Reference above.
+
+- `mode` **String** See Argument Reference above.
+
+- `name` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `secret_type` **String** See Argument Reference above.
+
+- `updated_at_filter` **String** See Argument Reference above.
+
+- `acl` **Object** The list of ACLs assigned to a secret.
+
+- `content_types` <strong>Map of </strong>**String** The map of the content types, assigned on the secret.
+
+- `created_at` **String** The date the secret was created.
+
+- `creator_id` **String** The creator of the secret.
+
+- `expiration` **String** The date the secret will expire.
+
+- `id` **String** ID of the resource.
+
+- `metadata` <strong>Map of </strong>**String** The map of metadata, assigned on the secret, which has been explicitly and implicitly added.
+
+- `payload` **String** The secret payload.
+
+- `payload_content_encoding` **String** The Secret encoding.
+
+- `payload_content_type` **String** The Secret content type.
+
+- `secret_ref` **String** The secret reference / where to find the secret.
+
+- `status` **String** The status of the secret.
+
+- `updated_at` **String** The date the secret was last updated.
+
+
 
 ## Date Filters
 
@@ -76,42 +109,3 @@ data "vkcs_keymanager_secret" "date_filter_example" {
   expiration_filter = "gt:2020-01-01T00:00:00Z"
 }
 ```
-
-## Attributes Reference
-
-The following attributes are exported:
-
-* `secret_ref` - The secret reference / where to find the secret.
-* `region` - See Argument Reference above.
-* `name` - See Argument Reference above.
-* `bit_length` - See Argument Reference above.
-* `algorithm` - See Argument Reference above.
-* `mode` - See Argument Reference above.
-* `secret_type` - See Argument Reference above.
-* `acl_only` - See Argument Reference above.
-* `expiration_filter` - See Argument Reference above.
-* `created_at_filter` - See Argument Reference above.
-* `updated_at_filter` - See Argument Reference above.
-* `payload` - The secret payload.
-* `payload_content_type` - The Secret content type.
-* `payload_content_encoding` - The Secret encoding.
-* `content_types` - The map of the content types, assigned on the secret.
-* `creator_id` - The creator of the secret.
-* `status` - The status of the secret.
-* `expiration` - The date the secret will expire.
-* `created_at` - The date the secret was created.
-* `updated_at` - The date the secret was last updated.
-* `metadata` - The map of metadata, assigned on the secret, which has been
-  explicitly and implicitly added.
-* `acl` - The list of ACLs assigned to a secret. The `read` structure is described below.
-
-The `acl` `read` attribute supports:
-
-* `project_access` - Whether the secret is accessible project wide.
-
-* `users` - The list of user IDs, which are allowed to access the secret, when
-  `project_access` is set to `false`.
-
-* `created_at` - The date the secret ACL was created.
-
-* `updated_at` - The date the secret ACL was last updated.

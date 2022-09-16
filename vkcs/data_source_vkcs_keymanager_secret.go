@@ -36,28 +36,33 @@ func dataSourceKeyManagerSecret() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The region in which to obtain the KeyManager client. A KeyManager client is needed to fetch a secret. If omitted, the `region` argument of the provider is used.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Secret name.",
 			},
 
 			"bit_length": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The Secret bit length.",
 			},
 
 			"algorithm": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Secret algorithm.",
 			},
 
 			"mode": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Secret mode.",
 			},
 
 			"secret_type": {
@@ -66,93 +71,111 @@ func dataSourceKeyManagerSecret() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"symmetric", "public", "private", "passphrase", "certificate", "opaque",
 				}, false),
+				Description: "The Secret type. For more information see [Secret types](https://docs.openstack.org/barbican/latest/api/reference/secret_types.html).",
 			},
 
 			"acl_only": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Select the Secret with an ACL that contains the user. Project scope is ignored. Defaults to `false`.",
 			},
 
 			"expiration_filter": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: dataSourceValidateDateFilter,
+				Description:  "Date filter to select the Secret with expiration matching the specified criteria. See Date Filters below for more detail.",
 			},
 
 			"created_at_filter": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: dataSourceValidateDateFilter,
+				Description:  "Date filter to select the Secret with created matching the specified criteria. See Date Filters below for more detail.",
 			},
 
 			"updated_at_filter": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: dataSourceValidateDateFilter,
+				Description:  "Date filter to select the Secret with updated matching the specified criteria. See Date Filters below for more detail.",
 			},
 
 			// computed
 			"acl": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The list of ACLs assigned to a secret.",
 			},
 
 			"secret_ref": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The secret reference / where to find the secret.",
 			},
 
 			"creator_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The creator of the secret.",
 			},
 
 			"expiration": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the secret will expire.",
 			},
 
 			"created_at": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the secret was created.",
 			},
 
 			"updated_at": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the secret was last updated.",
 			},
 
 			"content_types": {
-				Type:     schema.TypeMap,
-				Computed: true,
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "The map of the content types, assigned on the secret.",
 			},
 
 			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the secret.",
 			},
 
 			"payload": {
-				Type:      schema.TypeString,
-				Computed:  true,
-				Sensitive: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Sensitive:   true,
+				Description: "The secret payload.",
 			},
 
 			"payload_content_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Secret content type.",
 			},
 
 			"payload_content_encoding": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Secret encoding.",
 			},
 
 			"metadata": {
-				Type:     schema.TypeMap,
-				Computed: true,
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "The map of metadata, assigned on the secret, which has been explicitly and implicitly added.",
 			},
 		},
+		Description: "Use this data source to get the ID and the payload of an available Key secret\n\n~> **Important Security Notice** The payload of this data source will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
 	}
 
 	elem := &schema.Resource{
@@ -160,6 +183,7 @@ func dataSourceKeyManagerSecret() *schema.Resource {
 	}
 	for _, aclOp := range getSupportedACLOperations() {
 		elem.Schema[aclOp] = getACLSchema()
+		elem.Schema[aclOp].Description = fmt.Sprintf("Block that describes %s operation.", aclOp)
 	}
 	ret.Schema["acl"].Elem = elem
 
