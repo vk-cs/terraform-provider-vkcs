@@ -19,16 +19,18 @@ func dataSourceImagesImage() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Image client. An Image client is needed to create an Image that can be used with a compute instance. If omitted, the `region` argument of the provider is used.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The name of the image.",
 			},
 
 			"visibility": {
@@ -41,6 +43,7 @@ func dataSourceImagesImage() *schema.Resource {
 					string(images.ImageVisibilityShared),
 					string(images.ImageVisibilityCommunity),
 				}, false),
+				Description: "The visibility of the image. Must be one of \"private\", \"community\", or \"shared\". Defaults to \"private\".",
 			},
 
 			"member_status": {
@@ -53,31 +56,36 @@ func dataSourceImagesImage() *schema.Resource {
 					string(images.ImageMemberStatusRejected),
 					string(images.ImageMemberStatusAll),
 				}, false),
+				Description: "Status for adding a new member (tenant) to an image member list.",
 			},
 
 			"owner": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The owner (UUID) of the image.",
 			},
 
 			"size_min": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The minimum size (in bytes) of the image to return.",
 			},
 
 			"size_max": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The maximum size (in bytes) of the image to return.",
 			},
 
 			"sort_key": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Default:  "name",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     "name",
+				Description: "Sort images based on a certain key. Defaults to `name`.",
 			},
 
 			"sort_direction": {
@@ -88,95 +96,113 @@ func dataSourceImagesImage() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"asc", "desc",
 				}, false),
+				Description: "Order the results in either `asc` or `desc`.",
 			},
 
 			"tag": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Search for images with a specific tag.",
 			},
 
 			"most_recent": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "If more than one result is returned, use the most recent image.",
 			},
 
 			"properties": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeMap,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "A map of key/value pairs to match an image with. All specified properties must be matched. Unlike other options filtering by `properties` does by client on the result of search query. Filtering is applied if server response contains at least 2 images. In case there is only one image the `properties` ignores.",
 			},
 
 			// Computed values
 			"container_format": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The format of the image's container.",
 			},
 
 			"disk_format": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The format of the image's disk.",
 			},
 
 			"min_disk_gb": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The minimum amount of disk space required to use the image.",
 			},
 
 			"min_ram_mb": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The minimum amount of ram required to use the image.",
 			},
 
 			"protected": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Whether or not the image is protected.",
 			},
 
 			"checksum": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The checksum of the data associated with the image.",
 			},
 
 			"size_bytes": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The size of the image (in bytes).",
 			},
 
 			"metadata": {
-				Type:     schema.TypeMap,
-				Computed: true,
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "The metadata associated with the image. Image metadata allow for meaningfully define the image properties and tags. See https://docs.openstack.org/glance/latest/user/metadefs-concepts.html.",
 			},
 
 			"created_at": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the image was created.",
 			},
 
 			"updated_at": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the image was last updated.",
 			},
 
 			"file": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The trailing path after the endpoint that represent the location of the image or the path to retrieve it.",
 			},
 
 			"schema": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The path to the JSON-schema that represent the image or image",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "The tags list of the image.",
 			},
 		},
+		Description: "Use this data source to get the ID of an available VKCS image.",
 	}
 }
 
