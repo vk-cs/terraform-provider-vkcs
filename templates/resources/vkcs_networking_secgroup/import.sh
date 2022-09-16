@@ -1,0 +1,1 @@
+terraform import vkcs_networking_secgroup.secgroup_1 38809219-5e8a-4852-9139-6f461c90e8bc

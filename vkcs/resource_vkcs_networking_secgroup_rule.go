@@ -28,57 +28,65 @@ func resourceNetworkingSecGroupRule() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the networking client. A networking client is needed to create a port. If omitted, the `region` argument of the provider is used. Changing this creates a new security group rule.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: false,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    false,
+				ForceNew:    true,
+				Description: "A description of the rule. Changing this creates a new security group rule.",
 			},
 
 			"direction": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The direction of the rule, valid values are __ingress__ or __egress__. Changing this creates a new security group rule.",
 			},
 
 			"ethertype": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The layer 3 protocol type, valid values are __IPv4__ or __IPv6__. Changing this creates a new security group rule.",
 			},
 
 			"port_range_min": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The lower part of the allowed port range, valid integer value needs to be between 1 and 65535. Changing this creates a new security group rule.",
 			},
 
 			"port_range_max": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The higher part of the allowed port range, valid integer value needs to be between 1 and 65535. Changing this creates a new security group rule.",
 			},
 
 			"protocol": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The layer 4 protocol type, valid values are following. Changing this creates a new security group rule. This is required if you want to specify a port range.\n  * __tcp__\n  * __udp__\n  * __icmp__\n  * __ah__\n  * __dccp__\n  * __egp__\n  * __esp__\n  * __gre__\n  * __igmp__\n  * __ipv6-encap__\n  * __ipv6-frag__\n  * __ipv6-icmp__\n  * __ipv6-nonxt__\n  * __ipv6-opts__\n  * __ipv6-route__\n  * __ospf__\n  * __pgm__\n  * __rsvp__\n  * __sctp__\n  * __udplite__\n  * __vrrp__",
 			},
 
 			"remote_group_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The remote group id, the value needs to be an ID of a security group in the same tenant. Changing this creates a new security group rule.",
 			},
 
 			"remote_ip_prefix": {
@@ -89,12 +97,14 @@ func resourceNetworkingSecGroupRule() *schema.Resource {
 				StateFunc: func(v interface{}) string {
 					return strings.ToLower(v.(string))
 				},
+				Description: "The remote CIDR, the value needs to be a valid CIDR (i.e. 192.168.0.0/16). Changing this creates a new security group rule.",
 			},
 
 			"security_group_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The security group id the rule should belong to, the value needs to be an ID of a security group in the same tenant. Changing this creates a new security group rule.",
 			},
 
 			"sdn": {
@@ -103,8 +113,10 @@ func resourceNetworkingSecGroupRule() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: validateSDN(),
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
 			},
 		},
+		Description: "Manages a security group rule resource within VKCS.",
 	}
 }
 

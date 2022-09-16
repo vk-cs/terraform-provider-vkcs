@@ -1,47 +1,55 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: networking_secgroup"
+page_title: "vkcs: vkcs_networking_secgroup"
 description: |-
   Get information on an VKCS Security Group.
 ---
 
-# vkcs\_networking\_secgroup
+# vkcs_networking_secgroup
 
 Use this data source to get the ID of an available VKCS security group.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "vkcs_networking_secgroup" "secgroup" {
   name = "tf_test_secgroup"
 }
 ```
 
 ## Argument Reference
+- `description` **String** (*Optional*) Human-readable description the the subnet.
 
-* `region` - (Optional) The region in which to obtain the Network client.
-  A Network client is needed to retrieve security groups ids. If omitted, the
-  `region` argument of the provider is used.
+- `name` **String** (*Optional*) The name of the security group.
 
-* `secgroup_id` - (Optional) The ID of the security group.
+- `region` **String** (*Optional*) The region in which to obtain the Network client. A Network client is needed to retrieve security groups ids. If omitted, the `region` argument of the provider is used.
 
-* `name` - (Optional) The name of the security group.
+- `sdn` **String** (*Optional*) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
-* `description` - (Optional) Human-readable description the the subnet.
+- `secgroup_id` **String** (*Optional*) The ID of the security group.
 
-* `tags` - (Optional) The list of security group tags to filter.
+- `tags` <strong>Set of </strong>**String** (*Optional*) The list of security group tags to filter.
 
-* `tenant_id` - (Optional) The owner of the security group.
+- `tenant_id` **String** (*Optional*) The owner of the security group.
 
-* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
 ## Attributes Reference
+- `description` **String** See Argument Reference above.
 
-`id` is set to the ID of the found security group. In addition, the following
-attributes are exported:
+- `name` **String** See Argument Reference above.
 
-* `name` - See Argument Reference above.
-* `description`- See Argument Reference above.
-* `all_tags` - The set of string tags applied on the security group.
-* `region` - See Argument Reference above.
-* `sdn` - See Argument Reference above.
+- `region` **String** See Argument Reference above.
+
+- `sdn` **String** See Argument Reference above.
+
+- `secgroup_id` **String** See Argument Reference above.
+
+- `tags` <strong>Set of </strong>**String** See Argument Reference above.
+
+- `tenant_id` **String** See Argument Reference above.
+
+- `all_tags` <strong>Set of </strong>**String** The set of string tags applied on the security group.
+
+- `id` **String** ID of the found security group.
+
+

@@ -1,0 +1,20 @@
+---
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Associates a Floating IP to a Port
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Floating IP associations can be imported using the `id` of the floating IP, e.g.
+
+{{codefile "shell" "templates/resources/vkcs_networking_floatingip_associate/import.sh"}}

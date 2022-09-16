@@ -1,47 +1,61 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: networking_floatingip"
+page_title: "vkcs: vkcs_networking_floatingip"
 description: |-
   Get information on an VKCS Floating IP.
 ---
 
-# vkcs\_networking\_floatingip
+# vkcs_networking_floatingip
 
 Use this data source to get the ID of an available VKCS floating IP.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "vkcs_networking_floatingip" "floatingip_1" {
   address = "192.168.0.4"
 }
 ```
 
 ## Argument Reference
+- `address` **String** (*Optional*) The IP address of the floating IP.
 
-* `region` - (Optional) The region in which to obtain the Network client.
-  A Network client is needed to retrieve floating IP ids. If omitted, the
-  `region` argument of the provider is used.
+- `description` **String** (*Optional*) Human-readable description of the floating IP.
 
-* `description` - (Optional) Human-readable description of the floating IP.
+- `fixed_ip` **String** (*Optional*) The specific IP address of the internal port which should be associated with the floating IP.
 
-* `address` - (Optional) The IP address of the floating IP.
+- `pool` **String** (*Optional*) The name of the pool from which the floating IP belongs to.
 
-* `pool` - (Optional) The name of the pool from which the floating IP belongs to.
+- `port_id` **String** (*Optional*) The ID of the port the floating IP is attached.
 
-* `port_id` - (Optional) The ID of the port the floating IP is attached.
+- `region` **String** (*Optional*) The region in which to obtain the Network client. A Network client is needed to retrieve floating IP ids. If omitted, the `region` argument of the provider is used.
 
-* `status` - status of the floating IP (ACTIVE/DOWN).
+- `sdn` **String** (*Optional*) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
-* `fixed_ip` - (Optional) The specific IP address of the internal port which should be associated with the floating IP.
+- `status` **String** (*Optional*) Status of the floating IP (ACTIVE/DOWN).
 
-* `tenant_id` - (Optional) The owner of the floating IP.
+- `tenant_id` **String** (*Optional*) The owner of the floating IP.
 
-* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
 ## Attributes Reference
+- `address` **String** See Argument Reference above.
 
-`id` is set to the ID of the found floating IP. In addition, the following attributes
-are exported:
+- `description` **String** See Argument Reference above.
 
-* `sdn` - See Argument Reference above.
+- `fixed_ip` **String** See Argument Reference above.
+
+- `pool` **String** See Argument Reference above.
+
+- `port_id` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `sdn` **String** See Argument Reference above.
+
+- `status` **String** See Argument Reference above.
+
+- `tenant_id` **String** See Argument Reference above.
+
+- `id` **String** ID of the found floating IP.
+
+

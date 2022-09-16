@@ -1,17 +1,16 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: networking_network"
+page_title: "vkcs: vkcs_networking_network"
 description: |-
   Manages a network resource within VKCS.
 ---
 
-# vkcs\_networking\_network
+# vkcs_networking_network
 
 Manages a network resource within VKCS.
 
 ## Example Usage
-
-```hcl
+```terraform
 resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
@@ -57,65 +56,59 @@ resource "vkcs_compute_instance" "instance_1" {
   }
 }
 ```
-
 ## Argument Reference
+- `admin_state_up` **Boolean** (*Optional*) The administrative state of the network. Acceptable values are "true" and "false". Changing this value updates the state of the existing network.
 
-The following arguments are supported:
+- `description` **String** (*Optional*) Human-readable description of the network. Changing this updates the name of the existing network.
 
-* `region` - (Optional) The region in which to obtain the Networking client.
-    A Networking client is needed to create a network. If omitted, the
-    `region` argument of the provider is used. Changing this creates a new
-    network.
+- `name` **String** (*Optional*) The name of the network. Changing this updates the name of the existing network.
 
-* `name` - (Optional) The name of the network. Changing this updates the name of
-    the existing network.
+- `port_security_enabled` **Boolean** (*Optional*) Whether to explicitly enable or disable port security on the network. Port Security is usually enabled by default, so omitting this argument will usually result in a value of "true". Setting this explicitly to `false` will disable port security. Valid values are `true` and `false`.
 
-* `description` - (Optional) Human-readable description of the network. Changing this
-    updates the name of the existing network.
+- `private_dns_domain` **String** (*Optional*) Private dns domain name
 
-* `admin_state_up` - (Optional) The administrative state of the network.
-    Acceptable values are "true" and "false". Changing this value updates the
-    state of the existing network.
+- `region` **String** (*Optional*) The region in which to obtain the Networking client. A Networking client is needed to create a network. If omitted, the `region` argument of the provider is used. Changing this creates a new network.
 
-* `value_specs` - (Optional) Map of additional options.
+- `sdn` **String** (*Optional*) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 
-* `tags` - (Optional) A set of string tags for the network.
+- `tags` <strong>Set of </strong>**String** (*Optional*) A set of string tags for the network.
 
-* `port_security_enabled` - (Optional) Whether to explicitly enable or disable
-  port security on the network. Port Security is usually enabled by default, so
-  omitting this argument will usually result in a value of "true". Setting this
-  explicitly to `false` will disable port security. Valid values are `true` and
-  `false`.
+- `value_specs` <strong>Map of </strong>**String** (*Optional*) Map of additional options.
 
-* `private_dns_domain` - (Optional) Private dns domain name
+- `vkcs_services_access` **Boolean** (*Optional*) Whether VKCS services access is enabled. This feature should be enabled globally for your project. Access can be enabled for new or existing networks, but cannot be disabled for existing networks. Valid values are `true` and `false`.
 
-* `sdn` - (Optional) SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
-
-* `vkcs_services_access` - (Optional) Whether VKCS services access is enabled.
-  This feature should be enabled globally for your project. Access can be enabled
-  for new or existing networks, but cannot be disabled for existing networks. Valid
-  values are `true` and `false`.
 
 ## Attributes Reference
+- `admin_state_up` **Boolean** See Argument Reference above.
 
-The following attributes are exported:
+- `description` **String** See Argument Reference above.
 
-* `region` - See Argument Reference above.
-* `name` - See Argument Reference above.
-* `description` - See Argument Reference above.
-* `admin_state_up` - See Argument Reference above.
-* `tags` - See Argument Reference above.
-* `all_tags` - The collection of tags assigned on the network, which have been
-  explicitly and implicitly added.
-* `port_security_enabled` - See Argument Reference above.
-* `private_dns_domain` - See Argument Reference above.
-* `sdn` - See Argument Reference above.
-* `vkcs_services_access` - See Argument Reference above.
+- `name` **String** See Argument Reference above.
+
+- `port_security_enabled` **Boolean** See Argument Reference above.
+
+- `private_dns_domain` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `sdn` **String** See Argument Reference above.
+
+- `tags` <strong>Set of </strong>**String** See Argument Reference above.
+
+- `value_specs` <strong>Map of </strong>**String** See Argument Reference above.
+
+- `vkcs_services_access` **Boolean** See Argument Reference above.
+
+- `all_tags` <strong>Set of </strong>**String** The collection of tags assigned on the network, which have been explicitly and implicitly added.
+
+- `id` **String** ID of the resource.
+
+
 
 ## Import
 
 Networks can be imported using the `id`, e.g.
 
-```
-$ terraform import vkcs_networking_network.network_1 d90ce693-5ccf-4136-a0ed-152ce412b6b9
+```shell
+terraform import vkcs_networking_network.network_1 d90ce693-5ccf-4136-a0ed-152ce412b6b9
 ```

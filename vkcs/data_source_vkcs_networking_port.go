@@ -19,83 +19,98 @@ func dataSourceNetworkingPort() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The region in which to obtain the Network client. A Network client is needed to retrieve port ids. If omitted, the `region` argument of the provider is used.",
 			},
 
 			"port_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ID of the port.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the port.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Human-readable description of the port.",
 			},
 
 			"admin_state_up": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "The administrative state of the port.",
 			},
 
 			"network_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ID of the network the port belongs to.",
 			},
 
 			"tenant_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The tenant_id of the owner of the port.",
 			},
 
 			"project_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The project_id of the owner of the port.",
 			},
 
 			"device_owner": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The device owner of the port.",
 			},
 
 			"mac_address": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The MAC address of the port.",
 			},
 
 			"device_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ID of the device the port belongs to.",
 			},
 
 			"fixed_ip": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.IsIPAddress,
+				Description:  "The port IP address filter.",
 			},
 
 			"status": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The status of the port.",
 			},
 
 			"security_group_ids": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "The list of port security group IDs to filter.",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The list of port tags to filter.",
 			},
 
 			"allowed_address_pairs": {
@@ -105,34 +120,40 @@ func dataSourceNetworkingPort() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ip_address": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The additional IP address.",
 						},
 						"mac_address": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The additional MAC address.",
 						},
 					},
 				},
+				Description: "An IP/MAC Address pair of additional IP addresses that can be active on this port. The structure is described below.",
 			},
 
 			"all_fixed_ips": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The collection of Fixed IP addresses on the port in the order returned by the Network v2 API.",
 			},
 
 			"all_security_group_ids": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "The set of security group IDs applied on the port.",
 			},
 
 			"all_tags": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The set of string tags applied on the port.",
 			},
 
 			"extra_dhcp_option": {
@@ -141,38 +162,52 @@ func dataSourceNetworkingPort() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Name of the DHCP option.",
 						},
 						"value": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Value of the DHCP option.",
 						},
 						"ip_version": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "IP protocol version",
 						},
 					},
 				},
+				Description: "An extra DHCP option configured on the port. The structure is described below.",
 			},
 
 			"dns_name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The port DNS name to filter.",
 			},
 
 			"dns_assignment": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeMap},
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeMap},
+				Description: "The list of maps representing port DNS assignments.",
 			},
 
 			"sdn": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: validateSDN(),
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+			},
+
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the found port.",
 			},
 		},
+		Description: "Use this data source to get the ID of an available VKCS port.",
 	}
 }
 

@@ -1,0 +1,21 @@
+---
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a port's security groups within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+### Append a security group to an existing port
+{{tffile "templates/resources/vkcs_networking_port_secgroup_associate/append/main.tf"}}
+
+### Enforce a security group to an existing port
+{{tffile "templates/resources/vkcs_networking_port_secgroup_associate/enforce/main.tf"}}
+
+### Remove all security groups from an existing port
+{{tffile "templates/resources/vkcs_networking_port_secgroup_associate/remove/main.tf"}}
+{{ .SchemaMarkdown }}

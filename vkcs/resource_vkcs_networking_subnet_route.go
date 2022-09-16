@@ -22,28 +22,32 @@ func resourceNetworkingSubnetRoute() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the networking client. A networking client is needed to configure a routing entry on a subnet. If omitted, the `region` argument of the provider is used. Changing this creates a new routing entry.",
 			},
 
 			"subnet_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "ID of the subnet this routing entry belongs to. Changing this creates a new routing entry.",
 			},
 
 			"destination_cidr": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "CIDR block to match on the packet’s destination IP. Changing this creates a new routing entry.",
 			},
 
 			"next_hop": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "IP address of the next hop gateway. Changing this creates a new routing entry.",
 			},
 
 			"sdn": {
@@ -52,8 +56,10 @@ func resourceNetworkingSubnetRoute() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: validateSDN(),
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
 			},
 		},
+		Description: "Creates a routing entry on a VKCS subnet.",
 	}
 }
 
