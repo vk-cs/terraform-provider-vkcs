@@ -3,7 +3,6 @@ package vkcs
 import (
 	"context"
 	"log"
-	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/dns"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 )
 
@@ -83,24 +81,10 @@ func resourceNetworkingFloating() *schema.Resource {
 			},
 
 			"value_specs": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				ForceNew: true,
-			},
-
-			"dns_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-			},
-
-			"dns_domain": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^$|\.$`), "fully-qualified (unambiguous) DNS domain names must have a dot at the end"),
+				Type:        schema.TypeMap,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Map of additional options.",
 			},
 
 			"sdn": {
@@ -151,20 +135,9 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 		SubnetID:          subnetID,
 	}
 
-	var finalCreateOpts floatingips.CreateOptsBuilder
-	finalCreateOpts = FloatingIPCreateOpts{
+	finalCreateOpts := FloatingIPCreateOpts{
 		createOpts,
 		MapValueSpecs(d),
-	}
-
-	dnsName := d.Get("dns_name").(string)
-	dnsDomain := d.Get("dns_domain").(string)
-	if dnsName != "" || dnsDomain != "" {
-		finalCreateOpts = dns.FloatingIPCreateOptsExt{
-			CreateOptsBuilder: finalCreateOpts,
-			DNSName:           dnsName,
-			DNSDomain:         dnsDomain,
-		}
 	}
 
 	var fip floatingIPExtended
@@ -245,8 +218,6 @@ func resourceNetworkFloatingIPRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("address", fip.FloatingIP.FloatingIP)
 	d.Set("port_id", fip.PortID)
 	d.Set("fixed_ip", fip.FixedIP)
-	d.Set("dns_name", fip.DNSName)
-	d.Set("dns_domain", fip.DNSDomain)
 	d.Set("region", getRegion(d, config))
 	d.Set("sdn", getSDN(d))
 
