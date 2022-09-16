@@ -35,10 +35,11 @@ func resourceImagesImage() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Image client. An Image client is needed to create an Image that can be used with a compute instance. If omitted, the `region` argument of the provider is used. Changing this creates a new Image.",
 			},
 
 			"container_format": {
@@ -46,6 +47,7 @@ func resourceImagesImage() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"bare"}, false),
+				Description:  "The container format. Must be one of \"bare\".",
 			},
 
 			"disk_format": {
@@ -53,17 +55,20 @@ func resourceImagesImage() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"raw", "iso"}, false),
+				Description:  "The disk format. Must be one of \"raw\", \"iso\".",
 			},
 
 			"file": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The trailing path after the image endpoint that represent the location of the image or the path to retrieve it.",
 			},
 
 			"image_cache_path": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  fmt.Sprintf("%s/.terraform/image_cache", os.Getenv("HOME")),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     fmt.Sprintf("%s/.terraform/image_cache", os.Getenv("HOME")),
+				Description: "This is the directory where the images will be downloaded. Images will be stored with a filename corresponding to the url's md5 hash. Defaults to \"$HOME/.terraform/image_cache\"",
 			},
 
 			"image_source_url": {
@@ -71,12 +76,14 @@ func resourceImagesImage() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"local_file_path"},
+				Description:   "This is the url of the raw image. The image will be downloaded in the `image_cache_path` before being uploaded to VKCS. Conflicts with `local_file_path`.",
 			},
 
 			"image_source_username": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ConflictsWith: []string{"local_file_path"},
+				Description:   "The username of basic auth to download `image_source_url`.",
 			},
 
 			"image_source_password": {
@@ -84,6 +91,7 @@ func resourceImagesImage() *schema.Resource {
 				Optional:      true,
 				Sensitive:     true,
 				ConflictsWith: []string{"local_file_path"},
+				Description:   "The password of basic auth to download `image_source_url`.",
 			},
 
 			"local_file_path": {
@@ -91,6 +99,7 @@ func resourceImagesImage() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"image_source_url"},
+				Description:   "This is the filepath of the raw image file that will be uploaded to VKCS. Conflicts with `image_source_url`",
 			},
 
 			"min_disk_gb": {
@@ -98,6 +107,7 @@ func resourceImagesImage() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.IntAtLeast(0),
 				Default:      0,
+				Description:  "Amount of disk space (in GB) required to boot image. Defaults to 0.",
 			},
 
 			"min_ram_mb": {
@@ -105,31 +115,36 @@ func resourceImagesImage() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.IntAtLeast(0),
 				Default:      0,
+				Description:  "Amount of ram (in MB) required to boot image. Defauts to 0.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    false,
+				Description: "The name of the image.",
 			},
 
 			"protected": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If true, image will not be deletable. Defaults to false.",
 			},
 
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "The tags of the image. It must be a list of strings. At this time, it is not possible to delete all tags of an image.",
 			},
 
 			"verify_checksum": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "If false, the checksum will not be verified once the image is finished uploading.",
 			},
 
 			"visibility": {
@@ -139,7 +154,8 @@ func resourceImagesImage() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"private", "shared", "community",
 				}, false),
-				Default: "private",
+				Default:     "private",
+				Description: "The visibility of the image. Must be one of \"private\", \"community\", or \"shared\". The ability to set the visibility depends upon the configuration of the VKCS cloud.",
 			},
 
 			"properties": {
@@ -147,49 +163,59 @@ func resourceImagesImage() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validateStoreInProperties,
+				Description:  "A map of key/value pairs to set freeform information about an image. See the \"Notes\" section for further information about properties.",
 			},
 
 			// Computed-only
 			"checksum": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The checksum of the data associated with the image.",
 			},
 
 			"created_at": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the image was created.",
 			},
 
 			"metadata": {
-				Type:     schema.TypeMap,
-				Computed: true,
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "The metadata associated with the image. Image metadata allow for meaningfully define the image properties and tags. See https://docs.openstack.org/glance/latest/user/metadefs-concepts.html.",
 			},
 
 			"owner": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The id of the vkcs user who owns the image.",
 			},
 
 			"schema": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The path to the JSON-schema that represent the image or image",
 			},
 
 			"size_bytes": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The size in bytes of the data associated with the image.",
 			},
 
 			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the image. It can be \"queued\", \"active\" or \"saving\".",
 			},
 
 			"updated_at": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the image was last updated.",
 			},
 		},
+		Description: "Manages an Image resource within VKCS.\n\n~> **Note:** All arguments including the source image URL password will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
 	}
 }
 
