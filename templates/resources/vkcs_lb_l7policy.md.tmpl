@@ -1,0 +1,20 @@
+---
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a L7 Policy resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Load Balancer L7 Policy can be imported using the L7 Policy ID, e.g.:
+
+{{codefile "shell" "templates/resources/vkcs_lb_l7policy/import.sh"}}

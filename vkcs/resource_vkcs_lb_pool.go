@@ -33,20 +33,23 @@ func resourcePool() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new pool.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Human-readable name for the pool.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Human-readable description for the pool.",
 			},
 
 			"protocol": {
@@ -56,20 +59,23 @@ func resourcePool() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"TCP", "UDP", "HTTP", "HTTPS", "PROXY",
 				}, false),
+				Description: "The protocol - can either be TCP, HTTP, HTTPS, PROXY, or UDP. Changing this creates a new pool.",
 			},
 
 			// One of loadbalancer_id or listener_id must be provided
 			"loadbalancer_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The load balancer on which to provision this pool. Changing this creates a new pool. Note: One of LoadbalancerID or ListenerID must be provided.",
 			},
 
 			// One of loadbalancer_id or listener_id must be provided
 			"listener_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Listener on which the members of the pool will be associated with. Changing this creates a new pool. Note:  One of LoadbalancerID or ListenerID must be provided.",
 			},
 
 			"lb_method": {
@@ -78,6 +84,7 @@ func resourcePool() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"ROUND_ROBIN", "LEAST_CONNECTIONS", "SOURCE_IP",
 				}, false),
+				Description: "The load balancing algorithm to distribute traffic to the pool's members. Must be one of ROUND_ROBIN, LEAST_CONNECTIONS, SOURCE_IP, or SOURCE_IP_PORT.",
 			},
 
 			"persistence": {
@@ -95,23 +102,28 @@ func resourcePool() *schema.Resource {
 							ValidateFunc: validation.StringInSlice([]string{
 								"SOURCE_IP", "HTTP_COOKIE", "APP_COOKIE",
 							}, false),
+							Description: "The type of persistence mode. The current specification supports SOURCE_IP, HTTP_COOKIE, and APP_COOKIE.",
 						},
 
 						"cookie_name": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The name of the cookie if persistence mode is set appropriately. Required if `type = APP_COOKIE`.",
 						},
 					},
 				},
+				Description: "Omit this field to prevent session persistence. Indicates whether connections in the same session will be processed by the same Pool member or not. Changing this creates a new pool.",
 			},
 
 			"admin_state_up": {
-				Type:     schema.TypeBool,
-				Default:  true,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Default:     true,
+				Optional:    true,
+				Description: "The administrative state of the pool. A valid value is true (UP) or false (DOWN).",
 			},
 		},
+		Description: "Manages a pool resource within VKCS.",
 	}
 }
 

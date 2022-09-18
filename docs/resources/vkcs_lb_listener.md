@@ -1,17 +1,16 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: lb_listener"
+page_title: "vkcs: vkcs_lb_listener"
 description: |-
-	Manages a listener resource within VKCS.
+  Manages a listener resource within VKCS.
 ---
 
-# vkcs\_lb\_listener
+# vkcs_lb_listener
 
 Manages a listener resource within VKCS.
 
 ## Example Usage
-
-```hcl
+```terraform
 resource "vkcs_lb_listener" "listener_1" {
 	loadbalancer_id = "d9415786-5f1a-428b-b35f-2f1523e146d2"
 	protocol        = "HTTP"
@@ -22,85 +21,85 @@ resource "vkcs_lb_listener" "listener_1" {
 	}
 }
 ```
-
 ## Argument Reference
+- `loadbalancer_id` **String** (***Required***) The load balancer on which to provision this Listener. Changing this creates a new Listener.
 
-The following arguments are supported:
+- `protocol` **String** (***Required***) The protocol - can either be TCP, HTTP, HTTPS, TERMINATED_HTTPS, UDP. Changing this creates a new Listener.
 
-* `loadbalancer_id` - (Required) The load balancer on which to provision this
-	Listener. Changing this creates a new Listener.
+- `protocol_port` **Number** (***Required***) The port on which to listen for client traffic. Changing this creates a new Listener.
 
-* `protocol` - (Required) The protocol - can either be TCP, HTTP, HTTPS,
-	TERMINATED_HTTPS, UDP. Changing this creates a new Listener.
+- `admin_state_up` **Boolean** (*Optional*) The administrative state of the Listener. A valid value is true (UP) or false (DOWN).
 
-* `protocol_port` - (Required) The port on which to listen for client traffic.
-	Changing this creates a new Listener.
+- `allowed_cidrs` **String** (*Optional*) A list of CIDR blocks that are permitted to connect to this listener, denying all other source addresses. If not present, defaults to allow all.
 
-* `allowed_cidrs` - (Optional) A list of CIDR blocks that are permitted to connect to this listener, denying
-	all other source addresses. If not present, defaults to allow all.
+- `connection_limit` **Number** (*Optional*) The maximum number of connections allowed for the Listener.
 
-* `admin_state_up` - (Optional) The administrative state of the Listener.
-	A valid value is true (UP) or false (DOWN).
+- `default_pool_id` **String** (*Optional*) The ID of the default pool with which the Listener is associated.
 
-* `connection_limit` - (Optional) The maximum number of connections allowed
-	for the Listener.
+- `default_tls_container_ref` **String** (*Optional*) A reference to a Keymanager Secrets container which stores TLS information. This is required if the protocol is `TERMINATED_HTTPS`.
 
-* `default_pool_id` - (Optional) The ID of the default pool with which the
-	Listener is associated.
+- `description` **String** (*Optional*) Human-readable description for the Listener.
 
-* `default_tls_container_ref` - (Optional) A reference to a Keymanager Secrets
-	container which stores TLS information. This is required if the protocol
-	is `TERMINATED_HTTPS`.
+- `insert_headers` <strong>Map of </strong>**String** (*Optional*) The list of key value pairs representing headers to insert into the request before it is sent to the backend members. Changing this updates the headers of the existing listener.
 
-* `description` - (Optional) Human-readable description for the Listener.
+- `name` **String** (*Optional*) Human-readable name for the Listener. Does not have to be unique.
 
-* `insert_headers` - (Optional) The list of key value pairs representing headers to insert
-	into the request before it is sent to the backend members. Changing this updates the headers of the
-	existing listener.
+- `region` **String** (*Optional*) The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new Listener.
 
-* `name` - (Optional) Human-readable name for the Listener. Does not have
-	to be unique.
-* `region` - (Optional) The region in which to obtain the Loadbalancer client.
-	If omitted, the `region` argument of the provider is used. Changing this creates a new
-	Listener.
+- `sni_container_refs` **String** (*Optional*) A list of references to Keymanager Secrets containers which store SNI information.
 
-* `sni_container_refs` - (Optional) A list of references to Keymanager Secrets
-	containers which store SNI information.
+- `timeout_client_data` **Number** (*Optional*) The client inactivity timeout in milliseconds.
 
-* `timeout_client_data` - (Optional) The client inactivity timeout in milliseconds.
+- `timeout_member_connect` **Number** (*Optional*) The member connection timeout in milliseconds.
 
-* `timeout_member_connect` - (Optional) The member connection timeout in milliseconds.
+- `timeout_member_data` **Number** (*Optional*) The member inactivity timeout in milliseconds.
 
-* `timeout_member_data` - (Optional) The member inactivity timeout in milliseconds.
+- `timeout_tcp_inspect` **Number** (*Optional*) The time in milliseconds, to wait for additional TCP packets for content inspection.
 
-* `timeout_tcp_inspect` - (Optional) The time in milliseconds, to wait for additional
-	TCP packets for content inspection.
 
 ## Attributes Reference
+- `loadbalancer_id` **String** See Argument Reference above.
 
-The following attributes are exported:
+- `protocol` **String** See Argument Reference above.
 
-* `id` - The unique ID for the Listener.
-* `protocol` - See Argument Reference above.
-* `protocol_port` - See Argument Reference above.
-* `name` - See Argument Reference above.
-* `default_port_id` - See Argument Reference above.
-* `description` - See Argument Reference above.
-* `connection_limit` - See Argument Reference above.
-* `timeout_client_data` - See Argument Reference above.
-* `timeout_member_connect` - See Argument Reference above.
-* `timeout_member_data` - See Argument Reference above.
-* `timeout_tcp_inspect` - See Argument Reference above.
-* `default_tls_container_ref` - See Argument Reference above.
-* `sni_container_refs` - See Argument Reference above.
-* `admin_state_up` - See Argument Reference above.
-* `insert_headers` - See Argument Reference above.
-* `allowed_cidrs` - See Argument Reference above.
+- `protocol_port` **Number** See Argument Reference above.
+
+- `admin_state_up` **Boolean** See Argument Reference above.
+
+- `allowed_cidrs` **String** See Argument Reference above.
+
+- `connection_limit` **Number** See Argument Reference above.
+
+- `default_pool_id` **String** See Argument Reference above.
+
+- `default_tls_container_ref` **String** See Argument Reference above.
+
+- `description` **String** See Argument Reference above.
+
+- `insert_headers` <strong>Map of </strong>**String** See Argument Reference above.
+
+- `name` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `sni_container_refs` **String** See Argument Reference above.
+
+- `timeout_client_data` **Number** See Argument Reference above.
+
+- `timeout_member_connect` **Number** See Argument Reference above.
+
+- `timeout_member_data` **Number** See Argument Reference above.
+
+- `timeout_tcp_inspect` **Number** See Argument Reference above.
+
+- `id` **String** ID of the resource.
+
+
 
 ## Import
 
 Load Balancer Listener can be imported using the Listener ID, e.g.:
 
-```
-$ terraform import vkcs_lb_listener.listener_1 b67ce64e-8b26-405d-afeb-4a078901f15a
+```shell
+terraform import vkcs_lb_listener.listener_1 b67ce64e-8b26-405d-afeb-4a078901f15a
 ```
