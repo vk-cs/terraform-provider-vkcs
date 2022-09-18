@@ -32,16 +32,18 @@ func resourceMembers() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new members resource.",
 			},
 
 			"pool_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The id of the pool that members will be assigned to. Changing this creates a new members resource.",
 			},
 
 			"member": {
@@ -50,24 +52,28 @@ func resourceMembers() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique ID for the member.",
 						},
 
 						"name": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Human-readable name for the member.",
 						},
 
 						"address": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The IP address of the members to receive traffic from the load balancer.",
 						},
 
 						"protocol_port": {
 							Type:         schema.TypeInt,
 							Required:     true,
 							ValidateFunc: validation.IntBetween(1, 65535),
+							Description:  "The port on which to listen for client traffic.",
 						},
 
 						"weight": {
@@ -75,25 +81,30 @@ func resourceMembers() *schema.Resource {
 							Optional:     true,
 							Default:      1,
 							ValidateFunc: validation.IntBetween(0, 256),
+							Description:  "A positive integer value that indicates the relative portion of traffic that this members should receive from the pool. For example, a member with a weight of 10 receives five times as much traffic as a member with a weight of 2. Defaults to 1.",
 						},
 
 						"subnet_id": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The subnet in which to access the member.",
 						},
 
 						"backup": {
-							Type:     schema.TypeBool,
-							Optional: true,
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "A bool that indicates whether the member is backup.",
 						},
 
 						"admin_state_up": {
-							Type:     schema.TypeBool,
-							Default:  true,
-							Optional: true,
+							Type:        schema.TypeBool,
+							Default:     true,
+							Optional:    true,
+							Description: "The administrative state of the member. A valid value is true (UP) or false (DOWN). Defaults to true.",
 						},
 					},
 				},
+				Description: "A set of dictionaries containing member parameters. The structure is described below.",
 			},
 		},
 	}

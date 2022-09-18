@@ -1,0 +1,20 @@
+---
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a members resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Load Balancer Pool Members can be imported using the Pool ID, e.g.:
+
+{{codefile "shell" "templates/resources/vkcs_lb_members/import.sh"}}

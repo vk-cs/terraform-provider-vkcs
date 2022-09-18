@@ -39,16 +39,19 @@ func resourceL7Policy() *schema.Resource {
 				Optional: true,
 				Computed: true,
 				ForceNew: true,
+				Description: "The region in which to obtain the Loadbalancer client. If omitted, the	`region` argument of the provider is used. Changing this creates a new L7 Policy.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Human-readable name for the L7 Policy. Does not have to be unique.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Human-readable description for the L7 Policy.",
 			},
 
 			"action": {
@@ -57,24 +60,28 @@ func resourceL7Policy() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"REDIRECT_TO_POOL", "REDIRECT_TO_URL", "REJECT",
 				}, true),
+				Description: "The L7 Policy action - can either be REDIRECT\\_TO\\_POOL, REDIRECT\\_TO\\_URL or REJECT.",
 			},
 
 			"listener_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The Listener on which the L7 Policy will be associated with. Changing this creates a new L7 Policy.",
 			},
 
 			"position": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The position of this policy on the listener. Positions start at 1.",
 			},
 
 			"redirect_pool_id": {
 				Type:          schema.TypeString,
 				ConflictsWith: []string{"redirect_url"},
 				Optional:      true,
+				Description:   "Requests matching this policy will be redirected to the pool with this ID. Only valid if action is REDIRECT\\_TO\\_POOL.",
 			},
 
 			"redirect_url": {
@@ -89,14 +96,17 @@ func resourceL7Policy() *schema.Resource {
 					}
 					return
 				},
+				Description: "Requests matching this policy will be redirected to this URL. Only valid if action is REDIRECT\\_TO\\_URL.",
 			},
 
 			"admin_state_up": {
-				Type:     schema.TypeBool,
-				Default:  true,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Default:     true,
+				Optional:    true,
+				Description: "The administrative state of the L7 Policy. A valid value is true (UP) or false (DOWN).",
 			},
 		},
+		Description: "Manages a Load Balancer L7 Policy resource within VKCS.",
 	}
 }
 

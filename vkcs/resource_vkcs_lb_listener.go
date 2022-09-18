@@ -31,10 +31,11 @@ func resourceListener() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new Listener.",
 			},
 
 			"protocol": {
@@ -44,96 +45,113 @@ func resourceListener() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"TCP", "UDP", "HTTP", "HTTPS", "TERMINATED_HTTPS",
 				}, false),
+				Description: "The protocol - can either be TCP, HTTP, HTTPS, TERMINATED_HTTPS, UDP. Changing this creates a new Listener.",
 			},
 
 			"protocol_port": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The port on which to listen for client traffic. Changing this creates a new Listener.",
 			},
 
 			"loadbalancer_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The load balancer on which to provision this Listener. Changing this creates a new Listener.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Human-readable name for the Listener. Does not have to be unique.",
 			},
 
 			"default_pool_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The ID of the default pool with which the Listener is associated.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Human-readable description for the Listener.",
 			},
 
 			"connection_limit": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The maximum number of connections allowed for the Listener.",
 			},
 
 			"default_tls_container_ref": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "A reference to a Keymanager Secrets container which stores TLS information. This is required if the protocol is `TERMINATED_HTTPS`.",
 			},
 
 			"sni_container_refs": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "A list of references to Keymanager Secrets containers which store SNI information.",
 			},
 
 			"admin_state_up": {
-				Type:     schema.TypeBool,
-				Default:  true,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Default:     true,
+				Optional:    true,
+				Description: "The administrative state of the Listener. A valid value is true (UP) or false (DOWN).",
 			},
 
 			"timeout_client_data": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The client inactivity timeout in milliseconds.",
 			},
 
 			"timeout_member_connect": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The member connection timeout in milliseconds.",
 			},
 
 			"timeout_member_data": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The member inactivity timeout in milliseconds.",
 			},
 
 			"timeout_tcp_inspect": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The time in milliseconds, to wait for additional TCP packets for content inspection.",
 			},
 
 			"insert_headers": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeMap,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "The list of key value pairs representing headers to insert into the request before it is sent to the backend members. Changing this updates the headers of the existing listener.",
 			},
 
 			"allowed_cidrs": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "A list of CIDR blocks that are permitted to connect to this listener, denying all other source addresses. If not present, defaults to allow all.",
 			},
 		},
+		Description: "Manages a listener resource within VKCS.",
 	}
 }
 

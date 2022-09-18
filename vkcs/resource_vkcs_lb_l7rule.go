@@ -34,10 +34,11 @@ func resourceL7Rule() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new L7 Rule.",
 			},
 
 			"type": {
@@ -46,6 +47,7 @@ func resourceL7Rule() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"COOKIE", "FILE_TYPE", "HEADER", "HOST_NAME", "PATH",
 				}, true),
+				Description: "The L7 Rule type - can either be COOKIE, FILE\\_TYPE, HEADER, HOST\\_NAME or PATH.",
 			},
 
 			"compare_type": {
@@ -54,17 +56,20 @@ func resourceL7Rule() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"CONTAINS", "STARTS_WITH", "ENDS_WITH", "EQUAL_TO", "REGEX",
 				}, true),
+				Description: "The comparison type for the L7 rule - can either be CONTAINS, STARTS\\_WITH, ENDS_WITH, EQUAL_TO or REGEX",
 			},
 
 			"l7policy_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of the L7 Policy to query. Changing this creates a new L7 Rule.",
 			},
 
 			"listener_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the Listener owning this resource.",
 			},
 
 			"value": {
@@ -76,25 +81,30 @@ func resourceL7Rule() *schema.Resource {
 					}
 					return
 				},
+				Description: "The value to use for the comparison. For example, the file type to compare.",
 			},
 
 			"key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The key to use for the comparison. For example, the name of the cookie to evaluate. Valid when `type` is set to COOKIE or HEADER.",
 			},
 
 			"invert": {
-				Type:     schema.TypeBool,
-				Default:  false,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Default:     false,
+				Optional:    true,
+				Description: "When true the logic of the rule is inverted. For example, with invert true, equal to would become not equal to. Default is false.",
 			},
 
 			"admin_state_up": {
-				Type:     schema.TypeBool,
-				Default:  true,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Default:     true,
+				Optional:    true,
+				Description: "The administrative state of the L7 Rule. A valid value is true (UP) or false (DOWN).",
 			},
 		},
+		Description: "Manages a L7 Rule resource within VKCS.",
 	}
 }
 

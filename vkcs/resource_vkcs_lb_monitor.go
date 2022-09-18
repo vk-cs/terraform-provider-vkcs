@@ -38,17 +38,20 @@ func resourceMonitor() *schema.Resource {
 				Optional: true,
 				Computed: true,
 				ForceNew: true,
+				Description: "The region in which to obtain the Loadbalancer client. If omitted, the	`region` argument of the provider is used. Changing this creates a new monitor.",
 			},
 
 			"pool_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The id of the pool that this monitor will be assigned to.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Name of the Monitor.",
 			},
 
 			"type": {
@@ -58,53 +61,63 @@ func resourceMonitor() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"TCP", "UDP-CONNECT", "HTTP", "HTTPS", "TLS-HELLO", "PING",
 				}, false),
+				Description: "The type of probe, which is PING, TCP, HTTP, HTTPS, TLS-HELLO or UDP-CONNECT, that is sent by the load balancer to verify the member state. Changing this creates a new monitor.",
 			},
 
 			"delay": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "The time, in seconds, between sending probes to members.",
 			},
 
 			"timeout": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Maximum number of seconds for a monitor to wait for a ping reply before it times out. The value must be less than the delay value.",
 			},
 
 			"max_retries": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Number of permissible ping failures before changing the member's status to INACTIVE. Must be a number between 1 and 10.",
 			},
 
 			"max_retries_down": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Number of permissible ping failures befor changing the member's status to ERROR. Must be a number between 1 and 10. Changing this updates the max_retries_down of the existing monitor.",
 			},
 
 			"url_path": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Required for HTTP(S) types. URI path that will be accessed if monitor type is HTTP or HTTPS.",
 			},
 
 			"http_method": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Required for HTTP(S) types. The HTTP method used for requests by the monitor. If this attribute is not specified, it defaults to \"GET\".",
 			},
 
 			"expected_codes": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Required for HTTP(S) types. Expected HTTP codes for a passing HTTP(S) monitor. You can either specify a single status like \"200\", or a range like \"200-202\".",
 			},
 
 			"admin_state_up": {
-				Type:     schema.TypeBool,
-				Default:  true,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Default:     true,
+				Optional:    true,
+				Description: "The administrative state of the monitor. A valid value is true (UP) or false (DOWN).",
 			},
 		},
+		Description: "Manages a monitor resource within VKCS.",
 	}
 }
 
