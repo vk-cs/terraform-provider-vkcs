@@ -35,8 +35,6 @@ data "vkcs_compute_instance" "instance" {
 
 - `access_ip_v4` **String** The first IPv4 address assigned to this server.
 
-- `access_ip_v6` **String** The first IPv6 address assigned to this server.
-
 - `availability_zone` **String** The availability zone of this server.
 
 - `flavor_id` **String** The flavor ID used to create the server.
@@ -55,8 +53,6 @@ data "vkcs_compute_instance" "instance" {
 
 - `network`  An array of maps, detailed below.
   - `fixed_ip_v4` **String** The IPv4 address assigned to this network port.
-
-  - `fixed_ip_v6` **String** The IPv6 address assigned to this network port.
 
   - `mac` **String** The MAC address assigned to this network interface.
 

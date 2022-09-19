@@ -331,8 +331,6 @@ resource "vkcs_compute_instance" "instance_1" {
 
 - `access_ip_v4` **String** (*Optional*) The first detected Fixed IPv4 address.
 
-- `access_ip_v6` **String** (*Optional*) The first detected Fixed IPv6 address.
-
 - `admin_pass` **String** (*Optional* Sensitive) The administrative password to assign to the server. Changing this changes the root password on the existing server.
 
 - `availability_zone` **String** (*Optional*) The availability zone in which to create the server. Conflicts with `availability_zone_hints`. Changing this creates a new server.
@@ -379,8 +377,6 @@ resource "vkcs_compute_instance" "instance_1" {
 
   - `fixed_ip_v4` **String** (*Optional*) Specifies a fixed IPv4 address to be used on this network. Changing this creates a new server.
 
-  - `fixed_ip_v6` **String** (*Optional*) The Fixed IPv6 address of the Instance on that network.
-
   - `name` **String** (*Optional*) (Optional if `uuid` or `port` is provided) The human-readable name of the network. Changing this creates a new server.
 
   - `port` **String** (*Optional*) (Optional if `uuid` or `name` is provided) The port UUID of a network to attach to the server. Changing this creates a new server.
@@ -419,8 +415,6 @@ resource "vkcs_compute_instance" "instance_1" {
 - `name` **String** See Argument Reference above.
 
 - `access_ip_v4` **String** See Argument Reference above.
-
-- `access_ip_v6` **String** See Argument Reference above.
 
 - `admin_pass` **String** See Argument Reference above.
 
@@ -467,8 +461,6 @@ resource "vkcs_compute_instance" "instance_1" {
   - `access_network` **Boolean** See Argument Reference above.
 
   - `fixed_ip_v4` **String** See Argument Reference above.
-
-  - `fixed_ip_v6` **String** See Argument Reference above.
 
   - `name` **String** See Argument Reference above.
 

@@ -99,11 +99,6 @@ func dataSourceComputeInstance() *schema.Resource {
 							Computed:    true,
 							Description: "The IPv4 address assigned to this network port.",
 						},
-						"fixed_ip_v6": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IPv6 address assigned to this network port.",
-						},
 						"mac": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -117,11 +112,6 @@ func dataSourceComputeInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The first IPv4 address assigned to this server.",
-			},
-			"access_ip_v6": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The first IPv6 address assigned to this server.",
 			},
 			"key_pair": {
 				Type:        schema.TypeString,
@@ -177,24 +167,19 @@ func dataSourceComputeInstanceRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	// Determine the best IPv4 and IPv6 addresses to access the instance with
-	hostv4, hostv6 := getInstanceAccessAddresses(d, networks)
+	// Determine the best IPv4 addresses to access the instance with
+	hostv4 := getInstanceAccessAddresses(d, networks)
 
-	// AccessIPv4/v6 isn't standard in OpenStack, but there have been reports
+	// AccessIPv4 isn't standard in OpenStack, but there have been reports
 	// of them being used in some environments.
 	if server.AccessIPv4 != "" && hostv4 == "" {
 		hostv4 = server.AccessIPv4
-	}
-
-	if server.AccessIPv6 != "" && hostv6 == "" {
-		hostv6 = server.AccessIPv6
 	}
 
 	log.Printf("[DEBUG] Setting networks: %+v", networks)
 
 	d.Set("network", networks)
 	d.Set("access_ip_v4", hostv4)
-	d.Set("access_ip_v6", hostv6)
 
 	d.Set("metadata", server.Metadata)
 
