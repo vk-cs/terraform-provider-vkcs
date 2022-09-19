@@ -63,18 +63,6 @@ func resourceNetworkingSecGroupRuleProtocol(protocol string) (rules.RuleProtocol
 		return rules.ProtocolICMP, nil
 	case string(rules.ProtocolIGMP):
 		return rules.ProtocolIGMP, nil
-	case string(rules.ProtocolIPv6Encap):
-		return rules.ProtocolIPv6Encap, nil
-	case string(rules.ProtocolIPv6Frag):
-		return rules.ProtocolIPv6Frag, nil
-	case string(rules.ProtocolIPv6ICMP):
-		return rules.ProtocolIPv6ICMP, nil
-	case string(rules.ProtocolIPv6NoNxt):
-		return rules.ProtocolIPv6NoNxt, nil
-	case string(rules.ProtocolIPv6Opts):
-		return rules.ProtocolIPv6Opts, nil
-	case string(rules.ProtocolIPv6Route):
-		return rules.ProtocolIPv6Route, nil
 	case string(rules.ProtocolOSPF):
 		return rules.ProtocolOSPF, nil
 	case string(rules.ProtocolPGM):

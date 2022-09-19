@@ -28,10 +28,6 @@ data "vkcs_networking_subnet" "subnet_1" {
 
 - `ip_version` **Number** (*Optional*) The IP version of the subnet (either 4 or 6).
 
-- `ipv6_address_mode` **String** (*Optional*) The IPv6 address mode. Valid values are `dhcpv6-stateful`, `dhcpv6-stateless`, or `slaac`.
-
-- `ipv6_ra_mode` **String** (*Optional*) The IPv6 Router Advertisement mode. Valid values are `dhcpv6-stateful`, `dhcpv6-stateless`, or `slaac`.
-
 - `name` **String** (*Optional*) The name of the subnet.
 
 - `network_id` **String** (*Optional*) The ID of the network the subnet belongs to.
@@ -59,10 +55,6 @@ data "vkcs_networking_subnet" "subnet_1" {
 - `gateway_ip` **String** See Argument Reference above.
 
 - `ip_version` **Number** See Argument Reference above.
-
-- `ipv6_address_mode` **String** See Argument Reference above.
-
-- `ipv6_ra_mode` **String** See Argument Reference above.
 
 - `name` **String** See Argument Reference above.
 

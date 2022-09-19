@@ -146,28 +146,6 @@ func resourceNetworkingSubnet() *schema.Resource {
 				Description: "An array of DNS name server names used by hosts in this subnet. Changing this updates the DNS name servers for the existing subnet.",
 			},
 
-			"ipv6_address_mode": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"slaac", "dhcpv6-stateful", "dhcpv6-stateless",
-				}, false),
-				Description: "The IPv6 address mode. Valid values are `dhcpv6-stateful`, `dhcpv6-stateless`, or `slaac`.",
-			},
-
-			"ipv6_ra_mode": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"slaac", "dhcpv6-stateful", "dhcpv6-stateless",
-				}, false),
-				Description: "The IPv6 Router Advertisement mode. Valid values are `dhcpv6-stateful`, `dhcpv6-stateless`, or `slaac`.",
-			},
-
 			"subnetpool_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -230,8 +208,6 @@ func resourceNetworkingSubnetCreate(ctx context.Context, d *schema.ResourceData,
 			NetworkID:       d.Get("network_id").(string),
 			Name:            d.Get("name").(string),
 			Description:     d.Get("description").(string),
-			IPv6AddressMode: d.Get("ipv6_address_mode").(string),
-			IPv6RAMode:      d.Get("ipv6_ra_mode").(string),
 			AllocationPools: expandNetworkingSubnetAllocationPools(allocationPool),
 			DNSNameservers:  expandToStringSlice(d.Get("dns_nameservers").([]interface{})),
 			SubnetPoolID:    d.Get("subnetpool_id").(string),
@@ -333,8 +309,6 @@ func resourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("dns_nameservers", s.DNSNameservers)
 	d.Set("enable_dhcp", s.EnableDHCP)
 	d.Set("network_id", s.NetworkID)
-	d.Set("ipv6_address_mode", s.IPv6AddressMode)
-	d.Set("ipv6_ra_mode", s.IPv6RAMode)
 	d.Set("subnetpool_id", s.SubnetPoolID)
 
 	networkingReadAttributesTags(d, s.Tags)
