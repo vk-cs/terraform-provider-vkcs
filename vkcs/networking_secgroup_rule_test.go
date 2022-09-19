@@ -42,15 +42,6 @@ func TestResourceNetworkingSecGroupRuleV2EtherType4(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
-func TestResourceNetworkingSecGroupRuleV2EtherType6(t *testing.T) {
-	expected := rules.EtherType6
-
-	actual, err := resourceNetworkingSecGroupRuleEtherType("IPv6")
-
-	assert.NoError(t, err)
-	assert.Equal(t, expected, actual)
-}
-
 func TestResourceNetworkingSecGroupRuleV2EtherTypeUnknown(t *testing.T) {
 	actual, err := resourceNetworkingSecGroupRuleEtherType("something")
 
@@ -60,27 +51,21 @@ func TestResourceNetworkingSecGroupRuleV2EtherTypeUnknown(t *testing.T) {
 
 func TestResourceNetworkingSecGroupRuleV2ProtocolString(t *testing.T) {
 	protocols := map[string]rules.RuleProtocol{
-		string(rules.ProtocolAH):        rules.ProtocolAH,
-		string(rules.ProtocolDCCP):      rules.ProtocolDCCP,
-		string(rules.ProtocolESP):       rules.ProtocolESP,
-		string(rules.ProtocolEGP):       rules.ProtocolEGP,
-		string(rules.ProtocolGRE):       rules.ProtocolGRE,
-		string(rules.ProtocolICMP):      rules.ProtocolICMP,
-		string(rules.ProtocolIGMP):      rules.ProtocolIGMP,
-		string(rules.ProtocolIPv6Encap): rules.ProtocolIPv6Encap,
-		string(rules.ProtocolIPv6Frag):  rules.ProtocolIPv6Frag,
-		string(rules.ProtocolIPv6ICMP):  rules.ProtocolIPv6ICMP,
-		string(rules.ProtocolIPv6NoNxt): rules.ProtocolIPv6NoNxt,
-		string(rules.ProtocolIPv6Opts):  rules.ProtocolIPv6Opts,
-		string(rules.ProtocolIPv6Route): rules.ProtocolIPv6Route,
-		string(rules.ProtocolOSPF):      rules.ProtocolOSPF,
-		string(rules.ProtocolPGM):       rules.ProtocolPGM,
-		string(rules.ProtocolRSVP):      rules.ProtocolRSVP,
-		string(rules.ProtocolSCTP):      rules.ProtocolSCTP,
-		string(rules.ProtocolTCP):       rules.ProtocolTCP,
-		string(rules.ProtocolUDP):       rules.ProtocolUDP,
-		string(rules.ProtocolUDPLite):   rules.ProtocolUDPLite,
-		string(rules.ProtocolVRRP):      rules.ProtocolVRRP,
+		string(rules.ProtocolAH):      rules.ProtocolAH,
+		string(rules.ProtocolDCCP):    rules.ProtocolDCCP,
+		string(rules.ProtocolESP):     rules.ProtocolESP,
+		string(rules.ProtocolEGP):     rules.ProtocolEGP,
+		string(rules.ProtocolGRE):     rules.ProtocolGRE,
+		string(rules.ProtocolICMP):    rules.ProtocolICMP,
+		string(rules.ProtocolIGMP):    rules.ProtocolIGMP,
+		string(rules.ProtocolOSPF):    rules.ProtocolOSPF,
+		string(rules.ProtocolPGM):     rules.ProtocolPGM,
+		string(rules.ProtocolRSVP):    rules.ProtocolRSVP,
+		string(rules.ProtocolSCTP):    rules.ProtocolSCTP,
+		string(rules.ProtocolTCP):     rules.ProtocolTCP,
+		string(rules.ProtocolUDP):     rules.ProtocolUDP,
+		string(rules.ProtocolUDPLite): rules.ProtocolUDPLite,
+		string(rules.ProtocolVRRP):    rules.ProtocolVRRP,
 	}
 
 	for name, expected := range protocols {

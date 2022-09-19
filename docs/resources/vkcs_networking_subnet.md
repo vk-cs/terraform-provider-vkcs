@@ -41,10 +41,6 @@ resource "vkcs_networking_subnet" "subnet_1" {
 
 - `ip_version` **Number** (*Optional*) IP version, either 4 (default) or 6. Changing this creates a new subnet.
 
-- `ipv6_address_mode` **String** (*Optional*) The IPv6 address mode. Valid values are `dhcpv6-stateful`, `dhcpv6-stateless`, or `slaac`.
-
-- `ipv6_ra_mode` **String** (*Optional*) The IPv6 Router Advertisement mode. Valid values are `dhcpv6-stateful`, `dhcpv6-stateless`, or `slaac`.
-
 - `name` **String** (*Optional*) The name of the subnet. Changing this updates the name of the existing subnet.
 
 - `no_gateway` **Boolean** (*Optional*) Do not set a gateway IP on this subnet. Changing this removes or adds a default gateway IP of the existing subnet.
@@ -81,10 +77,6 @@ resource "vkcs_networking_subnet" "subnet_1" {
 - `gateway_ip` **String** See Argument Reference above.
 
 - `ip_version` **Number** See Argument Reference above.
-
-- `ipv6_address_mode` **String** See Argument Reference above.
-
-- `ipv6_ra_mode` **String** See Argument Reference above.
 
 - `name` **String** See Argument Reference above.
 

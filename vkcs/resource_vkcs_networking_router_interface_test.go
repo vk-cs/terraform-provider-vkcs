@@ -35,40 +35,6 @@ func TestAccNetworkingRouterInterface_basic_subnet(t *testing.T) {
 	})
 }
 
-// TestAccNetworkingRouterInterface_v6_subnet tests that multiple router interfaces for IPv6 subnets
-// which are attached to the same port are handled properly.
-func TestAccNetworkingRouterInterface_v6_subnet(t *testing.T) {
-	var network networks.Network
-	var router routers.Router
-	var subnet1 subnets.Subnet
-	var subnet2 subnets.Subnet
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckNetworkingRouterInterfaceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccNetworkingRouterInterfaceV6Subnet + testAccNetworkingRouterInterfaceV6SubnetSecondInterface,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
-					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet1),
-					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_2", &subnet2),
-					testAccCheckNetworkingRouterExists("vkcs_networking_router.router_1", &router),
-					testAccCheckNetworkingRouterInterfaceExists("vkcs_networking_router_interface.int_1"),
-					testAccCheckNetworkingRouterInterfaceExists("vkcs_networking_router_interface.int_2"),
-				),
-			},
-			{ // Make sure deleting one of the router interfaces does not remove the other one.
-				Config: testAccNetworkingRouterInterfaceV6Subnet,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingRouterInterfaceExists("vkcs_networking_router_interface.int_1"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccNetworkingRouterInterface_basic_port(t *testing.T) {
 	var network networks.Network
 	var port ports.Port
@@ -190,43 +156,6 @@ resource "vkcs_networking_subnet" "subnet_1" {
   network_id = vkcs_networking_network.network_1.id
 }
 `
-
-const testAccNetworkingRouterInterfaceV6Subnet = `
-resource "vkcs_networking_router" "router_1" {
-  name = "router_1"
-  admin_state_up = "true"
-}
-
-resource "vkcs_networking_router_interface" "int_1" {
-  subnet_id = vkcs_networking_subnet.subnet_1.id
-  router_id = vkcs_networking_router.router_1.id
-}
-
-resource "vkcs_networking_network" "network_1" {
-  name = "network_1"
-  admin_state_up = "true"
-}
-
-resource "vkcs_networking_subnet" "subnet_1" {
-  cidr = "fd00:0:0:1::/64"
-  ip_version = 6
-  network_id = vkcs_networking_network.network_1.id
-}
-
-resource "vkcs_networking_subnet" "subnet_2" {
-  cidr = "fd00:0:0:2::/64"
-  ip_version = 6
-  network_id = vkcs_networking_network.network_1.id
-}
-`
-
-const testAccNetworkingRouterInterfaceV6SubnetSecondInterface = `
-resource "vkcs_networking_router_interface" "int_2" {
-  subnet_id = vkcs_networking_subnet.subnet_2.id
-  router_id = vkcs_networking_router.router_1.id
-}
-`
-
 const testAccNetworkingRouterInterfaceBasicPort = `
 resource "vkcs_networking_router" "router_1" {
   name = "router_1"

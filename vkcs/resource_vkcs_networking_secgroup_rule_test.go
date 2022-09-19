@@ -43,30 +43,6 @@ func TestAccNetworkingSecGroupRule_basic(t *testing.T) {
 	})
 }
 
-func TestAccNetworkingSecGroupRule_lowerCaseCIDR(t *testing.T) {
-	var secgroup1 groups.SecGroup
-	var secgroupRule1 rules.SecGroupRule
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckNetworkingSecGroupRuleDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccNetworkingSecGroupRuleLowerCaseCidr,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSecGroupExists(
-						"vkcs_networking_secgroup.secgroup_1", &secgroup1),
-					testAccCheckNetworkingSecGroupRuleExists(
-						"vkcs_networking_secgroup_rule.secgroup_rule_1", &secgroupRule1),
-					resource.TestCheckResourceAttr(
-						"vkcs_networking_secgroup_rule.secgroup_rule_1", "remote_ip_prefix", "2001:558:fc00::/39"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccNetworkingSecGroupRule_timeout(t *testing.T) {
 	var secgroup1 groups.SecGroup
 	var secgroup2 groups.SecGroup
@@ -97,12 +73,6 @@ func TestAccNetworkingSecGroupRule_protocols(t *testing.T) {
 	var secgroupRuleEsp rules.SecGroupRule
 	var secgroupRuleGre rules.SecGroupRule
 	var secgroupRuleIgmp rules.SecGroupRule
-	var secgroupRuleIPv6Encap rules.SecGroupRule
-	var secgroupRuleIPv6Frag rules.SecGroupRule
-	var secgroupRuleIPv6Icmp rules.SecGroupRule
-	var secgroupRuleIPv6Nonxt rules.SecGroupRule
-	var secgroupRuleIPv6Opts rules.SecGroupRule
-	var secgroupRuleIPv6Route rules.SecGroupRule
 	var secgroupRuleOspf rules.SecGroupRule
 	var secgroupRulePgm rules.SecGroupRule
 	var secgroupRuleRsvp rules.SecGroupRule
@@ -133,18 +103,6 @@ func TestAccNetworkingSecGroupRule_protocols(t *testing.T) {
 					testAccCheckNetworkingSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_igmp", &secgroupRuleIgmp),
 					testAccCheckNetworkingSecGroupRuleExists(
-						"vkcs_networking_secgroup_rule.secgroup_rule_ipv6_encap", &secgroupRuleIPv6Encap),
-					testAccCheckNetworkingSecGroupRuleExists(
-						"vkcs_networking_secgroup_rule.secgroup_rule_ipv6_frag", &secgroupRuleIPv6Frag),
-					testAccCheckNetworkingSecGroupRuleExists(
-						"vkcs_networking_secgroup_rule.secgroup_rule_ipv6_icmp", &secgroupRuleIPv6Icmp),
-					testAccCheckNetworkingSecGroupRuleExists(
-						"vkcs_networking_secgroup_rule.secgroup_rule_ipv6_nonxt", &secgroupRuleIPv6Nonxt),
-					testAccCheckNetworkingSecGroupRuleExists(
-						"vkcs_networking_secgroup_rule.secgroup_rule_ipv6_opts", &secgroupRuleIPv6Opts),
-					testAccCheckNetworkingSecGroupRuleExists(
-						"vkcs_networking_secgroup_rule.secgroup_rule_ipv6_route", &secgroupRuleIPv6Route),
-					testAccCheckNetworkingSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_ospf", &secgroupRuleOspf),
 					testAccCheckNetworkingSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_pgm", &secgroupRulePgm),
@@ -168,18 +126,6 @@ func TestAccNetworkingSecGroupRule_protocols(t *testing.T) {
 						"vkcs_networking_secgroup_rule.secgroup_rule_gre", "protocol", "gre"),
 					resource.TestCheckResourceAttr(
 						"vkcs_networking_secgroup_rule.secgroup_rule_igmp", "protocol", "igmp"),
-					resource.TestCheckResourceAttr(
-						"vkcs_networking_secgroup_rule.secgroup_rule_ipv6_encap", "protocol", "ipv6-encap"),
-					resource.TestCheckResourceAttr(
-						"vkcs_networking_secgroup_rule.secgroup_rule_ipv6_frag", "protocol", "ipv6-frag"),
-					resource.TestCheckResourceAttr(
-						"vkcs_networking_secgroup_rule.secgroup_rule_ipv6_icmp", "protocol", "ipv6-icmp"),
-					resource.TestCheckResourceAttr(
-						"vkcs_networking_secgroup_rule.secgroup_rule_ipv6_nonxt", "protocol", "ipv6-nonxt"),
-					resource.TestCheckResourceAttr(
-						"vkcs_networking_secgroup_rule.secgroup_rule_ipv6_opts", "protocol", "ipv6-opts"),
-					resource.TestCheckResourceAttr(
-						"vkcs_networking_secgroup_rule.secgroup_rule_ipv6_route", "protocol", "ipv6-route"),
 					resource.TestCheckResourceAttr(
 						"vkcs_networking_secgroup_rule.secgroup_rule_ospf", "protocol", "ospf"),
 					resource.TestCheckResourceAttr(
@@ -308,23 +254,6 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_2" {
 }
 `
 
-const testAccNetworkingSecGroupRuleLowerCaseCidr = `
-resource "vkcs_networking_secgroup" "secgroup_1" {
-  name = "secgroup_1"
-  description = "terraform security group rule acceptance test"
-}
-
-resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
-  direction = "ingress"
-  ethertype = "IPv6"
-  port_range_max = 22
-  port_range_min = 22
-  protocol = "tcp"
-  remote_ip_prefix = "2001:558:FC00::/39"
-  security_group_id = vkcs_networking_secgroup.secgroup_1.id
-}
-`
-
 const testAccNetworkingSecGroupRuleTimeout = `
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name = "secgroup_1"
@@ -416,54 +345,6 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_igmp" {
   ethertype = "IPv4"
   protocol = "igmp"
   remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = vkcs_networking_secgroup.secgroup_1.id
-}
-
-resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_encap" {
-  direction = "ingress"
-  ethertype = "IPv6"
-  protocol = "ipv6-encap"
-  remote_ip_prefix = "::/0"
-  security_group_id = vkcs_networking_secgroup.secgroup_1.id
-}
-
-resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_frag" {
-  direction = "ingress"
-  ethertype = "IPv6"
-  protocol = "ipv6-frag"
-  remote_ip_prefix = "::/0"
-  security_group_id = vkcs_networking_secgroup.secgroup_1.id
-}
-
-resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_icmp" {
-  direction = "ingress"
-  ethertype = "IPv6"
-  protocol = "ipv6-icmp"
-  remote_ip_prefix = "::/0"
-  security_group_id = vkcs_networking_secgroup.secgroup_1.id
-}
-
-resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_nonxt" {
-  direction = "ingress"
-  ethertype = "IPv6"
-  protocol = "ipv6-nonxt"
-  remote_ip_prefix = "::/0"
-  security_group_id = vkcs_networking_secgroup.secgroup_1.id
-}
-
-resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_opts" {
-  direction = "ingress"
-  ethertype = "IPv6"
-  protocol = "ipv6-opts"
-  remote_ip_prefix = "::/0"
-  security_group_id = vkcs_networking_secgroup.secgroup_1.id
-}
-
-resource "vkcs_networking_secgroup_rule" "secgroup_rule_ipv6_route" {
-  direction = "ingress"
-  ethertype = "IPv6"
-  protocol = "ipv6-route"
-  remote_ip_prefix = "::/0"
   security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
 

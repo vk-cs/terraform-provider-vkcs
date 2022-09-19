@@ -140,28 +140,6 @@ func dataSourceNetworkingSubnet() *schema.Resource {
 				Description: "Host Routes of the subnet.",
 			},
 
-			"ipv6_address_mode": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"slaac", "dhcpv6-stateful", "dhcpv6-stateless",
-				}, false),
-				Description: "The IPv6 address mode. Valid values are `dhcpv6-stateful`, `dhcpv6-stateless`, or `slaac`.",
-			},
-
-			"ipv6_ra_mode": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"slaac", "dhcpv6-stateful", "dhcpv6-stateless",
-				}, false),
-				Description: "The IPv6 Router Advertisement mode. Valid values are `dhcpv6-stateful`, `dhcpv6-stateless`, or `slaac`.",
-			},
-
 			"subnetpool_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -246,14 +224,6 @@ func dataSourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData,
 		listOpts.ID = v.(string)
 	}
 
-	if v, ok := d.GetOk("ipv6_address_mode"); ok {
-		listOpts.IPv6AddressMode = v.(string)
-	}
-
-	if v, ok := d.GetOk("ipv6_ra_mode"); ok {
-		listOpts.IPv6RAMode = v.(string)
-	}
-
 	if v, ok := d.GetOk("subnetpool_id"); ok {
 		listOpts.SubnetPoolID = v.(string)
 	}
@@ -294,8 +264,6 @@ func dataSourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("network_id", subnet.NetworkID)
 	d.Set("cidr", subnet.CIDR)
 	d.Set("ip_version", subnet.IPVersion)
-	d.Set("ipv6_address_mode", subnet.IPv6AddressMode)
-	d.Set("ipv6_ra_mode", subnet.IPv6RAMode)
 	d.Set("gateway_ip", subnet.GatewayIP)
 	d.Set("enable_dhcp", subnet.EnableDHCP)
 	d.Set("subnetpool_id", subnet.SubnetPoolID)
