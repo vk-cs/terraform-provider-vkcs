@@ -80,25 +80,6 @@ func dataSourceImagesImage() *schema.Resource {
 				Description: "The maximum size (in bytes) of the image to return.",
 			},
 
-			"sort_key": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     "name",
-				Description: "Sort images based on a certain key. Defaults to `name`.",
-			},
-
-			"sort_direction": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Default:  "asc",
-				ValidateFunc: validation.StringInSlice([]string{
-					"asc", "desc",
-				}, false),
-				Description: "Order the results in either `asc` or `desc`.",
-			},
-
 			"tag": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -230,8 +211,6 @@ func dataSourceImagesImageRead(ctx context.Context, d *schema.ResourceData, meta
 		Status:       images.ImageStatusActive,
 		SizeMin:      int64(d.Get("size_min").(int)),
 		SizeMax:      int64(d.Get("size_max").(int)),
-		SortKey:      d.Get("sort_key").(string),
-		SortDir:      d.Get("sort_direction").(string),
 		Tags:         tags,
 		MemberStatus: memberStatus,
 	}

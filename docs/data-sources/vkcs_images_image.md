@@ -39,10 +39,6 @@ data "vkcs_images_image" "ubuntu" {
 
 - `size_min` **Number** (*Optional*) The minimum size (in bytes) of the image to return.
 
-- `sort_direction` **String** (*Optional*) Order the results in either `asc` or `desc`.
-
-- `sort_key` **String** (*Optional*) Sort images based on a certain key. Defaults to `name`.
-
 - `tag` **String** (*Optional*) Search for images with a specific tag.
 
 - `visibility` **String** (*Optional*) The visibility of the image. Must be one of "private", "community", or "shared". Defaults to "private".
@@ -64,10 +60,6 @@ data "vkcs_images_image" "ubuntu" {
 - `size_max` **Number** See Argument Reference above.
 
 - `size_min` **Number** See Argument Reference above.
-
-- `sort_direction` **String** See Argument Reference above.
-
-- `sort_key` **String** See Argument Reference above.
 
 - `tag` **String** See Argument Reference above.
 
