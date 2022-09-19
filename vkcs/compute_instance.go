@@ -28,7 +28,6 @@ const (
 // virtual NIC.
 type InstanceNIC struct {
 	FixedIPv4 string
-	FixedIPv6 string
 	MAC       string
 }
 
@@ -283,25 +282,15 @@ func getInstanceAddresses(addresses map[string]interface{}) []InstanceAddresses 
 			}
 
 			if v["OS-EXT-IPS:type"] == "fixed" || v["OS-EXT-IPS:type"] == nil {
-				switch v["version"].(float64) {
-				case 6:
-					instanceNIC.FixedIPv6 = fmt.Sprintf("[%s]", v["addr"].(string))
-				default:
-					instanceNIC.FixedIPv4 = v["addr"].(string)
-				}
+				instanceNIC.FixedIPv4 = v["addr"].(string)
 			}
 
-			// To associate IPv4 and IPv6 on the right NIC,
+			// To associate IPv4 on the right NIC,
 			// key on the mac address and fill in the blanks.
 			for i, v := range instanceAddresses.InstanceNICs {
 				if v.MAC == instanceNIC.MAC {
 					exists = true
-					if instanceNIC.FixedIPv6 != "" {
-						instanceAddresses.InstanceNICs[i].FixedIPv6 = instanceNIC.FixedIPv6
-					}
-					if instanceNIC.FixedIPv4 != "" {
-						instanceAddresses.InstanceNICs[i].FixedIPv4 = instanceNIC.FixedIPv4
-					}
+					instanceAddresses.InstanceNICs[i].FixedIPv4 = instanceNIC.FixedIPv4
 				}
 			}
 
@@ -368,7 +357,6 @@ func flattenInstanceNetworks(d *schema.ResourceData, meta interface{}) ([]map[st
 				v := map[string]interface{}{
 					"name":        instanceAddresses.NetworkName,
 					"fixed_ip_v4": instanceNIC.FixedIPv4,
-					"fixed_ip_v6": instanceNIC.FixedIPv6,
 					"mac":         instanceNIC.MAC,
 				}
 
@@ -408,7 +396,6 @@ func flattenInstanceNetworks(d *schema.ResourceData, meta interface{}) ([]map[st
 				v := map[string]interface{}{
 					"name":           instanceAddresses.NetworkName,
 					"fixed_ip_v4":    instanceNIC.FixedIPv4,
-					"fixed_ip_v6":    instanceNIC.FixedIPv6,
 					"mac":            instanceNIC.MAC,
 					"uuid":           instanceNetwork.UUID,
 					"port":           instanceNetwork.Port,
@@ -427,13 +414,13 @@ func flattenInstanceNetworks(d *schema.ResourceData, meta interface{}) ([]map[st
 // with the instance. It does this by looping through all networks and looking
 // for a valid IP address. Priority is given to a network that was flagged as
 // an access_network.
-func getInstanceAccessAddresses(d *schema.ResourceData, networks []map[string]interface{}) (string, string) {
-	var hostv4, hostv6 string
+func getInstanceAccessAddresses(d *schema.ResourceData, networks []map[string]interface{}) string {
+	var hostv4 string
 
 	// Loop through all networks
-	// If the network has a valid fixed v4 or fixed v6 address
-	// and hostv4 or hostv6 is not set, set hostv4/hostv6.
-	// If the network is an "access_network" overwrite hostv4/hostv6.
+	// If the network has a valid fixed v4 address
+	// and hostv4 is not set, set hostv4.
+	// If the network is an "access_network" overwrite hostv4.
 	for _, n := range networks {
 		var accessNetwork bool
 
@@ -446,17 +433,11 @@ func getInstanceAccessAddresses(d *schema.ResourceData, networks []map[string]in
 				hostv4 = fixedIPv4
 			}
 		}
-
-		if fixedIPv6, ok := n["fixed_ip_v6"].(string); ok && fixedIPv6 != "" {
-			if hostv6 == "" || accessNetwork {
-				hostv6 = fixedIPv6
-			}
-		}
 	}
 
-	log.Printf("[DEBUG] VKCS Instance Network Access Addresses: %s, %s", hostv4, hostv6)
+	log.Printf("[DEBUG] VKCS Instance Network Access Addresses: %s", hostv4)
 
-	return hostv4, hostv6
+	return hostv4
 }
 
 func ComputeInstanceReadTags(d *schema.ResourceData, tags []string) {
