@@ -1,17 +1,16 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: vpnaas_endpoint_group"
+page_title: "vkcs: vkcs_vpnaas_endpoint_group"
 description: |-
   Manages an Endpoint Group resource within VKCS.
 ---
 
-# vkcs\_vpnaas\_endpoint\_group
+# vkcs_vpnaas_endpoint_group
 
 Manages an Endpoint Group resource within VKCS.
 
 ## Example Usage
-
-```hcl
+```terraform
 resource "vkcs_vpnaas_endpoint_group" "group_1" {
 	name = "Group 1"
 	type = "cidr"
@@ -21,44 +20,37 @@ resource "vkcs_vpnaas_endpoint_group" "group_1" {
 	]
 }
 ```
-
 ## Argument Reference
+- `description` **String** (*Optional*) The human-readable description for the group. Changing this updates the description of the existing group.
 
-The following arguments are supported:
+- `endpoints` <strong>Set of </strong>**String** (*Optional*) List of endpoints of the same type, for the endpoint group. The values will depend on the type. Changing this creates a new group.
 
-* `description` - (Optional) The human-readable description for the group.
-	Changing this updates the description of the existing group.
+- `name` **String** (*Optional*) The name of the group. Changing this updates the name of the existing group.
 
-* `name` - (Optional) The name of the group. Changing this updates the name of
-	the existing group.
+- `region` **String** (*Optional*) The region in which to obtain the Networking client. A Networking client is needed to create an endpoint group. If omitted, the `region` argument of the provider is used. Changing this creates a new group.
 
-* `region` - (Optional) The region in which to obtain the Networking client.
-	A Networking client is needed to create an endpoint group. If omitted, the
-	`region` argument of the provider is used. Changing this creates a new
-	group.
+- `type` **String** (*Optional*) The type of the endpoints in the group. A valid value is subnet, cidr, network, router, or vlan. Changing this creates a new group.
 
-* `type` -  The type of the endpoints in the group. 
-	A valid value is subnet, cidr, network, router, or vlan.
-	Changing this creates a new group.
-	
-* `endpoints` - List of endpoints of the same type, for the endpoint group. 
-	The values will depend on the type.
-	Changing this creates a new group.
 
 ## Attributes Reference
+- `description` **String** See Argument Reference above.
 
-The following attributes are exported:
+- `endpoints` <strong>Set of </strong>**String** See Argument Reference above.
 
-* `region` - See Argument Reference above.
-* `name` - See Argument Reference above.
-* `description` - See Argument Reference above.
-* `type` - See Argument Reference above.
-* `endpoints` - See Argument Reference above.
+- `name` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `type` **String** See Argument Reference above.
+
+- `id` **String** ID of the resource.
+
+
 
 ## Import
 
 Groups can be imported using the `id`, e.g.
 
-```
-$ terraform import vkcs_vpnaas_endpoint_group.group_1 832cb7f3-59fe-40cf-8f64-8350ffc03272
+```shell
+terraform import vkcs_vpnaas_endpoint_group.group_1 832cb7f3-59fe-40cf-8f64-8350ffc03272
 ```
