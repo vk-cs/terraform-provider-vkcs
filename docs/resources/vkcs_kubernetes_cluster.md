@@ -1,119 +1,146 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: kubernetes_cluster"
+page_title: "vkcs: vkcs_kubernetes_cluster"
 description: |-
   Manages a kubernetes cluster.
 ---
 
-# vkcs\_kubernetes\_cluster
+# vkcs_kubernetes_cluster
 
 Provides a kubernetes cluster resource. This can be used to create, modify and delete kubernetes clusters.
 
 ## Example Usage
-
 ```terraform
+data "vkcs_kubernetes_clustertemplate" "ct" {
+  version = "1.21.4"
+}
 
-resource "vkcs_kubernetes_cluster" "mycluster" {
-      name                = "terracluster"
-      cluster_template_id = example_template_id
-      master_flavor       = example_flavor_id
-      master_count        = 1
-      network_id          = example_network_id
-      subnet_id           = example_subnet_id
-      availability_zone   = "MS1"
-      labels = {
-        ingress_controller="nginx"
-      }
+resource "vkcs_kubernetes_cluster" "k8s-cluster" {
+  depends_on = [
+    vkcs_networking_router_interface.k8s,
+  ]
+
+  name                = "k8s-cluster"
+  cluster_template_id = data.vkcs_kubernetes_clustertemplate.ct.id
+  master_flavor       = data.vkcs_compute_flavor.k8s.id
+  master_count        = 1
+
+  network_id          = vkcs_networking_network.k8s.id
+  subnet_id           = vkcs_networking_subnet.k8s-subnetwork.id
+  floating_ip_enabled = true
+  availability_zone   = "MS1"
+  insecure_registries = ["1.2.3.4"]
 }
 ```
-
 ## Argument Reference
+- `availability_zone` **String** (***Required***) Availability zone of the cluster.
 
-The following arguments are supported:
+- `cluster_template_id` **String** (***Required***) The UUID of the Kubernetes cluster template. It can be obtained using the cluster_template data source.
 
-* `name` - (Required) The name of the cluster. Changing this creates a new cluster. Should match the pattern `^[a-zA-Z][a-zA-Z0-9_.-]*$`.
+- `floating_ip_enabled` **Boolean** (***Required***) Floating ip is enabled.
 
-* `cluster_template_id` - (Required) The UUID of the Kubernetes cluster
-    template. It can be obtained using the cluster_template data source.
+- `name` **String** (***Required***) The name of the cluster. Changing this creates a new cluster. Should match the pattern `^[a-zA-Z][a-zA-Z0-9_.-]*$`.
 
-* `master_flavor` - (Optional) The UUID of a flavor for the master nodes.
- If master_flavor is not present, value from cluster_template will be used.
+- `network_id` **String** (***Required***) UUID of the cluster's network.
 
-* `network_id` - (Required) The UUID of the network that will be attached to the cluster.
- Changing this creates a new cluster.
+- `subnet_id` **String** (***Required***) UUID of the cluster's subnet.
 
-* `subnet_id` - (Required) The UUID of the subnet that will be attached to the cluster.
- Changing this creates a new cluster.
+- `api_lb_fip` **String** (*Optional*) API LoadBalancer fip.
 
-* `keypair` - (Optional) The name of the Compute service SSH keypair. Changing
-    this creates a new cluster.
+- `api_lb_vip` **String** (*Optional*) API LoadBalancer vip.
 
-* `labels` - (Optional) The list of optional key value pairs representing additional
-    properties of the cluster. Changing this creates a new cluster.
+- `dns_domain` **String** (*Optional*) Custom DNS cluster domain. Changing this creates a new cluster.
+
+- `ingress_floating_ip` **String** (*Optional*) Floating IP created for ingress service.
+
+- `insecure_registries` **String** (*Optional*) Addresses of registries from which you can download images without checking certificates. Changing this creates a new cluster.
+
+- `keypair` **String** (*Optional*) The name of the Compute service SSH keypair. Changing this creates a new cluster.
+
+- `labels` <strong>Map of </strong>**String** (*Optional*) The list of optional key value pairs representing additional properties of the cluster. Changing this creates a new cluster.
+
   * `docker_registry_enabled=true` to preinstall Docker Registry.
   * `prometheus_monitoring=true` to preinstall monitoring system based on Prometheus and Grafana.
   * `ingress_controller="nginx"` to preinstall NGINX Ingress Controller.
 
-* `master_count` - (Optional) The number of master nodes for the cluster.
-    Changing this creates a new cluster.
-    
-* `pods_network_cidr` - (Optional) The network cidr used in k8s virtual network.
+- `loadbalancer_subnet_id` **String** (*Optional*) The UUID of the load balancer's subnet. Changing this creates new cluster.
 
-* `floating_ip_enabled` - (Required) Floating ip is enabled.
+- `master_count` **Number** (*Optional*) The number of master nodes for the cluster. Changing this creates a new cluster.
 
-* `api_lb_vip` - (Optional) API LoadBalancer vip.
+- `master_flavor` **String** (*Optional*) The UUID of a flavor for the master nodes. If master_flavor is not present, value from cluster_template will be used.
 
-* `api_lb_fip` - (Optional) API LoadBalancer fip.
+- `pods_network_cidr` **String** (*Optional*) Network cidr of k8s virtual network
 
-* `registry_auth_password` - (Optional) Docker registry access password.
+- `region` **String** (*Optional*) Region to use for the cluster. Default is a region configured for provider.
 
-* `availability_zone` - (Required) Zones available for cluster. `GZ1` and `MS1` zones are available.
+- `registry_auth_password` **String** (*Optional*) Docker registry access password.
 
-* `region` - (Optional) Region to use for the cluster. Default is a region configured for provider.
+- `status` **String** (*Optional*) Current state of a cluster. Changing this to `RUNNING` or `SHUTOFF` will turn cluster on/off.
 
-* `loadbalancer_subnet_id` - (Optional) The UUID of the load balancer's subnet. Changing this creates new cluster.
 
-* `insecure_registries` - (Optional) Addresses of registries from which you can download images without checking 
-certificates. Changing this creates a new cluster.
+## Attributes Reference
+- `availability_zone` **String** See Argument Reference above.
 
-* `dns_domain` - (Optional) Custom DNS cluster domain. Changing this creates a new cluster.
+- `cluster_template_id` **String** See Argument Reference above.
 
-## Attributes
+- `floating_ip_enabled` **Boolean** See Argument Reference above.
 
-This resource exports the following attributes:
+- `name` **String** See Argument Reference above.
 
-* `name` - The name of the cluster.
-* `project_id` - The project of the cluster.
-* `created_at` - The time at which cluster was created.
-* `updated_at` - The time at which cluster was created.
-* `api_address` - COE API address.
-* `cluster_template_id` - The UUID of the V1 Container Infra cluster template.
-* `discovery_url` - The URL used for cluster node discovery.
-* `master_flavor` - The UUID of a flavor for the master nodes. 
-* `keypair` - The name of the Compute service SSH keypair.
-* `labels` - The list of key value pairs representing additional properties of
-                 the cluster.
-* `master_count` - The number of master nodes for the cluster.
-* `master_addresses` - IP addresses of the master node of the cluster.
-* `stack_id` - UUID of the Orchestration service stack.
-* `network_id` - UUID of the cluster's network.
-* `subnet_id` - UUID of the cluster's subnet.
-* `status` - Current state of a cluster. Changing this to `RUNNING` or `SHUTOFF` will turn cluster on/off.
-* `pods_network_cidr` - Network cidr of k8s virtual network
-* `floating_ip_enabled` - Floating ip is enabled.
-* `api_lb_vip` - API LoadBalancer vip.
-* `api_lb_fip` - API LoadBalancer fip.
-* `ingress_floating_ip` - Floating IP created for ingress service.
-* `registry_auth_password` - Docker registry access password.
-* `availability_zone` - Availability zone of the cluster.
-* `loadbalancer_subnet_id` - UUID of the load balancer's subnet.
-* `insecure_registries` - Addresses of registries from which you can download images without checking certificates.
-* `dns_domain` - Custom DNS cluster domain.
+- `network_id` **String** See Argument Reference above.
+
+- `subnet_id` **String** See Argument Reference above.
+
+- `api_lb_fip` **String** See Argument Reference above.
+
+- `api_lb_vip` **String** See Argument Reference above.
+
+- `dns_domain` **String** See Argument Reference above.
+
+- `ingress_floating_ip` **String** See Argument Reference above.
+
+- `insecure_registries` **String** See Argument Reference above.
+
+- `keypair` **String** See Argument Reference above.
+
+- `labels` <strong>Map of </strong>**String** See Argument Reference above.
+
+- `loadbalancer_subnet_id` **String** See Argument Reference above.
+
+- `master_count` **Number** See Argument Reference above.
+
+- `master_flavor` **String** See Argument Reference above.
+
+- `pods_network_cidr` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `registry_auth_password` **String** See Argument Reference above.
+
+- `status` **String** See Argument Reference above.
+
+- `api_address` **String** COE API address.
+
+- `created_at` **String** The time at which cluster was created.
+
+- `id` **String** ID of the resource.
+
+- `master_addresses` **String** IP addresses of the master node of the cluster.
+
+- `project_id` **String** The project of the cluster.
+
+- `stack_id` **String** UUID of the Orchestration service stack.
+
+- `updated_at` **String** The time at which cluster was created.
+
+- `user_id` **String** The user of the cluster.
+
+
 
 ## Import
 
 Clusters can be imported using the `id`, e.g.
 
-```
-$ terraform import vkcs_kubernetes_cluster.mycluster ce0f9463-dd25-474b-9fe8-94de63e5e42b
+```shell
+terraform import vkcs_kubernetes_cluster.mycluster ce0f9463-dd25-474b-9fe8-94de63e5e42b
 ```

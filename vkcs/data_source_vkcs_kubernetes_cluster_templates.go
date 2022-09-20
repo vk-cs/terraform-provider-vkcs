@@ -19,21 +19,32 @@ func dataSourceKubernetesClusterTemplates() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"cluster_template_uuid": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The UUID of the cluster template.",
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of the cluster template.",
 						},
 						"version": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The version of the cluster template.",
 						},
 					},
 				},
+				// Currently, Computed composite fields are treated by terraform-schema as "Objects". Thus, subfields and their descriptions are not available to documentation generator. We have to put these descriptions into parent field description as workaround.
+				Description: "A list of available kubernetes cluster templates.\n  - `cluster_template_uuid` **String** The UUID of the cluster template.\n\n  - `name` **String** The name of the cluster template.\n\n  - `version` **String** The version of the cluster template.",
+			},
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Random identifier of the data source.",
 			},
 		},
+		Description: "`vkcs_kubernetes_cluster_templates` returns list of available VKCS Kubernetes Cluster Templates. To get details of each cluster template the data source can be combined with the `vkcs_kubernetes_clustertemplate` data source.",
 	}
 }
 
