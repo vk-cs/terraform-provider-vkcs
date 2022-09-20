@@ -100,7 +100,6 @@ const testAccSiteConnectionBasic = `
 	resource "vkcs_networking_subnet" "subnet_1" {
   		network_id = vkcs_networking_network.network_1.id
   		cidr       = "192.168.199.0/24"
-  		ip_version = 4
 	}
 
 	resource "vkcs_networking_router" "router_1" {

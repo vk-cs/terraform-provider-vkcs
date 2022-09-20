@@ -121,15 +121,6 @@ func resourceNetworkingSubnet() *schema.Resource {
 				Description:   "Do not set a gateway IP on this subnet. Changing this removes or adds a default gateway IP of the existing subnet.",
 			},
 
-			"ip_version": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      4,
-				ForceNew:     true,
-				ValidateFunc: validation.IntInSlice([]int{4, 6}),
-				Description:  "IP version, either 4 (default) or 6. Changing this creates a new subnet.",
-			},
-
 			"enable_dhcp": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -211,7 +202,7 @@ func resourceNetworkingSubnetCreate(ctx context.Context, d *schema.ResourceData,
 			AllocationPools: expandNetworkingSubnetAllocationPools(allocationPool),
 			DNSNameservers:  expandToStringSlice(d.Get("dns_nameservers").([]interface{})),
 			SubnetPoolID:    d.Get("subnetpool_id").(string),
-			IPVersion:       gophercloud.IPVersion(d.Get("ip_version").(int)),
+			IPVersion:       gophercloud.IPVersion(4),
 		},
 		MapValueSpecs(d),
 	}
@@ -303,7 +294,6 @@ func resourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData, m
 
 	d.Set("network_id", s.NetworkID)
 	d.Set("cidr", s.CIDR)
-	d.Set("ip_version", s.IPVersion)
 	d.Set("name", s.Name)
 	d.Set("description", s.Description)
 	d.Set("dns_nameservers", s.DNSNameservers)

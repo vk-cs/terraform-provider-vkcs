@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 )
@@ -57,14 +56,6 @@ func dataSourceNetworkingSubnet() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 				Description: "The owner of the subnet.",
-			},
-
-			"ip_version": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.IntInSlice([]int{4, 6}),
-				Description:  "The IP version of the subnet (either 4 or 6).",
 			},
 
 			"gateway_ip": {
@@ -208,10 +199,6 @@ func dataSourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData,
 		listOpts.TenantID = v.(string)
 	}
 
-	if v, ok := d.GetOk("ip_version"); ok {
-		listOpts.IPVersion = v.(int)
-	}
-
 	if v, ok := d.GetOk("gateway_ip"); ok {
 		listOpts.GatewayIP = v.(string)
 	}
@@ -263,7 +250,6 @@ func dataSourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("tenant_id", subnet.TenantID)
 	d.Set("network_id", subnet.NetworkID)
 	d.Set("cidr", subnet.CIDR)
-	d.Set("ip_version", subnet.IPVersion)
 	d.Set("gateway_ip", subnet.GatewayIP)
 	d.Set("enable_dhcp", subnet.EnableDHCP)
 	d.Set("subnetpool_id", subnet.SubnetPoolID)

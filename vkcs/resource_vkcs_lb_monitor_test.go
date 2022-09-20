@@ -142,7 +142,6 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
-  ip_version = 4
   network_id = vkcs_networking_network.network_1.id
 }
 
@@ -196,7 +195,6 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
-  ip_version = 4
   network_id = vkcs_networking_network.network_1.id
 }
 
@@ -251,7 +249,6 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
-  ip_version = 4
   network_id = vkcs_networking_network.network_1.id
 }
 
@@ -306,7 +303,6 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
-  ip_version = 4
   network_id = vkcs_networking_network.network_1.id
 }
 
@@ -362,7 +358,6 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
-  ip_version = 4
   network_id = vkcs_networking_network.network_1.id
 }
 

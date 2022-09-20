@@ -47,8 +47,6 @@ resource "vkcs_networking_port" "port_1" {
 
   - `value` **String** (***Required***) Value of the DHCP option.
 
-  - `ip_version` **Number** (*Optional*) IP protocol version. Defaults to 4.
-
 - `fixed_ip` (*Optional*) (Conflicts with `no_fixed_ip`) An array of desired IPs for this port. The structure is described below.
   - `subnet_id` **String** (***Required***) Subnet in which to allocate IP address for this port.
 
@@ -97,8 +95,6 @@ resource "vkcs_networking_port" "port_1" {
   - `name` **String** See Argument Reference above.
 
   - `value` **String** See Argument Reference above.
-
-  - `ip_version` **Number** See Argument Reference above.
 
 - `fixed_ip`  See Argument Reference above.
   - `subnet_id` **String** See Argument Reference above.

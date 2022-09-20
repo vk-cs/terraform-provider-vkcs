@@ -50,12 +50,6 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
   * __esp__
   * __gre__
   * __igmp__
-  * __ipv6-encap__
-  * __ipv6-frag__
-  * __ipv6-icmp__
-  * __ipv6-nonxt__
-  * __ipv6-opts__
-  * __ipv6-route__
   * __ospf__
   * __pgm__
   * __rsvp__

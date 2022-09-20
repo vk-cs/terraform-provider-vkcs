@@ -74,11 +74,6 @@ func resourceSharedFilesystemShareNetwork() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
-			"ip_version": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
 		},
 	}
 }
@@ -149,7 +144,6 @@ func resourceSharedFilesystemShareNetworkRead(ctx context.Context, d *schema.Res
 	d.Set("project_id", sharenetwork.ProjectID)
 	d.Set("region", getRegion(d, config))
 	d.Set("cidr", sharenetwork.CIDR)
-	d.Set("ip_version", sharenetwork.IPVersion)
 
 	return nil
 }

@@ -39,8 +39,6 @@ resource "vkcs_networking_subnet" "subnet_1" {
 
 - `gateway_ip` **String** (*Optional*) Default gateway used by devices in this subnet. Leaving this blank and not setting `no_gateway` will cause a default gateway of `.1` to be used. Changing this updates the gateway IP of the existing subnet.
 
-- `ip_version` **Number** (*Optional*) IP version, either 4 (default) or 6. Changing this creates a new subnet.
-
 - `name` **String** (*Optional*) The name of the subnet. Changing this updates the name of the existing subnet.
 
 - `no_gateway` **Boolean** (*Optional*) Do not set a gateway IP on this subnet. Changing this removes or adds a default gateway IP of the existing subnet.
@@ -75,8 +73,6 @@ resource "vkcs_networking_subnet" "subnet_1" {
 - `enable_dhcp` **Boolean** See Argument Reference above.
 
 - `gateway_ip` **String** See Argument Reference above.
-
-- `ip_version` **Number** See Argument Reference above.
 
 - `name` **String** See Argument Reference above.
 

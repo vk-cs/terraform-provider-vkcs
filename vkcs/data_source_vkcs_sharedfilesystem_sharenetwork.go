@@ -69,12 +69,6 @@ func dataSourceSharedFilesystemShareNetwork() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
-			"ip_version": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
-			},
 		},
 	}
 }
@@ -94,10 +88,7 @@ func dataSourceSharedFilesystemShareNetworkRead(ctx context.Context, d *schema.R
 		NeutronSubnetID: d.Get("neutron_subnet_id").(string),
 	}
 
-	if v, ok := d.GetOk("ip_version"); ok {
-		listOpts.IPVersion = gophercloud.IPVersion(v.(int))
-	}
-
+	listOpts.IPVersion = gophercloud.IPVersion(4)
 	allPages, err := sharenetworks.ListDetail(sfsClient, listOpts).AllPages()
 	if err != nil {
 		return diag.Errorf("Unable to query share networks: %s", err)
@@ -161,7 +152,6 @@ func dataSourceSharedFilesystemShareNetworkRead(ctx context.Context, d *schema.R
 	d.Set("neutron_net_id", shareNetwork.NeutronNetID)
 	d.Set("neutron_subnet_id", shareNetwork.NeutronSubnetID)
 	d.Set("security_service_ids", securityServiceIDs)
-	d.Set("ip_version", shareNetwork.IPVersion)
 	d.Set("cidr", shareNetwork.CIDR)
 	d.Set("region", getRegion(d, config))
 

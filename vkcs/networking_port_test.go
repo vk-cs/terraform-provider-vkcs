@@ -16,14 +16,12 @@ func TestExpandNetworkingPortDHCPOptsCreate(t *testing.T) {
 	d := r.TestResourceData()
 	d.SetId("1")
 	dhcpOpts1 := map[string]interface{}{
-		"ip_version": 4,
-		"name":       "A",
-		"value":      "true",
+		"name":  "A",
+		"value": "true",
 	}
 	dhcpOpts2 := map[string]interface{}{
-		"ip_version": 6,
-		"name":       "B",
-		"value":      "false",
+		"name":  "B",
+		"value": "false",
 	}
 	extraDHCPOpts := []map[string]interface{}{dhcpOpts1, dhcpOpts2}
 	d.Set("extra_dhcp_option", extraDHCPOpts)
@@ -32,7 +30,7 @@ func TestExpandNetworkingPortDHCPOptsCreate(t *testing.T) {
 		{
 			OptName:   "B",
 			OptValue:  "false",
-			IPVersion: gophercloud.IPVersion(6),
+			IPVersion: gophercloud.IPVersion(4),
 		},
 		{
 			OptName:   "A",
@@ -63,14 +61,12 @@ func TestExpandNetworkingPortDHCPOptsUpdate(t *testing.T) {
 	d := r.TestResourceData()
 	d.SetId("1")
 	dhcpOpts1 := map[string]interface{}{
-		"ip_version": 4,
-		"name":       "A",
-		"value":      "true",
+		"name":  "A",
+		"value": "true",
 	}
 	dhcpOpts2 := map[string]interface{}{
-		"ip_version": 6,
-		"name":       "B",
-		"value":      "false",
+		"name":  "B",
+		"value": "false",
 	}
 	extraDHCPOpts := []map[string]interface{}{dhcpOpts1, dhcpOpts2}
 	d.Set("extra_dhcp_option", extraDHCPOpts)
@@ -81,7 +77,7 @@ func TestExpandNetworkingPortDHCPOptsUpdate(t *testing.T) {
 		{
 			OptName:   "B",
 			OptValue:  &optsValueFalse,
-			IPVersion: gophercloud.IPVersion(6),
+			IPVersion: gophercloud.IPVersion(4),
 		},
 		{
 			OptName:   "A",
@@ -112,14 +108,12 @@ func TestExpandNetworkingPortDHCPOptsDelete(t *testing.T) {
 	d := r.TestResourceData()
 	d.SetId("1")
 	dhcpOpts1 := map[string]interface{}{
-		"ip_version": 4,
-		"name":       "A",
-		"value":      "true",
+		"name":  "A",
+		"value": "true",
 	}
 	dhcpOpts2 := map[string]interface{}{
-		"ip_version": 6,
-		"name":       "B",
-		"value":      "false",
+		"name":  "B",
+		"value": "false",
 	}
 	extraDHCPOpts := []map[string]interface{}{dhcpOpts1, dhcpOpts2}
 	d.Set("extra_dhcp_option", extraDHCPOpts)
@@ -156,14 +150,12 @@ func TestFlattenNetworkingPort2DHCPOptions(t *testing.T) {
 
 	expectedDHCPOptions := []map[string]interface{}{
 		{
-			"ip_version": 4,
-			"name":       "A",
-			"value":      "true",
+			"name":  "A",
+			"value": "true",
 		},
 		{
-			"ip_version": 6,
-			"name":       "B",
-			"value":      "false",
+			"name":  "B",
+			"value": "false",
 		},
 	}
 

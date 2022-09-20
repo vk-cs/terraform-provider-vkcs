@@ -171,11 +171,6 @@ func dataSourceNetworkingPort() *schema.Resource {
 							Computed:    true,
 							Description: "Value of the DHCP option.",
 						},
-						"ip_version": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "IP protocol version",
-						},
 					},
 				},
 				Description: "An extra DHCP option configured on the port. The structure is described below.",
