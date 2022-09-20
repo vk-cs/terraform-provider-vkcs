@@ -1,0 +1,1 @@
+terraform import vkcs_sharedfilesystem_sharenetwork.sharenetwork_1 e4018a0b-e869-437d-870c-e51f50e051db

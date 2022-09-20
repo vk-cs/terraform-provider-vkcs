@@ -32,49 +32,58 @@ func resourceSharedFilesystemShareNetwork() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Shared File System client. A Shared File System client is needed to create a share network. If omitted, the `region` argument of the provider is used. Changing this creates a new share network.",
 			},
 
 			"project_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The owner of the Share Network.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name for the share network. Changing this updates the name of the existing share network.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The human-readable description for the share network. Changing this updates the description of the existing share network.",
 			},
 
 			"neutron_net_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The UUID of a neutron network when setting up or updating a share network. Changing this updates the existing share network if it's not used by shares.",
 			},
 
 			"neutron_subnet_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The UUID of the neutron subnet when setting up or updating a share network. Changing this updates the existing share network if it's not used by shares.",
 			},
 
 			"security_service_ids": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "The list of security service IDs to associate with the share network. The security service must be specified by ID and not name.",
 			},
 
 			"cidr": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The share network CIDR.",
 			},
 		},
+		Description: "Use this resource to configure a share network.\n\nA share network stores network information that share servers can use when shares are created.",
 	}
 }
 

@@ -31,25 +31,29 @@ func resourceSharedFilesystemSecurityService() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Shared File System client. A Shared File System client is needed to create a security service. If omitted, the `region` argument of the provider is used. Changing this creates a new security service.",
 			},
 
 			"project_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The owner of the Security Service.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the security service. Changing this updates the name of the existing security service.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The human-readable description for the security service. Changing this updates the description of the existing security service.",
 			},
 
 			"type": {
@@ -58,34 +62,41 @@ func resourceSharedFilesystemSecurityService() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"active_directory", "kerberos", "ldap",
 				}, true),
+				Description: "The security service type - can either be active\\_directory, kerberos or ldap.  Changing this updates the existing security service.",
 			},
 
 			"dns_ip": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The security service DNS IP address that is used inside the tenant network.",
 			},
 
 			"user": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The security service user or group name that is used by the tenant.",
 			},
 
 			"password": {
-				Type:      schema.TypeString,
-				Optional:  true,
-				Sensitive: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "The user password, if you specify a user.",
 			},
 
 			"domain": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The security service domain.",
 			},
 
 			"server": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The security service host name or IP address.",
 			},
 		},
+		Description: "Use this resource to configure a security service.\n\n~> **Note:** All arguments including the security service password will be stored in the raw state as plain-text. [Read more about sensitive data in state](/docs/state/sensitive-data.html).\n\nA security service stores configuration information for clients for authentication and authorization (AuthN/AuthZ). For example, a share server will be the client for an existing service such as LDAP, Kerberos, or Microsoft Active Directory.",
 	}
 }
 

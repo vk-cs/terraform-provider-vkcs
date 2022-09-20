@@ -1,25 +1,19 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: sharedfilesystem_share_access"
+page_title: "vkcs: vkcs_sharedfilesystem_share_access"
 description: |-
   Configure a Shared File System share access list.
 ---
 
-# vkcs\_sharedfilesystem\_share\_access
+# vkcs_sharedfilesystem_share_access
 
 Use this resource to control the share access lists.
 
-~> **Important Security Notice** The access key assigned by this resource will
-be stored *unencrypted* in your Terraform state file. If you use this resource
-in production, please make sure your state file is sufficiently protected.
-[Read more about sensitive data in
-state](https://www.terraform.io/docs/language/state/sensitive-data.html).
+~> **Important Security Notice** The access key assigned by this resource will be stored *unencrypted* in your Terraform state file. If you use this resource in production, please make sure your state file is sufficiently protected. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).
 
 ## Example Usage
-
 ### NFS
-
-```hcl
+```terraform
 resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
@@ -56,8 +50,7 @@ resource "vkcs_sharedfilesystem_share_access" "share_access_1" {
 ```
 
 ### CIFS
-
-```hcl
+```terraform
 resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
@@ -114,37 +107,36 @@ resource "vkcs_sharedfilesystem_share_access" "share_access_2" {
 ```
 
 ## Argument Reference
+- `access_level` **String** (***Required***) The access level to the share. Can either be `rw` or `ro`.
 
-The following arguments are supported:
+- `access_to` **String** (***Required***) The value that defines the access. Can either be an IP address or a username verified by configured Security Service of the Share Network.
 
-* `access_level` - (Required) The access level to the share. Can either be `rw` or `ro`.
+- `access_type` **String** (***Required***) The access rule type. Can either be an ip, user, cert, or cephx.
 
-* `access_to` - (Required) The value that defines the access. Can either be an IP
-	address or a username verified by configured Security Service of the Share Network.
+- `share_id` **String** (***Required***) The UUID of the share to which you are granted access.
 
-* `access_type` - (Required) The access rule type. Can either be an ip, user,
-	cert, or cephx.
+- `region` **String** (*Optional*) The region in which to obtain the Shared File System client. A Shared File System client is needed to create a share access. Changing this creates a new share access.
 
-* `share_id` - (Required) The UUID of the share to which you are granted access.
-
-* `region` - The region in which to obtain the Shared File System client.
-	A Shared File System client is needed to create a share access. Changing this
-	creates a new share access.
 
 ## Attributes Reference
+- `access_level` **String** See Argument Reference above.
 
-* `id` - The unique ID for the Share Access.
-* `region` - See Argument Reference above.
-* `share_id` - See Argument Reference above.
-* `access_type` - See Argument Reference above.
-* `access_to` - See Argument Reference above.
-* `access_level` - See Argument Reference above.
+- `access_to` **String** See Argument Reference above.
+
+- `access_type` **String** See Argument Reference above.
+
+- `share_id` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `id` **String** ID of the resource.
+
+
 
 ## Import
 
-This resource can be imported by specifying the ID of the share and the ID of the
-share access, separated by a slash, e.g.:
+This resource can be imported by specifying the ID of the share and the ID of the share access, separated by a slash, e.g.:
 
-```
-$ terraform import vkcs_sharedfilesystem_share_access.share_access_1 <share id>/<share access id>
+```shell
+terraform import vkcs_sharedfilesystem_share_access.share_access_1 1c68f8cb-20b5-4f91-b761-6c612b4aae53/c8207c63-6a6d-4a7b-872f-047049582172
 ```

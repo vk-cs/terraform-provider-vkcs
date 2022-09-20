@@ -34,16 +34,18 @@ func resourceSharedFilesystemShareAccess() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Shared File System client. A Shared File System client is needed to create a share access. Changing this creates a new share access.",
 			},
 
 			"share_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The UUID of the share to which you are granted access.",
 			},
 
 			"access_type": {
@@ -53,12 +55,14 @@ func resourceSharedFilesystemShareAccess() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"ip", "user", "cert", "cephx",
 				}, false),
+				Description: "The access rule type. Can either be an ip, user, cert, or cephx.",
 			},
 
 			"access_to": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The value that defines the access. Can either be an IP address or a username verified by configured Security Service of the Share Network.",
 			},
 
 			"access_level": {
@@ -68,8 +72,10 @@ func resourceSharedFilesystemShareAccess() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"rw", "ro",
 				}, false),
+				Description: "The access level to the share. Can either be `rw` or `ro`.",
 			},
 		},
+		Description: "Use this resource to control the share access lists.\n\n~> **Important Security Notice** The access key assigned by this resource will be stored *unencrypted* in your Terraform state file. If you use this resource in production, please make sure your state file is sufficiently protected. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
 	}
 }
 

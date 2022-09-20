@@ -40,25 +40,29 @@ func resourceSharedFilesystemShare() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Shared File System client. A Shared File System client is needed to create a share. Changing this creates a new share.",
 			},
 
 			"project_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The owner of the Share.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name of the share. Changing this updates the name of the existing share.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The human-readable description for the share. Changing this updates the description of the existing share.",
 			},
 
 			"share_proto": {
@@ -68,49 +72,58 @@ func resourceSharedFilesystemShare() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"NFS", "CIFS", "CEPHFS", "GLUSTERFS", "HDFS", "MAPRFS",
 				}, true),
+				Description: "The share protocol - can either be NFS, CIFS, CEPHFS, GLUSTERFS, HDFS or MAPRFS. Changing this creates a new share.",
 			},
 
 			"size": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validation.IntAtLeast(1),
+				Description:  "The share size, in GBs. The requested share size cannot be greater than the allowed GB quota. Changing this resizes the existing share.",
 			},
 
 			"share_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The share type name. If you omit this parameter, the default share type is used.",
 			},
 
 			"snapshot_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The UUID of the share's base snapshot. Changing this creates a new share.",
 			},
 
 			"share_network_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The UUID of the share network.",
 			},
 
 			"availability_zone": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The share availability zone. Changing this creates a new share.",
 			},
 
 			"share_server_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The UUID of the share server.",
 			},
 
 			"all_metadata": {
-				Type:     schema.TypeMap,
-				Computed: true,
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "The map of metadata, assigned on the share, which has been explicitly and implicitly added.",
 			},
 		},
+		Description: "Use this resource to configure a share.",
 	}
 }
 
