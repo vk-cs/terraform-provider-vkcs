@@ -5,14 +5,13 @@ description: |-
   Get information on an VKCS kubernetes cluster template.
 ---
 
-# VKCS Kubernetes Cluster Template
+# vkcs_kubernetes_clustertemplate
 
-Use this data source to get the ID of an available VKCS kubernetes cluster
-template.
+Use this data source to get the ID of an available VKCS kubernetes cluster template.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "vkcs_kubernetes_clustertemplate" "example_template" {
   name = "clustertemplate_1"
 }
@@ -21,8 +20,7 @@ output "example_template_id" {
   value = "${data.vkcs_kubernetes_clustertemplate.example_template.id}"
 }
 ```
-
-```hcl
+```terraform
 data "vkcs_kubernetes_clustertemplate" "example_template_by_version" {
   version = "1.20.4"
 }
@@ -31,90 +29,77 @@ output "example_template_id" {
   value = "${data.vkcs_kubernetes_clustertemplate.example_template_by_version.id}"
 }
 ```
-
 ## Argument Reference
+- `cluster_template_uuid` **String** (*Optional*) The UUID of the cluster template. **Note**: Only one of `name` or `version` or `cluster_template_uuid` must be specified.
 
-The following arguments are supported:
+- `name` **String** (*Optional*) The name of the cluster template. **Note**: Only one of `name` or `version` or `cluster_template_uuid` must be specified.
 
-* `region` - (Optional) The region in which to obtain the V1 Container Infra
-    client.
-    If omitted, the `region` argument of the provider is used.
+- `region` **String** (*Optional*) The region in which to obtain the V1 Container Infra client. If omitted, the `region` argument of the provider is used.
 
-* `name` - (Optional) The name of the cluster template.
-* `version` - (Optional) The version of cluster template represented as a semver.
-* `cluster_template_uuid` - (Optional) The UUID of the cluster template.
+- `version` **String** (*Optional*) Kubernetes version of the cluster.
 
-**Note**: Only one of `name` or `version` or `cluster_template_uuid` must be specified
 
 ## Attributes Reference
+- `cluster_template_uuid` **String** See Argument Reference above.
 
-`id` is set to the ID of the found cluster template. In addition, the following
-attributes are exported:
+- `name` **String** See Argument Reference above.
 
-* `region` - See Argument Reference above.
+- `region` **String** See Argument Reference above.
 
-* `name` - See Argument Reference above.
+- `version` **String** See Argument Reference above.
 
-* `project_id` - The project of the cluster template.
+- `apiserver_port` **Number** The API server port for the Container Orchestration Engine for this cluster template.
 
-* `user_id` - The user of the cluster template.
+- `cluster_distro` **String** The distro for the cluster (fedora-atomic, coreos, etc.).
 
-* `created_at` - The time at which cluster template was created.
+- `created_at` **String** The time at which cluster template was created.
 
-* `updated_at` - The time at which cluster template was updated.
+- `deprecated_at` **String** The time at which the cluster template is deprecated.
 
-* `deprecated_at` - The time at which the cluster template is deprecated.
+- `dns_nameserver` **String** Address of the DNS nameserver that is used in nodes of the cluster.
 
-* `apiserver_port` - The API server port for the Container Orchestration
-    Engine for this cluster template.
+- `docker_storage_driver` **String** Docker storage driver. Changing this updates the Docker storage driver of the existing cluster template.
 
-* `cluster_distro` - The distro for the cluster (fedora-atomic, coreos, etc.).
+- `docker_volume_size` **Number** The size (in GB) of the Docker volume.
 
-* `dns_nameserver` - Address of the DNS nameserver that is used in nodes of the
-    cluster.
+- `external_network_id` **String** The ID of the external network that will be used for the cluster.
 
-* `docker_storage_driver` - Docker storage driver. Changing this updates the
-    Docker storage driver of the existing cluster template.
+- `flavor` **String** The ID of flavor for the nodes of the cluster.
 
-* `docker_volume_size` - The size (in GB) of the Docker volume.
+- `floating_ip_enabled` **Boolean** Indicates whether created cluster should create IP floating IP for every node or not.
 
-* `external_network_id` - The ID of the external network that will be used for
-    the cluster.
+- `id` **String** ID of the resource.
 
-* `flavor` - The ID of flavor for the nodes of the cluster.
+- `image` **String** The reference to an image that is used for nodes of the cluster.
 
-* `master_flavor` - The ID of flavor for the master nodes.
+- `insecure_registry` **String** The insecure registry URL for the cluster template.
 
-* `floating_ip_enabled` - Indicates whether created cluster should create IP
-    floating IP for every node or not.
+- `keypair_id` **String** The name of the Compute service SSH keypair.
 
-* `image` - The reference to an image that is used for nodes of the cluster.
+- `labels` <strong>Map of </strong>**String** The list of key value pairs representing additional properties of the cluster template.
 
-* `insecure_registry` - The insecure registry URL for the cluster template.
+- `master_flavor` **String** The ID of flavor for the master nodes.
 
-* `keypair_id` - The name of the Compute service SSH keypair.
+- `master_lb_enabled` **Boolean** Indicates whether created cluster should has a loadbalancer for master nodes or not.
 
-* `labels` - The list of key value pairs representing additional properties
-    of the cluster template.
+- `network_driver` **String** The name of the driver for the container network.
 
-* `master_lb_enabled` - Indicates whether created cluster should has a
-    loadbalancer for master nodes or not.
+- `no_proxy` **String** A comma-separated list of IP addresses that shouldn't be used in the cluster.
 
-* `network_driver` - The name of the driver for the container network.
+- `project_id` **String** The project of the cluster template.
 
-* `no_proxy` - A comma-separated list of IP addresses that shouldn't be used in
-    the cluster.
+- `public` **Boolean** Indicates whether cluster template should be public.
 
-* `public` - Indicates whether cluster template should be public.
+- `registry_enabled` **Boolean** Indicates whether Docker registry is enabled in the cluster.
 
-* `registry_enabled` - Indicates whether Docker registry is enabled in the
-    cluster.
+- `server_type` **String** The server type for the cluster template.
 
-* `server_type` - The server type for the cluster template.
+- `tls_disabled` **Boolean** Indicates whether the TLS should be disabled in the cluster.
 
-* `tls_disabled` - Indicates whether the TLS should be disabled in the cluster.
+- `updated_at` **String** The time at which cluster template was updated.
 
-* `volume_driver` - The name of the driver that is used for the volumes of the
-    cluster nodes.
-    
-* `version` - Kubernetes version of the cluster.
+- `user_id` **String** The user of the cluster template.
+
+- `volume_driver` **String** The name of the driver that is used for the volumes of the cluster nodes.
+
+

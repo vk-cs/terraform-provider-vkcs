@@ -1,64 +1,97 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: kubernetes_cluster"
+page_title: "vkcs: vkcs_kubernetes_cluster"
 description: |-
   Get information on cluster.
 ---
 
-# vkcs\_kubernetes\_cluster
+# vkcs_kubernetes_cluster
 
 Use this data source to get the ID of an available VKCS kubernetes cluster.
 
 ## Example Usage
-```hcl
+
+```terraform
 data "vkcs_kubernetes_cluster" "mycluster" {
   name = "myclustername"
 }
 ```
-```hcl
+```terraform
 data "vkcs_kubernetes_cluster" "mycluster" {
   cluster_id = "myclusteruuid"
 }
 ```
-
 ## Argument Reference
+- `cluster_id` **String** (*Optional*) The UUID of the Kubernetes cluster template. **Note**: Only one of `name` or `cluster_id` must be specified.
 
-The following arguments are supported:
+- `dns_domain` **String** (*Optional*) Custom DNS cluster domain.
 
-* `name` - (Optional) The name of the cluster.
+- `name` **String** (*Optional*) The name of the cluster. **Note**: Only one of `name` or `cluster_id` must be specified.
 
-* `cluster_id` - (Optional) The UUID of the Kubernetes cluster
-    template.
+- `region` **String** (*Optional*) The region in which to obtain the Container Infra client. If omitted, the `region` argument of the provider is used.
 
-* `region` - (Optional) The region in which to obtain the Container Infra
-    client.
-    If omitted, the `region` argument of the provider is used.
-        
-**Note**: Only one of `name` or `cluster_id` must be specified
 
-    
-## Attributes
-`id` is set to the ID of the found cluster template. In addition, the following
-attributes are exported:
+## Attributes Reference
+- `cluster_id` **String** See Argument Reference above.
 
-* `api_address` - COE API address.
-* `cluster_template_id` - The UUID of the V1 Container Infra cluster template.
-* `created_at` - The time at which cluster was created.
-* `discovery_url` - The URL used for cluster node discovery.
-* `k8s_config` - Kubeconfig for cluster
-* `keypair` - The name of the Compute service SSH keypair.
-* `labels` - The list of key value pairs representing additional properties of the cluster.
-* `loadbalancer_subnet_id` - The ID of load balancer's subnet.
-* `master_addresses` - IP addresses of the master node of the cluster.
-* `master_count` - The number of master nodes for the cluster.
-* `master_flavor` - The ID of the flavor for the master nodes.
-* `name` - The name of the cluster.
-* `network_id` - UUID of the cluster's network.
-* `pods_network_cidr` - Network cidr of k8s virtual network
-* `project_id` - The project of the cluster.
-* `stack_id` - UUID of the Orchestration service stack.
-* `status` - Current state of a cluster.
-* `subnet_id` - UUID of the cluster's subnet.
-* `updated_at` - The time at which cluster was created.
-* `insecure_registries` - Addresses of registries from which you can download images without checking certificates.
-* `dns_domain` - Custom DNS cluster domain.
+- `dns_domain` **String** See Argument Reference above.
+
+- `name` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `api_address` **String** COE API address.
+
+- `api_lb_fip` **String** API LoadBalancer fip.
+
+- `api_lb_vip` **String** API LoadBalancer vip.
+
+- `availability_zone` **String** Availability zone of the cluster.
+
+- `cluster_template_id` **String** The UUID of the V1 Container Infra cluster template.
+
+- `created_at` **String** The time at which cluster was created.
+
+- `discovery_url` **String** The URL used for cluster node discovery.
+
+- `floating_ip_enabled` **Boolean** Indicates whether floating ip is enabled for cluster.
+
+- `id` **String** ID of the resource.
+
+- `ingress_floating_ip` **String** Floating IP created for ingress service.
+
+- `insecure_registries` **String** Addresses of registries from which you can download images without checking certificates.
+
+- `k8s_config` **String** Kubeconfig for cluster
+
+- `keypair` **String** The name of the Compute service SSH keypair.
+
+- `labels` <strong>Map of </strong>**String** The list of key value pairs representing additional properties of the cluster.
+
+- `loadbalancer_subnet_id` **String** The ID of load balancer's subnet.
+
+- `master_addresses` **String** IP addresses of the master node of the cluster.
+
+- `master_count` **Number** The number of master nodes for the cluster.
+
+- `master_flavor` **String** The ID of the flavor for the master nodes.
+
+- `network_id` **String** UUID of the cluster's network.
+
+- `pods_network_cidr` **String** Network cidr of k8s virtual network.
+
+- `project_id` **String** The project of the cluster.
+
+- `registry_auth_password` **String** Docker registry access password.
+
+- `stack_id` **String** UUID of the Orchestration service stack.
+
+- `status` **String** Current state of a cluster.
+
+- `subnet_id` **String** UUID of the cluster's subnet.
+
+- `updated_at` **String** The time at which cluster was created.
+
+- `user_id` **String** The user of the cluster.
+
+
