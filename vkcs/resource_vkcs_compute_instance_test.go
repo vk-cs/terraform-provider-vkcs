@@ -1077,7 +1077,6 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   network_id = vkcs_networking_network.network_1.id
   cidr = "192.168.1.0/24"
-  ip_version = 4
   enable_dhcp = true
   no_gateway = true
 }
@@ -1272,7 +1271,6 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   network_id = vkcs_networking_network.network_1.id
   cidr = "192.168.1.0/24"
-  ip_version = 4
   enable_dhcp = true
   no_gateway = true
 }
@@ -1310,7 +1308,6 @@ resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   network_id = vkcs_networking_network.network_1.id
   cidr = "192.168.1.0/24"
-  ip_version = 4
   enable_dhcp = true
   no_gateway = true
 }
@@ -1323,7 +1320,6 @@ resource "vkcs_networking_subnet" "subnet_2" {
   name = "subnet_2"
   network_id = vkcs_networking_network.network_2.id
   cidr = "192.168.2.0/24"
-  ip_version = 4
   enable_dhcp = true
   no_gateway = true
 }

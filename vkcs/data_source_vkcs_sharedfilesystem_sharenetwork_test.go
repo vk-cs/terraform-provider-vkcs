@@ -16,11 +16,9 @@ func TestAccSFSShareNetworkDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "id", "vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "id"),
 					resource.TestCheckResourceAttr("data.vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "security_service_ids.#", "2"),
 					resource.TestCheckResourceAttrPair("data.vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "neutron_net_id", "vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "neutron_net_id"),
-					resource.TestCheckResourceAttrPair("data.vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "ip_version", "vkcs_sharedfilesystem_sharenetwork.sharenetwork_1", "ip_version"),
 					resource.TestCheckResourceAttrPair("data.vkcs_sharedfilesystem_sharenetwork.sharenetwork_2", "id", "vkcs_sharedfilesystem_sharenetwork.sharenetwork_2", "id"),
 					resource.TestCheckResourceAttr("data.vkcs_sharedfilesystem_sharenetwork.sharenetwork_2", "security_service_ids.#", "1"),
 					resource.TestCheckResourceAttrPair("data.vkcs_sharedfilesystem_sharenetwork.sharenetwork_2", "neutron_net_id", "vkcs_sharedfilesystem_sharenetwork.sharenetwork_2", "neutron_net_id"),
-					resource.TestCheckResourceAttrPair("data.vkcs_sharedfilesystem_sharenetwork.sharenetwork_2", "ip_version", "vkcs_sharedfilesystem_sharenetwork.sharenetwork_2", "ip_version"),
 				),
 			},
 		},
@@ -36,7 +34,6 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
 	name = "subnet_1"
 	cidr = "192.168.199.0/24"
-	ip_version = 4
 	network_id = vkcs_networking_network.network_1.id
 }
 
@@ -83,7 +80,6 @@ resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_2" {
 data "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
 	name                = vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.name
 	security_service_id = vkcs_sharedfilesystem_securityservice.securityservice_2.id
-	ip_version          = vkcs_sharedfilesystem_sharenetwork.sharenetwork_1.ip_version
 }
 
 data "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_2" {

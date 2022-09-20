@@ -46,14 +46,13 @@ func expandNetworkingPortDHCPOptsCreate(dhcpOpts *schema.Set) []extradhcpopts.Cr
 		for _, raw := range dhcpOpts.List() {
 			rawMap := raw.(map[string]interface{})
 
-			ipVersion := rawMap["ip_version"].(int)
 			optName := rawMap["name"].(string)
 			optValue := rawMap["value"].(string)
 
 			extraDHCPOpts = append(extraDHCPOpts, extradhcpopts.CreateExtraDHCPOpt{
 				OptName:   optName,
 				OptValue:  optValue,
-				IPVersion: gophercloud.IPVersion(ipVersion),
+				IPVersion: gophercloud.IPVersion(4),
 			})
 		}
 	}
@@ -69,7 +68,6 @@ func expandNetworkingPortDHCPOptsUpdate(oldDHCPopts, newDHCPopts *schema.Set) []
 		for _, raw := range newDHCPopts.List() {
 			rawMap := raw.(map[string]interface{})
 
-			ipVersion := rawMap["ip_version"].(int)
 			optName := rawMap["name"].(string)
 			optValue := rawMap["value"].(string)
 			// DHCP option name is the primary key, we will check this key below
@@ -78,7 +76,7 @@ func expandNetworkingPortDHCPOptsUpdate(oldDHCPopts, newDHCPopts *schema.Set) []
 			extraDHCPOpts = append(extraDHCPOpts, extradhcpopts.UpdateExtraDHCPOpt{
 				OptName:   optName,
 				OptValue:  &optValue,
-				IPVersion: gophercloud.IPVersion(ipVersion),
+				IPVersion: gophercloud.IPVersion(4),
 			})
 		}
 	}
@@ -107,9 +105,8 @@ func flattenNetworkingPortDHCPOpts(dhcpOpts extradhcpopts.ExtraDHCPOptsExt) []ma
 
 	for i, dhcpOpt := range dhcpOpts.ExtraDHCPOpts {
 		dhcpOptsSet[i] = map[string]interface{}{
-			"ip_version": dhcpOpt.IPVersion,
-			"name":       dhcpOpt.OptName,
-			"value":      dhcpOpt.OptValue,
+			"name":  dhcpOpt.OptName,
+			"value": dhcpOpt.OptValue,
 		}
 	}
 

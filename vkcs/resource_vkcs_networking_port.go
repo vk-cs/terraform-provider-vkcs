@@ -176,12 +176,6 @@ func resourceNetworkingPort() *schema.Resource {
 							Required:    true,
 							Description: "Value of the DHCP option.",
 						},
-						"ip_version": {
-							Type:        schema.TypeInt,
-							Default:     4,
-							Optional:    true,
-							Description: "IP protocol version. Defaults to 4.",
-						},
 					},
 				},
 				Description: "An extra DHCP option that needs to be configured on the port. The structure is described below. Can be specified multiple times.",

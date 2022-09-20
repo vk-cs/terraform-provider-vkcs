@@ -26,8 +26,6 @@ data "vkcs_networking_subnet" "subnet_1" {
 
 - `gateway_ip` **String** (*Optional*) The IP of the subnet's gateway.
 
-- `ip_version` **Number** (*Optional*) The IP version of the subnet (either 4 or 6).
-
 - `name` **String** (*Optional*) The name of the subnet.
 
 - `network_id` **String** (*Optional*) The ID of the network the subnet belongs to.
@@ -53,8 +51,6 @@ data "vkcs_networking_subnet" "subnet_1" {
 - `dhcp_enabled` **Boolean** See Argument Reference above.
 
 - `gateway_ip` **String** See Argument Reference above.
-
-- `ip_version` **Number** See Argument Reference above.
 
 - `name` **String** See Argument Reference above.
 

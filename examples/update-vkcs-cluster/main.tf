@@ -15,7 +15,6 @@ resource "vkcs_networking_subnet" "k8s-subnetwork" {
   name            = "k8s-subnet"
   network_id      = var.k8s-network-id
   cidr            = "10.100.0.0/16"
-  ip_version      = 4
   dns_nameservers = ["8.8.8.8", "8.8.4.4"]
 }
 

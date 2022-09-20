@@ -60,14 +60,6 @@ func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRenderConfig(testAccNetworkingSubnetDataSourceIPVersion, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
-					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_subnet.subnet_1", "all_tags.#", "2"),
-				),
-			},
-			{
 				Config: testAccRenderConfig(testAccNetworkingSubnetDataSourceGatewayIP, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
@@ -166,15 +158,6 @@ data "vkcs_networking_subnet" "subnet_1" {
   tags = [
     "bar",
   ]
-}
-`
-
-const testAccNetworkingSubnetDataSourceIPVersion = `
-{{.TestAccNetworkingSubnetDataSourceSubnet}}
-
-data "vkcs_networking_subnet" "subnet_1" {
-  network_id = vkcs_networking_network.network_1.id
-  ip_version = 4
 }
 `
 
