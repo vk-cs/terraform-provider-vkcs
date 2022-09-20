@@ -1,26 +1,20 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: sharedfilesystem_securityservice"
+page_title: "vkcs: vkcs_sharedfilesystem_securityservice"
 description: |-
   Configure a Shared File System security service.
 ---
 
-# vkcs\_sharedfilesystem\_securityservice
+# vkcs_sharedfilesystem_securityservice
 
 Use this resource to configure a security service.
 
-~> **Note:** All arguments including the security service password will be
-stored in the raw state as plain-text. [Read more about sensitive data in
-state](/docs/state/sensitive-data.html).
+~> **Note:** All arguments including the security service password will be stored in the raw state as plain-text. [Read more about sensitive data in state](/docs/state/sensitive-data.html).
 
-A security service stores configuration information for clients for
-authentication and authorization (AuthN/AuthZ). For example, a share server
-will be the client for an existing service such as LDAP, Kerberos, or
-Microsoft Active Directory.
+A security service stores configuration information for clients for authentication and authorization (AuthN/AuthZ). For example, a share server will be the client for an existing service such as LDAP, Kerberos, or Microsoft Active Directory.
 
 ## Example Usage
-
-```hcl
+```terraform
 resource "vkcs_sharedfilesystem_securityservice" "securityservice_1" {
   name        = "security"
   description = "created by terraform"
@@ -34,53 +28,54 @@ resource "vkcs_sharedfilesystem_securityservice" "securityservice_1" {
 ```
 
 ## Argument Reference
+- `type` **String** (***Required***) The security service type - can either be active\_directory, kerberos or ldap.  Changing this updates the existing security service.
 
-The following arguments are supported:
+- `description` **String** (*Optional*) The human-readable description for the security service. Changing this updates the description of the existing security service.
 
-* `type` - (Required) The security service type - can either be active\_directory,
-	kerberos or ldap.  Changing this updates the existing security service.
+- `dns_ip` **String** (*Optional*) The security service DNS IP address that is used inside the tenant network.
 
-* `description` - (Optional) The human-readable description for the security service.
-	Changing this updates the description of the existing security service.
+- `domain` **String** (*Optional*) The security service domain.
 
-* `dns_ip` - (Optional) The security service DNS IP address that is used inside the
-	tenant network.
+- `name` **String** (*Optional*) The name of the security service. Changing this updates the name of the existing security service.
 
-* `domain` - (Optional) The security service domain.
+- `password` **String** (*Optional* Sensitive) The user password, if you specify a user.
 
-* `name` - (Optional) The name of the security service. Changing this updates the name
-	of the existing security service.
+- `region` **String** (*Optional*) The region in which to obtain the Shared File System client. A Shared File System client is needed to create a security service. If omitted, the `region` argument of the provider is used. Changing this creates a new security service.
 
-* `password` - (Optional) The user password, if you specify a user.
+- `server` **String** (*Optional*) The security service host name or IP address.
 
-* `region` - (Optional) The region in which to obtain the Shared File System client.
-	A Shared File System client is needed to create a security service. If omitted, the
-	`region` argument of the provider is used. Changing this creates a new
-	security service.
+- `user` **String** (*Optional*) The security service user or group name that is used by the tenant.
 
-* `server` - (Optional) The security service host name or IP address.
-
-* `user` - (Optional) The security service user or group name that is used by the
-	tenant.
 
 ## Attributes Reference
+- `type` **String** See Argument Reference above.
 
-* `id` - The unique ID for the Security Service.
-* `region` - See Argument Reference above.
-* `project_id` - The owner of the Security Service.
-* `name` - See Argument Reference above.
-* `description` - See Argument Reference above.
-* `type` - See Argument Reference above.
-* `dns_ip` - See Argument Reference above.
-* `user` - See Argument Reference above.
-* `password` - See Argument Reference above.
-* `domain` - See Argument Reference above.
-* `server` - See Argument Reference above.
+- `description` **String** See Argument Reference above.
+
+- `dns_ip` **String** See Argument Reference above.
+
+- `domain` **String** See Argument Reference above.
+
+- `name` **String** See Argument Reference above.
+
+- `password` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `server` **String** See Argument Reference above.
+
+- `user` **String** See Argument Reference above.
+
+- `id` **String** ID of the resource.
+
+- `project_id` **String** The owner of the Security Service.
+
+
 
 ## Import
 
 This resource can be imported by specifying the ID of the security service:
 
-```
-$ terraform import vkcs_sharedfilesystem_securityservice.securityservice_1 <id>
+```shell
+terraform import vkcs_sharedfilesystem_securityservice.securityservice_1 048d7c1c-4187-4370-89ce-da638120d168
 ```

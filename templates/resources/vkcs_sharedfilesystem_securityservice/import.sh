@@ -1,0 +1,1 @@
+terraform import vkcs_sharedfilesystem_securityservice.securityservice_1 048d7c1c-4187-4370-89ce-da638120d168

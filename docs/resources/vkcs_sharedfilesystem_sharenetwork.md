@@ -1,21 +1,19 @@
 ---
 layout: "vkcs"
-page_title: "vkcs: sharedfilesystem_sharenetwork"
+page_title: "vkcs: vkcs_sharedfilesystem_sharenetwork"
 description: |-
   Configure a Shared File System share network.
 ---
 
-# vkcs\_sharedfilesystem\_sharenetwork
+# vkcs_sharedfilesystem_sharenetwork
 
 Use this resource to configure a share network.
 
 A share network stores network information that share servers can use when shares are created.
 
 ## Example Usage
-
 ### Basic share network
-
-```hcl
+```terraform
 resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
@@ -37,8 +35,7 @@ resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
 ```
 
 ### Share network with associated security services
-
-```hcl
+```terraform
 resource "vkcs_networking_network" "network_1" {
   name           = "network_1"
   admin_state_up = "true"
@@ -72,46 +69,45 @@ resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
   ]
 }
 ```
-
 ## Argument Reference
+- `neutron_net_id` **String** (***Required***) The UUID of a neutron network when setting up or updating a share network. Changing this updates the existing share network if it's not used by shares.
 
-The following arguments are supported:
+- `neutron_subnet_id` **String** (***Required***) The UUID of the neutron subnet when setting up or updating a share network. Changing this updates the existing share network if it's not used by shares.
 
-* `neutron_net_id` - (Required) The UUID of a neutron network when setting up or updating
-	a share network. Changing this updates the existing share network if it's not used by shares.
+- `description` **String** (*Optional*) The human-readable description for the share network. Changing this updates the description of the existing share network.
 
-* `neutron_subnet_id` - (Required) The UUID of the neutron subnet when setting up or
-	updating a share network. Changing this updates the existing share network if it's not used by shares.
+- `name` **String** (*Optional*) The name for the share network. Changing this updates the name of the existing share network.
 
-* `description` - (Optional) The human-readable description for the share network.
-	Changing this updates the description of the existing share network.
+- `region` **String** (*Optional*) The region in which to obtain the Shared File System client. A Shared File System client is needed to create a share network. If omitted, the `region` argument of the provider is used. Changing this creates a new share network.
 
-* `name` - (Optional) The name for the share network. Changing this updates the name of the existing share network.
+- `security_service_ids` <strong>Set of </strong>**String** (*Optional*) The list of security service IDs to associate with the share network. The security service must be specified by ID and not name.
 
-* `region` - (Optional) The region in which to obtain the Shared File System client.
-	A Shared File System client is needed to create a share network. If omitted, the
-	`region` argument of the provider is used. Changing this creates a new share network.
-
-* `security_service_ids` - (Optional) The list of security service IDs to associate with
-	the share network. The security service must be specified by ID and not name.
 
 ## Attributes Reference
+- `neutron_net_id` **String** See Argument Reference above.
 
-* `id` - The unique ID for the Share Network.
-* `region` - See Argument Reference above.
-* `project_id` - The owner of the Share Network.
-* `name` - See Argument Reference above.
-* `description` - See Argument Reference above.
-* `neutron_net_id` - See Argument Reference above.
-* `neutron_subnet_id` - See Argument Reference above.
-* `security_service_ids` - See Argument Reference above.
-* `cidr` - The share network CIDR.
-* `ip_version` - The IP version of the share network. Can either be 4 or 6.
+- `neutron_subnet_id` **String** See Argument Reference above.
+
+- `description` **String** See Argument Reference above.
+
+- `name` **String** See Argument Reference above.
+
+- `region` **String** See Argument Reference above.
+
+- `security_service_ids` <strong>Set of </strong>**String** See Argument Reference above.
+
+- `cidr` **String** The share network CIDR.
+
+- `id` **String** ID of the resource.
+
+- `project_id` **String** The owner of the Share Network.
+
+
 
 ## Import
 
-This resource can be imported by specifying the ID of the share network:
+This resource can be imported by specifying the ID of the share:
 
-```
-$ terraform import vkcs_sharedfilesystem_sharenetwork.sharenetwork_1 <id>
+```shell
+terraform import vkcs_sharedfilesystem_sharenetwork.sharenetwork_1 e4018a0b-e869-437d-870c-e51f50e051db
 ```

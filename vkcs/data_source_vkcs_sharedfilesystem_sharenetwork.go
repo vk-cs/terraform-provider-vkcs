@@ -17,59 +17,69 @@ func dataSourceSharedFilesystemShareNetwork() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The region in which to obtain the Shared File System client. A Shared File System client is needed to read a share network. If omitted, the `region` argument of the provider is used.",
 			},
 
 			"project_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The owner of the share network.",
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The name of the share network.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The human-readable description of the share network.",
 			},
 
 			"neutron_net_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The neutron network UUID of the share network.",
 			},
 
 			"neutron_subnet_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The neutron subnet UUID of the share network.",
 			},
 
 			"security_service_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "The security service IDs associated with the share network.",
 			},
 
 			"security_service_ids": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "The list of security service IDs associated with the share network.",
 			},
 
 			"cidr": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The share network CIDR.",
 			},
 		},
+		Description: "Use this data source to get the ID of an available Shared File System share network.",
 	}
 }
 
@@ -89,6 +99,7 @@ func dataSourceSharedFilesystemShareNetworkRead(ctx context.Context, d *schema.R
 	}
 
 	listOpts.IPVersion = gophercloud.IPVersion(4)
+
 	allPages, err := sharenetworks.ListDetail(sfsClient, listOpts).AllPages()
 	if err != nil {
 		return diag.Errorf("Unable to query share networks: %s", err)
