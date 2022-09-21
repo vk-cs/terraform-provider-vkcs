@@ -30,11 +30,11 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
 ## Argument Reference
 - `direction` **String** (***Required***) The direction of the rule, valid values are __ingress__ or __egress__. Changing this creates a new security group rule.
 
-- `ethertype` **String** (***Required***) The layer 3 protocol type, valid values are __IPv4__ or __IPv6__. Changing this creates a new security group rule.
-
 - `security_group_id` **String** (***Required***) The security group id the rule should belong to, the value needs to be an ID of a security group in the same tenant. Changing this creates a new security group rule.
 
 - `description` **String** (*Optional*) A description of the rule. Changing this creates a new security group rule.
+
+- `ethertype` **String** (*Optional* Deprecated) The layer 3 protocol type, valid values are __IPv4__. Changing this creates a new security group rule. **Note** This argument is deprecated, please do not use it.
 
 - `port_range_max` **Number** (*Optional*) The higher part of the allowed port range, valid integer value needs to be between 1 and 65535. Changing this creates a new security group rule.
 
@@ -69,11 +69,11 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
 ## Attributes Reference
 - `direction` **String** See Argument Reference above.
 
-- `ethertype` **String** See Argument Reference above.
-
 - `security_group_id` **String** See Argument Reference above.
 
 - `description` **String** See Argument Reference above.
+
+- `ethertype` **String** See Argument Reference above.
 
 - `port_range_max` **Number** See Argument Reference above.
 
