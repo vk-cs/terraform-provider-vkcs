@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 )
@@ -51,12 +52,13 @@ func resourceNetworkingSecGroupRule() *schema.Resource {
 			},
 
 			"ethertype": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The layer 3 protocol type, valid values are __IPv4__. Changing this creates a new security group rule. **Note** This argument is deprecated, please do not use it.",
-				Default:     "IPV4",
-				Deprecated:  "Only IPV4 can be used as ethertype. This argument is deprecated, please do not use it.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Description:  "The layer 3 protocol type, the only valid value is __IPv4__. Changing this creates a new security group rule. **Note** This argument is deprecated, please do not use it.",
+				Default:      "IPv4",
+				Deprecated:   "Only IPv4 can be used as ethertype. This argument is deprecated, please do not use it.",
+				ValidateFunc: validation.StringInSlice([]string{"IPv4"}, false),
 			},
 
 			"port_range_min": {
