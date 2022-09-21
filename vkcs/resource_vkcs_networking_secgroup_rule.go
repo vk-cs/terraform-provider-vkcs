@@ -52,9 +52,11 @@ func resourceNetworkingSecGroupRule() *schema.Resource {
 
 			"ethertype": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
-				Description: "The layer 3 protocol type, valid values are __IPv4__ or __IPv6__. Changing this creates a new security group rule.",
+				Description: "The layer 3 protocol type, valid values are __IPv4__. Changing this creates a new security group rule. **Note** This argument is deprecated, please do not use it.",
+				Default:     "IPV4",
+				Deprecated:  "Only IPV4 can be used as ethertype. This argument is deprecated, please do not use it.",
 			},
 
 			"port_range_min": {
@@ -206,7 +208,6 @@ func resourceNetworkingSecGroupRuleRead(ctx context.Context, d *schema.ResourceD
 
 	d.Set("description", sgRule.Description)
 	d.Set("direction", sgRule.Direction)
-	d.Set("ethertype", sgRule.EtherType)
 	d.Set("protocol", sgRule.Protocol)
 	d.Set("port_range_min", sgRule.PortRangeMin)
 	d.Set("port_range_max", sgRule.PortRangeMax)
