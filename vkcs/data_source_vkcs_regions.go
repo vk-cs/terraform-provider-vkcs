@@ -16,15 +16,23 @@ func dataSourceVkcsRegions() *schema.Resource {
 		ReadContext: dataSourceVkcsRegionsRead,
 		Schema: map[string]*schema.Schema{
 			"parent_region_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the parent region. Use empty value to list all the regions.",
 			},
 			"names": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Names of regions that meets the criteria.",
+			},
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Random identifier of the data source.",
 			},
 		},
+		Description: "`vkcs_regions` provides information about VKCS regions. Can be used to filter regions by parent region. To get details of each region the data source can be combined with the `vkcs_region` data source.",
 	}
 }
 

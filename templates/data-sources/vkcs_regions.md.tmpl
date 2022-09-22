@@ -1,0 +1,20 @@
+---
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  List available vkcs regions.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+Enabled VKCS Regions:
+{{tffile .ExampleFile}}
+
+To see regions with the known Parent Region `parent_region_id` argument needs to be set.
+{{tffile "templates/data-sources/vkcs_regions/with_parent/main.tf"}}
+
+{{ .SchemaMarkdown }}
