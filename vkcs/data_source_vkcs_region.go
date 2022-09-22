@@ -14,18 +14,22 @@ func dataSourceVkcsRegion() *schema.Resource {
 		ReadContext: dataSourceVkcsRegionRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the region to learn or use. Use empty value to learn current region on the provider.",
 			},
 			"parent_region": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Parent of the region.",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Description of the region.",
 			},
 		},
+		Description: "`vkcs_region` provides details about a specific VKCS region. As well as validating a given region name this resource can be used to discover the name of the region configured within the provider.",
 	}
 }
 
