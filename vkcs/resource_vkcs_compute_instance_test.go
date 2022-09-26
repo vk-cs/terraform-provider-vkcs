@@ -1432,7 +1432,7 @@ const testAccComputeInstanceStateActive = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = [vkcs_networking_subnet.base]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]

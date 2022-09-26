@@ -17,7 +17,7 @@ func TestAccComputeInstanceDataSource(t *testing.T) {
 				Config: testAccRenderConfig(testAccComputeInstanceDataSourceBasic),
 			},
 			{
-				Config: testAccRenderConfig(testAccComputeInstanceDataSourceSource, map[string]string{"TestAccComputeInstanceDataSourceSource": testAccRenderConfig(testAccComputeInstanceDataSourceBasic)}),
+				Config: testAccRenderConfig(testAccComputeInstanceDataSourceSource, map[string]string{"TestAccComputeInstanceDataSourceBasic": testAccRenderConfig(testAccComputeInstanceDataSourceBasic)}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceDataSourceID("data.vkcs_compute_instance.source_1"),
 					resource.TestCheckResourceAttr("data.vkcs_compute_instance.source_1", "name", "instance_1"),

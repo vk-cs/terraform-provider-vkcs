@@ -8,8 +8,6 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/gophercloud/utils/terraform/auth"
-	"github.com/gophercloud/utils/terraform/mutexkv"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/pathorcontents"
@@ -90,50 +88,6 @@ func testAccPreCheckKubernetes(t *testing.T) {
 			t.Fatalf("'%s' must be set for acceptance test", k)
 		}
 	}
-}
-
-func testAccAuthFromEnv() (configer, error) {
-	tenantID := os.Getenv("OS_TENANT_ID")
-	if tenantID == "" {
-		tenantID = os.Getenv("OS_PROJECT_ID")
-	}
-
-	tenantName := os.Getenv("OS_TENANT_NAME")
-	if tenantName == "" {
-		tenantName = os.Getenv("OS_PROJECT_NAME")
-	}
-
-	config := &config{
-		auth.Config{
-			CACertFile:        os.Getenv("OS_CACERT"),
-			ClientCertFile:    os.Getenv("OS_CERT"),
-			ClientKeyFile:     os.Getenv("OS_KEY"),
-			Cloud:             os.Getenv("OS_CLOUD"),
-			DefaultDomain:     os.Getenv("OS_DEFAULT_DOMAIN"),
-			DomainID:          os.Getenv("OS_DOMAIN_ID"),
-			DomainName:        os.Getenv("OS_DOMAIN_NAME"),
-			EndpointType:      os.Getenv("OS_ENDPOINT_TYPE"),
-			IdentityEndpoint:  os.Getenv("OS_AUTH_URL"),
-			Password:          os.Getenv("OS_PASSWORD"),
-			ProjectDomainID:   os.Getenv("OS_PROJECT_DOMAIN_ID"),
-			ProjectDomainName: os.Getenv("OS_PROJECT_DOMAIN_NAME"),
-			Region:            os.Getenv("OS_REGION_NAME"),
-			Token:             os.Getenv("OS_TOKEN"),
-			TenantID:          tenantID,
-			TenantName:        tenantName,
-			UserDomainID:      os.Getenv("OS_USER_DOMAIN_ID"),
-			UserDomainName:    os.Getenv("OS_USER_DOMAIN_NAME"),
-			Username:          os.Getenv("OS_USERNAME"),
-			UserID:            os.Getenv("OS_USER_ID"),
-			MutexKV:           mutexkv.NewMutexKV(),
-		},
-	}
-
-	if err := config.LoadAndValidate(); err != nil {
-		return nil, err
-	}
-
-	return config, nil
 }
 
 func TestProvider(t *testing.T) {

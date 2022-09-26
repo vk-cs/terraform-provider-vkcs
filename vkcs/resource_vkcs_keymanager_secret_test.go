@@ -340,7 +340,6 @@ resource "vkcs_keymanager_secret" "secret_1" {
   mode = "cbc"
   name = "mysecret"
   secret_type = "passphrase"
-  payload = ""
 }`
 
 const testAccKeyManagerSecretUpdate = `

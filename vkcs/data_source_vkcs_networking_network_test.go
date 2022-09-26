@@ -100,7 +100,7 @@ func TestAccNetworkingNetworkDataSource_externalExplicit(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.vkcs_networking_network.network_1", "external", "true"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_network.network_1", "all_tags.#", "0"),
+						"data.vkcs_networking_network.network_1", "all_tags.#", "1"),
 				),
 			},
 		},
@@ -123,7 +123,7 @@ func TestAccNetworkingNetworkDataSource_externalImplicit(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.vkcs_networking_network.network_1", "external", "true"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_network.network_1", "all_tags.#", "0"),
+						"data.vkcs_networking_network.network_1", "all_tags.#", "1"),
 				),
 			},
 		},
