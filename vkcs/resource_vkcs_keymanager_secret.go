@@ -243,14 +243,17 @@ func resourceKeyManagerSecretCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	// set the payload
-	updateOpts := secrets.UpdateOpts{
-		Payload:         d.Get("payload").(string),
-		ContentType:     d.Get("payload_content_type").(string),
-		ContentEncoding: d.Get("payload_content_encoding").(string),
-	}
-	err = secrets.Update(kmClient, uuid, updateOpts).Err
-	if err != nil {
-		return diag.Errorf("Error setting vkcs_keymanager_secret payload: %s", err)
+	payload := d.Get("payload").(string)
+	if payload != "" {
+		updateOpts := secrets.UpdateOpts{
+			Payload:         d.Get("payload").(string),
+			ContentType:     d.Get("payload_content_type").(string),
+			ContentEncoding: d.Get("payload_content_encoding").(string),
+		}
+		err = secrets.Update(kmClient, uuid, updateOpts).Err
+		if err != nil {
+			return diag.Errorf("Error setting vkcs_keymanager_secret payload: %s", err)
+		}
 	}
 
 	_, err = stateConf.WaitForStateContext(ctx)
