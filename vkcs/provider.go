@@ -117,9 +117,6 @@ func (c *config) GetMutex() *mutexkv.MutexKV {
 func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.Diagnostics) {
 	config := &config{
 		auth.Config{
-			CACertFile:       d.Get("cacert_file").(string),
-			ClientCertFile:   d.Get("cert").(string),
-			ClientKeyFile:    d.Get("key").(string),
 			Username:         d.Get("username").(string),
 			Password:         d.Get("password").(string),
 			TenantID:         d.Get("project_id").(string),
@@ -137,12 +134,6 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 
 	if config.UserDomainID != "" {
 		config.UserDomainName = ""
-	}
-
-	v, ok := d.GetOk("insecure")
-	if ok {
-		insecure := v.(bool)
-		config.Insecure = &insecure
 	}
 
 	if err := config.LoadAndValidate(); err != nil {
@@ -197,30 +188,6 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("OS_REGION_NAME", defaultRegionName),
 				Description: "A region to use.",
-			},
-			"insecure": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("INSECURE", nil),
-				Description: "Trust self-signed certificates.",
-			},
-			"cacert_file": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("CACERT", ""),
-				Description: "A Custom CA certificate.",
-			},
-			"cert": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("CERT", ""),
-				Description: "A client certificate to authenticate with.",
-			},
-			"key": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("KEY", ""),
-				Description: "A client private key to authenticate with.",
 			},
 		},
 

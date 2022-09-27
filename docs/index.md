@@ -49,14 +49,6 @@ provider "vkcs" {
 ## Argument Reference
 - `auth_url` **String** (*Optional*) The Identity authentication URL.
 
-- `cacert_file` **String** (*Optional*) A Custom CA certificate.
-
-- `cert` **String** (*Optional*) A client certificate to authenticate with.
-
-- `insecure` **Boolean** (*Optional*) Trust self-signed certificates.
-
-- `key` **String** (*Optional*) A client private key to authenticate with.
-
 - `password` **String** (*Optional* Sensitive) Password to login with.
 
 - `project_id` **String** (*Optional*) The ID of Project to login with.
