@@ -7,7 +7,7 @@ description: |-
 
 # vkcs_regions
 
-`vkcs_regions` provides information about VKCS regions. Can be used to filter regions by parent region. To get details of each region the data source can be combined with the `vkcs_region` data source.
+`vkcs_regions` provides information about VKCS regions. To get details of each region the data source can be combined with the `vkcs_region` data source.
 
 ## Example Usage
 
@@ -24,12 +24,8 @@ data "vkcs_regions" "current" {
 ```
 
 ## Argument Reference
-- `parent_region_id` **String** (*Optional*) ID of the parent region. Use empty value to list all the regions.
-
 
 ## Attributes Reference
-- `parent_region_id` **String** See Argument Reference above.
-
 - `id` **String** Random identifier of the data source.
 
 - `names` <strong>Set of </strong>**String** Names of regions that meets the criteria.
