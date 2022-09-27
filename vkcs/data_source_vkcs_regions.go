@@ -15,11 +15,6 @@ func dataSourceVkcsRegions() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceVkcsRegionsRead,
 		Schema: map[string]*schema.Schema{
-			"parent_region_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "ID of the parent region. Use empty value to list all the regions.",
-			},
 			"names": {
 				Type:        schema.TypeSet,
 				Computed:    true,
@@ -32,7 +27,7 @@ func dataSourceVkcsRegions() *schema.Resource {
 				Description: "Random identifier of the data source.",
 			},
 		},
-		Description: "`vkcs_regions` provides information about VKCS regions. Can be used to filter regions by parent region. To get details of each region the data source can be combined with the `vkcs_region` data source.",
+		Description: "`vkcs_regions` provides information about VKCS regions. To get details of each region the data source can be combined with the `vkcs_region` data source.",
 	}
 }
 
@@ -44,9 +39,6 @@ func dataSourceVkcsRegionsRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	opts := regions.ListOpts{}
-	if parentRegion, ok := d.GetOk("parent_region_id"); ok {
-		opts.ParentRegionID = parentRegion.(string)
-	}
 
 	allPages, err := regions.List(client.(*gophercloud.ServiceClient), opts).AllPages()
 	if err != nil {
