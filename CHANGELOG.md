@@ -7,6 +7,16 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.1.13 (unreleased)
+- Added conflicts_with property to remote_group_id and remote_ip_prefix fields of resource_vkcs_networking_secgroup_rule
+- Added deprecation warning to ethertype field of resource_vkcs_networking_secgroup_rule
+- Removed dns_name and dns_domain attributes from resource_vkcs_networking_floatingip
+- Removed ip_version parameter from networking resources
+- Removed ipv6 related parameters from vkcs_compute_instance resource and data_source, from networking resources and data_sources
+- Removed sort_key and sort_direction arguments from data_source_vkcs_images_image
+- Removed parent_region_id argument from data_source_vkcs_regions
+- Removed cacert_file, cert, insecure, key fields from provider config
+
 #### v0.1.12
 - Removed image_id attribute from resource_vkcs_images_image and hidden attribute from vkcs_images_image resource and data_source
 - Removed tags attribute from vkcs_networking_floatingip resource and data_source
