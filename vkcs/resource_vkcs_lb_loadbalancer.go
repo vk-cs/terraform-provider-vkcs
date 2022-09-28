@@ -30,11 +30,11 @@ func resourceLoadBalancer() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-				Description: "The region in which to obtain the Loadbalancer client. If omitted, the	`region` argument of the provider is used. Changing this creates a new LB loadbalancer.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new LB loadbalancer.",
 			},
 
 			"name": {
