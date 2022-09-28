@@ -5,7 +5,7 @@ description: |-
   Get information on clusters node group.
 ---
 
-# vkcs\_kubernetes\_cluster
+# vkcs\_kubernetes\_node\_group
 
 Provides a cluster node group resource. This can be used to create, modify and delete cluster's node group.
 
@@ -26,8 +26,8 @@ The following arguments are supported:
 * `availability_zones` - (Optional) The list of availability zones of the node group.
   Zones `MS1` and  `GZ1` are available. By default, node group is being created at
   cluster's zone.
-  **Important:** Receiving default AZ add it manually to your main.tf config to sync it with state 
-  to avoid node groups force recreation in the future. 
+  **Important:** Receiving default AZ add it manually to your main.tf config to sync it with state
+  to avoid node groups force recreation in the future.
 * `cluster_id` - (Required) The UUID of the existing cluster.
 * `flavor_id` - (Optional) The flavor UUID of this node group.
 * `labels` - (Optional) The list of objects representing representing additional
@@ -35,7 +35,7 @@ The following arguments are supported:
   Object may also have optional attribute "value".
 * `max_nodes` - (Optional) The maximum allowed nodes for this node group.
 * `min_nodes` - (Optional) The minimum allowed nodes for this node group. Default to 0 if not set.
-* `name` - (Required) The name of node group to create. 
+* `name` - (Required) The name of node group to create.
  Changing this will force to create a new node group.
 * `node_count` - (Required) The node count for this node group. Should be greater than 0.
  If `autoscaling_enabled` parameter is set, this attribute will be ignored during update.
@@ -47,7 +47,7 @@ The following arguments are supported:
  Changing this will force to create a new node group.
 * `max_node_unavailable` - (Optional) The maximum number of nodes that can fail during an upgrade. The default value is 25 percent.
 
-    
+
 ## Attributes
 `id` is set to the ID of the found cluster template. In addition, the following
 attributes are exported:
@@ -55,7 +55,7 @@ attributes are exported:
 * `autoscaling_enabled` - Determines whether the autoscaling is enabled.
 * `availability_zones` - The list of availability zones of the node group.
 * `cluster_id` - The UUID of cluster that node group belongs.
-* `flavor_id` - The UUID of a flavor. 
+* `flavor_id` - The UUID of a flavor.
 * `labels` - The list of key value pairs representing additional
   properties of the node group.
 * `max_nodes` - The maximum amount of nodes in node group.
