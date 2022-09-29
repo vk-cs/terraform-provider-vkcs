@@ -1,5 +1,5 @@
 data "vkcs_compute_flavor" "db" {
-  name = "Basic-1-2-20"
+  name = "Standard-2-8-50"
 }
 
 data "vkcs_networking_network" "extnet" {
