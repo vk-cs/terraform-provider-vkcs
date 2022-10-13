@@ -1,4 +1,7 @@
 [submodule "automation"]
 	path = automation
 	url = ../terraform-provider-ci.git
-	branch = master
+	branch = autodoc
+[submodule "automation-docs-generator"]
+	path = automation-docs-generator
+	url = ../terraform-plugin-docs.git
