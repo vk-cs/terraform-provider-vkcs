@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.1.14 (unreleased)
+- Allow creation of resource_vkcs_images_image in clouds without s3 support
 - Added description for cluster_node_volume_type labels field in resource_vkcs_kubernetes_cluster
 
 #### v0.1.13

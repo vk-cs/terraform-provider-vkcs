@@ -17,6 +17,10 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 )
 
+const (
+	storeS3 = "s3"
+)
+
 func resourceImagesImage() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceImagesImageCreate,
@@ -232,6 +236,9 @@ func resourceImagesImageCreate(ctx context.Context, d *schema.ResourceData, meta
 
 	properties := d.Get("properties").(map[string]interface{})
 	imageProperties := resourceImagesImageExpandProperties(properties)
+	if !resourceImagesImageNeedsDefaultStore(imageClient.Endpoint) {
+		imageProperties["store"] = storeS3
+	}
 
 	createOpts := &images.CreateOpts{
 		Name:            d.Get("name").(string),
