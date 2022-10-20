@@ -8,8 +8,10 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -18,6 +20,8 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 )
+
+var imagesDefaultStoreEndpointMasks = []string{"*.devmail.ru$", "^ams.*"}
 
 func resourceImagesImageMemberStatusFromString(v string) images.ImageMemberStatus {
 	switch v {
@@ -165,9 +169,20 @@ func resourceImagesImageExpandProperties(v map[string]interface{}) map[string]st
 			properties[key] = v
 		}
 	}
-	properties["store"] = "s3"
 
 	return properties
+}
+
+func resourceImagesImageNeedsDefaultStore(endpoint string) bool {
+	endpointURL, _ := url.Parse(endpoint)
+	hostname := endpointURL.Hostname()
+	for _, mask := range imagesDefaultStoreEndpointMasks {
+		matches, _ := regexp.MatchString(mask, hostname)
+		if matches {
+			return true
+		}
+	}
+	return false
 }
 
 func resourceImagesImageUpdateComputedAttributes(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
@@ -186,6 +201,12 @@ func resourceImagesImageUpdateComputedAttributes(_ context.Context, diff *schema
 			for oldKey, oldValue := range o.(map[string]interface{}) {
 				// os_ keys are provided by the VKCS Image service.
 				if strings.HasPrefix(oldKey, "os_") {
+					if v, ok := oldValue.(string); ok {
+						newProperties[oldKey] = v
+					}
+				}
+
+				if oldKey == "store" {
 					if v, ok := oldValue.(string); ok {
 						newProperties[oldKey] = v
 					}
