@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.1.13 (unreleased)
+- Updated description for labels field in resource_vkcs_kubernetes_cluster 
 - Added conflicts_with property to remote_group_id and remote_ip_prefix fields of resource_vkcs_networking_secgroup_rule
 - Added deprecation warning to ethertype field of resource_vkcs_networking_secgroup_rule
 - Removed dns_name and dns_domain attributes from resource_vkcs_networking_floatingip
