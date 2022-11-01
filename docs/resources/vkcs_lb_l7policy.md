@@ -67,7 +67,7 @@ resource "vkcs_lb_l7policy" "l7policy_1" {
 
 - `redirect_url` **String** (*Optional*) Requests matching this policy will be redirected to this URL. Only valid if action is REDIRECT\_TO\_URL.
 
-- `region` **String** (*Optional*) The region in which to obtain the Loadbalancer client. If omitted, the	`region` argument of the provider is used. Changing this creates a new L7 Policy.
+- `region` **String** (*Optional*) The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new L7 Policy.
 
 
 ## Attributes Reference

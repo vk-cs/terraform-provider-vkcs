@@ -40,7 +40,7 @@ resource "vkcs_lb_monitor" "monitor_1" {
 
 - `name` **String** (*Optional*) The Name of the Monitor.
 
-- `region` **String** (*Optional*) The region in which to obtain the Loadbalancer client. If omitted, the	`region` argument of the provider is used. Changing this creates a new monitor.
+- `region` **String** (*Optional*) The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new monitor.
 
 - `url_path` **String** (*Optional*) Required for HTTP(S) types. URI path that will be accessed if monitor type is HTTP or HTTPS.
 
