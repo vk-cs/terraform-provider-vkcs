@@ -24,7 +24,7 @@ resource "vkcs_lb_loadbalancer" "lb_1" {
 
 - `name` **String** (*Optional*) Human-readable name for the Loadbalancer. Does not have to be unique.
 
-- `region` **String** (*Optional*) The region in which to obtain the Loadbalancer client. If omitted, the	`region` argument of the provider is used. Changing this creates a new LB loadbalancer.
+- `region` **String** (*Optional*) The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new LB loadbalancer.
 
 - `security_group_ids` <strong>Set of </strong>**String** (*Optional*) A list of security group IDs to apply to the loadbalancer. The security groups must be specified by ID and not name (as opposed to how they are configured with the Compute Instance).
 
