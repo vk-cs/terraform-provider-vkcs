@@ -182,7 +182,8 @@ func resourceKeyManagerSecret() *schema.Resource {
 				Description: "The map of metadata, assigned on the secret, which has been explicitly and implicitly added.",
 			},
 		},
-		Description: "Manages a key secret resource within VKCS.\n\n~> **Important Security Notice** The payload of this resource will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
+		Description: "Manages a key secret resource within VKCS.\n\n" +
+			"~> **Important Security Notice** The payload of this resource will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
 
 		CustomizeDiff: customdiff.Sequence(
 			// Clear the diff if the source payload is base64 encoded.

@@ -66,7 +66,8 @@ func resourceNetworkingPortSecGroupAssociate() *schema.Resource {
 				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
 			},
 		},
-		Description: "Manages a port's security groups within VKCS. Useful, when the port was created not by Terraform. It should not be used, when the port was created directly within Terraform.\n\nWhen the resource is deleted, Terraform doesn't delete the port, but unsets the list of user defined security group IDs.  However, if `enforce` is set to `true` and the resource is deleted, Terraform will remove all assigned security group IDs.",
+		Description: "Manages a port's security groups within VKCS. Useful, when the port was created not by Terraform. It should not be used, when the port was created directly within Terraform.\n\n" +
+			"When the resource is deleted, Terraform doesn't delete the port, but unsets the list of user defined security group IDs.  However, if `enforce` is set to `true` and the resource is deleted, Terraform will remove all assigned security group IDs.",
 	}
 }
 

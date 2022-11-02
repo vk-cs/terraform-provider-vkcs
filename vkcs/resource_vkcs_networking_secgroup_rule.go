@@ -78,11 +78,26 @@ func resourceNetworkingSecGroupRule() *schema.Resource {
 			},
 
 			"protocol": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
-				Description: "The layer 4 protocol type, valid values are following. Changing this creates a new security group rule. This is required if you want to specify a port range.\n  * __tcp__\n  * __udp__\n  * __icmp__\n  * __ah__\n  * __dccp__\n  * __egp__\n  * __esp__\n  * __gre__\n  * __igmp__\n  * __ospf__\n  * __pgm__\n  * __rsvp__\n  * __sctp__\n  * __udplite__\n  * __vrrp__",
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				Description: "The layer 4 protocol type, valid values are following. Changing this creates a new security group rule. This is required if you want to specify a port range.\n" +
+					"  * __tcp__\n" +
+					"  * __udp__\n" +
+					"  * __icmp__\n" +
+					"  * __ah__\n" +
+					"  * __dccp__\n" +
+					"  * __egp__\n" +
+					"  * __esp__\n" +
+					"  * __gre__\n" +
+					"  * __igmp__\n" +
+					"  * __ospf__\n" +
+					"  * __pgm__\n" +
+					"  * __rsvp__\n" +
+					"  * __sctp__\n" +
+					"  * __udplite__\n" +
+					"  * __vrrp__",
 			},
 
 			"remote_group_id": {

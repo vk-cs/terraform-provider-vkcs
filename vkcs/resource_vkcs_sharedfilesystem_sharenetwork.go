@@ -83,7 +83,8 @@ func resourceSharedFilesystemShareNetwork() *schema.Resource {
 				Description: "The share network CIDR.",
 			},
 		},
-		Description: "Use this resource to configure a share network.\n\nA share network stores network information that share servers can use when shares are created.",
+		Description: "Use this resource to configure a share network.\n\n" +
+			"A share network stores network information that share servers can use when shares are created.",
 	}
 }
 

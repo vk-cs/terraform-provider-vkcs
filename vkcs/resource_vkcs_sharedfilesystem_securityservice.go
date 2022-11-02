@@ -96,7 +96,9 @@ func resourceSharedFilesystemSecurityService() *schema.Resource {
 				Description: "The security service host name or IP address.",
 			},
 		},
-		Description: "Use this resource to configure a security service.\n\n~> **Note:** All arguments including the security service password will be stored in the raw state as plain-text. [Read more about sensitive data in state](/docs/state/sensitive-data.html).\n\nA security service stores configuration information for clients for authentication and authorization (AuthN/AuthZ). For example, a share server will be the client for an existing service such as LDAP, Kerberos, or Microsoft Active Directory.",
+		Description: "Use this resource to configure a security service.\n\n" +
+			"~> **Note:** All arguments including the security service password will be stored in the raw state as plain-text. [Read more about sensitive data in state](/docs/state/sensitive-data.html).\n\n" +
+			"A security service stores configuration information for clients for authentication and authorization (AuthN/AuthZ). For example, a share server will be the client for an existing service such as LDAP, Kerberos, or Microsoft Active Directory.",
 	}
 }
 

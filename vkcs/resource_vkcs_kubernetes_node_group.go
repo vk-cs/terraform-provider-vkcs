@@ -160,12 +160,13 @@ func resourceKubernetesNodeGroup() *schema.Resource {
 				Description: "The time at which node group was created.",
 			},
 			"availability_zones": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "The list of availability zones of the node group. Zones `MS1` and  `GZ1` are available. By default, node group is being created at cluster's zone.\n**Important:** Receiving default AZ add it manually to your main.tf config to sync it with state to avoid node groups force recreation in the future.",
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Description: "The list of availability zones of the node group. Zones `MS1` and  `GZ1` are available. By default, node group is being created at cluster's zone.\n" +
+					"**Important:** Receiving default AZ add it manually to your main.tf config to sync it with state to avoid node groups force recreation in the future.",
 			},
 			"max_node_unavailable": {
 				Type:        schema.TypeInt,
