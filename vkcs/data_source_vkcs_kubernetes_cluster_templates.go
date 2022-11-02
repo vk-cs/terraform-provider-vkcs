@@ -36,7 +36,10 @@ func dataSourceKubernetesClusterTemplates() *schema.Resource {
 					},
 				},
 				// Currently, Computed composite fields are treated by terraform-schema as "Objects". Thus, subfields and their descriptions are not available to documentation generator. We have to put these descriptions into parent field description as workaround.
-				Description: "A list of available kubernetes cluster templates.\n  - `cluster_template_uuid` **String** The UUID of the cluster template.\n\n  - `name` **String** The name of the cluster template.\n\n  - `version` **String** The version of the cluster template.",
+				Description: "A list of available kubernetes cluster templates.\n" +
+					"  - `cluster_template_uuid` **String** The UUID of the cluster template.\n\n" +
+					"  - `name` **String** The name of the cluster template.\n\n" +
+					"  - `version` **String** The version of the cluster template.",
 			},
 			"id": {
 				Type:        schema.TypeString,

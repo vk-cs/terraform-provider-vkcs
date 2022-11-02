@@ -175,7 +175,8 @@ func dataSourceKeyManagerSecret() *schema.Resource {
 				Description: "The map of metadata, assigned on the secret, which has been explicitly and implicitly added.",
 			},
 		},
-		Description: "Use this data source to get the ID and the payload of an available Key secret\n\n~> **Important Security Notice** The payload of this data source will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
+		Description: "Use this data source to get the ID and the payload of an available Key secret\n\n" +
+			"~> **Important Security Notice** The payload of this data source will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
 	}
 
 	elem := &schema.Resource{

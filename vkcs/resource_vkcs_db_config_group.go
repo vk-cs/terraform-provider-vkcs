@@ -72,7 +72,8 @@ func resourceDatabaseConfigGroup() *schema.Resource {
 				Description: "Timestamp of config group's creation",
 			},
 		},
-		Description: "Provides a db config group resource. This can be used to create, update and delete db config group.\n**New since v.0.1.7**.",
+		Description: "Provides a db config group resource. This can be used to create, update and delete db config group.\n" +
+			"**New since v.0.1.7**.",
 	}
 }
 

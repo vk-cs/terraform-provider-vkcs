@@ -64,7 +64,8 @@ func dataSourceDatabaseConfigGroup() *schema.Resource {
 				Description: "The description of the config group.",
 			},
 		},
-		Description: "Use this data source to get the information on a db config group resource.\n**New since v.0.1.7**.",
+		Description: "Use this data source to get the information on a db config group resource.\n" +
+			"**New since v.0.1.7**.",
 	}
 }
 

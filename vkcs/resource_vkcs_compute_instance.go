@@ -389,7 +389,8 @@ func resourceComputeInstance() *schema.Resource {
 				Description: "Map of additional vendor-specific options. Supported options are described below.",
 			},
 		},
-		Description: "Manages a compute VM instance resource.\n\n~> **Note:** All arguments including the instance admin password will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
+		Description: "Manages a compute VM instance resource.\n\n" +
+			"~> **Note:** All arguments including the instance admin password will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
 	}
 }
 

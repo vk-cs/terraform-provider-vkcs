@@ -215,7 +215,8 @@ func resourceImagesImage() *schema.Resource {
 				Description: "The date the image was last updated.",
 			},
 		},
-		Description: "Manages an Image resource within VKCS.\n\n~> **Note:** All arguments including the source image URL password will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
+		Description: "Manages an Image resource within VKCS.\n\n" +
+			"~> **Note:** All arguments including the source image URL password will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
 	}
 }
 
