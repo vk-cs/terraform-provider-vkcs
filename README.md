@@ -22,7 +22,7 @@ $ terraform plan
 
 Provider development
 --------------------
-To start improve it grab the repository, build it and install into local registry repository.
+To start improving grab the repository, build it and install into local registry repository.
 Builds for MacOS, Windows and Linux are available.
 The example is for MacOS.
 ```sh
@@ -47,8 +47,18 @@ EOF
 $ terraform init
 ```
 
+When submitting PR make sure that if golang code has been changed, PR has updates to CHANGELOG.md. Add description of changes under last version with "(unreleased)" mark.
+
+Documenting provider
+--------------------
+To update documentation contents, please, update "description" field of necessary resource/data_source schema and create/modify documentation templates.
+Documentation templates are located in templates/ folder.
+PR with renewed provider documentation is generated automatically when updates are merged into master branch.
+
 Publishing provider
 -------------------
+Before publishing, remove "(unreleased)" mark from CHANGELOG in separate PR. After this PR is merged, you can publish the provider.
+
 Provider publishes via action [release](https://github.com/vk-cs/terraform-provider-vkcs/blob/master/.github/workflows/release.yml).
 To call the action create new tag.
 ```sh
