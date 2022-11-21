@@ -12,13 +12,12 @@
     Examples are used by canary tests on vkcs side to verify the latests terraform
     and vkcs provider over vkcs cloud.
 
-    Also examples are used by developers manually or via CI (**in construction**)
-    to verify changes.
+    Also examples are used by developers manually or via CI to verify changes.
 
-- Documentation generator (**in construction**)
+- Documentation generator
 
-    Some examples are planned to be built inside documentation on guide/resource pages
-    by documentation generator.
+    Documentation is automatically generated using examples that are located here
+    and with additional examples from templates folder.
 
 ## Running an example
 
