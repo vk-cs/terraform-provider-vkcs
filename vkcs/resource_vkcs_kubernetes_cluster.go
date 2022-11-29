@@ -142,6 +142,7 @@ func resourceKubernetesCluster() *schema.Resource {
 					"  * `ingress_controller=\"nginx\"` to preinstall NGINX Ingress Controller.\n" +
 					"  * `kube_log_level` to set log level for kubelet in range 0 to 8.\n" +
 					"  * `master_volume_size` to set master vm volume size. Default 50Gb.\n" +
+					"  * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.\n" +
 					"  * `prometheus_monitoring=true` to preinstall monitoring system based on Prometheus and Grafana.\n",
 			},
 			"master_count": {
