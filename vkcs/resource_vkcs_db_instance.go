@@ -415,6 +415,17 @@ func resourceDatabaseInstance() *schema.Resource {
 				},
 				Description: "Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4**.",
 			},
+
+			// Computed values
+			"ip": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "IP address of the instance.",
+			},
 		},
 		Description: "Provides a db instance resource. This can be used to create, modify and delete db instance.",
 	}
@@ -660,6 +671,8 @@ func resourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, m
 	} else {
 		d.Set("backup_schedule", nil)
 	}
+
+	d.Set("ip", instance.IP)
 
 	return nil
 }
