@@ -7,7 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.1.14 (unreleased)
+#### v0.1.14
 - Add "instances" computed field to resource_vkcs_kubernetes_cluster
 - Add ability to control which cluster instances should remain after shrinking cluster via "shrink_options" field of resource_vkcs_kubernetes_cluster
 - Add "ip" computed field to resource_vkcs_db_instance
