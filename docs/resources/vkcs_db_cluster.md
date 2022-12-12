@@ -157,6 +157,8 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
 - `root_password` **String** (*Optional* Sensitive) Password for the root user of the cluster.
 
+- `shrink_options` **String** (*Optional*) Used only for shrinking cluster. List of IDs of instances that should remain after shrink. If no options are supplied, shrink operation will choose first non-leader instance to delete.
+
 - `wal_disk_autoexpand` (*Optional*) Object that represents autoresize properties of wal volume of the cluster.
   - `autoexpand` **Boolean** (*Optional*) Indicates whether wal volume autoresize is enabled.
 
@@ -229,6 +231,8 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
 - `root_password` **String** See Argument Reference above.
 
+- `shrink_options` **String** See Argument Reference above.
+
 - `wal_disk_autoexpand`  See Argument Reference above.
   - `autoexpand` **Boolean** See Argument Reference above.
 
@@ -240,6 +244,8 @@ resource "vkcs_db_cluster" "mydb-cluster" {
   - `volume_type` **String** See Argument Reference above.
 
 - `id` **String** ID of the resource.
+
+- `instances` **Object** Cluster instances info.
 
 
 
