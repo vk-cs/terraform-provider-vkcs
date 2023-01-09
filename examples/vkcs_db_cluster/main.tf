@@ -19,7 +19,6 @@ resource "vkcs_db_cluster" "db-cluster" {
   }
 
   depends_on = [
-    vkcs_networking_network.db,
-    vkcs_networking_subnet.db
+    vkcs_networking_router_interface.db
   ]
 }
