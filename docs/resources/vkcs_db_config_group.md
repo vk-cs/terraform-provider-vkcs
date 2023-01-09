@@ -46,6 +46,10 @@ resource "vkcs_db_instance" "db-instance" {
     flavor_id = data.vkcs_compute_flavor.db.id
     volume_type = "ceph-ssd"
     size = 8
+
+    depends_on = [
+        vkcs_networking_router_interface.db
+    ]
 }
 ```
 ## Argument Reference
