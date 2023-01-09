@@ -31,7 +31,6 @@ resource "vkcs_db_instance" "db-instance" {
   }
 
   depends_on = [
-    vkcs_networking_network.db,
-    vkcs_networking_subnet.db
+    vkcs_networking_router_interface.db
   ]
 }
