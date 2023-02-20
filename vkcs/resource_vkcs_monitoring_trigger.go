@@ -111,7 +111,7 @@ func resourceTriggerRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("name", ch.Trigger.Name)
 	d.Set("status", ch.Trigger.Status)
 	d.Set("query", ch.Trigger.Query)
-	//d.Set("interval", ch.Trigger.Interval)
+	d.Set("interval", ch.Trigger.Interval)
 	d.Set("notification_title", ch.Trigger.NotificationTitle)
 	d.Set("notification_channels", ch.Trigger.NotificationChannels)
 	return nil
