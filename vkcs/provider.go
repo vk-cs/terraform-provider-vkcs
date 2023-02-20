@@ -26,7 +26,10 @@ const (
 type configer interface {
 	LoadAndValidate() error
 	GetRegion() string
+	GetTenantID() string
 	ComputeV2Client(region string) (*gophercloud.ServiceClient, error)
+	MonitoringV1Client(region string) (*gophercloud.ServiceClient, error)
+	MonitoringTemplaterV2Client(region string) (*gophercloud.ServiceClient, error)
 	ImageV2Client(region string) (*gophercloud.ServiceClient, error)
 	NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error)
 	BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error)
@@ -47,6 +50,45 @@ var _ configer = &config{}
 // GetRegion is implementation of getRegion method
 func (c *config) GetRegion() string {
 	return c.Region
+}
+
+// GetTenantID is implementation of getTenantID method
+func (c *config) GetTenantID() string {
+	return c.TenantID
+}
+
+var tempUrl = map[string]string{
+	"alerting":  "https://mcs.mail.ru/infra/alerting/v1/",
+	"templater": "https://mcs.mail.ru/infra/templater/v2/",
+}
+
+func initClientOpts(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts, clientType string) (*gophercloud.ServiceClient, error) {
+	sc := new(gophercloud.ServiceClient)
+	eo.ApplyDefaults(clientType)
+	url := tempUrl[clientType]
+	//url, err := client.EndpointLocator(eo)
+	//if err != nil {
+	//	return sc, err
+	//}
+	sc.ProviderClient = client
+	sc.Endpoint = url
+	sc.Type = clientType
+	return sc, nil
+}
+
+func NewMonitoringV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
+	return initClientOpts(client, eo, "alerting")
+}
+func NewMonitoringTemplaterV2(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
+	return initClientOpts(client, eo, "templater")
+}
+
+func (c *config) MonitoringTemplaterV2Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.CommonServiceClientInit(NewMonitoringTemplaterV2, region, "templater")
+}
+
+func (c *config) MonitoringV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.CommonServiceClientInit(NewMonitoringV1, region, "alerting")
 }
 
 func (c *config) ComputeV2Client(region string) (*gophercloud.ServiceClient, error) {
@@ -273,6 +315,9 @@ func Provider() *schema.Provider {
 			"vkcs_db_config_group":                    resourceDatabaseConfigGroup(),
 			"vkcs_kubernetes_cluster":                 resourceKubernetesCluster(),
 			"vkcs_kubernetes_node_group":              resourceKubernetesNodeGroup(),
+			"vkcs_monitoring_channel":                 resourceMonitoringChannel(),
+			"vkcs_monitoring_trigger":                 resourceMonitoringTrigger(),
+			"vkcs_monitoring_template":                resourceMonitoringTemplater(),
 		},
 	}
 
