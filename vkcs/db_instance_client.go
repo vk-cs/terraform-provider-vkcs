@@ -99,7 +99,7 @@ type configuration struct {
 }
 
 type restorePoint struct {
-	BackupRef string `json:"backup_ref" required:"true" mapstructure:"backup_id"`
+	BackupRef string `json:"backupRef" required:"true" mapstructure:"backup_id"`
 	Target    string `json:"target,omitempty"`
 }
 
@@ -380,7 +380,7 @@ type dbInstanceCreateOpts struct {
 	MaxDiskSize       int                      `json:"volume_autoresize_max_size,omitempty"`
 	Walvolume         *walVolume               `json:"wal_volume,omitempty"`
 	Capabilities      []instanceCapabilityOpts `json:"capabilities,omitempty"`
-	RestorePoint      *restorePoint            `json:"restore_point,omitempty"`
+	RestorePoint      *restorePoint            `json:"restorePoint,omitempty"`
 	BackupSchedule    *backupSchedule          `json:"backup_schedule,omitempty"`
 }
 

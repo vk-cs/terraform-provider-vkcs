@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.1.15 (unreleased)
+- Fix error of ignoring restore_point field in resource_vkcs_db_instance and resource_vkcs_db_cluster
+
 #### v0.1.14
 - Add "instances" computed field to resource_vkcs_kubernetes_cluster
 - Add ability to control which cluster instances should remain after shrinking cluster via "shrink_options" field of resource_vkcs_kubernetes_cluster
