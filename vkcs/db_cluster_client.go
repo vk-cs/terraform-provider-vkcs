@@ -22,7 +22,7 @@ type dbClusterCreateOpts struct {
 	WalMaxDiskSize    int                           `json:"wal_autoresize_max_size,omitempty"`
 	Instances         []dbClusterInstanceCreateOpts `json:"instances"`
 	Capabilities      []instanceCapabilityOpts      `json:"capabilities,omitempty"`
-	RestorePoint      *restorePoint                 `json:"restore_point,omitempty"`
+	RestorePoint      *restorePoint                 `json:"restorePoint,omitempty"`
 	BackupSchedule    *backupSchedule               `json:"backup_schedule,omitempty"`
 }
 
