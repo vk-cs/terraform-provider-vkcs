@@ -1,5 +1,5 @@
 data "vkcs_kubernetes_clustertemplate" "ct" {
-  version = "1.21.4"
+  version = "1.24"
 }
 
 resource "vkcs_kubernetes_cluster" "k8s-cluster" {
