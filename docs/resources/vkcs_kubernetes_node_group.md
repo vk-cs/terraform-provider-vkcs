@@ -12,7 +12,7 @@ Provides a cluster node group resource. This can be used to create, modify and d
 ## Example Usage
 ```terraform
 data "vkcs_kubernetes_clustertemplate" "ct" {
-    version = "1.21.4"
+    version = "1.24"
 }
 
 resource "vkcs_kubernetes_cluster" "k8s-cluster" {
