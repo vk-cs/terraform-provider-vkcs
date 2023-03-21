@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.1.15 (unreleased)
+- Add "export_location_path" computed field to resource_vkcs_sharedfilesystem_share
 - Fix error of ignoring restore_point field in resource_vkcs_db_instance and resource_vkcs_db_cluster
 
 #### v0.1.14

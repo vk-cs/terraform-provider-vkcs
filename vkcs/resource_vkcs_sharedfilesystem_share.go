@@ -65,6 +65,12 @@ func resourceSharedFilesystemShare() *schema.Resource {
 				Description: "The human-readable description for the share. Changing this updates the description of the existing share.",
 			},
 
+			"export_location_path": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The export location path of the share",
+			},
+
 			"share_proto": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -202,6 +208,11 @@ func resourceSharedFilesystemShareRead(ctx context.Context, d *schema.ResourceDa
 
 	log.Printf("[DEBUG] Retrieved share %s: %#v", d.Id(), share)
 
+	exportLocationPath, err := getShareExportLocationPath(sfsClient, share.ID)
+	if err != nil {
+		return diag.Errorf("Error retrieving share export location path: %s", err)
+	}
+
 	d.Set("name", share.Name)
 	d.Set("description", share.Description)
 	d.Set("share_proto", share.ShareProto)
@@ -214,6 +225,7 @@ func resourceSharedFilesystemShareRead(ctx context.Context, d *schema.ResourceDa
 	// Computed
 	d.Set("region", getRegion(d, config))
 	d.Set("project_id", share.ProjectID)
+	d.Set("export_location_path", exportLocationPath)
 	d.Set("share_server_id", share.ShareServerID)
 
 	return nil
