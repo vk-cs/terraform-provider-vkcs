@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.1.15 (unreleased)
+- Add "loadbalancer_id" computed field to resource_vkcs_db_cluster
 - Fix error of not expecting "retyping" status when modifying resource_vkcs_blockstorage_volume.volume_type
 - Add vkcs_lb_loadbalancer datasource
 - Make "export_location_path" field of data_source_vkcs_sharedfilesystem_share computed
