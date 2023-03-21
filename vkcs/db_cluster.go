@@ -42,6 +42,24 @@ func flattenDatabaseClusterInstance(inst dbClusterInstanceResp) map[string]inter
 	return instance
 }
 
+func getDatabaseClusterShardInstances(insts []dbClusterInstanceResp) map[string][]map[string]interface{} {
+	shardsInstances := make(map[string][]map[string]interface{})
+	for _, inst := range insts {
+		flattenInst := flattenDatabaseClusterShardInstance(inst)
+		shardsInstances[inst.ShardID] = append(shardsInstances[inst.ShardID], flattenInst)
+	}
+
+	return shardsInstances
+}
+
+func flattenDatabaseClusterShardInstance(inst dbClusterInstanceResp) map[string]interface{} {
+	instance := make(map[string]interface{})
+	instance["instance_id"] = inst.ID
+	instance["ip"] = inst.IP
+
+	return instance
+}
+
 func expandDatabaseClusterShrinkOptions(v []interface{}) []string {
 	opts := make([]string, len(v))
 	for i, opt := range v {

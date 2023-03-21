@@ -337,6 +337,29 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 							ForceNew:    true,
 							Description: "The name of the availability zone of the cluster shard. Changing this creates a new cluster.",
 						},
+
+						"instances": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"instance_id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The id of the instance.",
+									},
+									"ip": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+										Description: "IP address of the instance.",
+									},
+								},
+							},
+							Description: "Shard instances info.",
+						},
 					},
 				},
 				Description: "Object that represents cluster shard. There can be several instances of this object.",
@@ -519,6 +542,17 @@ func resourceDatabaseClusterWithShardsRead(ctx context.Context, d *schema.Resour
 	if _, ok := d.GetOk("wal_disk_autoexpand"); ok {
 		d.Set("wal_disk_autoexpand", flattenDatabaseInstanceAutoExpand(cluster.WalAutoExpand, cluster.WalMaxDiskSize))
 	}
+
+	shardsRaw := d.Get("shard").([]interface{})
+	shards := make([]map[string]interface{}, len(shardsRaw))
+	shardsInstances := getDatabaseClusterShardInstances(cluster.Instances)
+	for i, shardRaw := range shardsRaw {
+		shard := shardRaw.(map[string]interface{})
+		shardID := shard["shard_id"].(string)
+		shard["instances"] = shardsInstances[shardID]
+		shards[i] = shard
+	}
+	d.Set("shard", shards)
 
 	return nil
 }
