@@ -163,6 +163,12 @@ func resourceDatabaseCluster() *schema.Resource {
 				Description: "Object that represents datastore of the cluster. Changing this creates a new cluster.",
 			},
 
+			"loadbalancer_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The id of the loadbalancer attached to the cluster.",
+			},
+
 			"network": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -578,6 +584,7 @@ func resourceDatabaseClusterRead(ctx context.Context, d *schema.ResourceData, me
 	d.Set("flavor_id", cluster.Instances[0].Flavor.ID)
 	d.Set("cluster_size", len(cluster.Instances))
 	d.Set("volume_size", cluster.Instances[0].Volume.Size)
+	d.Set("loadbalancer_id", cluster.LoadbalancerID)
 
 	d.Set("configuration_id", cluster.ConfigurationID)
 	if _, ok := d.GetOk("disk_autoexpand"); ok {
