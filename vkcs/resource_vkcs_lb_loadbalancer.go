@@ -101,8 +101,10 @@ func resourceLoadBalancer() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
-				Description: "A list of security group IDs to apply to the loadbalancer. The security groups must be specified by ID and not name (as opposed to how they are configured with the Compute Instance).",
+				Description: "A list of security group IDs to apply to the loadbalancer. The security groups must be specified by ID and not name (as opposed to how they are configured with the Compute Instance). ***Deprecated*** This argument is deprecated, please do not use it.",
+				Deprecated:  "This argument is deprecated, please do not use it",
 			},
+
 			"tags": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -122,10 +124,7 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
-	var (
-		lbID      string
-		vipPortID string
-	)
+	var lbID string
 
 	adminStateUp := d.Get("admin_state_up").(bool)
 
@@ -156,23 +155,12 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.Errorf("Error creating vkcs_lb_loadbalancer: %s", err)
 	}
 	lbID = lb.ID
-	vipPortID = lb.VipPortID
 
 	// Wait for load-balancer to become active before continuing.
 	timeout := d.Timeout(schema.TimeoutCreate)
 	err = waitForLBLoadBalancer(ctx, lbClient, lbID, "ACTIVE", getLbPendingStatuses(), timeout)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	// Once the load-balancer has been created, apply any requested security groups
-	// to the port that was created behind the scenes.
-	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
-	if err != nil {
-		return diag.Errorf("Error creating VKCS networking client: %s", err)
-	}
-	if err := resourceLoadBalancerSetSecurityGroups(networkingClient, vipPortID, d); err != nil {
-		return diag.Errorf("Error setting vkcs_lb_loadbalancer security groups: %s", err)
 	}
 
 	d.SetId(lbID)
@@ -282,18 +270,6 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, met
 		err = waitForLBLoadBalancer(ctx, lbClient, d.Id(), "ACTIVE", getLbPendingStatuses(), timeout)
 		if err != nil {
 			return diag.FromErr(err)
-		}
-	}
-
-	// Security Groups get updated separately.
-	if d.HasChange("security_group_ids") {
-		networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
-		if err != nil {
-			return diag.Errorf("Error creating VKCS networking client: %s", err)
-		}
-		vipPortID := d.Get("vip_port_id").(string)
-		if err := resourceLoadBalancerSetSecurityGroups(networkingClient, vipPortID, d); err != nil {
-			return diag.Errorf("Error setting vkcs_lb_loadbalancer security groups: %s", err)
 		}
 	}
 

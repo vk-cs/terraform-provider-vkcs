@@ -634,27 +634,6 @@ func expandLBMembers(members *schema.Set, lbClient *gophercloud.ServiceClient) [
 	return m
 }
 
-func resourceLoadBalancerSetSecurityGroups(networkingClient *gophercloud.ServiceClient, vipPortID string, d *schema.ResourceData) error {
-	if vipPortID != "" {
-		if v, ok := d.GetOk("security_group_ids"); ok {
-			securityGroups := expandToStringSlice(v.(*schema.Set).List())
-			updateOpts := ports.UpdateOpts{
-				SecurityGroups: &securityGroups,
-			}
-
-			log.Printf("[DEBUG] Adding security groups to vkcs_lb_loadbalancer "+
-				"VIP port %s: %#v", vipPortID, updateOpts)
-
-			_, err := ports.Update(networkingClient, vipPortID, updateOpts).Extract()
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
 func resourceLoadBalancerGetSecurityGroups(networkingClient *gophercloud.ServiceClient, vipPortID string, d *schema.ResourceData) error {
 	port, err := ports.Get(networkingClient, vipPortID).Extract()
 	if err != nil {
