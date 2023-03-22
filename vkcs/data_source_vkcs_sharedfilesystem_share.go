@@ -70,6 +70,7 @@ func dataSourceSharedFilesystemShare() *schema.Resource {
 			"export_location_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The export location path of the share.",
 			},
 
@@ -139,6 +140,11 @@ func dataSourceSharedFilesystemShareRead(ctx context.Context, d *schema.Resource
 	}
 	share = allShares[0]
 
+	exportLocationPath, err := getShareExportLocationPath(sfsClient, share.ID)
+	if err != nil {
+		return diag.Errorf("Unable to retrieve export location path: %s", err)
+	}
+
 	d.SetId(share.ID)
 	d.Set("name", share.Name)
 	d.Set("region", getRegion(d, config))
@@ -149,6 +155,7 @@ func dataSourceSharedFilesystemShareRead(ctx context.Context, d *schema.Resource
 	d.Set("description", share.Description)
 	d.Set("size", share.Size)
 	d.Set("status", share.Status)
+	d.Set("export_location_path", exportLocationPath)
 	d.Set("share_proto", share.ShareProto)
 
 	return nil
