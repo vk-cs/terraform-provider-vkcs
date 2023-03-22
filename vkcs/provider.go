@@ -208,6 +208,7 @@ func Provider() *schema.Provider {
 			"vkcs_keymanager_container":          dataSourceKeyManagerContainer(),
 			"vkcs_blockstorage_volume":           dataSourceBlockStorageVolume(),
 			"vkcs_blockstorage_snapshot":         dataSourceBlockStorageSnapshot(),
+			"vkcs_lb_loadbalancer":               dataSourceLoadBalancer(),
 			"vkcs_sharedfilesystem_sharenetwork": dataSourceSharedFilesystemShareNetwork(),
 			"vkcs_sharedfilesystem_share":        dataSourceSharedFilesystemShare(),
 			"vkcs_db_database":                   dataSourceDatabaseDatabase(),

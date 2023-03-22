@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.1.15 (unreleased)
+- Add vkcs_lb_loadbalancer datasource
 - Make "export_location_path" field of data_source_vkcs_sharedfilesystem_share computed
 - Add "export_location_path" computed field to resource_vkcs_sharedfilesystem_share
 - Fix error of ignoring restore_point field in resource_vkcs_db_instance and resource_vkcs_db_cluster
