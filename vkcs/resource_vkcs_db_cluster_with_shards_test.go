@@ -75,9 +75,6 @@ const testAccDatabaseClusterWithShardsBasic = `
 	  availability_zone = "{{.AvailabilityZone}}"
 	}
 
-	depends_on = [
-		vkcs_networking_network.base,
-		vkcs_networking_subnet.base
-	]
+	depends_on = [vkcs_networking_router_interface.base]
  }
 `

@@ -144,10 +144,7 @@ resource "vkcs_db_instance" "basic" {
     autoexpand = true
     max_disk_size = 1000
   }
-  depends_on = [
-    vkcs_networking_network.base,
-    vkcs_networking_subnet.base
-  ]
+  depends_on = [vkcs_networking_router_interface.base]
 }
 `
 
@@ -187,9 +184,6 @@ resource "vkcs_db_instance" "basic" {
     autoexpand = true
     max_disk_size = 1000
   }
-  depends_on = [
-    vkcs_networking_network.base,
-    vkcs_networking_subnet.base
-  ]
+  depends_on = [vkcs_networking_router_interface.base]
 }
 `
