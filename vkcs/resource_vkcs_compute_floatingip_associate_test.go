@@ -194,7 +194,7 @@ const testAccComputeFloatingIPAssociateBasic = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = [vkcs_networking_subnet.base]
+  depends_on = [vkcs_networking_router_interface.base]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -221,7 +221,7 @@ const testAccComputeFloatingIPAssociateUpdate = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   security_groups = ["default"]
   network {
@@ -248,7 +248,7 @@ const testAccComputeFloatingIPAssociateFixedIP = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   security_groups = ["default"]
   network {
@@ -275,7 +275,7 @@ const testAccComputeFloatingIPAssociateAttachNew1 = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   security_groups = ["default"]
   network {
@@ -305,7 +305,7 @@ const testAccComputeFloatingIPAssociateAttachNew2 = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   security_groups = ["default"]
   network {
@@ -335,7 +335,7 @@ const testAccComputeFloatingIPAssociateWaitUntilAssociated = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   security_groups = ["default"]
   network {

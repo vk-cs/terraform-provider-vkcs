@@ -200,8 +200,7 @@ const testAccDatabaseClusterBasic = `
    availability_zone = "{{.AvailabilityZone}}"
 
    depends_on = [
-    vkcs_networking_network.base,
-    vkcs_networking_subnet.base
+    vkcs_networking_router_interface.base
   ]
  }
 `
@@ -227,10 +226,7 @@ resource "vkcs_db_cluster" "basic" {
 	 
 	availability_zone = "{{.AvailabilityZone}}"
 
-	depends_on = [
-		vkcs_networking_network.base,
-		vkcs_networking_subnet.base
-	  ]
+	depends_on = [vkcs_networking_router_interface.base]
   }
 `
 
@@ -265,10 +261,7 @@ const testAccDatabaseClusterWal = `
 	max_disk_size = 1000
    }
 
-   depends_on = [
-    vkcs_networking_network.base,
-    vkcs_networking_subnet.base
-  ]
+   depends_on = [vkcs_networking_router_interface.base]
  }
 `
 
@@ -292,10 +285,7 @@ const testAccDatabaseClusterShrinkInitial = `
    }
 	
    availability_zone = "GZ1"
-   depends_on = [
-    vkcs_networking_network.base,
-    vkcs_networking_subnet.base
-  ]
+   depends_on = [vkcs_networking_router_interface.base]
  }
 `
 
@@ -319,9 +309,6 @@ var testAccDatabaseClusterShrinkUpdated = `
    }
 	
    availability_zone = "GZ1"
-   depends_on = [
-    vkcs_networking_network.base,
-    vkcs_networking_subnet.base
-  ]
+   depends_on = [vkcs_networking_router_interface.base]
  }
 `

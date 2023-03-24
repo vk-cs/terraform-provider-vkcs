@@ -810,7 +810,7 @@ const testAccComputeInstanceBasic = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-	depends_on = ["vkcs_networking_subnet.base"]
+	depends_on = ["vkcs_networking_router_interface.base"]
 	name = "instance_1"
 	availability_zone = "{{.AvailabilityZone}}"
 	security_groups = ["default"]
@@ -831,7 +831,7 @@ const testAccComputeInstanceBootFromVolumeImage = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -864,7 +864,7 @@ resource "vkcs_blockstorage_volume" "vol_1" {
 }
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -888,7 +888,7 @@ const testAccComputeInstanceBootFromVolumeForceNew1 = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]  
+  depends_on = ["vkcs_networking_router_interface.base"]  
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -913,7 +913,7 @@ const testAccComputeInstanceBootFromVolumeForceNew2 = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -938,7 +938,7 @@ const testAccComputeInstanceBlockDeviceNewVolume = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -970,7 +970,7 @@ const testAccComputeInstanceBlockDeviceNewVolumeTypeAndBus = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1012,7 +1012,7 @@ resource "vkcs_blockstorage_volume" "volume_1" {
 }
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1044,7 +1044,7 @@ const testAccComputeInstancePersonality = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1108,7 +1108,7 @@ const testAccComputeInstanceChangeFixedIP1 = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1127,7 +1127,7 @@ const testAccComputeInstanceChangeFixedIP2 = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1146,7 +1146,7 @@ const testAccComputeInstanceStopBeforeDestroy = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1165,7 +1165,7 @@ const testAccComputeInstanceMetadataRemove1 = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1187,7 +1187,7 @@ const testAccComputeInstanceMetadataRemove2 = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1209,7 +1209,7 @@ const testAccComputeInstanceForceDelete = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1228,7 +1228,7 @@ const testAccComputeInstanceTimeout = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1276,7 +1276,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
 }
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base", "vkcs_networking_subnet.subnet_1"]
+  depends_on = ["vkcs_networking_router_interface.base", "vkcs_networking_subnet.subnet_1"]
 
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
@@ -1370,7 +1370,7 @@ resource "vkcs_networking_port" "port_4" {
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = [
-	"vkcs_networking_subnet.base",
+	"vkcs_networking_router_interface.base",
     "vkcs_networking_subnet.subnet_1",
     "vkcs_networking_subnet.subnet_2",
     "vkcs_networking_port.port_1",
@@ -1432,7 +1432,7 @@ const testAccComputeInstanceStateActive = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = [vkcs_networking_subnet.base]
+  depends_on = [vkcs_networking_router_interface.base]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1451,7 +1451,7 @@ const testAccComputeInstanceStateShutoff = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1470,7 +1470,7 @@ const testAccComputeInstanceStateShelve = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1489,7 +1489,7 @@ const testAccComputeInstanceTagsCreate = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1507,7 +1507,7 @@ const testAccComputeInstanceTagsAdd = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1526,7 +1526,7 @@ const testAccComputeInstanceTagsDelete = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
@@ -1545,7 +1545,7 @@ const testAccComputeInstanceTagsClear = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]

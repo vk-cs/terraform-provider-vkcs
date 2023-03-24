@@ -140,10 +140,7 @@ resource "vkcs_db_instance" "basic" {
     uuid = vkcs_networking_network.base.id
   }
   availability_zone = "{{.AvailabilityZone}}"
-  depends_on = [
-    vkcs_networking_network.base,
-    vkcs_networking_subnet.base
-  ]
+  depends_on = [vkcs_networking_router_interface.base]
 }
 
 resource "vkcs_db_database" "basic" {

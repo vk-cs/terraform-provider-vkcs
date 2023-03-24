@@ -48,6 +48,7 @@ const testAccLBLoadBalancerDataSourceBasic = `
 {{.BaseNetwork}}
 
 resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "loadbalancer_1"
   vip_subnet_id = vkcs_networking_subnet.base.id
   tags = ["tag1"]

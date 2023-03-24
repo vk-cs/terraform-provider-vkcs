@@ -50,7 +50,7 @@ const testAccComputeInstanceDataSourceBasic = `
 {{.BaseFlavor}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_subnet.base"]
+  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   security_groups = ["default"]
   metadata = {
