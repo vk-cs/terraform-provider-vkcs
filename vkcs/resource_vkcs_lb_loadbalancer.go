@@ -198,7 +198,7 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	// Get any security groups on the VIP Port.
 	if vipPortID != "" {
-		networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
+		networkingClient, err := config.NetworkingV2Client(getRegion(d, config), searchInAllSDNs)
 		if err != nil {
 			return diag.Errorf("Error creating VKCS networking client: %s", err)
 		}
