@@ -188,6 +188,8 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
 
     - `volume_type` **String** See Argument Reference above.
 
+  - `instances` **Object** Shard instances info.
+
 - `capabilities`  See Argument Reference above.
   - `name` **String** See Argument Reference above.
 
