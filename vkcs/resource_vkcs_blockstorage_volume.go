@@ -22,6 +22,7 @@ var (
 	bsVolumeStatusBuild       = "creating"
 	bsVolumeStatusActive      = "available"
 	bsVolumeStatusInUse       = "in-use"
+	bsVolumeStatusRetype      = "retyping"
 	bsVolumeStatusShutdown    = "deleting"
 	bsVolumeStatusDeleted     = "deleted"
 	bsVolumeStatusDownloading = "downloading"
@@ -263,7 +264,7 @@ func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceDat
 			return diag.Errorf("error changing type of vkcs_blockstorage_volume %s", d.Id())
 		}
 		stateConf := &resource.StateChangeConf{
-			Pending:    []string{bsVolumeStatusBuild},
+			Pending:    []string{bsVolumeStatusBuild, bsVolumeStatusRetype},
 			Target:     []string{bsVolumeStatusActive, bsVolumeStatusInUse},
 			Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
 			Timeout:    d.Timeout(schema.TimeoutCreate),
