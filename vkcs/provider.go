@@ -62,8 +62,10 @@ func (c *config) NetworkingV2Client(region string, sdn string) (*gophercloud.Ser
 	if err != nil {
 		return client, err
 	}
-	client.MoreHeaders = map[string]string{
-		"X-SDN": sdn,
+	if sdn != searchInAllSDNs {
+		client.MoreHeaders = map[string]string{
+			"X-SDN": sdn,
+		}
 	}
 	return client, err
 }

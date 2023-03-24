@@ -147,7 +147,7 @@ func getAllInstanceNetworks(d *schema.ResourceData, meta interface{}) ([]Instanc
 func getInstanceNetworkInfo(d *schema.ResourceData, meta interface{}, queryType, queryTerm string) (map[string]interface{}, error) {
 	config := meta.(configer)
 
-	networkClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
+	networkClient, err := config.NetworkingV2Client(getRegion(d, config), searchInAllSDNs)
 	if err == nil {
 		networkInfo, err := getInstanceNetworkInfoNeutron(networkClient, queryType, queryTerm)
 		if err != nil {

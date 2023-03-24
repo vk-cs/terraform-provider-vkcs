@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.1.15 (unreleased)
+- Fix error of not resolving referenced network resources that were created with sdn = "sprut"
 - Add deprecation warning to "security_group_ids" field of resource_vkcs_lb_loadbalancer
 - Add "instances" computed field to resource_vkcs_db_cluster_with_shards.shard
 - Add "loadbalancer_id" computed field to resource_vkcs_db_cluster
