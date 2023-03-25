@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.1.15 (unreleased)
+- Add deprecation warning to "port" argument of resource_vkcs_db_instance.network, resource_vkcs_db_cluster.network, and resource_vkcs_db_cluster_with_shards.shard.network
 - Fix error of not resolving referenced network resources that were created with sdn = "sprut"
 - Add deprecation warning to "security_group_ids" field of resource_vkcs_lb_loadbalancer
 - Add "instances" computed field to resource_vkcs_db_cluster_with_shards.shard

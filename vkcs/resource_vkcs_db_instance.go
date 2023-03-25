@@ -211,7 +211,8 @@ func resourceDatabaseInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
-							Description: "The port id of the network. Changing this creates a new instance.",
+							Description: "The port id of the network. Changing this creates a new instance. ***Deprecated*** This argument is deprecated, please do not use it.",
+							Deprecated:  "This argument is deprecated, please do not use it.",
 						},
 						"fixed_ip_v4": {
 							Type:        schema.TypeString,
