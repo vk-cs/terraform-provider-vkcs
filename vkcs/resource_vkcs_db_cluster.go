@@ -188,6 +188,12 @@ func resourceDatabaseCluster() *schema.Resource {
 							Description: "The port id of the network. Changing this creates a new cluster. ***Deprecated*** This argument is deprecated, please do not use it.",
 							Deprecated:  "This argument is deprecated, please do not use it.",
 						},
+						"subnet_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The id of the subnet. Changing this creates a new cluster.",
+						},
 					},
 				},
 				Description: "Object that represents network of the cluster. Changing this creates a new cluster.",

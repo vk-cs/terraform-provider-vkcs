@@ -389,6 +389,7 @@ type networkOpts struct {
 	UUID      string `json:"net-id,omitempty"`
 	Port      string `json:"port-id,omitempty"`
 	V4FixedIP string `json:"v4-fixed-ip,omitempty" mapstructure:"fixed_ip_v4"`
+	SubnetID  string `json:"subnet-id,omitempty" mapstructure:"subnet_id"`
 }
 
 type commonInstanceResult struct {
