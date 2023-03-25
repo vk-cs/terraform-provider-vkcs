@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.1.15 (unreleased)
+- Add "subnet_id" argument to resource_vkcs_db_instance.network, resource_vkcs_db_cluster.network, and resource_vkcs_db_cluster_with_shards.shard.network
 - Add a warning that is thrown when arguments "network.fixed_ip_v4" and "replica_of" of resource_vkcs_db_instance are set simultaneously
 - Add deprecation warning to "port" argument of resource_vkcs_db_instance.network, resource_vkcs_db_cluster.network, and resource_vkcs_db_cluster_with_shards.shard.network
 - Fix error of not resolving referenced network resources that were created with sdn = "sprut"
