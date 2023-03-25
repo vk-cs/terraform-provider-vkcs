@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -215,10 +216,11 @@ func resourceDatabaseInstance() *schema.Resource {
 							Deprecated:  "This argument is deprecated, please do not use it.",
 						},
 						"fixed_ip_v4": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							ForceNew:    true,
-							Description: "The IPv4 address. Changing this creates a new instance.",
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+							Description: "The IPv4 address. Changing this creates a new instance. " +
+								"**Note** This argument conflicts with \"replica_of\". Setting both at the same time causes \"fixed_ip_v4\" to be ignored.",
 						},
 					},
 				},
@@ -675,7 +677,33 @@ func resourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, m
 
 	d.Set("ip", instance.IP)
 
-	return nil
+	if _, ok := d.GetOk("replica_of"); !ok {
+		return nil
+	}
+	// Check if user set both "replica_of" and "network.fixed_ip_v4"
+	var diags diag.Diagnostics
+
+	rawNetworks := d.Get("network").([]interface{})
+	for i, n := range rawNetworks {
+		rawNetwork := n.(map[string]interface{})
+		rawPath := fmt.Sprintf("network.%d.fixed_ip_v4", i)
+		if v := rawNetwork["fixed_ip_v4"].(string); v != "" && d.HasChange(rawPath) {
+			path := cty.Path{
+				cty.GetAttrStep{Name: "network"},
+				cty.IndexStep{Key: cty.NumberIntVal(int64(i))},
+				cty.GetAttrStep{Name: "fixed_ip_v4"},
+			}
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Field conflicts with attribute \"replica_of\".",
+				Detail: "Setting \"fixed_ip_v4\" and \"replica_of\" at the same time " +
+					"causes the \"fixed_ip_v4\" field to be ignored.",
+				AttributePath: path,
+			})
+		}
+	}
+
+	return diags
 }
 
 func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
