@@ -177,11 +177,13 @@ resource "vkcs_db_instance" "db-instance" {
 - `keypair` **String** (*Optional*) Name of the keypair to be attached to instance. Changing this creates a new instance.
 
 - `network` (*Optional*) Object that represents network of the instance. Changing this creates a new instance.
-  - `fixed_ip_v4` **String** (*Optional*) The IPv4 address. Changing this creates a new instance.
+  - `fixed_ip_v4` **String** (*Optional*) The IPv4 address. Changing this creates a new instance. **Note** This argument conflicts with "replica_of". Setting both at the same time causes "fixed_ip_v4" to be ignored.
 
-  - `port` **String** (*Optional*) The port id of the network. Changing this creates a new instance.
+  - `port` **String** (*Optional* Deprecated) The port id of the network. Changing this creates a new instance. ***Deprecated*** This argument is deprecated, please do not use it.
 
-  - `uuid` **String** (*Optional*) The id of the network. Changing this creates a new instance.
+  - `subnet_id` **String** (*Optional*) The id of the subnet. Changing this creates a new instance.
+
+  - `uuid` **String** (*Optional*) The id of the network. Changing this creates a new instance.**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
 
 - `region` **String** (*Optional*) Region to create resource in.
 
@@ -260,6 +262,8 @@ resource "vkcs_db_instance" "db-instance" {
   - `fixed_ip_v4` **String** See Argument Reference above.
 
   - `port` **String** See Argument Reference above.
+
+  - `subnet_id` **String** See Argument Reference above.
 
   - `uuid` **String** See Argument Reference above.
 

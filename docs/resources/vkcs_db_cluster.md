@@ -155,9 +155,11 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 - `keypair` **String** (*Optional*) Name of the keypair to be attached to cluster. Changing this creates a new cluster.
 
 - `network` (*Optional*) Object that represents network of the cluster. Changing this creates a new cluster.
-  - `port` **String** (*Optional*) The port id of the network. Changing this creates a new cluster.
+  - `port` **String** (*Optional* Deprecated) The port id of the network. Changing this creates a new cluster. ***Deprecated*** This argument is deprecated, please do not use it.
 
-  - `uuid` **String** (*Optional*) The id of the network. Changing this creates a new cluster.
+  - `subnet_id` **String** (*Optional*) The id of the subnet. Changing this creates a new cluster.
+
+  - `uuid` **String** (*Optional*) The id of the network. Changing this creates a new cluster.**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
 
 - `region` **String** (*Optional*) Region to create resource in.
 
@@ -230,6 +232,8 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
 - `network`  See Argument Reference above.
   - `port` **String** See Argument Reference above.
+
+  - `subnet_id` **String** See Argument Reference above.
 
   - `uuid` **String** See Argument Reference above.
 
