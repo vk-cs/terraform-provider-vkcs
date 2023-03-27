@@ -117,9 +117,11 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
   - `availability_zone` **String** (*Optional*) The name of the availability zone of the cluster shard. Changing this creates a new cluster.
 
   - `network` (*Optional*)
-    - `port` **String** (*Optional*) The port id of the network. Changing this creates a new cluster.
+    - `port` **String** (*Optional* Deprecated) The port id of the network. Changing this creates a new cluster. ***Deprecated*** This argument is deprecated, please do not use it.
 
-    - `uuid` **String** (*Optional*) The id of the network. Changing this creates a new cluster.
+    - `subnet_id` **String** (*Optional*) The id of the subnet. Changing this creates a new cluster.
+
+    - `uuid` **String** (*Optional*) The id of the network. Changing this creates a new cluster.**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
 
   - `wal_volume` (*Optional*) Object that represents wal volume of the cluster.
     - `size` **Number** (***Required***) Size of the instance wal volume.
@@ -180,6 +182,8 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
 
   - `network` 
     - `port` **String** See Argument Reference above.
+
+    - `subnet_id` **String** See Argument Reference above.
 
     - `uuid` **String** See Argument Reference above.
 
