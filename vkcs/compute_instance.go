@@ -290,7 +290,9 @@ func getInstanceAddresses(addresses map[string]interface{}) []InstanceAddresses 
 			for i, v := range instanceAddresses.InstanceNICs {
 				if v.MAC == instanceNIC.MAC {
 					exists = true
-					instanceAddresses.InstanceNICs[i].FixedIPv4 = instanceNIC.FixedIPv4
+					if instanceNIC.FixedIPv4 != "" {
+						instanceAddresses.InstanceNICs[i].FixedIPv4 = instanceNIC.FixedIPv4
+					}
 				}
 			}
 
