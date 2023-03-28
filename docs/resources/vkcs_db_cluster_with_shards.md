@@ -52,6 +52,21 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
     vkcs_networking_router_interface.db
   ]
 }
+
+locals {
+  cluster = vkcs_db_cluster_with_shards.db-cluster-with-shards
+  shards_ips = {
+    for shard in local.cluster.shard : shard.shard_id => [for i in shard.instances : {
+      "internal_ip" = i.ip[0]
+      "external_ip" = length(i.ip) > 1 ? i.ip[1] : null
+    }]
+  }
+}
+
+output "shard0-ips" {
+  value = local.shards_ips["shard0"]
+  description = "IPs of instances in shard with \"id\" = \"shard0\""
+}
 ```
 
 ### Cluster with shards restored from backup
@@ -119,7 +134,7 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
   - `network` (*Optional*)
     - `port` **String** (*Optional* Deprecated) The port id of the network. Changing this creates a new cluster. ***Deprecated*** This argument is deprecated, please do not use it.
 
-    - `subnet_id` **String** (*Optional*) The id of the subnet. Changing this creates a new cluster.
+    - `subnet_id` **String** (*Optional*) The id of the subnet. Changing this creates a new cluster. **New since v.0.1.15**.
 
     - `uuid` **String** (*Optional*) The id of the network. Changing this creates a new cluster.**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
 
@@ -192,7 +207,7 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
 
     - `volume_type` **String** See Argument Reference above.
 
-  - `instances` **Object** Shard instances info.
+  - `instances` **Object** Shard instances info. **New since v.0.1.15**.
 
 - `capabilities`  See Argument Reference above.
   - `name` **String** See Argument Reference above.
