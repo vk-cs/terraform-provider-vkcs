@@ -68,6 +68,30 @@ func TestAccBlockStorageVolume_online_resize(t *testing.T) {
 	})
 }
 
+func TestAccBlockStorageVolume_retype(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviders,
+		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRenderConfig(testAccBlockStorageVolumeRetype),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"vkcs_blockstorage_volume.volume_1", "volume_type", "ceph-hdd"),
+				),
+			},
+			{
+				Config: testAccRenderConfig(testAccBlockStorageVolumeRetypeUpdate),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"vkcs_blockstorage_volume.volume_1", "volume_type", "ceph-ssd"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccBlockStorageVolume_image(t *testing.T) {
 	var volume volumes.Volume
 
@@ -221,6 +245,32 @@ resource "vkcs_blockstorage_volume" "volume_1" {
 resource "vkcs_compute_volume_attach" "va_1" {
   instance_id = vkcs_compute_instance.basic.id
   volume_id   = vkcs_blockstorage_volume.volume_1.id
+}
+`
+
+const testAccBlockStorageVolumeRetype = `
+resource "vkcs_blockstorage_volume" "volume_1" {
+  name = "volume_1"
+  description = "first test volume"
+  metadata = {
+    foo = "bar"
+  }
+  size = 1
+  availability_zone = "{{.AvailabilityZone}}"
+  volume_type = "ceph-hdd"
+}
+`
+
+const testAccBlockStorageVolumeRetypeUpdate = `
+resource "vkcs_blockstorage_volume" "volume_1" {
+  name = "volume_1"
+  description = "first test volume"
+  metadata = {
+    foo = "bar"
+  }
+  size = 1
+  availability_zone = "{{.AvailabilityZone}}"
+  volume_type = "ceph-ssd"
 }
 `
 
