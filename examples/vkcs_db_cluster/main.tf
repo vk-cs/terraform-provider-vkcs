@@ -31,7 +31,6 @@ data "vkcs_networking_port" "loadbalancer-port" {
   port_id = "${data.vkcs_lb_loadbalancer.loadbalancer.vip_port_id}"
 }
 
-# Use this to connect to the cluster
 output "cluster_ips" {
   value = "${data.vkcs_networking_port.loadbalancer-port.all_fixed_ips}"
   description = "IP addresses of the cluster."

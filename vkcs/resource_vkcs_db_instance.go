@@ -227,7 +227,7 @@ func resourceDatabaseInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
-							Description: "The id of the subnet. Changing this creates a new instance.",
+							Description: "The id of the subnet. Changing this creates a new instance. **New since v.0.1.15**.",
 						},
 					},
 				},

@@ -166,7 +166,7 @@ func resourceDatabaseCluster() *schema.Resource {
 			"loadbalancer_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The id of the loadbalancer attached to the cluster.",
+				Description: "The id of the loadbalancer attached to the cluster. **New since v.0.1.15**.",
 			},
 
 			"network": {
@@ -193,7 +193,7 @@ func resourceDatabaseCluster() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
-							Description: "The id of the subnet. Changing this creates a new cluster.",
+							Description: "The id of the subnet. Changing this creates a new cluster. **New since v.0.1.15**.",
 						},
 					},
 				},

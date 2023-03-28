@@ -68,7 +68,7 @@ func resourceSharedFilesystemShare() *schema.Resource {
 			"export_location_path": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The export location path of the share",
+				Description: "The export location path of the share. **New since v.0.1.15**.",
 			},
 
 			"share_proto": {
