@@ -38,3 +38,18 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
     vkcs_networking_router_interface.db
   ]
 }
+
+locals {
+  cluster = vkcs_db_cluster_with_shards.db-cluster-with-shards
+  shards_ips = {
+    for shard in local.cluster.shard : shard.shard_id => [for i in shard.instances : {
+      "internal_ip" = i.ip[0]
+      "external_ip" = length(i.ip) > 1 ? i.ip[1] : null
+    }]
+  }
+}
+
+output "shard0-ips" {
+  value = local.shards_ips["shard0"]
+  description = "IPs of instances in shard with \"id\" = \"shard0\""
+}

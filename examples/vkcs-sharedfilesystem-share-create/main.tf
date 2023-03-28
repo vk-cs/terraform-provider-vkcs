@@ -26,3 +26,14 @@ resource "vkcs_sharedfilesystem_share_access" "share_access_2" {
   access_to    = "192.168.199.11"
   access_level = "rw"
 }
+
+locals {
+  mount_type = lower(vkcs_sharedfilesystem_share.share.share_proto)
+  mount_device = vkcs_sharedfilesystem_share.share.export_location_path
+  mount_dir = "/${vkcs_sharedfilesystem_share.share.name}"
+}
+
+output "mount" {
+  value = "mount -t ${local.mount_type} ${local.mount_device} ${local.mount_dir}"
+  description = "Mount to vkcs_sharedfilestystem_share"
+}

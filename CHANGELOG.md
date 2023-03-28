@@ -11,16 +11,16 @@ description: |-
 - Fix error of incorrect setting a value of resource_vkcs_compute_instance.access_ip_v4 to an empty string
 - Add "subnet_id" argument to resource_vkcs_db_instance.network, resource_vkcs_db_cluster.network, and resource_vkcs_db_cluster_with_shards.shard.network
 - Add a warning that is thrown when arguments "network.fixed_ip_v4" and "replica_of" of resource_vkcs_db_instance are set simultaneously
-- Add deprecation warning to "port" argument of resource_vkcs_db_instance.network, resource_vkcs_db_cluster.network, and resource_vkcs_db_cluster_with_shards.shard.network
+- Deprecate "port" argument of resource_vkcs_db_instance.network, resource_vkcs_db_cluster.network, and resource_vkcs_db_cluster_with_shards.shard.network
 - Fix error of not resolving referenced network resources that were created with sdn = "sprut"
-- Add deprecation warning to "security_group_ids" field of resource_vkcs_lb_loadbalancer
-- Add "instances" computed field to resource_vkcs_db_cluster_with_shards.shard
-- Add "loadbalancer_id" computed field to resource_vkcs_db_cluster
+- Deprecate "security_group_ids" argument of resource_vkcs_lb_loadbalancer
+- Add "instances" computed attribute to resource_vkcs_db_cluster_with_shards.shard
+- Add "loadbalancer_id" computed attribute to resource_vkcs_db_cluster
 - Fix error of not expecting "retyping" status when modifying resource_vkcs_blockstorage_volume.volume_type
 - Add vkcs_lb_loadbalancer datasource
-- Make "export_location_path" field of data_source_vkcs_sharedfilesystem_share computed
-- Add "export_location_path" computed field to resource_vkcs_sharedfilesystem_share
-- Fix error of ignoring restore_point field in resource_vkcs_db_instance and resource_vkcs_db_cluster
+- Make "export_location_path" attribute of data_source_vkcs_sharedfilesystem_share computed
+- Add "export_location_path" computed attribute to resource_vkcs_sharedfilesystem_share
+- Fix error of ignoring "restore_point" argument in resource_vkcs_db_instance and resource_vkcs_db_cluster
 
 #### v0.1.14
 - Add "instances" computed field to resource_vkcs_kubernetes_cluster
