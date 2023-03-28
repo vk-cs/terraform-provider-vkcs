@@ -79,7 +79,7 @@ resource "vkcs_sharedfilesystem_share" "share_1" {
 
 - `all_metadata` <strong>Map of </strong>**String** The map of metadata, assigned on the share, which has been explicitly and implicitly added.
 
-- `export_location_path` **String** The export location path of the share
+- `export_location_path` **String** The export location path of the share. **New since v.0.1.15**.
 
 - `id` **String** ID of the resource.
 

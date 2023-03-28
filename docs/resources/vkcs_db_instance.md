@@ -181,7 +181,7 @@ resource "vkcs_db_instance" "db-instance" {
 
   - `port` **String** (*Optional* Deprecated) The port id of the network. Changing this creates a new instance. ***Deprecated*** This argument is deprecated, please do not use it.
 
-  - `subnet_id` **String** (*Optional*) The id of the subnet. Changing this creates a new instance.
+  - `subnet_id` **String** (*Optional*) The id of the subnet. Changing this creates a new instance. **New since v.0.1.15**.
 
   - `uuid` **String** (*Optional*) The id of the network. Changing this creates a new instance.**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
 
