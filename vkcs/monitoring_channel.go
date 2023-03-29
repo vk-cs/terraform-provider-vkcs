@@ -13,10 +13,6 @@ func createChannelURL(c ContainerClient, pid string) string {
 	return c.ServiceURL(pid, "notification_channels")
 }
 
-func listChannelURL(c ContainerClient, pid string) string {
-	return c.ServiceURL(pid, "notification_channels")
-}
-
 type commonChannelResult struct {
 	gophercloud.Result
 }

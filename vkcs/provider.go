@@ -3,6 +3,7 @@ package vkcs
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
@@ -57,19 +58,13 @@ func (c *config) GetTenantID() string {
 	return c.TenantID
 }
 
-var tempUrl = map[string]string{
-	"alerting":  "https://mcs.mail.ru/infra/alerting/v1/",
-	"templater": "https://mcs.mail.ru/infra/templater/v2/",
-}
-
 func initClientOpts(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts, clientType string) (*gophercloud.ServiceClient, error) {
 	sc := new(gophercloud.ServiceClient)
 	eo.ApplyDefaults(clientType)
-	url := tempUrl[clientType]
-	//url, err := client.EndpointLocator(eo)
-	//if err != nil {
-	//	return sc, err
-	//}
+	url, err := client.EndpointLocator(eo)
+	if err != nil {
+		return sc, err
+	}
 	sc.ProviderClient = client
 	sc.Endpoint = url
 	sc.Type = clientType
@@ -77,18 +72,34 @@ func initClientOpts(client *gophercloud.ProviderClient, eo gophercloud.EndpointO
 }
 
 func NewMonitoringV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
-	return initClientOpts(client, eo, "alerting")
+	sc, err := initClientOpts(client, eo, "cloudalerting")
+	if err != nil {
+		return sc, err
+	}
+	sc.Endpoint, err = url.JoinPath(sc.Endpoint, "v1")
+	if err != nil {
+		return sc, err
+	}
+	return sc, err
 }
 func NewMonitoringTemplaterV2(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
-	return initClientOpts(client, eo, "templater")
+	sc, err := initClientOpts(client, eo, "cloudmonitoring-templater")
+	if err != nil {
+		return sc, err
+	}
+	sc.Endpoint, err = url.JoinPath(sc.Endpoint, "v2")
+	if err != nil {
+		return sc, err
+	}
+	return sc, err
 }
 
 func (c *config) MonitoringTemplaterV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.CommonServiceClientInit(NewMonitoringTemplaterV2, region, "templater")
+	return c.CommonServiceClientInit(NewMonitoringTemplaterV2, region, "cloudmonitoring-templater")
 }
 
 func (c *config) MonitoringV1Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.CommonServiceClientInit(NewMonitoringV1, region, "alerting")
+	return c.CommonServiceClientInit(NewMonitoringV1, region, "cloudalerting")
 }
 
 func (c *config) ComputeV2Client(region string) (*gophercloud.ServiceClient, error) {

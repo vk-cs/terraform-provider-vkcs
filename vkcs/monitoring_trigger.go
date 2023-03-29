@@ -44,10 +44,6 @@ func createTriggerURL(c ContainerClient, pid string) string {
 	return c.ServiceURL(pid, "triggers")
 }
 
-func listTriggerURL(c ContainerClient, pid string) string {
-	return c.ServiceURL(pid, "triggers")
-}
-
 func triggerCreate(client monitoringClient, pid string, opts createOptsBuilder) commonTriggerResult {
 	b, err := opts.Map()
 	var r commonTriggerResult
