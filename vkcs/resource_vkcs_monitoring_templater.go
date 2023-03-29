@@ -46,7 +46,7 @@ func resourceTemplaterCreate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	tmp := TemplateIn{
-		InstanceId:   d.Get("instance_id").(string),
+		InstanceID:   d.Get("instance_id").(string),
 		Capabilities: []string{"telegraf"},
 	}
 

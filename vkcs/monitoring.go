@@ -74,7 +74,7 @@ type ChannelOut struct {
 		Address     string    `json:"address"`
 		ChannelType string    `json:"channel_type"`
 		CreatedAt   time.Time `json:"created_at"`
-		Id          string    `json:"id"`
+		ID          string    `json:"id"`
 		Name        string    `json:"name"`
 		UpdatedAt   time.Time `json:"updated_at"`
 	} `json:"channel"`
@@ -85,7 +85,7 @@ type ChannelList struct {
 		Address     string    `json:"address"`
 		ChannelType string    `json:"channel_type"`
 		CreatedAt   time.Time `json:"created_at"`
-		Id          string    `json:"id"`
+		ID          string    `json:"id"`
 		InUse       bool      `json:"in_use"`
 		Name        string    `json:"name"`
 		UpdatedAt   time.Time `json:"updated_at"`
@@ -93,7 +93,7 @@ type ChannelList struct {
 }
 
 type TemplateIn struct {
-	InstanceId   string   `json:"instance_id"`
+	InstanceID   string   `json:"instance_id"`
 	Capabilities []string `json:"capabilities"`
 }
 

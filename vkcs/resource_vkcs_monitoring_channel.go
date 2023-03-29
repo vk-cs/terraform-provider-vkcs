@@ -61,7 +61,7 @@ func resourceChannelCreate(ctx context.Context, d *schema.ResourceData, meta int
 	if err != nil {
 		return diag.Errorf("Error creating VKCS monitoring channel: %s", err)
 	}
-	d.SetId(ch.Channel.Id)
+	d.SetId(ch.Channel.ID)
 
 	return nil
 }

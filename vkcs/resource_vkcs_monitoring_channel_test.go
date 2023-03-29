@@ -45,7 +45,7 @@ func testAccCheckMonChannelExists(n string, ch *ChannelOut) resource.TestCheckFu
 			return err
 		}
 
-		if found.Channel.Id != rs.Primary.ID {
+		if found.Channel.ID != rs.Primary.ID {
 			return fmt.Errorf("channel not found")
 		}
 
