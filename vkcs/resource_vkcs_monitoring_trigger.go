@@ -92,7 +92,7 @@ func resourceTriggerCreate(ctx context.Context, d *schema.ResourceData, meta int
 	if err != nil {
 		return diag.Errorf("Error creating VKCS monitoring trigger: %s", err)
 	}
-	d.SetId(ch.Trigger.Id)
+	d.SetId(ch.Trigger.ID)
 
 	return nil
 

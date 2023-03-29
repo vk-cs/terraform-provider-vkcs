@@ -54,7 +54,7 @@ func resourceTemplaterCreate(ctx context.Context, d *schema.ResourceData, meta i
 	if err != nil {
 		return diag.Errorf("Error creating VKCS monitoring template: %s", err)
 	}
-	d.SetId(t.LinkId)
+	d.SetId(t.LinkID)
 	d.Set("script", t.Script)
 	return nil
 }

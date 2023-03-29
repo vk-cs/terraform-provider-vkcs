@@ -39,7 +39,7 @@ func (opts TriggerIn) Map() (map[string]interface{}, error) {
 
 type TriggerData struct {
 	CreatedAt            time.Time `json:"created_at"`
-	Id                   string    `json:"id"`
+	ID                   string    `json:"id"`
 	Namespace            string    `json:"namespace"`
 	Name                 string    `json:"name"`
 	Interval             int       `json:"interval"`
@@ -104,5 +104,5 @@ func (opts TemplateIn) Map() (map[string]interface{}, error) {
 
 type TemplateOut struct {
 	Script string `json:"script"`
-	LinkId string `json:"link_id"`
+	LinkID string `json:"link_id"`
 }

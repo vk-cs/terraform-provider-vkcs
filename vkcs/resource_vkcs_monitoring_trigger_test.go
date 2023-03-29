@@ -62,7 +62,7 @@ func testAccCheckMonTriggerExists(n string, ch *TriggerOut) resource.TestCheckFu
 			return err
 		}
 
-		if found.Trigger.Id != rs.Primary.ID {
+		if found.Trigger.ID != rs.Primary.ID {
 			return fmt.Errorf("trigger not found")
 		}
 
