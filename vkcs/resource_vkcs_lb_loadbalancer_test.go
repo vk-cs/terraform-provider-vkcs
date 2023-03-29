@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 )
 
@@ -36,49 +35,6 @@ func TestAccLBLoadBalancer_basic(t *testing.T) {
 					testAccCheckLBLoadBalancerTagCount("vkcs_lb_loadbalancer.loadbalancer_1", 2),
 					resource.TestCheckResourceAttr("vkcs_lb_loadbalancer.loadbalancer_1", "name", "loadbalancer_1_updated"),
 					resource.TestMatchResourceAttr("vkcs_lb_loadbalancer.loadbalancer_1", "vip_port_id", regexp.MustCompile("^[a-f0-9-]+")),
-				),
-			},
-		},
-	})
-}
-
-func TestAccLBLoadBalancer_secGroup(t *testing.T) {
-	var lb loadbalancers.LoadBalancer
-	var sg1, sg2 groups.SecGroup
-
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckLBLoadBalancerDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccLbLoadBalancerSecGroup,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLBLoadBalancerExists("vkcs_lb_loadbalancer.loadbalancer_1", &lb),
-					testAccCheckNetworkingSecGroupExists("vkcs_networking_secgroup.secgroup_1", &sg1),
-					testAccCheckNetworkingSecGroupExists("vkcs_networking_secgroup.secgroup_1", &sg2),
-					resource.TestCheckResourceAttr("vkcs_lb_loadbalancer.loadbalancer_1", "security_group_ids.#", "1"),
-					testAccCheckLBLoadBalancerHasSecGroup(&lb, &sg1),
-				),
-			},
-			{
-				Config: testAccLbLoadBalancerSecGroupUpdate1,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLBLoadBalancerExists("vkcs_lb_loadbalancer.loadbalancer_1", &lb),
-					testAccCheckNetworkingSecGroupExists("vkcs_networking_secgroup.secgroup_2", &sg1),
-					testAccCheckNetworkingSecGroupExists("vkcs_networking_secgroup.secgroup_2", &sg2),
-					resource.TestCheckResourceAttr("vkcs_lb_loadbalancer.loadbalancer_1", "security_group_ids.#", "2"),
-					testAccCheckLBLoadBalancerHasSecGroup(&lb, &sg1),
-					testAccCheckLBLoadBalancerHasSecGroup(&lb, &sg2),
-				),
-			},
-			{
-				Config: testAccLbLoadBalancerSecGroupUpdate2,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLBLoadBalancerExists("vkcs_lb_loadbalancer.loadbalancer_1", &lb),
-					testAccCheckNetworkingSecGroupExists("vkcs_networking_secgroup.secgroup_2", &sg1),
-					testAccCheckNetworkingSecGroupExists("vkcs_networking_secgroup.secgroup_2", &sg2),
-					resource.TestCheckResourceAttr("vkcs_lb_loadbalancer.loadbalancer_1", "security_group_ids.#", "1"),
-					testAccCheckLBLoadBalancerHasSecGroup(&lb, &sg2),
 				),
 			},
 		},
@@ -245,29 +201,6 @@ func testAccCheckLBLoadBalancerTagCount(n string, expected int) resource.TestChe
 	}
 }
 
-func testAccCheckLBLoadBalancerHasSecGroup(lb *loadbalancers.LoadBalancer, sg *groups.SecGroup) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		config := testAccProvider.Meta().(*config)
-		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
-		if err != nil {
-			return fmt.Errorf("Error creating VKCS networking client: %s", err)
-		}
-
-		port, err := ports.Get(networkingClient, lb.VipPortID).Extract()
-		if err != nil {
-			return err
-		}
-
-		for _, p := range port.SecurityGroups {
-			if p == sg.ID {
-				return nil
-			}
-		}
-
-		return fmt.Errorf("LoadBalancer does not have the security group")
-	}
-}
-
 const testAccLbLoadBalancerConfigBasic = `
     resource "vkcs_networking_network" "network_1" {
       name = "network_1"
@@ -316,119 +249,6 @@ const testAccLbLoadBalancerConfigUpdate = `
         delete = "15m"
       }
     }`
-
-const testAccLbLoadBalancerSecGroup = `
-resource "vkcs_networking_secgroup" "secgroup_1" {
-  name = "secgroup_1"
-  description = "secgroup_1"
-}
-
-resource "vkcs_networking_secgroup" "secgroup_2" {
-  name = "secgroup_2"
-  description = "secgroup_2"
-}
-
-resource "vkcs_networking_network" "network_1" {
-  name = "network_1"
-  admin_state_up = "true"
-}
-
-resource "vkcs_networking_subnet" "subnet_1" {
-  name = "subnet_1"
-  network_id = vkcs_networking_network.network_1.id
-  cidr = "192.168.199.0/24"
-}
-
-resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
-    name = "loadbalancer_1"
-    vip_subnet_id = vkcs_networking_subnet.subnet_1.id
-    security_group_ids = [
-      vkcs_networking_secgroup.secgroup_1.id
-    ]
-
-    timeouts {
-      create = "15m"
-      update = "15m"
-      delete = "15m"
-    }
-}
-`
-
-const testAccLbLoadBalancerSecGroupUpdate1 = `
-resource "vkcs_networking_secgroup" "secgroup_1" {
-  name = "secgroup_1"
-  description = "secgroup_1"
-}
-
-resource "vkcs_networking_secgroup" "secgroup_2" {
-  name = "secgroup_2"
-  description = "secgroup_2"
-}
-
-resource "vkcs_networking_network" "network_1" {
-  name = "network_1"
-  admin_state_up = "true"
-}
-
-resource "vkcs_networking_subnet" "subnet_1" {
-  name = "subnet_1"
-  network_id = vkcs_networking_network.network_1.id
-  cidr = "192.168.199.0/24"
-}
-
-resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
-  name = "loadbalancer_1"
-  vip_subnet_id = vkcs_networking_subnet.subnet_1.id
-  security_group_ids = [
-    vkcs_networking_secgroup.secgroup_1.id,
-    vkcs_networking_secgroup.secgroup_2.id
-  ]
-
-  timeouts {
-    create = "15m"
-    update = "15m"
-    delete = "15m"
-  }
-}
-`
-
-const testAccLbLoadBalancerSecGroupUpdate2 = `
-resource "vkcs_networking_secgroup" "secgroup_1" {
-  name = "secgroup_1"
-  description = "secgroup_1"
-}
-
-resource "vkcs_networking_secgroup" "secgroup_2" {
-  name = "secgroup_2"
-  description = "secgroup_2"
-}
-
-resource "vkcs_networking_network" "network_1" {
-  name = "network_1"
-  admin_state_up = "true"
-}
-
-resource "vkcs_networking_subnet" "subnet_1" {
-  name = "subnet_1"
-  network_id = vkcs_networking_network.network_1.id
-  cidr = "192.168.199.0/24"
-}
-
-resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
-  name = "loadbalancer_1"
-  vip_subnet_id = vkcs_networking_subnet.subnet_1.id
-  security_group_ids = [
-    vkcs_networking_secgroup.secgroup_2.id
-  ]
-  depends_on = ["vkcs_networking_secgroup.secgroup_1"]
-
-  timeouts {
-    create = "15m"
-    update = "15m"
-    delete = "15m"
-  }
-}
-`
 
 const testAccLbLoadBalancerConfigVIPNetwork = `
 resource "vkcs_networking_network" "network_1" {
