@@ -3,7 +3,7 @@ package vkcs
 import (
 	"context"
 	"net/http"
-	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
@@ -71,15 +71,18 @@ func initClientOpts(client *gophercloud.ProviderClient, eo gophercloud.EndpointO
 	return sc, nil
 }
 
+func JoinPath(base, add string) string {
+	base = strings.TrimSuffix(base, "/")
+	add = strings.TrimPrefix(add, "/")
+	return base + "/" + add
+}
+
 func NewMonitoringV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "cloudalerting")
 	if err != nil {
 		return sc, err
 	}
-	sc.Endpoint, err = url.JoinPath(sc.Endpoint, "v1")
-	if err != nil {
-		return sc, err
-	}
+	sc.Endpoint = JoinPath(sc.Endpoint, "v1")
 	return sc, err
 }
 func NewMonitoringTemplaterV2(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
@@ -87,10 +90,7 @@ func NewMonitoringTemplaterV2(client *gophercloud.ProviderClient, eo gophercloud
 	if err != nil {
 		return sc, err
 	}
-	sc.Endpoint, err = url.JoinPath(sc.Endpoint, "v2")
-	if err != nil {
-		return sc, err
-	}
+	sc.Endpoint = JoinPath(sc.Endpoint, "v2")
 	return sc, err
 }
 
