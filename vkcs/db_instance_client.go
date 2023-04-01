@@ -585,7 +585,7 @@ func instanceCreate(client databaseClient, opts optsBuilder) (r getInstanceShort
 		return
 	}
 	var result *http.Response
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	result, r.Err = client.Post(baseURL(client, instancesAPIPath), b, &r.Body, reqOpts)
 	if r.Err == nil {
 		r.Header = result.Header
@@ -595,7 +595,7 @@ func instanceCreate(client databaseClient, opts optsBuilder) (r getInstanceShort
 
 // instanceGet performs request to get database instance
 func instanceGet(client databaseClient, id string) (r getInstanceResult) {
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Get(getURL(client, instancesAPIPath, id), &r.Body, reqOpts)
 	if r.Err == nil {
@@ -605,7 +605,7 @@ func instanceGet(client databaseClient, id string) (r getInstanceResult) {
 }
 
 func instanceGetCapabilities(client databaseClient, id string) (r getInstanceCapabilitiesResult) {
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Get(instanceCapabilitiesURL(client, instancesAPIPath, id), &r.Body, reqOpts)
 	if r.Err == nil {
@@ -615,7 +615,7 @@ func instanceGetCapabilities(client databaseClient, id string) (r getInstanceCap
 }
 
 func clusterGetCapabilities(client databaseClient, id string) (r getInstanceCapabilitiesResult) {
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Get(instanceCapabilitiesURL(client, dbClustersAPIPath, id), &r.Body, reqOpts)
 	if r.Err == nil {
@@ -625,7 +625,7 @@ func clusterGetCapabilities(client databaseClient, id string) (r getInstanceCapa
 }
 
 func instanceGetBackupSchedule(client databaseClient, id string) (r getInstanceBackupScheduleResult) {
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Get(backupScheduleURL(client, instancesAPIPath, id), &r.Body, reqOpts)
 	if r.Err == nil {
@@ -641,7 +641,7 @@ func instanceDetachReplica(client databaseClient, id string, opts optsBuilder) (
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var result *http.Response
 	result, r.Err = client.Patch(getURL(client, instancesAPIPath, id), b, nil, reqOpts)
 	if r.Err == nil {
@@ -657,7 +657,7 @@ func instanceUpdateAutoExpand(client databaseClient, id string, opts optsBuilder
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var result *http.Response
 	result, r.Err = client.Patch(getURL(client, instancesAPIPath, id), &b, nil, reqOpts)
 	if r.Err == nil {
@@ -676,7 +676,7 @@ func instanceDetachConfigurationGroup(client databaseClient, id string) (r confi
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var result *http.Response
 	result, r.Err = client.Put(getURL(client, instancesAPIPath, id), b, nil, reqOpts)
 	if r.Err == nil {
@@ -692,7 +692,7 @@ func instanceAttachConfigurationGroup(client databaseClient, id string, opts opt
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var result *http.Response
 	result, r.Err = client.Put(getURL(client, instancesAPIPath, id), b, nil, reqOpts)
 	if r.Err == nil {
@@ -708,7 +708,7 @@ func instanceAction(client databaseClient, id string, opts optsBuilder) (r actio
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var result *http.Response
 	result, r.Err = client.Post(instanceActionURL(client, instancesAPIPath, id), b, nil, reqOpts)
 	if r.Err == nil {
@@ -724,7 +724,7 @@ func instanceRootUserEnable(client databaseClient, id string, opts optsBuilder) 
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Post(rootUserURL(client, instancesAPIPath, id), b, &r.Body, reqOpts)
 	if r.Err == nil {
@@ -736,7 +736,7 @@ func instanceRootUserEnable(client databaseClient, id string, opts optsBuilder) 
 // instanceRootUserGet performs request to get root user of database instance
 func instanceRootUserGet(client databaseClient, id string) (r isRootUserEnabledResult) {
 	var result *http.Response
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	result, err := client.Get(rootUserURL(client, instancesAPIPath, id), &r.Body, reqOpts)
 	if err == nil {
 		r.Header = result.Header
@@ -746,7 +746,7 @@ func instanceRootUserGet(client databaseClient, id string) (r isRootUserEnabledR
 
 // instanceRootUserDisable performs request to disable root user on database instance
 func instanceRootUserDisable(client databaseClient, id string) (r deleteRootUserResult) {
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Delete(rootUserURL(client, instancesAPIPath, id), reqOpts)
 	if r.Err == nil {
@@ -761,7 +761,7 @@ func instanceUpdateBackupSchedule(client databaseClient, id string, opts optsBui
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Put(backupScheduleURL(client, instancesAPIPath, id), b, nil, reqOpts)
 	if r.Err == nil {
@@ -772,7 +772,7 @@ func instanceUpdateBackupSchedule(client databaseClient, id string, opts optsBui
 
 // instanceDelete performs request to delete database instance
 func instanceDelete(client databaseClient, id string) (r deleteResult) {
-	reqOpts := getDBRequestOpts()
+	reqOpts := getRequestOpts()
 	var result *http.Response
 	result, r.Err = client.Delete(getURL(client, instancesAPIPath, id), reqOpts)
 	if r.Err == nil {
@@ -788,7 +788,7 @@ func userCreate(client databaseClient, id string, opts createOptsBuilder, dbmsTy
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var result *http.Response
 	if dbmsType == dbmsTypeInstance {
 		result, r.Err = client.Post(instanceUsersURL(client, instancesAPIPath, id), b, nil, reqOpts)
@@ -816,7 +816,7 @@ func userList(client databaseClient, id string, dbmsType string) pagination.Page
 
 // userDelete performs request to delete database user
 func userDelete(client databaseClient, id string, userName string, dbmsType string) (r userDeleteResult) {
-	reqOpts := getDBRequestOpts()
+	reqOpts := getRequestOpts()
 	var result *http.Response
 	var APIPath string
 	if dbmsType == dbmsTypeInstance {
@@ -838,7 +838,7 @@ func userUpdate(client databaseClient, id string, name string, opts optsBuilder,
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var APIPath string
 	if dbmsType == dbmsTypeInstance {
 		APIPath = instancesAPIPath
@@ -860,7 +860,7 @@ func userUpdateDatabases(client databaseClient, id string, name string, opts opt
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var result *http.Response
 	var APIPath string
 	if dbmsType == dbmsTypeInstance {
@@ -877,7 +877,7 @@ func userUpdateDatabases(client databaseClient, id string, name string, opts opt
 
 // userDeleteDatabase performs request to delete database user
 func userDeleteDatabase(client databaseClient, id string, userName string, dbName string, dbmsType string) (r deleteUserDatabaseResult) {
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var result *http.Response
 	var APIPath string
 	if dbmsType == dbmsTypeInstance {
@@ -899,7 +899,7 @@ func databaseCreate(client databaseClient, id string, opts createOptsBuilder, db
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var result *http.Response
 	var APIPath string
 	if dbmsType == dbmsTypeInstance {
@@ -930,7 +930,7 @@ func databaseList(client databaseClient, id string, dbmsType string) pagination.
 
 // databaseDelete performs request to delete database
 func databaseDelete(client databaseClient, id string, dbName string, dbmsType string) (r databaseDeleteResult) {
-	reqOpts := getDBRequestOpts()
+	reqOpts := getRequestOpts()
 	var result *http.Response
 	var APIPath string
 	if dbmsType == dbmsTypeInstance {

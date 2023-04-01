@@ -107,7 +107,7 @@ func dbConfigGroupCreate(client databaseClient, opts optsBuilder) (r getDBConfig
 		return
 	}
 	var result *http.Response
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	result, r.Err = client.Post(baseURL(client, dbConfigGroupsAPIPath), b, &r.Body, reqOpts)
 	if r.Err == nil {
 		r.Header = result.Header
@@ -116,7 +116,7 @@ func dbConfigGroupCreate(client databaseClient, opts optsBuilder) (r getDBConfig
 }
 
 func dbConfigGroupGet(client databaseClient, id string) (r getDBConfigGroupResult) {
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Get(getURL(client, dbConfigGroupsAPIPath, id), &r.Body, reqOpts)
 	if r.Err == nil {
@@ -131,7 +131,7 @@ func dbConfigGroupUpdate(client databaseClient, id string, opts optsBuilder) (r 
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var result *http.Response
 	result, r.Err = client.Put(getURL(client, dbConfigGroupsAPIPath, id), b, nil, reqOpts)
 	if r.Err == nil {
@@ -141,7 +141,7 @@ func dbConfigGroupUpdate(client databaseClient, id string, opts optsBuilder) (r 
 }
 
 func dbConfigGroupDelete(client databaseClient, id string) (r deleteDBConfigGroupResult) {
-	reqOpts := getDBRequestOpts()
+	reqOpts := getRequestOpts()
 	var result *http.Response
 	result, r.Err = client.Delete(getURL(client, dbConfigGroupsAPIPath, id), reqOpts)
 	if r.Err == nil {
@@ -151,7 +151,7 @@ func dbConfigGroupDelete(client databaseClient, id string) (r deleteDBConfigGrou
 }
 
 func dbDatastoreParametersGet(client databaseClient, dsType string, dsVersion string) (r getDBDatastoreParametersResult) {
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Get(datastoreParametersURL(client, dbDatastoresAPIPath, dsType, dsVersion), &r.Body, reqOpts)
 	if r.Err == nil {

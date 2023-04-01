@@ -2,6 +2,7 @@ package vkcs
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -21,6 +22,8 @@ const (
 	requestsMaxRetriesCount = 3
 	requestsRetryDelay      = 30 * time.Millisecond
 )
+
+var magnumAPIMicroVersionHeader = fmt.Sprintf("container-infra %s", magnumAPIMicroVersion)
 
 // configer is interface to work with gophercloud.Config calls
 type configer interface {
@@ -104,7 +107,14 @@ func (c *config) DatabaseV1Client(region string) (*gophercloud.ServiceClient, er
 
 // ContainerInfraV1Client is implementation of ContainerInfraV1Client method
 func (c *config) ContainerInfraV1Client(region string) (ContainerClient, error) {
-	return c.Config.ContainerInfraV1Client(region)
+	client, err := c.Config.ContainerInfraV1Client(region)
+	if err != nil {
+		return client, err
+	}
+	client.MoreHeaders = map[string]string{
+		"MCS-API-Version": magnumAPIMicroVersionHeader,
+	}
+	return client, err
 }
 
 // IdentityV3Client is implementation of ContainerInfraV1Client method
