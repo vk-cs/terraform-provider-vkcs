@@ -302,7 +302,7 @@ func dbClusterCreate(client databaseClient, opts optsBuilder) (r createClusterRe
 		return
 	}
 	var result *http.Response
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	result, r.Err = client.Post(baseURL(client, dbClustersAPIPath), b, &r.Body, reqOpts)
 	if r.Err == nil {
 		r.Header = result.Header
@@ -312,7 +312,7 @@ func dbClusterCreate(client databaseClient, opts optsBuilder) (r createClusterRe
 
 // dbClusterGet performs request to get database cluster
 func dbClusterGet(client databaseClient, id string) (r getClusterResult) {
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Get(getURL(client, dbClustersAPIPath, id), &r.Body, reqOpts)
 	if r.Err == nil {
@@ -322,7 +322,7 @@ func dbClusterGet(client databaseClient, id string) (r getClusterResult) {
 }
 
 func dbClusterDelete(client databaseClient, id string) (r deleteClusterResult) {
-	reqOpts := getDBRequestOpts()
+	reqOpts := getRequestOpts()
 	var result *http.Response
 	result, r.Err = client.Delete(getURL(client, dbClustersAPIPath, id), reqOpts)
 	if r.Err == nil {
@@ -338,7 +338,7 @@ func dbClusterAction(client databaseClient, id string, opts optsBuilder) (r clus
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var result *http.Response
 	result, r.Err = client.Post(getURL(client, dbClustersAPIPath, id), b, nil, reqOpts)
 	if r.Err == nil {
@@ -354,7 +354,7 @@ func dbClusterUpdateAutoExpand(client databaseClient, id string, opts optsBuilde
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(202)
+	reqOpts := getRequestOpts(202)
 	var result *http.Response
 	result, r.Err = client.Patch(getURL(client, dbClustersAPIPath, id), b, nil, reqOpts)
 	if r.Err == nil {
@@ -369,7 +369,7 @@ func dbClusterUpdateBackupSchedule(client databaseClient, id string, opts optsBu
 		r.Err = err
 		return
 	}
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Put(backupScheduleURL(client, clustersAPIPath, id), b, nil, reqOpts)
 	if r.Err == nil {
@@ -379,7 +379,7 @@ func dbClusterUpdateBackupSchedule(client databaseClient, id string, opts optsBu
 }
 
 func dbClusterGetBackupSchedule(client databaseClient, id string) (r getClusterBackupScheduleResult) {
-	reqOpts := getDBRequestOpts(200)
+	reqOpts := getRequestOpts(200)
 	var result *http.Response
 	result, r.Err = client.Get(backupScheduleURL(client, clustersAPIPath, id), &r.Body, reqOpts)
 	if r.Err == nil {

@@ -19,16 +19,6 @@ type ContainerClient interface {
 	ServiceURL(parts ...string) string
 }
 
-func getDBRequestOpts(codes ...int) *gophercloud.RequestOpts {
-	reqOpts := &gophercloud.RequestOpts{
-		OkCodes: codes,
-	}
-	if len(codes) != 0 {
-		reqOpts.OkCodes = codes
-	}
-	return reqOpts
-}
-
 func getRequestOpts(codes ...int) *gophercloud.RequestOpts {
 	reqOpts := &gophercloud.RequestOpts{
 		OkCodes: codes,
@@ -36,7 +26,6 @@ func getRequestOpts(codes ...int) *gophercloud.RequestOpts {
 	if len(codes) != 0 {
 		reqOpts.OkCodes = codes
 	}
-	addMagnumMicroVersionHeader(reqOpts)
 	return reqOpts
 }
 
