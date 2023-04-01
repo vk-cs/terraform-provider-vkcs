@@ -12,7 +12,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clustertemplates"
 )
 
-const magnumAPIMicroVersion = "1.28"
+const cloudContainersAPIVersion = "1.28"
 
 type node struct {
 	Name        string     `json:"name"`

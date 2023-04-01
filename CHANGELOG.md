@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.1.16 (unreleased)
+- Add config option to run against clouds with old cloud containers API
+
 #### v0.1.15
 - Fix error of incorrect setting a value of resource_vkcs_compute_instance.access_ip_v4 to an empty string
 - Add "subnet_id" argument to resource_vkcs_db_instance.network, resource_vkcs_db_cluster.network, and resource_vkcs_db_cluster_with_shards.shard.network
