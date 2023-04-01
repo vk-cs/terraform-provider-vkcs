@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'vkcs/**'
+      - '!vkcs/**_test.go'
 jobs:
   error:
     runs-on: ubuntu-latest
