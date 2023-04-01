@@ -23,8 +23,6 @@ const (
 	requestsRetryDelay      = 30 * time.Millisecond
 )
 
-var magnumAPIMicroVersionHeader = fmt.Sprintf("container-infra %s", magnumAPIMicroVersion)
-
 // configer is interface to work with gophercloud.Config calls
 type configer interface {
 	LoadAndValidate() error
@@ -43,6 +41,7 @@ type configer interface {
 // config uses openstackbase.Config as the base/foundation of this provider's
 type config struct {
 	auth.Config
+	ContainerInfraV1MicroVersion string
 }
 
 var _ configer = &config{}
@@ -112,7 +111,7 @@ func (c *config) ContainerInfraV1Client(region string) (ContainerClient, error) 
 		return client, err
 	}
 	client.MoreHeaders = map[string]string{
-		"MCS-API-Version": magnumAPIMicroVersionHeader,
+		"MCS-API-Version": fmt.Sprintf("container-infra %s", c.ContainerInfraV1MicroVersion),
 	}
 	return client, err
 }
@@ -142,6 +141,7 @@ func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.
 			SDKVersion:       meta.SDKVersionString(),
 			MutexKV:          mutexkv.NewMutexKV(),
 		},
+		d.Get("cloud_containers_api_version").(string),
 	}
 
 	if config.UserDomainID != "" {
@@ -200,6 +200,13 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("OS_REGION_NAME", defaultRegionName),
 				Description: "A region to use.",
+			},
+			"cloud_containers_api_version": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  cloudContainersAPIVersion,
+				Description: "Cloud Containers API version to use.\n" +
+					"_NOTE_ Only for custom VKCS deployments.",
 			},
 		},
 
