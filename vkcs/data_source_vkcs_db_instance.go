@@ -193,9 +193,12 @@ func dataSourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData,
 
 	m := map[string]interface{}{
 		"size":        *instance.Volume.Size,
-		"used":        *instance.Volume.Used,
+		"used":        0,
 		"volume_id":   instance.Volume.VolumeID,
 		"volume_type": instance.Volume.VolumeType,
+	}
+	if instance.Volume.Used != nil {
+		m["used"] = *instance.Volume.Used
 	}
 
 	d.Set("volume", schema.NewSet(volInstHash, []interface{}{m}))
