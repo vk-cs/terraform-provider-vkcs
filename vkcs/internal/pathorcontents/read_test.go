@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"os/user"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -69,6 +70,9 @@ func TestRead_PathNoPermission(t *testing.T) {
 	// root within the container.
 	if u, err := user.Current(); err == nil && u.Uid == "0" {
 		t.Skip("This test is invalid when running as root, since root can read every file")
+	}
+	if runtime.GOOS == "windows" {
+		t.Skip("This test is invalid when running on Windows, since chmod does not work")
 	}
 
 	isPath := true
