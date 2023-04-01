@@ -49,10 +49,9 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.18 # test only the latest go version to speed up CI
+          go-version: 1.18 # test only release go version to speed up CI
       - name: Run tests
         run: make.exe test
-        continue-on-error: true
   tests-on-macos:
     needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
     runs-on: macos-latest
@@ -61,7 +60,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.18 # test only the latest go version to speed up CI
+          go-version: 1.18 # test only release go version to speed up CI
       - name: Run tests
         run: make test
   tests-on-unix:
