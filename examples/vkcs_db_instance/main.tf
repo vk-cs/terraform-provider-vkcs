@@ -20,6 +20,7 @@ resource "vkcs_db_instance" "db-instance" {
 
   network {
     uuid = vkcs_networking_network.db.id
+    security_groups = [vkcs_networking_secgroup.secgroup.id]
   }
 
   capabilities {
@@ -30,6 +31,7 @@ resource "vkcs_db_instance" "db-instance" {
   }
 
   depends_on = [
-    vkcs_networking_router_interface.db
+    vkcs_networking_router_interface.db,
+    vkcs_networking_secgroup.secgroup
   ]
 }

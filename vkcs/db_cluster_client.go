@@ -36,6 +36,7 @@ type dbClusterInstanceCreateOpts struct {
 	Volume           *volume       `json:"volume" required:"true"`
 	Walvolume        *walVolume    `json:"wal_volume,omitempty"`
 	ShardID          string        `json:"shard_id,omitempty"`
+	SecurityGroups   []string      `json:"security_groups,omitempty"`
 }
 
 // dbClusterAttachConfigurationGroupOpts represents parameters of configuration group to be attached to database cluster

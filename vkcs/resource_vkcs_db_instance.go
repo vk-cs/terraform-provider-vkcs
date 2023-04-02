@@ -230,6 +230,14 @@ func resourceDatabaseInstance() *schema.Resource {
 							ForceNew:    true,
 							Description: "The id of the subnet. Changing this creates a new instance. **New since v.0.1.15**.",
 						},
+						"security_groups": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							ForceNew:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Description: "An array of one or more security group IDs to associate with the instance. Changing this creates a new instance. **New since v.0.2.0**.",
+						},
 					},
 				},
 				Description: "Object that represents network of the instance. Changing this creates a new instance.",
@@ -494,7 +502,7 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if v, ok := d.GetOk("network"); ok {
-		createOpts.Nics, err = extractDatabaseNetworks(v.([]interface{}))
+		createOpts.Nics, createOpts.SecurityGroups, err = extractDatabaseNetworks(v.([]interface{}))
 		if err != nil {
 			return diag.Errorf("%s network", message)
 		}
