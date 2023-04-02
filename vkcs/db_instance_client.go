@@ -189,6 +189,13 @@ type instanceRootUserEnableOpts struct {
 	Password string `json:"password,omitempty"`
 }
 
+// iinstanceUpdateCloudMonitoringOpts represents parameters of request to update cloud monitoring options
+type updateCloudMonitoringOpts struct {
+	CloudMonitoring struct {
+		Enable bool `json:"enable"`
+	} `json:"cloud_monitoring"`
+}
+
 // instanceRespOpts is used to get instance response
 type instanceRespOpts struct {
 	Instance *instanceResp `json:"instance"`
@@ -314,6 +321,12 @@ func (opts *instanceRootUserEnableOpts) Map() (map[string]interface{}, error) {
 }
 
 // Map converts opts to a map (for a request body)
+func (opts *updateCloudMonitoringOpts) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
+// Map converts opts to a map (for a request body)
 func (opts *instanceUpdateAutoExpandOpts) Map() (map[string]interface{}, error) {
 	body, err := gophercloud.BuildRequestBody(*opts, "")
 	return body, err
@@ -367,21 +380,22 @@ type dbInstance struct {
 
 // dbInstanceCreateOpts represents parameters of creation of database instance
 type dbInstanceCreateOpts struct {
-	FlavorRef         string                   `json:"flavorRef,omitempty"`
-	Volume            *volume                  `json:"volume" required:"true"`
-	Name              string                   `json:"name" required:"true"`
-	Datastore         *dataStore               `json:"datastore" required:"true"`
-	Nics              []networkOpts            `json:"nics" required:"true"`
-	ReplicaOf         string                   `json:"replica_of,omitempty"`
-	AvailabilityZone  string                   `json:"availability_zone,omitempty"`
-	FloatingIPEnabled bool                     `json:"allow_remote_access,omitempty"`
-	Keypair           string                   `json:"key_name,omitempty"`
-	AutoExpand        *int                     `json:"volume_autoresize_enabled,omitempty"`
-	MaxDiskSize       int                      `json:"volume_autoresize_max_size,omitempty"`
-	Walvolume         *walVolume               `json:"wal_volume,omitempty"`
-	Capabilities      []instanceCapabilityOpts `json:"capabilities,omitempty"`
-	RestorePoint      *restorePoint            `json:"restorePoint,omitempty"`
-	BackupSchedule    *backupSchedule          `json:"backup_schedule,omitempty"`
+	FlavorRef              string                   `json:"flavorRef,omitempty"`
+	Volume                 *volume                  `json:"volume" required:"true"`
+	Name                   string                   `json:"name" required:"true"`
+	Datastore              *dataStore               `json:"datastore" required:"true"`
+	Nics                   []networkOpts            `json:"nics" required:"true"`
+	ReplicaOf              string                   `json:"replica_of,omitempty"`
+	AvailabilityZone       string                   `json:"availability_zone,omitempty"`
+	FloatingIPEnabled      bool                     `json:"allow_remote_access,omitempty"`
+	Keypair                string                   `json:"key_name,omitempty"`
+	AutoExpand             *int                     `json:"volume_autoresize_enabled,omitempty"`
+	MaxDiskSize            int                      `json:"volume_autoresize_max_size,omitempty"`
+	Walvolume              *walVolume               `json:"wal_volume,omitempty"`
+	Capabilities           []instanceCapabilityOpts `json:"capabilities,omitempty"`
+	RestorePoint           *restorePoint            `json:"restorePoint,omitempty"`
+	BackupSchedule         *backupSchedule          `json:"backup_schedule,omitempty"`
+	CloudMonitoringEnabled bool                     `json:"cloud_monitoring_enabled,omitempty"`
 }
 
 // networkOpts represents network parameters of database instance

@@ -36,6 +36,7 @@ func resourceDatabaseCluster() *schema.Resource {
 		ReadContext:   resourceDatabaseClusterRead,
 		DeleteContext: resourceDatabaseClusterDelete,
 		UpdateContext: resourceDatabaseClusterUpdate,
+		CustomizeDiff: resourceDatabaseCustomizeDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				config := meta.(configer)
@@ -388,6 +389,13 @@ func resourceDatabaseCluster() *schema.Resource {
 				},
 			},
 
+			"cloud_monitoring_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance.",
+			},
+
 			// Computed values
 			"instances": {
 				Type:     schema.TypeList,
@@ -429,8 +437,9 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	createOpts := &dbClusterCreateOpts{
-		Name:              d.Get("name").(string),
-		FloatingIPEnabled: d.Get("floating_ip_enabled").(bool),
+		Name:                   d.Get("name").(string),
+		FloatingIPEnabled:      d.Get("floating_ip_enabled").(bool),
+		CloudMonitoringEnabled: d.Get("cloud_monitoring_enabled").(bool),
 	}
 
 	message := "unable to determine vkcs_db_cluster"
@@ -925,6 +934,18 @@ func resourceDatabaseClusterUpdate(ctx context.Context, d *schema.ResourceData, 
 		if err != nil {
 			return diag.Errorf("error waiting for vkcs_db_cluster %s to become ready: %s", d.Id(), err)
 		}
+	}
+
+	if d.HasChange("cloud_monitoring_enabled") {
+		_, new := d.GetChange("cloud_monitoring_enabled")
+		var cloudMonitoringOpts updateCloudMonitoringOpts
+		cloudMonitoringOpts.CloudMonitoring.Enable = new.(bool)
+
+		err := dbClusterAction(DatabaseV1Client, d.Id(), &cloudMonitoringOpts).ExtractErr()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		log.Printf("Update cloud_monitoring_enabled in vkcs_db_cluster %s", d.Id())
 	}
 
 	return resourceDatabaseClusterRead(ctx, d, meta)

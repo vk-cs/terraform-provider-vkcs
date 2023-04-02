@@ -241,6 +241,7 @@ resource "vkcs_db_instance" "basic" {
   }
   availability_zone = "{{.AvailabilityZone}}"
   floating_ip_enabled = true
+  cloud_monitoring_enabled = true
 
   disk_autoexpand {
     autoexpand = true
