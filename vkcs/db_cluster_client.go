@@ -13,17 +13,18 @@ type dbCluster struct {
 
 // dbClusterCreateOpts represents database cluster creation parameters
 type dbClusterCreateOpts struct {
-	Name              string                        `json:"name" required:"true"`
-	Datastore         *dataStore                    `json:"datastore" required:"true"`
-	FloatingIPEnabled bool                          `json:"allow_remote_access,omitempty"`
-	AutoExpand        int                           `json:"volume_autoresize_enabled,omitempty"`
-	MaxDiskSize       int                           `json:"volume_autoresize_max_size,omitempty"`
-	WalAutoExpand     int                           `json:"wal_autoresize_enabled,omitempty"`
-	WalMaxDiskSize    int                           `json:"wal_autoresize_max_size,omitempty"`
-	Instances         []dbClusterInstanceCreateOpts `json:"instances"`
-	Capabilities      []instanceCapabilityOpts      `json:"capabilities,omitempty"`
-	RestorePoint      *restorePoint                 `json:"restorePoint,omitempty"`
-	BackupSchedule    *backupSchedule               `json:"backup_schedule,omitempty"`
+	Name                   string                        `json:"name" required:"true"`
+	Datastore              *dataStore                    `json:"datastore" required:"true"`
+	FloatingIPEnabled      bool                          `json:"allow_remote_access,omitempty"`
+	AutoExpand             int                           `json:"volume_autoresize_enabled,omitempty"`
+	MaxDiskSize            int                           `json:"volume_autoresize_max_size,omitempty"`
+	WalAutoExpand          int                           `json:"wal_autoresize_enabled,omitempty"`
+	WalMaxDiskSize         int                           `json:"wal_autoresize_max_size,omitempty"`
+	Instances              []dbClusterInstanceCreateOpts `json:"instances"`
+	Capabilities           []instanceCapabilityOpts      `json:"capabilities,omitempty"`
+	RestorePoint           *restorePoint                 `json:"restorePoint,omitempty"`
+	BackupSchedule         *backupSchedule               `json:"backup_schedule,omitempty"`
+	CloudMonitoringEnabled bool                          `json:"cloud_monitoring_enabled,omitempty"`
 }
 
 // dbClusterInstanceCreateOpts represents database cluster instance creation parameters

@@ -10,6 +10,7 @@ resource "vkcs_db_cluster" "db-cluster" {
   cluster_size = 3
 
   flavor_id   = data.vkcs_compute_flavor.db.id
+  cloud_monitoring_enabled = true
 
   volume_size = 10
   volume_type = "ceph-ssd"

@@ -9,6 +9,7 @@ description: |-
 
 #### v0.2.0 (unreleased)
 - Provide support for Public DNS service
+- Support cloud monitoring for DB instances/clusters
 
 #### v0.1.16
 - Add config option to run against clouds with old cloud containers API

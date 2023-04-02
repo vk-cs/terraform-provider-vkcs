@@ -16,6 +16,7 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 		ReadContext:   resourceDatabaseClusterWithShardsRead,
 		DeleteContext: resourceDatabaseClusterWithShardsDelete,
 		UpdateContext: resourceDatabaseClusterWithShardsUpdate,
+		CustomizeDiff: resourceDatabaseCustomizeDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				config := meta.(configer)
@@ -241,6 +242,13 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 				Description: "Object that represents backup to restore instance from. **New since v.0.1.4**.",
 			},
 
+			"cloud_monitoring_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance.",
+			},
+
 			"shard": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -385,8 +393,9 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 	}
 
 	createOpts := &dbClusterCreateOpts{
-		Name:              d.Get("name").(string),
-		FloatingIPEnabled: d.Get("floating_ip_enabled").(bool),
+		Name:                   d.Get("name").(string),
+		FloatingIPEnabled:      d.Get("floating_ip_enabled").(bool),
+		CloudMonitoringEnabled: d.Get("cloud_monitoring_enabled").(bool),
 	}
 
 	message := "unable to determine vkcs_db_cluster_with_shards"
@@ -668,6 +677,18 @@ func resourceDatabaseClusterWithShardsUpdate(ctx context.Context, d *schema.Reso
 		if err != nil {
 			return diag.Errorf("error applying capability to vkcs_db_cluster_with_shards %s: %s", d.Id(), err)
 		}
+	}
+
+	if d.HasChange("cloud_monitoring_enabled") {
+		_, new := d.GetChange("cloud_monitoring_enabled")
+		var cloudMonitoringOpts updateCloudMonitoringOpts
+		cloudMonitoringOpts.CloudMonitoring.Enable = new.(bool)
+
+		err := dbClusterAction(DatabaseV1Client, d.Id(), &cloudMonitoringOpts).ExtractErr()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		log.Printf("Update cloud_monitoring_enabled in vkcs_db_cluster_with_shards %s", d.Id())
 	}
 
 	return resourceDatabaseClusterWithShardsRead(ctx, d, meta)

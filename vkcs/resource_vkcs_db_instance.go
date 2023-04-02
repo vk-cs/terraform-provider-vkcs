@@ -59,6 +59,7 @@ func resourceDatabaseInstance() *schema.Resource {
 		ReadContext:   resourceDatabaseInstanceRead,
 		DeleteContext: resourceDatabaseInstanceDelete,
 		UpdateContext: resourceDatabaseInstanceUpdate,
+		CustomizeDiff: resourceDatabaseCustomizeDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				config := meta.(configer)
@@ -426,6 +427,13 @@ func resourceDatabaseInstance() *schema.Resource {
 				Description: "Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4**.",
 			},
 
+			"cloud_monitoring_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "Enable cloud monitoring for the instance. Changing this for Redis or MongoDB creates a new instance.",
+			},
+
 			// Computed values
 			"ip": {
 				Type:     schema.TypeList,
@@ -450,13 +458,14 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 
 	size := d.Get("size").(int)
 	createOpts := &dbInstanceCreateOpts{
-		FlavorRef:         d.Get("flavor_id").(string),
-		Name:              d.Get("name").(string),
-		Volume:            &volume{Size: &size, VolumeType: d.Get("volume_type").(string)},
-		ReplicaOf:         d.Get("replica_of").(string),
-		AvailabilityZone:  d.Get("availability_zone").(string),
-		FloatingIPEnabled: d.Get("floating_ip_enabled").(bool),
-		Keypair:           d.Get("keypair").(string),
+		FlavorRef:              d.Get("flavor_id").(string),
+		Name:                   d.Get("name").(string),
+		Volume:                 &volume{Size: &size, VolumeType: d.Get("volume_type").(string)},
+		ReplicaOf:              d.Get("replica_of").(string),
+		AvailabilityZone:       d.Get("availability_zone").(string),
+		FloatingIPEnabled:      d.Get("floating_ip_enabled").(bool),
+		Keypair:                d.Get("keypair").(string),
+		CloudMonitoringEnabled: d.Get("cloud_monitoring_enabled").(bool),
 	}
 
 	message := "unable to determine vkcs_db_instance"
@@ -975,6 +984,18 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			return diag.Errorf("error waiting for vkcs_db_instance %s to become ready: %s", d.Id(), err)
 		}
+	}
+
+	if d.HasChange("cloud_monitoring_enabled") {
+		_, new := d.GetChange("cloud_monitoring_enabled")
+		var cloudMonitoringOpts updateCloudMonitoringOpts
+		cloudMonitoringOpts.CloudMonitoring.Enable = new.(bool)
+
+		err := instanceAction(DatabaseV1Client, d.Id(), &cloudMonitoringOpts).ExtractErr()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		log.Printf("Update cloud_monitoring_enabled in vkcs_db_instance %s", d.Id())
 	}
 
 	return resourceDatabaseInstanceRead(ctx, d, meta)

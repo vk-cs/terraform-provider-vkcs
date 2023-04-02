@@ -6,6 +6,8 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
     version = "20.8"
   }
 
+  cloud_monitoring_enabled = true
+
   shard {
     availability_zone = "GZ1"
     size        = 1
@@ -25,7 +27,7 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
     size        = 1
     shard_id    = "shard1"
     flavor_id   = data.vkcs_compute_flavor.db.id
-    
+
     volume_size = 8
     volume_type = "ceph-ssd"
 

@@ -212,6 +212,7 @@ const testAccDatabaseClusterUpdate = `
 resource "vkcs_db_cluster" "basic" {
 	name      = "basic"
 	flavor_id = data.vkcs_compute_flavor.base.id
+	cloud_monitoring_enabled = true
 	volume_size      = 9
 	volume_type = "{{.VolumeType}}"
 	cluster_size = 3
