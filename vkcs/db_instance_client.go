@@ -396,6 +396,7 @@ type dbInstanceCreateOpts struct {
 	RestorePoint           *restorePoint            `json:"restorePoint,omitempty"`
 	BackupSchedule         *backupSchedule          `json:"backup_schedule,omitempty"`
 	CloudMonitoringEnabled bool                     `json:"cloud_monitoring_enabled,omitempty"`
+	SecurityGroups         []string                 `json:"security_groups,omitempty"`
 }
 
 // networkOpts represents network parameters of database instance

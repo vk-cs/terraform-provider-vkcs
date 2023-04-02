@@ -342,6 +342,14 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 										ForceNew:    true,
 										Description: "The id of the subnet. Changing this creates a new cluster. **New since v.0.1.15**.",
 									},
+									"security_groups": {
+										Type:        schema.TypeSet,
+										Optional:    true,
+										ForceNew:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Set:         schema.HashString,
+										Description: "An array of one or more security group IDs to associate with the shard instances. Changing this creates a new cluster. **New since v.0.2.0**.",
+									},
 								},
 								Description: "Object that represents network of the cluster shard. Changing this creates a new cluster.",
 							},
@@ -455,7 +463,7 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 		instanceCount += shardSize
 		volumeSize := shardMap["volume_size"].(int)
 		shardInfo[i].Volume = &volume{Size: &volumeSize, VolumeType: shardMap["volume_type"].(string)}
-		shardInfo[i].Nics, _ = extractDatabaseNetworks(shardMap["network"].([]interface{}))
+		shardInfo[i].Nics, shardInfo[i].SecurityGroups, _ = extractDatabaseNetworks(shardMap["network"].([]interface{}))
 		shardInfo[i].AvailabilityZone = shardMap["availability_zone"].(string)
 		shardInfo[i].FlavorRef = shardMap["flavor_id"].(string)
 		shardInfo[i].ShardID = shardMap["shard_id"].(string)

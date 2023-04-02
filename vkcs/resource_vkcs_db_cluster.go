@@ -197,6 +197,14 @@ func resourceDatabaseCluster() *schema.Resource {
 							ForceNew:    true,
 							Description: "The id of the subnet. Changing this creates a new cluster. **New since v.0.1.15**.",
 						},
+						"security_groups": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							ForceNew:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Description: "An array of one or more security group IDs to associate with the cluster instances. Changing this creates a new cluster. **New since v.0.2.0**.",
+						},
 					},
 				},
 				Description: "Object that represents network of the cluster. Changing this creates a new cluster.",
@@ -498,7 +506,7 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if v, ok := d.GetOk("network"); ok {
-		createDBInstanceOpts.Nics, err = extractDatabaseNetworks(v.([]interface{}))
+		createDBInstanceOpts.Nics, createDBInstanceOpts.SecurityGroups, err = extractDatabaseNetworks(v.([]interface{}))
 		if err != nil {
 			return diag.Errorf("%s network", message)
 		}

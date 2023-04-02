@@ -19,6 +19,7 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
 
     network {
       uuid = vkcs_networking_network.db.id
+      security_groups = [vkcs_networking_secgroup.secgroup.id]
     }
   }
 
@@ -33,11 +34,13 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
 
     network {
       uuid = vkcs_networking_network.db.id
+      security_groups = [vkcs_networking_secgroup.secgroup.id]
     }
   }
 
   depends_on = [
-    vkcs_networking_router_interface.db
+    vkcs_networking_router_interface.db,
+    vkcs_networking_secgroup.secgroup
   ]
 }
 
