@@ -73,12 +73,25 @@ func (d *dummyConfig) NetworkingV2Client(region string, sdn string) (*gopherclou
 	return nil, nil
 }
 
+func (d *dummyConfig) MonitoringV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return nil, nil
+}
+
+func (d *dummyConfig) MonitoringTemplaterV2Client(region string) (*gophercloud.ServiceClient, error) {
+	return nil, nil
+}
+
 func (d *dummyConfig) GetMutex() *mutexkv.MutexKV {
 	return nil
 }
 
 // GetRegion is a dummy method to return region.
 func (d *dummyConfig) GetRegion() string {
+	args := d.Called()
+	return args.String(0)
+}
+
+func (d *dummyConfig) GetTenantID() string {
 	args := d.Called()
 	return args.String(0)
 }
