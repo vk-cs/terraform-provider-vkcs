@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -560,6 +561,10 @@ func resourceDatabaseClusterWithShardsRead(ctx context.Context, d *schema.Resour
 		d.Set("wal_disk_autoexpand", flattenDatabaseInstanceAutoExpand(cluster.WalAutoExpand, cluster.WalMaxDiskSize))
 	}
 
+	hasChanges := d.HasChangesExcept()
+
+	var diags diag.Diagnostics
+
 	shardsRaw := d.Get("shard").([]interface{})
 	shards := make([]map[string]interface{}, len(shardsRaw))
 	shardsInstances := getDatabaseClusterShardInstances(cluster.Instances)
@@ -568,10 +573,20 @@ func resourceDatabaseClusterWithShardsRead(ctx context.Context, d *schema.Resour
 		shardID := shard["shard_id"].(string)
 		shard["instances"] = shardsInstances[shardID]
 		shards[i] = shard
+
+		rawNetworks := shard["network"].([]interface{})
+		p := cty.Path{
+			cty.GetAttrStep{Name: "shard"},
+			cty.IndexStep{Key: cty.NumberIntVal(int64(i))},
+			cty.GetAttrStep{Name: "network"},
+		}
+		if hasChanges {
+			diags = checkDBNetworks(rawNetworks, p, diags)
+		}
 	}
 	d.Set("shard", shards)
 
-	return nil
+	return diags
 }
 
 func resourceDatabaseClusterWithShardsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

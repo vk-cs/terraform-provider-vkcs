@@ -693,17 +693,22 @@ func resourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, m
 
 	d.Set("ip", instance.IP)
 
-	if _, ok := d.GetOk("replica_of"); !ok {
+	if !d.HasChangesExcept() {
 		return nil
 	}
-	// Check if user set both "replica_of" and "network.fixed_ip_v4"
+
 	var diags diag.Diagnostics
 
 	rawNetworks := d.Get("network").([]interface{})
+	diags = checkDBNetworks(rawNetworks, cty.Path{}, diags)
+
+	// Check if user set both "replica_of" and "network.fixed_ip_v4"
+	if _, ok := d.GetOk("replica_of"); !ok {
+		return diags
+	}
 	for i, n := range rawNetworks {
 		rawNetwork := n.(map[string]interface{})
-		rawPath := fmt.Sprintf("network.%d.fixed_ip_v4", i)
-		if v := rawNetwork["fixed_ip_v4"].(string); v != "" && d.HasChange(rawPath) {
+		if v := rawNetwork["fixed_ip_v4"].(string); v != "" {
 			path := cty.Path{
 				cty.GetAttrStep{Name: "network"},
 				cty.IndexStep{Key: cty.NumberIntVal(int64(i))},
