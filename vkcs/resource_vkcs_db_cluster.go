@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -634,7 +635,15 @@ func resourceDatabaseClusterRead(ctx context.Context, d *schema.ResourceData, me
 		d.Set("backup_schedule", nil)
 	}
 
-	return nil
+	if !d.HasChangesExcept() {
+		return nil
+	}
+
+	var diags diag.Diagnostics
+
+	rawNetworks := d.Get("network").([]interface{})
+	diags = checkDBNetworks(rawNetworks, cty.Path{}, diags)
+	return diags
 }
 
 func resourceDatabaseClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
