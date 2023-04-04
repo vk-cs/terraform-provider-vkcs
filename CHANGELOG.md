@@ -7,7 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.1.16 (unreleased)
+#### v0.1.16
 - Add config option to run against clouds with old cloud containers API
 
 #### v0.1.15
