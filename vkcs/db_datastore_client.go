@@ -24,6 +24,11 @@ type dataStore struct {
 	ClusterVolumeTypes []string           `json:"cluster_volume_types"`
 }
 
+// dataStoreGetResult represents the result of a dataStoreGet operation.
+type dataStoreGetResult struct {
+	gophercloud.Result
+}
+
 // dataStorePage represents a page of datastore resources.
 type dataStorePage struct {
 	pagination.SinglePageBase
@@ -45,6 +50,15 @@ func extractDatastores(r pagination.Page) ([]dataStore, error) {
 	return s.Datastores, err
 }
 
+// Extract retrieves a single dataStore struct from an operation result.
+func (r dataStoreGetResult) Extract() (*dataStore, error) {
+	var s struct {
+		Datastore *dataStore `json:"datastore"`
+	}
+	err := r.ExtractInto(&s)
+	return s.Datastore, err
+}
+
 var datastoresAPIPath = "datastores"
 
 // dataStoreList will list all available datastores that instances can use.
@@ -53,4 +67,11 @@ func dataStoreList(client databaseClient) pagination.Pager {
 		func(r pagination.PageResult) pagination.Page {
 			return dataStorePage{pagination.SinglePageBase(r)}
 		})
+}
+
+// dataStoreGet will retrieve the details of a specified datastore type.
+func dataStoreGet(client databaseClient, datastoreID string) (r dataStoreGetResult) {
+	resp, err := client.Get(datastoreURL(client, datastoresAPIPath, datastoreID), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	return
 }
