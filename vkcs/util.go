@@ -2,6 +2,8 @@ package vkcs
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
@@ -19,6 +21,31 @@ func mapStructureDecoder(strct interface{}, v *map[string]interface{}, config *m
 	config.Result = strct
 	decoder, _ := mapstructure.NewDecoder(config)
 	return decoder.Decode(*v)
+}
+
+// structToMap converts a structure to map with keys set to lowered
+// structure field names
+// NOTE: This function does not implement mapping nested structures
+func structToMap(s interface{}) (map[string]interface{}, error) {
+	v := reflect.ValueOf(s)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	if v.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("got %T instead of struct", s)
+	}
+
+	m := make(map[string]interface{})
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		f := t.Field(i)
+		if f.IsExported() {
+			m[strings.ToLower(f.Name)] = v.Field(i).Interface()
+		}
+	}
+
+	return m, nil
 }
 
 // getTimestamp ...
@@ -51,6 +78,14 @@ func checkDeleted(d *schema.ResourceData, err error, msg string) error {
 	}
 
 	return fmt.Errorf("%s %s: %s", msg, d.Id(), err)
+}
+
+func checkAlreadyExists(err error, msg, resourceName, conflict string) error {
+	if _, ok := err.(gophercloud.ErrDefault409); ok {
+		return fmt.Errorf("%s: %s with %s already exists", msg, resourceName, conflict)
+	}
+
+	return fmt.Errorf("%s: %s", msg, err)
 }
 
 // getRegion returns the region that was specified in the resource. If a

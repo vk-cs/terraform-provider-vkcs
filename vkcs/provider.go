@@ -30,6 +30,7 @@ type configer interface {
 	ComputeV2Client(region string) (*gophercloud.ServiceClient, error)
 	ImageV2Client(region string) (*gophercloud.ServiceClient, error)
 	NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error)
+	PublicDNSV2Client(region string) (*gophercloud.ServiceClient, error)
 	BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error)
 	KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error)
 	ContainerInfraV1Client(region string) (ContainerClient, error)
@@ -70,6 +71,10 @@ func (c *config) NetworkingV2Client(region string, sdn string) (*gophercloud.Ser
 		}
 	}
 	return client, err
+}
+
+func (c *config) PublicDNSV2Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.CommonServiceClientInit(newPublicDNSV2, region, "publicdns")
 }
 
 func (c *config) BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error) {
@@ -241,6 +246,7 @@ func Provider() *schema.Provider {
 			"vkcs_kubernetes_node_group":         dataSourceKubernetesNodeGroup(),
 			"vkcs_region":                        dataSourceVkcsRegion(),
 			"vkcs_regions":                       dataSourceVkcsRegions(),
+			"vkcs_publicdns_zone":                dataSourcePublicDNSZone(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -293,6 +299,8 @@ func Provider() *schema.Provider {
 			"vkcs_db_config_group":                    resourceDatabaseConfigGroup(),
 			"vkcs_kubernetes_cluster":                 resourceKubernetesCluster(),
 			"vkcs_kubernetes_node_group":              resourceKubernetesNodeGroup(),
+			"vkcs_publicdns_zone":                     resourcePublicDNSZone(),
+			"vkcs_publicdns_record":                   resourcePublicDNSRecord(),
 		},
 	}
 

@@ -1,5 +1,7 @@
 package vkcs
 
+import "strings"
+
 func baseURL(c ContainerClient, api string) string {
 	return c.ServiceURL(api)
 }
@@ -74,4 +76,16 @@ func scaleURL(c ContainerClient, api string, id string) string {
 
 func datastoreParametersURL(c ContainerClient, api string, dsType string, dsVersion string) string {
 	return c.ServiceURL(api, dsType, "versions", dsVersion, "parameters")
+}
+
+func zonesURL(c ContainerClient, api string) string {
+	return c.ServiceURL(api, "")
+}
+
+func recordsURL(c ContainerClient, api string, zoneID string, recordType string) string {
+	return c.ServiceURL(api, zoneID, strings.ToLower(recordType), "")
+}
+
+func recordURL(c ContainerClient, api string, zoneID string, recordType string, id string) string {
+	return c.ServiceURL(api, zoneID, strings.ToLower(recordType), id)
 }
