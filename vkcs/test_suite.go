@@ -73,6 +73,10 @@ func (d *dummyConfig) NetworkingV2Client(region string, sdn string) (*gopherclou
 	return nil, nil
 }
 
+func (d *dummyConfig) PublicDNSV2Client(region string) (*gophercloud.ServiceClient, error) {
+	return nil, nil
+}
+
 func (d *dummyConfig) GetMutex() *mutexkv.MutexKV {
 	return nil
 }
