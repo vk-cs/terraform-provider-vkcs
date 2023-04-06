@@ -17,7 +17,7 @@ func TestExtractInstanceDatastore(t *testing.T) {
 		},
 	}
 
-	expected := dataStore{
+	expected := dataStoreShort{
 		Version: "foo",
 		Type:    "bar",
 	}

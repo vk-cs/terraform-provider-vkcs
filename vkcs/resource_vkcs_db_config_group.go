@@ -135,7 +135,7 @@ func resourceDatabaseConfigGroupRead(ctx context.Context, d *schema.ResourceData
 	log.Printf("[DEBUG] Retrieved vkcs_db_config_group %s: %#v", d.Id(), configGroup)
 
 	d.Set("name", configGroup.Name)
-	ds := dataStore{
+	ds := dataStoreShort{
 		Type:    configGroup.DatastoreName,
 		Version: configGroup.DatastoreVersionName,
 	}

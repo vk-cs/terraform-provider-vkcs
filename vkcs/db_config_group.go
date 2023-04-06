@@ -57,7 +57,7 @@ func getDSParameterTypesMap(dsParameters []dbDatastoreParametersResp) map[string
 	return dsParameterTypes
 }
 
-func retrieveDatabaseConfigGroupValues(client databaseClient, datastore dataStore, v map[string]interface{}) (map[string]interface{}, error) {
+func retrieveDatabaseConfigGroupValues(client databaseClient, datastore dataStoreShort, v map[string]interface{}) (map[string]interface{}, error) {
 	dsParameters, err := dbDatastoreParametersGet(client, datastore.Type, datastore.Version).extract()
 	if err != nil {
 		return nil, fmt.Errorf("unable to determine vkcs_db_config_group parameter types")

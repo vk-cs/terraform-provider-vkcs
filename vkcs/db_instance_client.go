@@ -28,7 +28,7 @@ type instanceResp struct {
 	ID                string                  `json:"id"`
 	Created           dateTimeWithoutTZFormat `json:"created"`
 	Updated           dateTimeWithoutTZFormat `json:"updated"`
-	DataStore         *dataStore              `json:"datastore"`
+	DataStore         *dataStoreShort         `json:"datastore"`
 	Flavor            *links                  `json:"flavor"`
 	GaVersion         string                  `json:"ga_version"`
 	HealthStatus      string                  `json:"health_status"`
@@ -79,8 +79,8 @@ type links struct {
 	Links *[]link `json:"links"`
 }
 
-// dataStore represents dbaas datastore
-type dataStore struct {
+// dataStoreShort represents dbaas datastore short response
+type dataStoreShort struct {
 	Type    string `json:"type" required:"true"`
 	Version string `json:"version" required:"true"`
 }
@@ -383,7 +383,7 @@ type dbInstanceCreateOpts struct {
 	FlavorRef              string                   `json:"flavorRef,omitempty"`
 	Volume                 *volume                  `json:"volume" required:"true"`
 	Name                   string                   `json:"name" required:"true"`
-	Datastore              *dataStore               `json:"datastore" required:"true"`
+	Datastore              *dataStoreShort          `json:"datastore" required:"true"`
 	Nics                   []networkOpts            `json:"nics" required:"true"`
 	ReplicaOf              string                   `json:"replica_of,omitempty"`
 	AvailabilityZone       string                   `json:"availability_zone,omitempty"`

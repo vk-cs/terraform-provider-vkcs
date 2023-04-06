@@ -236,6 +236,7 @@ func Provider() *schema.Provider {
 			"vkcs_sharedfilesystem_sharenetwork": dataSourceSharedFilesystemShareNetwork(),
 			"vkcs_sharedfilesystem_share":        dataSourceSharedFilesystemShare(),
 			"vkcs_db_database":                   dataSourceDatabaseDatabase(),
+			"vkcs_db_datastores":                 dataSourceDatabaseDatastores(),
 			"vkcs_db_instance":                   dataSourceDatabaseInstance(),
 			"vkcs_db_user":                       dataSourceDatabaseUser(),
 			"vkcs_db_backup":                     dataSourceDatabaseBackup(),
