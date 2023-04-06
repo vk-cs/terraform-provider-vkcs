@@ -431,7 +431,7 @@ func resourceDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				ForceNew:    false,
-				Description: "Enable cloud monitoring for the instance. Changing this for Redis or MongoDB creates a new instance.",
+				Description: "Enable cloud monitoring for the instance. Changing this for Redis or MongoDB creates a new instance. **New since v.0.2.0**",
 			},
 
 			// Computed values
