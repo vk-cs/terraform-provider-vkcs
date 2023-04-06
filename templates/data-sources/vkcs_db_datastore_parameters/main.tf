@@ -1,6 +1,6 @@
 data "vkcs_db_datastore_parameters" "mysql_params" {
 	datastore_name = data.vkcs_db_datastore.mysql
-	datastore_version_id = data.vkcs_db_datastore.mysql.versions[0].id
+	datastore_version_id = local.mysql_v8_version_id
 }
 
 output "mysql_parameters" {
