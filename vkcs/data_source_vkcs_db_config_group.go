@@ -84,7 +84,7 @@ func dataSourceDatabaseConfigGroupRead(ctx context.Context, d *schema.ResourceDa
 	log.Printf("[DEBUG] Retrieved vkcs_db_config_group %s: %#v", configGroupID, configGroup)
 
 	d.Set("name", configGroup.Name)
-	ds := dataStore{
+	ds := dataStoreShort{
 		Type:    configGroup.DatastoreName,
 		Version: configGroup.DatastoreVersionName,
 	}

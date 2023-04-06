@@ -11,7 +11,7 @@ type dbConfigGroup struct {
 }
 
 type dbConfigGroupCreateOpts struct {
-	Datastore   *dataStore             `json:"datastore"`
+	Datastore   *dataStoreShort        `json:"datastore"`
 	Name        string                 `json:"name"`
 	Values      map[string]interface{} `json:"values"`
 	Description string                 `json:"description,omitempty"`

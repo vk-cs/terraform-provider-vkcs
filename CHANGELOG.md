@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.2.0 (unreleased)
+- Add vkcs_db_datastores datasource
 - Provide support for Public DNS service
 - Support cloud monitoring for DB instances/clusters
 - Add security_group argument to DB instance/cluster resources

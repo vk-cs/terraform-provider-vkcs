@@ -14,7 +14,7 @@ type dbCluster struct {
 // dbClusterCreateOpts represents database cluster creation parameters
 type dbClusterCreateOpts struct {
 	Name                   string                        `json:"name" required:"true"`
-	Datastore              *dataStore                    `json:"datastore" required:"true"`
+	Datastore              *dataStoreShort               `json:"datastore" required:"true"`
 	FloatingIPEnabled      bool                          `json:"allow_remote_access,omitempty"`
 	AutoExpand             int                           `json:"volume_autoresize_enabled,omitempty"`
 	MaxDiskSize            int                           `json:"volume_autoresize_max_size,omitempty"`
@@ -132,7 +132,7 @@ type dbClusterShrinkOpts struct {
 type dbClusterResp struct {
 	ConfigurationID string                  `json:"configuration_id"`
 	Created         dateTimeWithoutTZFormat `json:"created"`
-	DataStore       *dataStore              `json:"datastore"`
+	DataStore       *dataStoreShort         `json:"datastore"`
 	HealthStatus    string                  `json:"health_status"`
 	ID              string                  `json:"id"`
 	Instances       []dbClusterInstanceResp `json:"instances"`

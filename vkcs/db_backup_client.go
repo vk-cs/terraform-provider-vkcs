@@ -19,19 +19,19 @@ type dbBackupCreateOpts struct {
 }
 
 type dbBackupResp struct {
-	ID          string     `json:"id"`
-	Name        string     `json:"name"`
-	Description string     `json:"description"`
-	LocationRef string     `json:"location_ref"`
-	InstanceID  string     `json:"instance_id"`
-	ClusterID   string     `json:"cluster_id"`
-	Created     string     `json:"created"`
-	Updated     string     `json:"updated"`
-	Size        float64    `json:"size"`
-	WalSize     float64    `json:"wal_size"`
-	Status      string     `json:"status"`
-	Datastore   *dataStore `json:"datastore"`
-	Meta        string     `json:"meta"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	LocationRef string          `json:"location_ref"`
+	InstanceID  string          `json:"instance_id"`
+	ClusterID   string          `json:"cluster_id"`
+	Created     string          `json:"created"`
+	Updated     string          `json:"updated"`
+	Size        float64         `json:"size"`
+	WalSize     float64         `json:"wal_size"`
+	Status      string          `json:"status"`
+	Datastore   *dataStoreShort `json:"datastore"`
+	Meta        string          `json:"meta"`
 }
 
 type dbBackupRespOpts struct {

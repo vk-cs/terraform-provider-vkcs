@@ -40,8 +40,8 @@ func extractDatabaseRestorePoint(v []interface{}) (restorePoint, error) {
 	return R, nil
 }
 
-func extractDatabaseDatastore(v []interface{}) (dataStore, error) {
-	var D dataStore
+func extractDatabaseDatastore(v []interface{}) (dataStoreShort, error) {
+	var D dataStoreShort
 	in := v[0].(map[string]interface{})
 	err := mapStructureDecoder(&D, &in, decoderConfig)
 	if err != nil {
@@ -50,7 +50,7 @@ func extractDatabaseDatastore(v []interface{}) (dataStore, error) {
 	return D, nil
 }
 
-func flattenDatabaseInstanceDatastore(d dataStore) []map[string]interface{} {
+func flattenDatabaseInstanceDatastore(d dataStoreShort) []map[string]interface{} {
 	datastore := make([]map[string]interface{}, 1)
 	datastore[0] = make(map[string]interface{})
 	datastore[0]["type"] = d.Type
