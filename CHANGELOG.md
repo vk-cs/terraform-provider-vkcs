@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.2.0 (unreleased)
+- Add vkcs_db_datastore_parameters datasource
 - Add vkcs_db_datastore_capabilities datasource
 - Add vkcs_db_datastore datasource
 - Add vkcs_db_datastores datasource

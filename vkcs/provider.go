@@ -238,6 +238,7 @@ func Provider() *schema.Provider {
 			"vkcs_db_database":                   dataSourceDatabaseDatabase(),
 			"vkcs_db_datastore":                  dataSourceDatabaseDatastore(),
 			"vkcs_db_datastore_capabilities":     dataSourceDatabaseDatastoreCapabilities(),
+			"vkcs_db_datastore_parameters":       dataSourceDatabaseDatastoreParameters(),
 			"vkcs_db_datastores":                 dataSourceDatabaseDatastores(),
 			"vkcs_db_instance":                   dataSourceDatabaseInstance(),
 			"vkcs_db_user":                       dataSourceDatabaseUser(),
