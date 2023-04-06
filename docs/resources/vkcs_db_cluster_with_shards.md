@@ -20,6 +20,8 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
     version = "20.8"
   }
 
+  cloud_monitoring_enabled = true
+
   shard {
     availability_zone = "GZ1"
     size        = 1
@@ -39,7 +41,7 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
     size        = 1
     shard_id    = "shard1"
     flavor_id   = data.vkcs_compute_flavor.db.id
-    
+
     volume_size = 8
     volume_type = "ceph-ssd"
 
@@ -148,6 +150,8 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
 
   - `settings` <strong>Map of </strong>**String** (*Optional*) Map of key-value settings of the capability.
 
+- `cloud_monitoring_enabled` **Boolean** (*Optional*) Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance. **New since v.0.2.0**
+
 - `configuration_id` **String** (*Optional*) The id of the configuration attached to cluster.
 
 - `disk_autoexpand` (*Optional*) Object that represents autoresize properties of the cluster.
@@ -213,6 +217,8 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
   - `name` **String** See Argument Reference above.
 
   - `settings` <strong>Map of </strong>**String** See Argument Reference above.
+
+- `cloud_monitoring_enabled` **Boolean** See Argument Reference above.
 
 - `configuration_id` **String** See Argument Reference above.
 

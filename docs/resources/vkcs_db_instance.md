@@ -23,7 +23,8 @@ resource "vkcs_db_instance" "db-instance" {
   }
 
   flavor_id   = data.vkcs_compute_flavor.db.id
-  
+  cloud_monitoring_enabled = true
+
   size        = 8
   volume_type = "ceph-ssd"
   disk_autoexpand {
@@ -163,6 +164,8 @@ resource "vkcs_db_instance" "db-instance" {
 
   - `settings` <strong>Map of </strong>**String** (*Optional*) Map of key-value settings of the capability.
 
+- `cloud_monitoring_enabled` **Boolean** (*Optional*) Enable cloud monitoring for the instance. Changing this for Redis or MongoDB creates a new instance. **New since v.0.2.0**
+
 - `configuration_id` **String** (*Optional*) The id of the configuration attached to instance.
 
 - `disk_autoexpand` (*Optional*) Object that represents autoresize properties of the instance.
@@ -244,6 +247,8 @@ resource "vkcs_db_instance" "db-instance" {
   - `name` **String** See Argument Reference above.
 
   - `settings` <strong>Map of </strong>**String** See Argument Reference above.
+
+- `cloud_monitoring_enabled` **Boolean** See Argument Reference above.
 
 - `configuration_id` **String** See Argument Reference above.
 
