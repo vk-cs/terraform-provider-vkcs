@@ -7,7 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.2.0 (unreleased)
+#### v0.2.0
 - Provide support for Public DNS service
 - Add datasources for DB datastores
 - Add datasources for DB datastore capabilities and configuration parameters
