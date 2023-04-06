@@ -54,6 +54,21 @@ type dataStoreCapabilities struct {
 	Capabilities []dataStoreCapability `json:"capabilities"`
 }
 
+// dataStoreParam represents a configuration parameter supported by a datastore
+type dataStoreParam struct {
+	Name            string  `json:"name"`
+	Type            string  `json:"type"`
+	MinValue        float64 `json:"min"`
+	MaxValue        float64 `json:"max"`
+	RestartRequried bool    `json:"restart_required"`
+}
+
+// dataStoreParams represents a object containing all datastore
+// configuration parameters.
+type dataStoreParams struct {
+	Params []dataStoreParam `json:"configuration-parameters"`
+}
+
 // dataStoreGetResult represents the result of a dataStoreGet operation.
 type dataStoreGetResult struct {
 	gophercloud.Result
@@ -70,10 +85,13 @@ type dataStoreListCapabilitiesResult struct {
 	gophercloud.Result
 }
 
-func (r dataStoreListCapabilitiesResult) Extract() ([]dataStoreCapability, error) {
-	var dsCapabilities dataStoreCapabilities
-	err := r.ExtractInto(&dsCapabilities)
-	return dsCapabilities.Capabilities, err
+// Extract retrieves a single dataStore struct from an operation result.
+func (r dataStoreGetResult) Extract() (*dataStore, error) {
+	var s struct {
+		Datastore *dataStore `json:"datastore"`
+	}
+	err := r.ExtractInto(&s)
+	return s.Datastore, err
 }
 
 // IsEmpty indicates whether a Datastore collection is empty.
@@ -92,13 +110,22 @@ func extractDatastores(r pagination.Page) ([]dataStore, error) {
 	return s.Datastores, err
 }
 
-// Extract retrieves a single dataStore struct from an operation result.
-func (r dataStoreGetResult) Extract() (*dataStore, error) {
-	var s struct {
-		Datastore *dataStore `json:"datastore"`
-	}
-	err := r.ExtractInto(&s)
-	return s.Datastore, err
+// dataStoreListParametersResult represents the result of
+// dataStoreListParameters operation.
+type dataStoreListParametersResult struct {
+	gophercloud.Result
+}
+
+func (r dataStoreListCapabilitiesResult) Extract() ([]dataStoreCapability, error) {
+	var dsCapabilities dataStoreCapabilities
+	err := r.ExtractInto(&dsCapabilities)
+	return dsCapabilities.Capabilities, err
+}
+
+func (r dataStoreListParametersResult) Extract() ([]dataStoreParam, error) {
+	var dsParams dataStoreParams
+	err := r.ExtractInto(&dsParams)
+	return dsParams.Params, err
 }
 
 var datastoresAPIPath = "datastores"
@@ -120,6 +147,15 @@ func dataStoreGet(client databaseClient, datastoreID string) (r dataStoreGetResu
 
 func dataStoreListCapabilities(client databaseClient, dsName string, versionID string) (r dataStoreListCapabilitiesResult) {
 	url := datastoreCapabilitiesURL(client, datastoresAPIPath, dsName, versionID)
+	resp, err := client.Get(url, &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	return
+}
+
+// dataStoreListParameters will list all available configuration parameters
+// for a specific version of a datastore.
+func dataStoreListParameters(client databaseClient, dsName string, versionID string) (r dataStoreListParametersResult) {
+	url := datastoreParametersURL(client, datastoresAPIPath, dsName, versionID)
 	resp, err := client.Get(url, &r.Body, nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
