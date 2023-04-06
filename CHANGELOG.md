@@ -13,6 +13,7 @@ description: |-
 - Add datasources for DB datastore capabilities and configuration parameters
 - Support cloud monitoring for DB instances/clusters
 - Add security_group argument to DB instance/cluster resources
+- Fix searching of shared network with datasource
 
 #### v0.1.16
 - Add config option to run against clouds with old cloud containers API

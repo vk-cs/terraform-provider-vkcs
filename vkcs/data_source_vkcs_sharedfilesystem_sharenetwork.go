@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/sharenetworks"
 )
 
@@ -97,8 +96,6 @@ func dataSourceSharedFilesystemShareNetworkRead(ctx context.Context, d *schema.R
 		NeutronNetID:    d.Get("neutron_net_id").(string),
 		NeutronSubnetID: d.Get("neutron_subnet_id").(string),
 	}
-
-	listOpts.IPVersion = gophercloud.IPVersion(4)
 
 	allPages, err := sharenetworks.ListDetail(sfsClient, listOpts).AllPages()
 	if err != nil {
