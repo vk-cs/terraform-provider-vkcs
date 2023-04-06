@@ -24,6 +24,36 @@ type dataStore struct {
 	ClusterVolumeTypes []string           `json:"cluster_volume_types"`
 }
 
+// capabilityParam represents a parameter of a Datastore capability.
+type capabilityParam struct {
+	Required     bool        `json:"required"`
+	Type         string      `json:"type"`
+	ElementType  string      `json:"element_type"`
+	EnumValues   []string    `json:"enum_values"`
+	DefaultValue interface{} `json:"default_value"` // workaround since there's bug in API response
+	MinValue     float64     `json:"min"`
+	MaxValue     float64     `json:"max"`
+	Regex        string      `json:"regex"`
+	Masked       bool        `json:"masked"`
+}
+
+// dataStoreCapability represents a Datastore capability.
+type dataStoreCapability struct {
+	Name                   string                      `json:"name"`
+	Description            string                      `json:"description"`
+	Status                 string                      `json:"status"`
+	Params                 map[string]*capabilityParam `json:"params"`
+	ShouldBeOnMaster       bool                        `json:"should_be_on_master"`
+	AllowUpgradeFromBackup bool                        `json:"allow_upgrade_from_backup"`
+	AllowMajorUpgrade      bool                        `json:"allow_major_upgrade"`
+}
+
+// dataStoreCapabilities represents a object containing all datastore
+// capabilities.
+type dataStoreCapabilities struct {
+	Capabilities []dataStoreCapability `json:"capabilities"`
+}
+
 // dataStoreGetResult represents the result of a dataStoreGet operation.
 type dataStoreGetResult struct {
 	gophercloud.Result
@@ -34,7 +64,19 @@ type dataStorePage struct {
 	pagination.SinglePageBase
 }
 
-// IsEmpty indicates whether a datastore collection is empty.
+// dataStoreListCapabilitiesResult represents the result of
+// dataStoreListCapabilities operation.
+type dataStoreListCapabilitiesResult struct {
+	gophercloud.Result
+}
+
+func (r dataStoreListCapabilitiesResult) Extract() ([]dataStoreCapability, error) {
+	var dsCapabilities dataStoreCapabilities
+	err := r.ExtractInto(&dsCapabilities)
+	return dsCapabilities.Capabilities, err
+}
+
+// IsEmpty indicates whether a Datastore collection is empty.
 func (r dataStorePage) IsEmpty() (bool, error) {
 	is, err := extractDatastores(r)
 	return len(is) == 0, err
@@ -72,6 +114,13 @@ func dataStoreList(client databaseClient) pagination.Pager {
 // dataStoreGet will retrieve the details of a specified datastore type.
 func dataStoreGet(client databaseClient, datastoreID string) (r dataStoreGetResult) {
 	resp, err := client.Get(datastoreURL(client, datastoresAPIPath, datastoreID), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	return
+}
+
+func dataStoreListCapabilities(client databaseClient, dsName string, versionID string) (r dataStoreListCapabilitiesResult) {
+	url := datastoreCapabilitiesURL(client, datastoresAPIPath, dsName, versionID)
+	resp, err := client.Get(url, &r.Body, nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }

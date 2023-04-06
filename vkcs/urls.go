@@ -86,6 +86,10 @@ func datastoreParametersURL(c ContainerClient, api string, dsType string, dsVers
 	return c.ServiceURL(api, dsType, "versions", dsVersion, "parameters")
 }
 
+func datastoreCapabilitiesURL(c ContainerClient, api string, dsType string, dsVersion string) string {
+	return c.ServiceURL(api, dsType, "versions", dsVersion, "capabilities")
+}
+
 func zonesURL(c ContainerClient, api string) string {
 	return c.ServiceURL(api, "")
 }
