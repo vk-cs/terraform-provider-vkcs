@@ -11,7 +11,7 @@ import (
 )
 
 func TestAccPublicDNSRecord_importBasic(t *testing.T) {
-	resourceName := "vkcs_publicdns_record.record_1"
+	resourceName := "vkcs_publicdns_record.record_a"
 	zoneName := fmt.Sprintf("vkcs-tf-acctest-%s.com", acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
