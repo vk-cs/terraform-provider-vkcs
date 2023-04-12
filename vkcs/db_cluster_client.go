@@ -59,6 +59,7 @@ type dbClusterResizeVolumeOpts struct {
 		Volume struct {
 			Size int `json:"size"`
 		} `json:"volume"`
+		ShardID string `json:"shard_id,omitempty"`
 	} `json:"resize"`
 }
 
@@ -69,6 +70,7 @@ type dbClusterResizeWalVolumeOpts struct {
 			Size int    `json:"size"`
 			Kind string `json:"kind"`
 		} `json:"volume"`
+		ShardID string `json:"shard_id,omitempty"`
 	} `json:"resize"`
 }
 
@@ -76,6 +78,7 @@ type dbClusterResizeWalVolumeOpts struct {
 type dbClusterResizeOpts struct {
 	Resize struct {
 		FlavorRef string `json:"flavorRef"`
+		ShardID   string `json:"shard_id,omitempty"`
 	} `json:"resize"`
 }
 
@@ -116,6 +119,7 @@ type dbClusterGrowOpts struct {
 	FlavorRef        string     `json:"flavorRef" required:"true"`
 	Volume           *volume    `json:"volume" required:"true"`
 	Walvolume        *walVolume `json:"wal_volume,omitempty"`
+	ShardID          string     `json:"shard_id,omitempty"`
 }
 
 // dbClusterShrinkClusterOpts is used to send proper request to shrink database cluster

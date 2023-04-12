@@ -2,9 +2,11 @@ package vkcs
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"sort"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -270,6 +272,16 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 							Required:    true,
 							ForceNew:    false,
 							Description: "The number of instances in the cluster shard.",
+						},
+
+						"shrink_options": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "Used only for shrinking cluster. List of IDs of instances that should remain after shrink. If no options are supplied, shrink operation will choose first non-leader instance to delete.",
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								return true
+							},
 						},
 
 						"flavor_id": {
@@ -636,119 +648,100 @@ OuterLoop:
 
 func resourceDatabaseClusterWithShardsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(configer)
-	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
+	dbClient, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
+	clusterID := d.Id()
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{string(dbClusterStatusBuild)},
 		Target:     []string{string(dbClusterStatusActive)},
-		Refresh:    databaseClusterStateRefreshFunc(DatabaseV1Client, d.Id(), nil),
+		Refresh:    databaseClusterStateRefreshFunc(dbClient, clusterID, nil),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      dbInstanceDelay,
 		MinTimeout: dbInstanceMinTimeout,
 	}
+	updateCtx := &dbResourceUpdateContext{
+		Ctx:       ctx,
+		Client:    dbClient,
+		D:         d,
+		StateConf: stateConf,
+	}
 
 	if d.HasChange("configuration_id") {
-		old, new := d.GetChange("configuration_id")
-
-		var detachConfigurationOpts dbClusterDetachConfigurationGroupOpts
-		detachConfigurationOpts.ConfigurationDetach.ConfigurationID = old.(string)
-		err := dbClusterAction(DatabaseV1Client, d.Id(), &detachConfigurationOpts).ExtractErr()
+		err = databaseClusterActionUpdateConfiguration(updateCtx)
 		if err != nil {
-			return diag.FromErr(err)
-		}
-		log.Printf("Detaching configuration %s from vkcs_db_cluster_with_shards %s", old, d.Id())
-
-		_, err = stateConf.WaitForStateContext(ctx)
-		if err != nil {
-			return diag.Errorf("error waiting for vkcs_db_cluster_with_shards %s to become ready: %s", d.Id(), err)
-		}
-
-		if new != "" {
-			var attachConfigurationOpts dbClusterAttachConfigurationGroupOpts
-			attachConfigurationOpts.ConfigurationAttach.ConfigurationID = new.(string)
-			err := dbClusterAction(DatabaseV1Client, d.Id(), &attachConfigurationOpts).ExtractErr()
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			log.Printf("Attaching configuration %s to vkcs_db_cluster_with_shards %s", new, d.Id())
-
-			_, err = stateConf.WaitForStateContext(ctx)
-			if err != nil {
-				return diag.Errorf("error waiting for vkcs_db_cluster_with_shards %s to become ready: %s", d.Id(), err)
-			}
+			return databaseClusterWithShardsUpdateProcessError(err, clusterID, "")
 		}
 	}
 
 	if d.HasChange("disk_autoexpand") {
-		_, new := d.GetChange("disk_autoexpand")
-		autoExpandProperties, err := extractDatabaseAutoExpand(new.([]interface{}))
+		err = databaseClusterUpdateDiskAutoexpand(updateCtx)
 		if err != nil {
-			return diag.Errorf("unable to determine vkcs_db_cluster_with_shards disk_autoexpand")
+			return databaseClusterWithShardsUpdateProcessError(err, clusterID, "")
 		}
-		var autoExpandOpts dbClusterUpdateAutoExpandOpts
-		if autoExpandProperties.AutoExpand {
-			autoExpandOpts.Cluster.VolumeAutoresizeEnabled = 1
-		} else {
-			autoExpandOpts.Cluster.VolumeAutoresizeEnabled = 0
-		}
-		autoExpandOpts.Cluster.VolumeAutoresizeMaxSize = autoExpandProperties.MaxDiskSize
-		err = dbClusterUpdateAutoExpand(DatabaseV1Client, d.Id(), &autoExpandOpts).ExtractErr()
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	}
 
-		stateConf.Pending = []string{string(dbClusterStatusUpdating)}
-		stateConf.Target = []string{string(dbClusterStatusActive)}
-
-		_, err = stateConf.WaitForStateContext(ctx)
+	if d.HasChange("wal_disk_autoexpand") {
+		err = databaseClusterUpdateWalDiskAutoexpand(updateCtx)
 		if err != nil {
-			return diag.Errorf("error waiting for vkcs_db_cluster_with_shards %s to become ready: %s", d.Id(), err)
+			return databaseClusterWithShardsUpdateProcessError(err, clusterID, "")
 		}
 	}
 
 	if d.HasChange("capabilities") {
-		_, newCapabilities := d.GetChange("capabilities")
-		newCapabilitiesOpts, err := extractDatabaseCapabilities(newCapabilities.([]interface{}))
+		err = databaseClusterActionApplyCapabilities(updateCtx)
 		if err != nil {
-			return diag.Errorf("unable to determine vkcs_db_cluster_with_shards capability")
-		}
-		var applyCapabilityOpts dbClusterApplyCapabilityOpts
-		applyCapabilityOpts.ApplyCapability.Capabilities = newCapabilitiesOpts
-
-		err = dbClusterAction(DatabaseV1Client, d.Id(), &applyCapabilityOpts).ExtractErr()
-
-		if err != nil {
-			return diag.Errorf("error applying capability to vkcs_db_cluster_with_shards %s: %s", d.Id(), err)
-		}
-
-		applyCapabilityClusterConf := &resource.StateChangeConf{
-			Pending:    []string{string(dbClusterStatusCapabilityApplying), string(dbClusterStatusBuild)},
-			Target:     []string{string(dbClusterStatusActive)},
-			Refresh:    databaseClusterStateRefreshFunc(DatabaseV1Client, d.Id(), &newCapabilitiesOpts),
-			Timeout:    d.Timeout(schema.TimeoutCreate),
-			Delay:      dbInstanceDelay,
-			MinTimeout: dbInstanceMinTimeout,
-		}
-		log.Printf("[DEBUG] Waiting for cluster to become ready after applying capability")
-		_, err = applyCapabilityClusterConf.WaitForStateContext(ctx)
-		if err != nil {
-			return diag.Errorf("error applying capability to vkcs_db_cluster_with_shards %s: %s", d.Id(), err)
+			return databaseClusterWithShardsUpdateProcessError(err, clusterID, "")
 		}
 	}
 
 	if d.HasChange("cloud_monitoring_enabled") {
-		_, new := d.GetChange("cloud_monitoring_enabled")
-		var cloudMonitoringOpts updateCloudMonitoringOpts
-		cloudMonitoringOpts.CloudMonitoring.Enable = new.(bool)
-
-		err := dbClusterAction(DatabaseV1Client, d.Id(), &cloudMonitoringOpts).ExtractErr()
+		err = databaseClusterUpdateCloudMonitoring(updateCtx)
 		if err != nil {
-			return diag.FromErr(err)
+			return databaseClusterWithShardsUpdateProcessError(err, clusterID, "")
 		}
-		log.Printf("Update cloud_monitoring_enabled in vkcs_db_cluster_with_shards %s", d.Id())
+	}
+
+	shardsRaw := d.Get("shard").([]interface{})
+	for i, shardRaw := range shardsRaw {
+		shard := shardRaw.(map[string]interface{})
+		shardID := shard["shard_id"].(string)
+		pathPrefix := fmt.Sprintf("shard.%d.", i)
+
+		if p := pathPrefix + "volume_size"; d.HasChange(p) {
+			err = databaseClusterActionResizeVolume(updateCtx, shardID)
+			if err != nil {
+				return databaseClusterWithShardsUpdateProcessError(err, clusterID, shardID)
+			}
+		}
+
+		if p := pathPrefix + "wal_volume"; d.HasChange(p) {
+			err = databaseClusterActionResizeWalVolume(updateCtx, shardID)
+			if err != nil {
+				return databaseClusterWithShardsUpdateProcessError(err, clusterID, shardID)
+			}
+		}
+
+		if p := pathPrefix + "flavor_id"; d.HasChange(p) {
+			err = databaseClusterActionResizeFlavor(updateCtx, shardID)
+			if err != nil {
+				return databaseClusterWithShardsUpdateProcessError(err, clusterID, shardID)
+			}
+		}
+
+		if p := pathPrefix + "size"; d.HasChange(p) {
+			old, new := d.GetChange(p)
+			if sizeChange := new.(int) - old.(int); sizeChange > 0 {
+				err = databaseClusterActionGrow(updateCtx, shardID)
+			} else if sizeChange < 0 {
+				err = databaseClusterActionShrink(updateCtx, shardID)
+			}
+			if err != nil {
+				return databaseClusterWithShardsUpdateProcessError(err, clusterID, shardID)
+			}
+		}
 	}
 
 	return resourceDatabaseClusterWithShardsRead(ctx, d, meta)
@@ -781,4 +774,58 @@ func resourceDatabaseClusterWithShardsDelete(ctx context.Context, d *schema.Reso
 	}
 
 	return nil
+}
+
+func databaseClusterWithShardsUpdateProcessError(err error, clusterID string, shardID string) diag.Diagnostics {
+	baseErr := err
+	if unwrappedErr := errors.Unwrap(err); unwrappedErr != nil {
+		baseErr = unwrappedErr
+	}
+
+	newErrMsg := baseErr.Error()
+	switch baseErr {
+	case errDBClusterNotFound:
+		newErrMsg = fmt.Sprintf("error retrieving vkcs_db_cluster_with_shards %s", clusterID)
+	case errDBClusterShardNotFound:
+		newErrMsg = fmt.Sprintf("unable to extract shard from vkcs_db_cluster_with_shards %s", clusterID)
+	case errDBClusterUpdateWait:
+		newErrMsg = fmt.Sprintf("error waiting for vkcs_db_cluster_with_shards %s to become ready", clusterID)
+
+	case errDBClusterUpdateDiskAutoexpand:
+		newErrMsg = fmt.Sprintf("error updating disk_autoexpand for vkcs_db_cluster_with_shards %s", clusterID)
+	case errDBClusterUpdateDiskAutoexpandExtract:
+		newErrMsg = fmt.Sprintf("unable to determine disk_autoexpand fron vkcs_db_cluster_with_shards %s", clusterID)
+	case errDBClusterUpdateWalDiskAutoexpand:
+		newErrMsg = fmt.Sprintf("error updating wal_disk_autoexpand for vkcs_db_cluster_with_shards %s", clusterID)
+	case errDBClusterUpdateWalDiskAutoexpandExtract:
+		newErrMsg = fmt.Sprintf("unable to determine wal_disk_autoexpand from vkcs_db_cluster_with_shards %s", clusterID)
+	case errDBClusterUpdateCloudMonitoring:
+		newErrMsg = fmt.Sprintf("error updating cloud_monitoring_enabled for vkcs_db_cluster_with_shards %s", clusterID)
+
+	case errDBClusterActionUpdateConfiguration:
+		newErrMsg = fmt.Sprintf("error updating configuration for vkcs_db_cluster_with_shards %s", clusterID)
+	case errDBClusterActionApplyCapabitilies:
+		newErrMsg = fmt.Sprintf("error updating capabilities for vkcs_db_cluster_with_shards %s", clusterID)
+	case errDBClusterActionApplyCapabilitiesExtract:
+		newErrMsg = fmt.Sprintf("error extracting capabilities for vkcs_db_cluster_with_shards %s", clusterID)
+	case errDBClusterActionResizeWalVolumeExtract:
+		newErrMsg = fmt.Sprintf("unable to determine wal_volume from shard %s of vkcs_db_cluster_with_shards %s", shardID, clusterID)
+	case errDBClusterActionGrow:
+		newErrMsg = fmt.Sprintf("error growing shard %s of vkcs_db_cluster_with_shards %s", shardID, clusterID)
+	case errDBClusterActionShrink:
+		newErrMsg = fmt.Sprintf("error shrinking shard %s of vkcs_db_cluster_with_shards %s", shardID, clusterID)
+	case errDBClusterActionShrinkWrongOptions:
+		newErrMsg = fmt.Sprintf("invalid shrink options for shard %s of vkcs_db_cluster_with_shards %s", shardID, clusterID)
+	case errDBClusterActionShrinkInstancesExtract:
+		newErrMsg = fmt.Sprintf("error determining instances to shrink shard %s of vkcs_db_cluster_with_shards %s", shardID, clusterID)
+	case errDBClusterActionResizeVolume:
+		newErrMsg = fmt.Sprintf("error resizing volume for shard %s of vkcs_db_cluster_with_shards %s", shardID, clusterID)
+	case errDBClusterActionResizeWalVolume:
+		newErrMsg = fmt.Sprintf("error resizing wal_volume for shard %s of vkcs_db_cluster_with_shards %s", shardID, clusterID)
+	case errDBClusterActionResizeFlavor:
+		newErrMsg = fmt.Sprintf("error changing flavor for shard %s of vkcs_db_cluster_with_shards %s", shardID, clusterID)
+	}
+
+	errMsg := strings.Replace(err.Error(), baseErr.Error(), newErrMsg, 1)
+	return diag.Errorf(errMsg)
 }
