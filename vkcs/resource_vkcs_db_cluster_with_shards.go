@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -43,7 +44,8 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 						continue
 					}
 					shardIDs[inst.ShardID] = 1
-					newShard := flattenDatabaseClusterShard(inst)
+					newShard := flattenDatabaseClusterShard(inst.ShardID, []dbClusterInstanceResp{inst})
+					newShard["volume_type"] = dbImportedStatus
 					if inst.WalVolume != nil {
 						newShard["wal_volume"] = flattenDatabaseClusterWalVolume(*inst.WalVolume)
 					}
@@ -573,16 +575,49 @@ func resourceDatabaseClusterWithShardsRead(ctx context.Context, d *schema.Resour
 
 	var diags diag.Diagnostics
 
-	shardsRaw := d.Get("shard").([]interface{})
-	shards := make([]map[string]interface{}, len(shardsRaw))
 	shardsInstances := getDatabaseClusterShardInstances(cluster.Instances)
-	for i, shardRaw := range shardsRaw {
-		shard := shardRaw.(map[string]interface{})
-		shardID := shard["shard_id"].(string)
-		shard["instances"] = shardsInstances[shardID]
-		shards[i] = shard
+	flattenedShards := flattenDatabaseClusterShards(shardsInstances)
+	// Workaround to persist user order of shards
+	sort.Slice(flattenedShards, func(i, j int) bool {
+		return flattenedShards[i]["shard_id"].(string) < flattenedShards[j]["shard_id"].(string)
+	})
 
-		rawNetworks := shard["network"].([]interface{})
+	rawShards := d.Get("shard").([]interface{})
+	shards := make([]map[string]interface{}, 0, len(flattenedShards))
+	newShards := make([]map[string]interface{}, 0, len(flattenedShards))
+
+OuterLoop:
+	for _, fSh := range flattenedShards {
+		for _, rawSh := range rawShards {
+			rawShMap := rawSh.(map[string]interface{})
+			if fSh["shard_id"].(string) == rawShMap["shard_id"].(string) {
+				shards = append(shards, fSh)
+				continue OuterLoop
+			}
+		}
+		newShards = append(newShards, fSh)
+	}
+
+	shards = append(shards, newShards...)
+	for i := range shards {
+		shards[i]["availability_zone"] = d.Get(fmt.Sprintf("shard.%d.availability_zone", i))
+		shards[i]["network"] = d.Get(fmt.Sprintf("shard.%d.network", i))
+
+		// Workaround since we don't retrieve info about volume_type
+		// NOTE: remove this when add getting info about volumes from
+		// blockstorage service
+		if v, ok := d.GetOk(fmt.Sprintf("shard.%d.volume_type", i)); ok {
+			shards[i]["volume_type"] = v
+		}
+		if v, ok := d.GetOk(fmt.Sprintf("shard.%d.wal_volume.volume_type", i)); ok {
+			if wV, ok := shards[i]["wal_volume"]; ok {
+				m := wV.(map[string]interface{})
+				m["volume_type"] = v
+				shards[i]["wal_volume"] = m
+			}
+		}
+
+		rawNetworks := shards[i]["network"].([]interface{})
 		p := cty.Path{
 			cty.GetAttrStep{Name: "shard"},
 			cty.IndexStep{Key: cty.NumberIntVal(int64(i))},
@@ -592,8 +627,10 @@ func resourceDatabaseClusterWithShardsRead(ctx context.Context, d *schema.Resour
 			diags = checkDBNetworks(rawNetworks, p, diags)
 		}
 	}
-	d.Set("shard", shards)
 
+	log.Printf("[DEBUG] Retrieved shards for vkcs_db_cluster_with_shards %s: %#v", d.Id(), flattenedShards)
+
+	d.Set("shard", shards)
 	return diags
 }
 
