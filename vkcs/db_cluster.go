@@ -15,15 +15,6 @@ func flattenDatabaseClusterWalVolume(w walVolume) []map[string]interface{} {
 	return walvolume
 }
 
-func flattenDatabaseClusterShard(inst dbClusterInstanceResp) map[string]interface{} {
-	newShard := make(map[string]interface{})
-	newShard["shard_id"] = inst.ShardID
-	newShard["flavor_id"] = inst.Flavor.ID
-	newShard["volume_size"] = inst.Volume.Size
-	newShard["volume_type"] = dbImportedStatus
-	return newShard
-}
-
 func flattenDatabaseClusterInstances(insts []dbClusterInstanceResp) []map[string]interface{} {
 	instances := make([]map[string]interface{}, len(insts))
 	for i, inst := range insts {
@@ -42,21 +33,46 @@ func flattenDatabaseClusterInstance(inst dbClusterInstanceResp) map[string]inter
 	return instance
 }
 
-func getDatabaseClusterShardInstances(insts []dbClusterInstanceResp) map[string][]map[string]interface{} {
-	shardsInstances := make(map[string][]map[string]interface{})
-	for _, inst := range insts {
-		flattenInst := flattenDatabaseClusterShardInstance(inst)
-		shardsInstances[inst.ShardID] = append(shardsInstances[inst.ShardID], flattenInst)
+func flattenDatabaseClusterShards(shardsInsts map[string][]dbClusterInstanceResp) (r []map[string]interface{}) {
+	for id, insts := range shardsInsts {
+		r = append(r, flattenDatabaseClusterShard(id, insts))
 	}
+	return
+}
 
+func flattenDatabaseClusterShard(id string, shardInsts []dbClusterInstanceResp) map[string]interface{} {
+	shard := make(map[string]interface{})
+	shard["shard_id"] = id
+	shard["size"] = len(shardInsts)
+	shard["flavor_id"] = shardInsts[0].Flavor.ID
+	shard["volume_size"] = shardInsts[0].Volume.Size
+	shard["volume_type"] = shardInsts[0].Volume.VolumeType
+	if walVolume := shardInsts[0].WalVolume; walVolume != nil {
+		shard["wal_volume"] = flattenDatabaseClusterWalVolume(*walVolume)
+	}
+	shard["instances"] = flattenDatabaseClusterShardInstances(shardInsts)
+	return shard
+}
+
+func getDatabaseClusterShardInstances(insts []dbClusterInstanceResp) map[string][]dbClusterInstanceResp {
+	shardsInstances := make(map[string][]dbClusterInstanceResp)
+	for _, inst := range insts {
+		shardsInstances[inst.ShardID] = append(shardsInstances[inst.ShardID], inst)
+	}
 	return shardsInstances
+}
+
+func flattenDatabaseClusterShardInstances(insts []dbClusterInstanceResp) (r []map[string]interface{}) {
+	for _, inst := range insts {
+		r = append(r, flattenDatabaseClusterShardInstance(inst))
+	}
+	return
 }
 
 func flattenDatabaseClusterShardInstance(inst dbClusterInstanceResp) map[string]interface{} {
 	instance := make(map[string]interface{})
 	instance["instance_id"] = inst.ID
 	instance["ip"] = inst.IP
-
 	return instance
 }
 

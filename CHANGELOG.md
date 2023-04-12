@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.2.1 (unreleased)
+- Fix reading state of DB cluster with shards
+
 #### v0.2.0
 - Provide support for Public DNS service
 - Add datasources for DB datastores
