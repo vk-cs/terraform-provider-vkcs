@@ -7,7 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.2.1 (unreleased)
+#### v0.2.1
 - Support shards/instances/volumes resizing in DB cluster with shards
 - Fix reading state of DB cluster with shards
 
