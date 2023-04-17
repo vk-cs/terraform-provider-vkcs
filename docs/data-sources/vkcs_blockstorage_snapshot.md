@@ -31,16 +31,7 @@ data "vkcs_blockstorage_snapshot" "snapshot_1" {
 
 
 ## Attributes Reference
-- `most_recent` **Boolean** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `status` **String** See Argument Reference above.
-
-- `volume_id` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `description` **String** The snapshot's description.
 
 - `id` **String** ID of the resource.

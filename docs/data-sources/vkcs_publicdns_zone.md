@@ -42,26 +42,5 @@ data "vkcs_publicdns_zone" "zone" {
 
 
 ## Attributes Reference
-- `admin_email` **String** See Argument Reference above.
-
-- `expire` **Number** See Argument Reference above.
-
-- `id` **String** The UUID of the DNS zone.
-
-- `primary_dns` **String** See Argument Reference above.
-
-- `refresh` **Number** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `retry` **Number** See Argument Reference above.
-
-- `serial` **Number** See Argument Reference above.
-
-- `status` **String** See Argument Reference above.
-
-- `ttl` **Number** See Argument Reference above.
-
-- `zone` **String** See Argument Reference above.
-
+No additional attributes are exported.
 

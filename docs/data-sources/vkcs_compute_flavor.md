@@ -43,28 +43,7 @@ data "vkcs_compute_flavor" "small" {
 
 
 ## Attributes Reference
-- `disk` **Number** See Argument Reference above.
-
-- `flavor_id` **String** See Argument Reference above.
-
-- `is_public` **Boolean** See Argument Reference above.
-
-- `min_disk` **Number** See Argument Reference above.
-
-- `min_ram` **Number** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `ram` **Number** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `rx_tx_factor` **Number** See Argument Reference above.
-
-- `swap` **Number** See Argument Reference above.
-
-- `vcpus` **Number** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `extra_specs` <strong>Map of </strong>**String** Key/Value pairs of metadata for the flavor.
 
 - `id` **String** ID of the found flavor.

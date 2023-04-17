@@ -126,26 +126,12 @@ resource "vkcs_keymanager_container" "tls_1" {
 
 
 ## Attributes Reference
-- `type` **String** See Argument Reference above.
-
-- `acl`  See Argument Reference above.
-  - `read`  See Argument Reference above.
-    - `project_access` **Boolean** See Argument Reference above.
-
-    - `users` <strong>Set of </strong>**String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
+- `acl` 
+  - `read` 
     - `created_at` **String** The date the container ACL was created.
 
     - `updated_at` **String** The date the container ACL was last updated.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `secret_refs`  See Argument Reference above.
-  - `secret_ref` **String** See Argument Reference above.
-
-  - `name` **String** See Argument Reference above.
 
 - `consumers` **Object** The list of the container consumers. The structure is described below.
 

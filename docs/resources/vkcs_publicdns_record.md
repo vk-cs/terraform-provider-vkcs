@@ -87,32 +87,7 @@ resource "vkcs_publicdns_record" "a" {
 
 
 ## Attributes Reference
-- `type` **String** See Argument Reference above.
-
-- `zone_id` **String** See Argument Reference above.
-
-- `content` **String** See Argument Reference above.
-
-- `host` **String** See Argument Reference above.
-
-- `ip` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `port` **Number** See Argument Reference above.
-
-- `priority` **Number** See Argument Reference above.
-
-- `proto` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `service` **String** See Argument Reference above.
-
-- `ttl` **Number** See Argument Reference above.
-
-- `weight` **Number** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `full_name` **String** The full name of the SRV record.
 
 - `id` **String** ID of the resource.

@@ -78,26 +78,7 @@ resource "vkcs_compute_instance" "instance_1" {
 
 
 ## Attributes Reference
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `port_security_enabled` **Boolean** See Argument Reference above.
-
-- `private_dns_domain` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
-- `tags` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `value_specs` <strong>Map of </strong>**String** See Argument Reference above.
-
-- `vkcs_services_access` **Boolean** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `all_tags` <strong>Set of </strong>**String** The collection of tags assigned on the network, which have been explicitly and implicitly added.
 
 - `id` **String** ID of the resource.

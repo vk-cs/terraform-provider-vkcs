@@ -46,30 +46,7 @@ resource "vkcs_lb_monitor" "monitor_1" {
 
 
 ## Attributes Reference
-- `delay` **Number** See Argument Reference above.
-
-- `max_retries` **Number** See Argument Reference above.
-
-- `pool_id` **String** See Argument Reference above.
-
-- `timeout` **Number** See Argument Reference above.
-
-- `type` **String** See Argument Reference above.
-
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `expected_codes` **String** See Argument Reference above.
-
-- `http_method` **String** See Argument Reference above.
-
-- `max_retries_down` **Number** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `url_path` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

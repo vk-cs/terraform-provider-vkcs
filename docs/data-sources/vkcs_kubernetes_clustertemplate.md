@@ -40,14 +40,7 @@ output "example_template_id" {
 
 
 ## Attributes Reference
-- `cluster_template_uuid` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `version` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `apiserver_port` **Number** The API server port for the Container Orchestration Engine for this cluster template.
 
 - `cluster_distro` **String** The distro for the cluster (fedora-atomic, coreos, etc.).

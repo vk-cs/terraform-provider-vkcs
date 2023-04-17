@@ -44,30 +44,7 @@ data "vkcs_networking_subnet" "subnet_1" {
 
 
 ## Attributes Reference
-- `cidr` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `dhcp_enabled` **Boolean** See Argument Reference above.
-
-- `gateway_ip` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `network_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
-- `subnet_id` **String** See Argument Reference above.
-
-- `subnetpool_id` **String** See Argument Reference above.
-
-- `tags` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `tenant_id` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `all_tags` <strong>Set of </strong>**String** A set of string tags applied on the subnet.
 
 - `allocation_pools` **Object** Allocation pools of the subnet.

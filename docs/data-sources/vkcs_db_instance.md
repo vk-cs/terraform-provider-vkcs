@@ -59,43 +59,5 @@ data "vkcs_db_instance" "db-instance" {
 
 
 ## Attributes Reference
-- `id` **String** See Argument Reference above.
-
-- `backup_schedule`  See Argument Reference above.
-  - `interval_hours` **Number** See Argument Reference above.
-
-  - `keep_count` **Number** See Argument Reference above.
-
-  - `name` **String** See Argument Reference above.
-
-  - `start_hours` **Number** See Argument Reference above.
-
-  - `start_minutes` **Number** See Argument Reference above.
-
-- `datastore`  See Argument Reference above.
-  - `type` **String** See Argument Reference above.
-
-  - `version` **String** See Argument Reference above.
-
-- `flavor_id` **String** See Argument Reference above.
-
-- `hostname` **String** See Argument Reference above.
-
-- `ip` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `status` **String** See Argument Reference above.
-
-- `volume`  See Argument Reference above.
-  - `size` **Number** See Argument Reference above.
-
-  - `used` **Number** See Argument Reference above.
-
-  - `volume_id` **String** See Argument Reference above.
-
-  - `volume_type` **String** See Argument Reference above.
-
+No additional attributes are exported.
 

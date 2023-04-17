@@ -101,40 +101,7 @@ resource "vkcs_kubernetes_node_group" "default_ng" {
 
 
 ## Attributes Reference
-- `cluster_id` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `node_count` **Number** See Argument Reference above.
-
-- `autoscaling_enabled` **Boolean** See Argument Reference above.
-
-- `availability_zones` **String** See Argument Reference above.
-
-- `flavor_id` **String** See Argument Reference above.
-
-- `labels`  See Argument Reference above.
-  - `key` **String**
-
-  - `value` **String**
-
-- `max_node_unavailable` **Number** See Argument Reference above.
-
-- `max_nodes` **Number** See Argument Reference above.
-
-- `min_nodes` **Number** See Argument Reference above.
-
-- `taints`  See Argument Reference above.
-  - `effect` **String**
-
-  - `key` **String**
-
-  - `value` **String**
-
-- `volume_size` **Number** See Argument Reference above.
-
-- `volume_type` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `created_at` **String** The time at which node group was created.
 
 - `id` **String** ID of the resource.

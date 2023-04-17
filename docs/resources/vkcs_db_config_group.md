@@ -66,17 +66,7 @@ resource "vkcs_db_instance" "db-instance" {
 
 
 ## Attributes Reference
-- `datastore`  See Argument Reference above.
-  - `type` **String** See Argument Reference above.
-
-  - `version` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `values` <strong>Map of </strong>**String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `created` **String** Timestamp of config group's creation
 
 - `id` **String** ID of the resource.

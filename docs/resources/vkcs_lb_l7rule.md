@@ -76,22 +76,7 @@ resource "vkcs_lb_l7rule" "l7rule_1" {
 
 
 ## Attributes Reference
-- `compare_type` **String** See Argument Reference above.
-
-- `l7policy_id` **String** See Argument Reference above.
-
-- `type` **String** See Argument Reference above.
-
-- `value` **String** See Argument Reference above.
-
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `invert` **Boolean** See Argument Reference above.
-
-- `key` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 - `listener_id` **String** The ID of the Listener owning this resource.

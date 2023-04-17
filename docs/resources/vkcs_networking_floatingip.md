@@ -55,26 +55,7 @@ resource "vkcs_networking_floatingip" "floatip_1" {
 
 
 ## Attributes Reference
-- `pool` **String** See Argument Reference above.
-
-- `address` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `fixed_ip` **String** See Argument Reference above.
-
-- `port_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
-- `subnet_id` **String** See Argument Reference above.
-
-- `subnet_ids` **String** See Argument Reference above.
-
-- `value_specs` <strong>Map of </strong>**String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

@@ -38,24 +38,7 @@ data "vkcs_networking_floatingip" "floatingip_1" {
 
 
 ## Attributes Reference
-- `address` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `fixed_ip` **String** See Argument Reference above.
-
-- `pool` **String** See Argument Reference above.
-
-- `port_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
-- `status` **String** See Argument Reference above.
-
-- `tenant_id` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the found floating IP.
 
 

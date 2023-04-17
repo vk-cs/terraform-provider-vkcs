@@ -32,18 +32,7 @@ resource "vkcs_vpnaas_service" "service_1" {
 
 
 ## Attributes Reference
-- `router_id` **String** See Argument Reference above.
-
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `subnet_id` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `external_v4_ip` **String** The read-only external (public) IPv4 address that is used for the VPN service.
 
 - `external_v6_ip` **String** The read-only external (public) IPv6 address that is used for the VPN service.

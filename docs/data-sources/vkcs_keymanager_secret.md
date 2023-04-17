@@ -43,26 +43,7 @@ data "vkcs_keymanager_secret" "example" {
 
 
 ## Attributes Reference
-- `acl_only` **Boolean** See Argument Reference above.
-
-- `algorithm` **String** See Argument Reference above.
-
-- `bit_length` **Number** See Argument Reference above.
-
-- `created_at_filter` **String** See Argument Reference above.
-
-- `expiration_filter` **String** See Argument Reference above.
-
-- `mode` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `secret_type` **String** See Argument Reference above.
-
-- `updated_at_filter` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `acl` **Object** The list of ACLs assigned to a secret.
 
 - `content_types` <strong>Map of </strong>**String** The map of the content types, assigned on the secret.

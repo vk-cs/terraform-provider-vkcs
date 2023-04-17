@@ -119,16 +119,7 @@ resource "vkcs_sharedfilesystem_share_access" "share_access_2" {
 
 
 ## Attributes Reference
-- `access_level` **String** See Argument Reference above.
-
-- `access_to` **String** See Argument Reference above.
-
-- `access_type` **String** See Argument Reference above.
-
-- `share_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

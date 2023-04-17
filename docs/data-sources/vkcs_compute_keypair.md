@@ -24,10 +24,7 @@ data "vkcs_compute_keypair" "kp" {
 
 
 ## Attributes Reference
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `fingerprint` **String** The fingerprint of the OpenSSH key.
 
 - `id` **String** ID of the resource.

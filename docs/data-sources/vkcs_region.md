@@ -22,8 +22,7 @@ data "vkcs_region" "current" {}
 
 
 ## Attributes Reference
-- `id` **String** ID of the region to learn or use. Use empty value to learn current region on the provider.
-
+In addition to all arguments above, the following attributes are exported:
 - `description` **String** Description of the region.
 
 - `parent_region` **String** Parent of the region.

@@ -58,40 +58,7 @@ resource "vkcs_lb_listener" "listener_1" {
 
 
 ## Attributes Reference
-- `loadbalancer_id` **String** See Argument Reference above.
-
-- `protocol` **String** See Argument Reference above.
-
-- `protocol_port` **Number** See Argument Reference above.
-
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `allowed_cidrs` **String** See Argument Reference above.
-
-- `connection_limit` **Number** See Argument Reference above.
-
-- `default_pool_id` **String** See Argument Reference above.
-
-- `default_tls_container_ref` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `insert_headers` <strong>Map of </strong>**String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sni_container_refs` **String** See Argument Reference above.
-
-- `timeout_client_data` **Number** See Argument Reference above.
-
-- `timeout_member_connect` **Number** See Argument Reference above.
-
-- `timeout_member_data` **Number** See Argument Reference above.
-
-- `timeout_tcp_inspect` **Number** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

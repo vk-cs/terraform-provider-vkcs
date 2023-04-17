@@ -40,28 +40,7 @@ resource "vkcs_lb_loadbalancer" "lb_1" {
 
 
 ## Attributes Reference
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `availability_zone` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `security_group_ids` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `tags` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `vip_address` **String** See Argument Reference above.
-
-- `vip_network_id` **String** See Argument Reference above.
-
-- `vip_port_id` **String** See Argument Reference above.
-
-- `vip_subnet_id` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

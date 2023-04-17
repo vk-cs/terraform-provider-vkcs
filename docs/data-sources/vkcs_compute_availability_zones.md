@@ -22,10 +22,7 @@ data "vkcs_compute_availability_zones" "zones" {}
 
 
 ## Attributes Reference
-- `region` **String** See Argument Reference above.
-
-- `state` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** Hash of the returned zone list.
 
 - `names` **String** The names of the availability zones, ordered alphanumerically, that match the queried `state`

@@ -32,12 +32,7 @@ output "mysql_parameters" {
 
 
 ## Attributes Reference
-- `datastore_name` **String** See Argument Reference above.
-
-- `datastore_version_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 - `parameters` **Object** Versions of the datastore.

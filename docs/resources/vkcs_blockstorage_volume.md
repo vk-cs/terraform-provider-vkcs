@@ -46,26 +46,7 @@ resource "vkcs_blockstorage_volume" "volume" {
 
 
 ## Attributes Reference
-- `availability_zone` **String** See Argument Reference above.
-
-- `size` **Number** See Argument Reference above.
-
-- `volume_type` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `image_id` **String** See Argument Reference above.
-
-- `metadata` <strong>Map of </strong>**String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `snapshot_id` **String** See Argument Reference above.
-
-- `source_vol_id` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

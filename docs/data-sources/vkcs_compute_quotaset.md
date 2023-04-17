@@ -24,10 +24,7 @@ data "vkcs_compute_quotaset" "quota" {
 
 
 ## Attributes Reference
-- `project_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `cores` **Number** The number of allowed server cores.
 
 - `id` **String** ID of the resource.

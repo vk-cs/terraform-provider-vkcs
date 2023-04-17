@@ -30,14 +30,5 @@ data "vkcs_db_database" "db-database" {
 
 
 ## Attributes Reference
-- `id` **String** See Argument Reference above.
-
-- `charset` **String** See Argument Reference above.
-
-- `collate` **String** See Argument Reference above.
-
-- `dbms_id` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
+No additional attributes are exported.
 

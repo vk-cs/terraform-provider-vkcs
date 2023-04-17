@@ -24,10 +24,7 @@ data "vkcs_keymanager_container" "example" {
 
 
 ## Attributes Reference
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `acl` **Object** The list of ACLs assigned to a container.
 
 - `consumers` **Object** The list of the container consumers.

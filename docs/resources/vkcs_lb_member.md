@@ -36,22 +36,7 @@ resource "vkcs_lb_member" "member_1" {
 
 
 ## Attributes Reference
-- `address` **String** See Argument Reference above.
-
-- `pool_id` **String** See Argument Reference above.
-
-- `protocol_port` **Number** See Argument Reference above.
-
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `subnet_id` **String** See Argument Reference above.
-
-- `weight` **Number** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

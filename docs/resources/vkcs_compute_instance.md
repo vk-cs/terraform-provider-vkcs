@@ -412,96 +412,15 @@ resource "vkcs_compute_instance" "instance_1" {
 
 
 ## Attributes Reference
-- `name` **String** See Argument Reference above.
-
-- `access_ip_v4` **String** See Argument Reference above.
-
-- `admin_pass` **String** See Argument Reference above.
-
-- `availability_zone` **String** See Argument Reference above.
-
-- `block_device`  See Argument Reference above.
-  - `source_type` **String** See Argument Reference above.
-
-  - `boot_index` **Number** See Argument Reference above.
-
-  - `delete_on_termination` **Boolean** See Argument Reference above.
-
-  - `destination_type` **String** See Argument Reference above.
-
-  - `device_type` **String** See Argument Reference above.
-
-  - `disk_bus` **String** See Argument Reference above.
-
-  - `guest_format` **String** See Argument Reference above.
-
-  - `uuid` **String** See Argument Reference above.
-
-  - `volume_size` **Number** See Argument Reference above.
-
-  - `volume_type` **String** See Argument Reference above.
-
-- `config_drive` **Boolean** See Argument Reference above.
-
-- `flavor_id` **String** See Argument Reference above.
-
-- `flavor_name` **String** See Argument Reference above.
-
-- `force_delete` **Boolean** See Argument Reference above.
-
-- `image_id` **String** See Argument Reference above.
-
-- `image_name` **String** See Argument Reference above.
-
-- `key_pair` **String** See Argument Reference above.
-
-- `metadata` <strong>Map of </strong>**String** See Argument Reference above.
-
-- `network`  See Argument Reference above.
-  - `access_network` **Boolean** See Argument Reference above.
-
-  - `fixed_ip_v4` **String** See Argument Reference above.
-
-  - `name` **String** See Argument Reference above.
-
-  - `port` **String** See Argument Reference above.
-
-  - `uuid` **String** See Argument Reference above.
-
-  - `mac` **String** The MAC address of the NIC on that network.
-
-- `network_mode` **String** See Argument Reference above.
-
-- `personality`  See Argument Reference above.
-  - `content` **String** See Argument Reference above.
-
-  - `file` **String** See Argument Reference above.
-
-- `power_state` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `scheduler_hints`  See Argument Reference above.
-  - `group` **String** See Argument Reference above.
-
-- `security_groups` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `stop_before_destroy` **Boolean** See Argument Reference above.
-
-- `tags` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `user_data` **String** See Argument Reference above.
-
-- `vendor_options`  See Argument Reference above.
-  - `detach_ports_before_destroy` **Boolean** See Argument Reference above.
-
-  - `ignore_resize_confirmation` **Boolean** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `all_metadata` <strong>Map of </strong>**String** Contains all instance metadata, even metadata not set by Terraform.
 
 - `all_tags` <strong>Set of </strong>**String** The collection of tags assigned on the instance, which have been explicitly and implicitly added.
 
 - `id` **String** ID of the resource.
+
+- `network` 
+  - `mac` **String** The MAC address of the NIC on that network.
 
 
 

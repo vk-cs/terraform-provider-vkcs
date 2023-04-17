@@ -57,39 +57,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
 
 
 ## Attributes Reference
-- `network_id` **String** See Argument Reference above.
-
-- `allocation_pool`  See Argument Reference above.
-  - `end` **String** See Argument Reference above.
-
-  - `start` **String** See Argument Reference above.
-
-- `cidr` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `dns_nameservers` **String** See Argument Reference above.
-
-- `enable_dhcp` **Boolean** See Argument Reference above.
-
-- `gateway_ip` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `no_gateway` **Boolean** See Argument Reference above.
-
-- `prefix_length` **Number** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
-- `subnetpool_id` **String** See Argument Reference above.
-
-- `tags` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `value_specs` <strong>Map of </strong>**String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `all_tags` <strong>Set of </strong>**String** The collection of ags assigned on the subnet, which have been explicitly and implicitly added.
 
 - `id` **String** ID of the resource.

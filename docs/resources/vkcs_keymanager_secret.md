@@ -109,37 +109,12 @@ resource "vkcs_keymanager_secret" "secret_1" {
 
 
 ## Attributes Reference
-- `acl`  See Argument Reference above.
-  - `read`  See Argument Reference above.
-    - `project_access` **Boolean** See Argument Reference above.
-
-    - `users` <strong>Set of </strong>**String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
+- `acl` 
+  - `read` 
     - `created_at` **String** The date the container ACL was created.
 
     - `updated_at` **String** The date the container ACL was last updated.
-
-- `algorithm` **String** See Argument Reference above.
-
-- `bit_length` **Number** See Argument Reference above.
-
-- `expiration` **String** See Argument Reference above.
-
-- `metadata` <strong>Map of </strong>**String** See Argument Reference above.
-
-- `mode` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `payload` **String** See Argument Reference above.
-
-- `payload_content_encoding` **String** See Argument Reference above.
-
-- `payload_content_type` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `secret_type` **String** See Argument Reference above.
 
 - `all_metadata` <strong>Map of </strong>**String** The map of metadata, assigned on the secret, which has been explicitly and implicitly added.
 
