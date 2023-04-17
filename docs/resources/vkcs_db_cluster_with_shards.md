@@ -145,6 +145,8 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
 
     - `uuid` **String** (*Optional*) The id of the network. Changing this creates a new cluster.**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
 
+  - `shrink_options` **String** (*Optional*) Used only for shrinking cluster. List of IDs of instances that should remain after shrink. If no options are supplied, shrink operation will choose first non-leader instance to delete.
+
   - `wal_volume` (*Optional*) Object that represents wal volume of the cluster.
     - `size` **Number** (***Required***) Size of the instance wal volume.
 
@@ -184,75 +186,11 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
 
 
 ## Attributes Reference
-- `datastore`  See Argument Reference above.
-  - `type` **String** See Argument Reference above.
-
-  - `version` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `shard`  See Argument Reference above.
-  - `flavor_id` **String** See Argument Reference above.
-
-  - `shard_id` **String** See Argument Reference above.
-
-  - `size` **Number** See Argument Reference above.
-
-  - `volume_size` **Number** See Argument Reference above.
-
-  - `volume_type` **String** See Argument Reference above.
-
-  - `availability_zone` **String** See Argument Reference above.
-
-  - `network` 
-    - `port` **String** See Argument Reference above.
-
-    - `security_groups` <strong>Set of </strong>**String** See Argument Reference above.
-
-    - `subnet_id` **String** See Argument Reference above.
-
-    - `uuid` **String** See Argument Reference above.
-
-  - `wal_volume`  See Argument Reference above.
-    - `size` **Number** See Argument Reference above.
-
-    - `volume_type` **String** See Argument Reference above.
-
-  - `instances` **Object** Shard instances info. **New since v.0.1.15**.
-
-- `capabilities`  See Argument Reference above.
-  - `name` **String** See Argument Reference above.
-
-  - `settings` <strong>Map of </strong>**String** See Argument Reference above.
-
-- `cloud_monitoring_enabled` **Boolean** See Argument Reference above.
-
-- `configuration_id` **String** See Argument Reference above.
-
-- `disk_autoexpand`  See Argument Reference above.
-  - `autoexpand` **Boolean** See Argument Reference above.
-
-  - `max_disk_size` **Number** See Argument Reference above.
-
-- `floating_ip_enabled` **Boolean** See Argument Reference above.
-
-- `keypair` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `restore_point`  See Argument Reference above.
-  - `backup_id` **String** See Argument Reference above.
-
-- `root_enabled` **Boolean** See Argument Reference above.
-
-- `root_password` **String** See Argument Reference above.
-
-- `wal_disk_autoexpand`  See Argument Reference above.
-  - `autoexpand` **Boolean** See Argument Reference above.
-
-  - `max_disk_size` **Number** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
+
+- `shard` 
+  - `instances` **Object** Shard instances info. **New since v.0.1.15**.
 
 
 

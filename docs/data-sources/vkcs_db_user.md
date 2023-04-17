@@ -32,16 +32,5 @@ data "vkcs_db_user" "db-user" {
 
 
 ## Attributes Reference
-- `id` **String** See Argument Reference above.
-
-- `databases` **String** See Argument Reference above.
-
-- `dbms_id` **String** See Argument Reference above.
-
-- `host` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `password` **String** See Argument Reference above.
-
+No additional attributes are exported.
 

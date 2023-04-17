@@ -26,6 +26,7 @@ data "vkcs_regions" "current" {
 ## Argument Reference
 
 ## Attributes Reference
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** Random identifier of the data source.
 
 - `names` <strong>Set of </strong>**String** Names of regions that meets the criteria.

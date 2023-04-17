@@ -34,20 +34,7 @@ data "vkcs_sharedfilesystem_share" "share_1" {
 
 
 ## Attributes Reference
-- `share_network_id` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `export_location_path` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `snapshot_id` **String** See Argument Reference above.
-
-- `status` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `availability_zone` **String** The share availability zone.
 
 - `id` **String** ID of the resource.

@@ -34,20 +34,7 @@ data "vkcs_networking_secgroup" "secgroup" {
 
 
 ## Attributes Reference
-- `description` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
-- `secgroup_id` **String** See Argument Reference above.
-
-- `tags` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `tenant_id` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `all_tags` <strong>Set of </strong>**String** The set of string tags applied on the security group.
 
 - `id` **String** ID of the found security group.

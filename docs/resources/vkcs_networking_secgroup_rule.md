@@ -67,28 +67,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
 
 
 ## Attributes Reference
-- `direction` **String** See Argument Reference above.
-
-- `security_group_id` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `ethertype` **String** See Argument Reference above.
-
-- `port_range_max` **Number** See Argument Reference above.
-
-- `port_range_min` **Number** See Argument Reference above.
-
-- `protocol` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `remote_group_id` **String** See Argument Reference above.
-
-- `remote_ip_prefix` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

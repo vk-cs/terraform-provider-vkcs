@@ -32,14 +32,7 @@ data "vkcs_kubernetes_cluster" "mycluster" {
 
 
 ## Attributes Reference
-- `cluster_id` **String** See Argument Reference above.
-
-- `dns_domain` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `api_address` **String** COE API address.
 
 - `api_lb_fip` **String** API LoadBalancer fip.

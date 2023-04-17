@@ -45,26 +45,7 @@ data "vkcs_images_image" "ubuntu" {
 
 
 ## Attributes Reference
-- `member_status` **String** See Argument Reference above.
-
-- `most_recent` **Boolean** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `owner` **String** See Argument Reference above.
-
-- `properties` <strong>Map of </strong>**String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `size_max` **Number** See Argument Reference above.
-
-- `size_min` **Number** See Argument Reference above.
-
-- `tag` **String** See Argument Reference above.
-
-- `visibility` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `checksum` **String** The checksum of the data associated with the image.
 
 - `container_format` **String** The format of the image's container.

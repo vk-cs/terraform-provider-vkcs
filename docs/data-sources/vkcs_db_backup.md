@@ -24,10 +24,7 @@ data "vkcs_db_backup" "db-backup" {
 
 
 ## Attributes Reference
-- `backup_id` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `created` **String** Backup creation timestamp
 
 - `datastore` **Object** Object that represents datastore of backup

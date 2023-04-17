@@ -74,53 +74,7 @@ resource "vkcs_networking_port" "port_1" {
 
 
 ## Attributes Reference
-- `network_id` **String** See Argument Reference above.
-
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `allowed_address_pairs`  See Argument Reference above.
-  - `ip_address` **String** See Argument Reference above.
-
-  - `mac_address` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `device_id` **String** See Argument Reference above.
-
-- `device_owner` **String** See Argument Reference above.
-
-- `dns_name` **String** See Argument Reference above.
-
-- `extra_dhcp_option`  See Argument Reference above.
-  - `name` **String** See Argument Reference above.
-
-  - `value` **String** See Argument Reference above.
-
-- `fixed_ip`  See Argument Reference above.
-  - `subnet_id` **String** See Argument Reference above.
-
-  - `ip_address` **String** See Argument Reference above.
-
-- `mac_address` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `no_fixed_ip` **Boolean** See Argument Reference above.
-
-- `no_security_groups` **Boolean** See Argument Reference above.
-
-- `port_security_enabled` **Boolean** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
-- `security_group_ids` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `tags` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `value_specs` <strong>Map of </strong>**String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `all_fixed_ips` **String** The collection of Fixed IP addresses on the port in the order returned by the Network v2 API.
 
 - `all_security_group_ids` <strong>Set of </strong>**String** The collection of Security Group IDs on the port which have been explicitly and implicitly added.

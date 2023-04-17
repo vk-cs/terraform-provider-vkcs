@@ -33,16 +33,7 @@ resource "vkcs_vpnaas_endpoint_group" "group_1" {
 
 
 ## Attributes Reference
-- `description` **String** See Argument Reference above.
-
-- `endpoints` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `type` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

@@ -24,10 +24,7 @@ data "vkcs_lb_loadbalancer" "loadbalancer" {
 
 
 ## Attributes Reference
-- `id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `admin_state_up` **Boolean** The administrative state of the Loadbalancer.
 
 - `availability_zone` **String** The availability zone of the Loadbalancer.

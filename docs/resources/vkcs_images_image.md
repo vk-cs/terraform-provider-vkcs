@@ -60,38 +60,7 @@ resource "vkcs_images_image" "rancheros" {
 
 
 ## Attributes Reference
-- `container_format` **String** See Argument Reference above.
-
-- `disk_format` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `image_cache_path` **String** See Argument Reference above.
-
-- `image_source_password` **String** See Argument Reference above.
-
-- `image_source_url` **String** See Argument Reference above.
-
-- `image_source_username` **String** See Argument Reference above.
-
-- `local_file_path` **String** See Argument Reference above.
-
-- `min_disk_gb` **Number** See Argument Reference above.
-
-- `min_ram_mb` **Number** See Argument Reference above.
-
-- `properties` <strong>Map of </strong>**String** See Argument Reference above.
-
-- `protected` **Boolean** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `tags` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `verify_checksum` **Boolean** See Argument Reference above.
-
-- `visibility` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `checksum` **String** The checksum of the data associated with the image.
 
 - `created_at` **String** The date the image was created.

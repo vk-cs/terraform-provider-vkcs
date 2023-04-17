@@ -25,8 +25,7 @@ output "available_datastores" {
 
 
 ## Attributes Reference
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `datastores` **Object**
 
 - `id` **String** ID of the resource.

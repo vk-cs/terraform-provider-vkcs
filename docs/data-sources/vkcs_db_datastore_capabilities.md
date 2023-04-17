@@ -32,12 +32,7 @@ output "postgresql_capabilities" {
 
 
 ## Attributes Reference
-- `datastore_name` **String** See Argument Reference above.
-
-- `datastore_version_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `capabilities` **Object** Versions of the datastore.
 
 - `id` **String** ID of the resource.

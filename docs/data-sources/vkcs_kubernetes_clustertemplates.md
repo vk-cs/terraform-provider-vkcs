@@ -18,6 +18,7 @@ data "vkcs_kubernetes_clustertemplates" "templates" {}
 ## Argument Reference
 
 ## Attributes Reference
+In addition to all arguments above, the following attributes are exported:
 - `cluster_templates` **Object** A list of available kubernetes cluster templates.
   - `cluster_template_uuid` **String** The UUID of the cluster template.
 

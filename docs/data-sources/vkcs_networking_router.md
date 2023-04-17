@@ -40,26 +40,7 @@ data "vkcs_networking_router" "router" {
 
 
 ## Attributes Reference
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `enable_snat` **Boolean** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `router_id` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
-- `status` **String** See Argument Reference above.
-
-- `tags` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `tenant_id` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `all_tags` <strong>Set of </strong>**String** The set of string tags applied on the router.
 
 - `external_network_id` **String** The network UUID of an external gateway for the router.

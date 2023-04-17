@@ -31,12 +31,7 @@ output "mysql_versions" {
 
 
 ## Attributes Reference
-- `id` **String** The id of the datastore.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `cluster_volume_types` **String** Supported volume types for the datastore when used in a cluster.
 
 - `minimum_cpu` **Number** Minimum CPU required for instance of the datastore.

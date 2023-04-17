@@ -23,8 +23,7 @@ data "vkcs_db_config_group" "db-config-group" {
 
 
 ## Attributes Reference
-- `config_group_id` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `created` **String** Timestamp of config group's creation.
 
 - `datastore` **Object** Object that represents datastore of backup

@@ -33,16 +33,7 @@ resource "vkcs_networking_floatingip_associate" "fip_1" {
 
 
 ## Attributes Reference
-- `floating_ip` **String** See Argument Reference above.
-
-- `port_id` **String** See Argument Reference above.
-
-- `fixed_ip` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

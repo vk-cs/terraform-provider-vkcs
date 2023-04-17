@@ -145,16 +145,7 @@ _NOTE_: This option and `network_id` are mutually exclusive.
 
 
 ## Attributes Reference
-- `instance_id` **String** See Argument Reference above.
-
-- `fixed_ip` **String** See Argument Reference above.
-
-- `network_id` **String** See Argument Reference above.
-
-- `port_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

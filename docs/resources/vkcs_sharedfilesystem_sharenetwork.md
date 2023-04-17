@@ -84,18 +84,7 @@ resource "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
 
 
 ## Attributes Reference
-- `neutron_net_id` **String** See Argument Reference above.
-
-- `neutron_subnet_id` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `security_service_ids` <strong>Set of </strong>**String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `cidr` **String** The share network CIDR.
 
 - `id` **String** ID of the resource.

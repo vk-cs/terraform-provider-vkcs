@@ -59,24 +59,7 @@ resource "vkcs_sharedfilesystem_share" "share_1" {
 
 
 ## Attributes Reference
-- `name` **String** See Argument Reference above.
-
-- `share_network_id` **String** See Argument Reference above.
-
-- `share_proto` **String** See Argument Reference above.
-
-- `size` **Number** See Argument Reference above.
-
-- `availability_zone` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `share_type` **String** See Argument Reference above.
-
-- `snapshot_id` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `all_metadata` <strong>Map of </strong>**String** The map of metadata, assigned on the share, which has been explicitly and implicitly added.
 
 - `export_location_path` **String** The export location path of the share. **New since v.0.1.15**.

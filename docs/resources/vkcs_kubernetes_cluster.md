@@ -86,46 +86,7 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 
 
 ## Attributes Reference
-- `availability_zone` **String** See Argument Reference above.
-
-- `cluster_template_id` **String** See Argument Reference above.
-
-- `floating_ip_enabled` **Boolean** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `network_id` **String** See Argument Reference above.
-
-- `subnet_id` **String** See Argument Reference above.
-
-- `api_lb_fip` **String** See Argument Reference above.
-
-- `api_lb_vip` **String** See Argument Reference above.
-
-- `dns_domain` **String** See Argument Reference above.
-
-- `ingress_floating_ip` **String** See Argument Reference above.
-
-- `insecure_registries` **String** See Argument Reference above.
-
-- `keypair` **String** See Argument Reference above.
-
-- `labels` <strong>Map of </strong>**String** See Argument Reference above.
-
-- `loadbalancer_subnet_id` **String** See Argument Reference above.
-
-- `master_count` **Number** See Argument Reference above.
-
-- `master_flavor` **String** See Argument Reference above.
-
-- `pods_network_cidr` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `registry_auth_password` **String** See Argument Reference above.
-
-- `status` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `api_address` **String** COE API address.
 
 - `created_at` **String** The time at which cluster was created.

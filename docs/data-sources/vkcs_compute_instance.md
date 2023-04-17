@@ -27,12 +27,7 @@ data "vkcs_compute_instance" "instance" {
 
 
 ## Attributes Reference
-- `id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `user_data` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `access_ip_v4` **String** The first IPv4 address assigned to this server.
 
 - `availability_zone` **String** The availability zone of this server.

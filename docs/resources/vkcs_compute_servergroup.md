@@ -27,14 +27,7 @@ resource "vkcs_compute_servergroup" "test-sg" {
 
 
 ## Attributes Reference
-- `name` **String** See Argument Reference above.
-
-- `policies` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `value_specs` <strong>Map of </strong>**String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 - `members` **String** The instances that are part of this server group.

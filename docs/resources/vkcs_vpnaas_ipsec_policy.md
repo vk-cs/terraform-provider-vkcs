@@ -39,27 +39,7 @@ resource "vkcs_vpnaas_ipsec_policy" "policy_1" {
 
 
 ## Attributes Reference
-- `auth_algorithm` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `encapsulation_mode` **String** See Argument Reference above.
-
-- `encryption_algorithm` **String** See Argument Reference above.
-
-- `lifetime`  See Argument Reference above.
-  - `units` **String** See Argument Reference above.
-
-  - `value` **Number** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `pfs` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `transform_protocol` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

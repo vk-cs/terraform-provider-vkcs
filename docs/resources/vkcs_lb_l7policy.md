@@ -71,24 +71,7 @@ resource "vkcs_lb_l7policy" "l7policy_1" {
 
 
 ## Attributes Reference
-- `action` **String** See Argument Reference above.
-
-- `listener_id` **String** See Argument Reference above.
-
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `position` **Number** See Argument Reference above.
-
-- `redirect_pool_id` **String** See Argument Reference above.
-
-- `redirect_url` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

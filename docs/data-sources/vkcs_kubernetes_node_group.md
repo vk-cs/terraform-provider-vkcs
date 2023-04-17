@@ -38,26 +38,7 @@ data "vkcs_kubernetes_node_group" "mynodegroup" {
 
 
 ## Attributes Reference
-- `uuid` **String** See Argument Reference above.
-
-- `autoscaling_enabled` **Boolean** See Argument Reference above.
-
-- `flavor_id` **String** See Argument Reference above.
-
-- `max_node_unavailable` **Number** See Argument Reference above.
-
-- `max_nodes` **Number** See Argument Reference above.
-
-- `min_nodes` **Number** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `node_count` **Number** See Argument Reference above.
-
-- `volume_size` **Number** See Argument Reference above.
-
-- `volume_type` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `availability_zones` **String** The list of availability zones of the node group.
 
 - `cluster_id` **String** The UUID of cluster that node group belongs.

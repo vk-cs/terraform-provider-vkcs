@@ -92,45 +92,7 @@ resource "vkcs_vpnaas_site_connection" "connection" {
 
 
 ## Attributes Reference
-- `ikepolicy_id` **String** See Argument Reference above.
-
-- `ipsecpolicy_id` **String** See Argument Reference above.
-
-- `peer_address` **String** See Argument Reference above.
-
-- `peer_id` **String** See Argument Reference above.
-
-- `psk` **String** See Argument Reference above.
-
-- `vpnservice_id` **String** See Argument Reference above.
-
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `dpd`  See Argument Reference above.
-  - `action` **String** See Argument Reference above.
-
-  - `interval` **Number** See Argument Reference above.
-
-  - `timeout` **Number** See Argument Reference above.
-
-- `initiator` **String** See Argument Reference above.
-
-- `local_ep_group_id` **String** See Argument Reference above.
-
-- `local_id` **String** See Argument Reference above.
-
-- `mtu` **Number** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `peer_cidrs` **String** See Argument Reference above.
-
-- `peer_ep_group_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

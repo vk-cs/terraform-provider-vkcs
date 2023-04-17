@@ -54,40 +54,7 @@ data "vkcs_networking_port" "port_1" {
 
 
 ## Attributes Reference
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `device_id` **String** See Argument Reference above.
-
-- `device_owner` **String** See Argument Reference above.
-
-- `dns_name` **String** See Argument Reference above.
-
-- `fixed_ip` **String** See Argument Reference above.
-
-- `mac_address` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `network_id` **String** See Argument Reference above.
-
-- `port_id` **String** See Argument Reference above.
-
-- `project_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
-- `security_group_ids` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `status` **String** See Argument Reference above.
-
-- `tags` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `tenant_id` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `all_fixed_ips` **String** The collection of Fixed IP addresses on the port in the order returned by the Network v2 API.
 
 - `all_security_group_ids` <strong>Set of </strong>**String** The set of security group IDs applied on the port.

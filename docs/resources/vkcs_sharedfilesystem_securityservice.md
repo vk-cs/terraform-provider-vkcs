@@ -48,24 +48,7 @@ resource "vkcs_sharedfilesystem_securityservice" "securityservice_1" {
 
 
 ## Attributes Reference
-- `type` **String** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `dns_ip` **String** See Argument Reference above.
-
-- `domain` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `password` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `server` **String** See Argument Reference above.
-
-- `user` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 - `project_id` **String** The owner of the Security Service.

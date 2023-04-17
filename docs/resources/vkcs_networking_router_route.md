@@ -52,16 +52,7 @@ resource "vkcs_networking_router_route" "router_route_1" {
 
 
 ## Attributes Reference
-- `destination_cidr` **String** See Argument Reference above.
-
-- `next_hop` **String** See Argument Reference above.
-
-- `router_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

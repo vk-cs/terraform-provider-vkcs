@@ -32,18 +32,7 @@ data "vkcs_blockstorage_volume" "volume_1" {
 
 
 ## Attributes Reference
-- `bootable` **String** See Argument Reference above.
-
-- `metadata` <strong>Map of </strong>**String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `status` **String** See Argument Reference above.
-
-- `volume_type` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `availability_zone` **String** The name of the availability zone of the volume.
 
 - `id` **String** ID of the resource.

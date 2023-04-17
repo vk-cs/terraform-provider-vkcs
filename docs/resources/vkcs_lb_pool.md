@@ -46,27 +46,7 @@ resource "vkcs_lb_pool" "pool_1" {
 
 
 ## Attributes Reference
-- `lb_method` **String** See Argument Reference above.
-
-- `protocol` **String** See Argument Reference above.
-
-- `admin_state_up` **Boolean** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `listener_id` **String** See Argument Reference above.
-
-- `loadbalancer_id` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `persistence`  See Argument Reference above.
-  - `type` **String** See Argument Reference above.
-
-  - `cookie_name` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

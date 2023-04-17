@@ -96,12 +96,7 @@ output "volume_devices" {
 
 
 ## Attributes Reference
-- `instance_id` **String** See Argument Reference above.
-
-- `volume_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

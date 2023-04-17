@@ -42,28 +42,7 @@ data "vkcs_networking_network" "network" {
 
 
 ## Attributes Reference
-- `description` **String** See Argument Reference above.
-
-- `external` **Boolean** See Argument Reference above.
-
-- `matching_subnet_cidr` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `network_id` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
-- `status` **String** See Argument Reference above.
-
-- `tags` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `tenant_id` **String** See Argument Reference above.
-
-- `vkcs_services_access` **Boolean** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `admin_state_up` **String** The administrative state of the network.
 
 - `all_tags` <strong>Set of </strong>**String** The set of string tags applied on the network.

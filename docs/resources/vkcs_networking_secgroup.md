@@ -32,18 +32,7 @@ resource "vkcs_networking_secgroup" "secgroup_1" {
 
 
 ## Attributes Reference
-- `name` **String** See Argument Reference above.
-
-- `delete_default_rules` **Boolean** See Argument Reference above.
-
-- `description` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
-- `tags` <strong>Set of </strong>**String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `all_tags` <strong>Set of </strong>**String** The collection of tags assigned on the security group, which have been explicitly and implicitly added.
 
 - `id` **String** ID of the resource.

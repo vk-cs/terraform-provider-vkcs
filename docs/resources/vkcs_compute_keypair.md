@@ -46,14 +46,7 @@ output "private_key" {
 
 
 ## Attributes Reference
-- `name` **String** See Argument Reference above.
-
-- `public_key` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `value_specs` <strong>Map of </strong>**String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `fingerprint` **String** The fingerprint of the public key.
 
 - `id` **String** ID of the resource.

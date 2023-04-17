@@ -71,16 +71,7 @@ resource "vkcs_compute_floatingip_associate" "fip_1" {
 
 
 ## Attributes Reference
-- `floating_ip` **String** See Argument Reference above.
-
-- `instance_id` **String** See Argument Reference above.
-
-- `fixed_ip` **String** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `wait_until_associated` **Boolean** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 

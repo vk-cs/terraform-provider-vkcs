@@ -37,22 +37,7 @@ resource "vkcs_publicdns_zone" "zone" {
 
 
 ## Attributes Reference
-- `zone` **String** See Argument Reference above.
-
-- `admin_email` **String** See Argument Reference above.
-
-- `expire` **Number** See Argument Reference above.
-
-- `primary_dns` **String** See Argument Reference above.
-
-- `refresh` **Number** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `retry` **Number** See Argument Reference above.
-
-- `ttl` **Number** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
 
 - `serial` **Number** The serial number of the zone SOA.

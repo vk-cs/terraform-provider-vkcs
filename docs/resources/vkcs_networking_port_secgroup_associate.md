@@ -74,16 +74,7 @@ resource "vkcs_networking_port_secgroup_associate" "port_1" {
 
 
 ## Attributes Reference
-- `port_id` **String** See Argument Reference above.
-
-- `security_group_ids` <strong>Set of </strong>**String** See Argument Reference above.
-
-- `enforce` **Boolean** See Argument Reference above.
-
-- `region` **String** See Argument Reference above.
-
-- `sdn` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `all_security_group_ids` <strong>Set of </strong>**String** The collection of Security Group IDs on the port which have been explicitly and implicitly added.
 
 - `id` **String** ID of the resource.

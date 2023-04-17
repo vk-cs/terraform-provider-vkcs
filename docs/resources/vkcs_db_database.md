@@ -54,14 +54,7 @@ resource "vkcs_db_database" "db-database" {
 
 
 ## Attributes Reference
-- `dbms_id` **String** See Argument Reference above.
-
-- `name` **String** See Argument Reference above.
-
-- `charset` **String** See Argument Reference above.
-
-- `collate` **String** See Argument Reference above.
-
+In addition to all arguments above, the following attributes are exported:
 - `dbms_type` **String** Type of dbms for the database, can be "instance" or "cluster".
 
 - `id` **String** ID of the resource.
