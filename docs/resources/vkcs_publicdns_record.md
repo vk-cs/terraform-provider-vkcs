@@ -48,7 +48,7 @@ locals {
   })
 }
 
-resource "vkcs_publicdns_record" "a" {
+resource "vkcs_publicdns_record" "multi-a" {
   for_each = local.google_public_dns_ips
   zone_id = vkcs_publicdns_zone.zone.id
   type = "A"
