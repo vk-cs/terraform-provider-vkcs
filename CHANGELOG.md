@@ -9,6 +9,7 @@ description: |-
 
 #### v0.2.1
 - Support shards/instances/volumes resizing in DB cluster with shards
+- Fix reading state of secgroup rule with specified ethertype
 - Fix reading state of DB cluster with shards
 
 #### v0.2.0
