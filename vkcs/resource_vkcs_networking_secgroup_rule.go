@@ -225,6 +225,7 @@ func resourceNetworkingSecGroupRuleRead(ctx context.Context, d *schema.ResourceD
 
 	d.Set("description", sgRule.Description)
 	d.Set("direction", sgRule.Direction)
+	d.Set("ethertype", sgRule.EtherType)
 	d.Set("protocol", sgRule.Protocol)
 	d.Set("port_range_min", sgRule.PortRangeMin)
 	d.Set("port_range_max", sgRule.PortRangeMax)
