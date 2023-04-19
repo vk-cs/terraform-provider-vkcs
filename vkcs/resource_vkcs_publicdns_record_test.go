@@ -47,7 +47,7 @@ func TestAccPublicDNSRecord_update(t *testing.T) {
 				Config: testAccRenderConfigWithZone(testAccPublicDNSRecordConfigUpdate, zoneName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_publicdns_record.record_a", "type", "AAAA"),
-					resource.TestCheckResourceAttr("vkcs_publicdns_record.record_a", "ip", "2001:0DB8:AA10:0001:0000:0000:0000:00FB"),
+					resource.TestCheckResourceAttr("vkcs_publicdns_record.record_a", "ip", "2001:db8:aa10:1::fb"),
 					resource.TestCheckResourceAttr("vkcs_publicdns_record.record_a", "ttl", "86400"),
 					resource.TestCheckResourceAttr("vkcs_publicdns_record.record_srv", "full_name", "_sip._tcp.test"),
 				),

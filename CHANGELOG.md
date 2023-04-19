@@ -9,6 +9,7 @@ description: |-
 
 #### v0.2.1
 - Support shards/instances/volumes resizing in DB cluster with shards
+- Format the "ip" attribute of the Public DNS AAAA record to keep plan and after-apply state in sync
 - Fix reading state of secgroup rule with specified ethertype
 - Fix reading state of DB cluster with shards
 

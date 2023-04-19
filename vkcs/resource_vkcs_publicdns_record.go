@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"strings"
 	"text/template"
 	"time"
@@ -406,6 +407,15 @@ func resourcePublicDNSRecordDelete(ctx context.Context, d *schema.ResourceData, 
 
 func resourcePublicDNSRecordCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, v interface{}) error {
 	recordType := diff.Get("type").(string)
+
+	if recordType == recordTypeAAAA {
+		if diff.HasChange("ip") {
+			new := net.ParseIP(diff.Get("ip").(string))
+			if new != nil {
+				diff.SetNew("ip", new.String())
+			}
+		}
+	}
 
 	args := getPublicDNSRecordArgs(recordType)
 
