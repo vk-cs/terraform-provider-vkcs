@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.2.2 (unreleased)
+- Remove "optional" property from ip attribute of DB instance
+
 #### v0.2.1
 - Support shards/instances/volumes resizing in DB cluster with shards
 - Format the "ip" attribute of the Public DNS AAAA record to keep plan and after-apply state in sync

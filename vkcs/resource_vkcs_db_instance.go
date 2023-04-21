@@ -445,7 +445,6 @@ func resourceDatabaseInstance() *schema.Resource {
 			// Computed values
 			"ip": {
 				Type:     schema.TypeList,
-				Optional: true,
 				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
