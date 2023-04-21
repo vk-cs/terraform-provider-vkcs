@@ -177,8 +177,6 @@ resource "vkcs_db_instance" "db-instance" {
 
 - `floating_ip_enabled` **Boolean** (*Optional*) Indicates whether floating ip is created for instance. Changing this creates a new instance.
 
-- `ip` **String** (*Optional*) IP address of the instance.
-
 - `keypair` **String** (*Optional*) Name of the keypair to be attached to instance. Changing this creates a new instance.
 
 - `network` (*Optional*) Object that represents network of the instance. Changing this creates a new instance.
@@ -223,6 +221,8 @@ resource "vkcs_db_instance" "db-instance" {
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `id` **String** ID of the resource.
+
+- `ip` **String** IP address of the instance.
 
 
 
