@@ -6,10 +6,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	cg "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/config_groups"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
 
 func TestAccDatabaseConfigGroup_basic(t *testing.T) {
-	var configGroup dbConfigGroupResp
+	var configGroup cg.ConfigGroupResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -42,7 +45,7 @@ func TestAccDatabaseConfigGroup_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckDatabaseConfigGroupExists(n string, configGroup *dbConfigGroupResp) resource.TestCheckFunc {
+func testAccCheckDatabaseConfigGroupExists(n string, configGroup *cg.ConfigGroupResp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -53,13 +56,13 @@ func testAccCheckDatabaseConfigGroupExists(n string, configGroup *dbConfigGroupR
 			return fmt.Errorf("no id is set")
 		}
 
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS database client: %s", err)
 		}
 
-		found, err := dbConfigGroupGet(DatabaseClient, rs.Primary.ID).extract()
+		found, err := cg.Get(DatabaseClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
@@ -75,7 +78,7 @@ func testAccCheckDatabaseConfigGroupExists(n string, configGroup *dbConfigGroupR
 }
 
 func testAccCheckDatabaseConfigGroupDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 
 	DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 	if err != nil {
@@ -86,7 +89,7 @@ func testAccCheckDatabaseConfigGroupDestroy(s *terraform.State) error {
 		if rs.Type != "vkcs_db_config_group" {
 			continue
 		}
-		_, err := instanceGet(DatabaseClient, rs.Primary.ID).extract()
+		_, err := instances.Get(DatabaseClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("config group still exists")
 		}

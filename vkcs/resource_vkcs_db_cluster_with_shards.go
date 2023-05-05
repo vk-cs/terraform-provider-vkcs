@@ -12,6 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
 
 func resourceDatabaseClusterWithShards() *schema.Resource {
@@ -23,7 +26,7 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 		CustomizeDiff: resourceDatabaseCustomizeDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				config := meta.(configer)
+				config := meta.(clients.Config)
 				DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 				if err != nil {
 					return nil, fmt.Errorf("error creating VKCS database client: %s", err)
@@ -33,7 +36,7 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 					return nil, fmt.Errorf("error reading vkcs_db_cluster_with_shards")
 				}
 
-				cluster, err := dbClusterGet(DatabaseV1Client, d.Id()).extract()
+				cluster, err := clusters.Get(DatabaseV1Client, d.Id()).Extract()
 				if err != nil {
 					return nil, fmt.Errorf("error retrieving vkcs_db_cluster_with_shards")
 				}
@@ -46,7 +49,7 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 						continue
 					}
 					shardIDs[inst.ShardID] = 1
-					newShard := flattenDatabaseClusterShard(inst.ShardID, []dbClusterInstanceResp{inst})
+					newShard := flattenDatabaseClusterShard(inst.ShardID, []clusters.ClusterInstanceResp{inst})
 					newShard["volume_type"] = dbImportedStatus
 					if inst.WalVolume != nil {
 						newShard["wal_volume"] = flattenDatabaseClusterWalVolume(*inst.WalVolume)
@@ -58,7 +61,7 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 				}
 				d.Set("shard", shards)
 
-				capabilities, err := clusterGetCapabilities(DatabaseV1Client, d.Id()).extract()
+				capabilities, err := clusters.GetCapabilities(DatabaseV1Client, d.Id()).Extract()
 				if err != nil {
 					return nil, fmt.Errorf("error getting cluster capabilities")
 				}
@@ -409,13 +412,13 @@ func resourceDatabaseClusterWithShards() *schema.Resource {
 }
 
 func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	createOpts := &dbClusterCreateOpts{
+	createOpts := &clusters.CreateOpts{
 		Name:                   d.Get("name").(string),
 		FloatingIPEnabled:      d.Get("floating_ip_enabled").(bool),
 		CloudMonitoringEnabled: d.Get("cloud_monitoring_enabled").(bool),
@@ -467,7 +470,7 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 
 	var instanceCount int
 	shardsRaw := d.Get("shard").([]interface{})
-	shardInfo := make([]dbClusterInstanceCreateOpts, len(shardsRaw))
+	shardInfo := make([]clusters.InstanceCreateOpts, len(shardsRaw))
 	shardsSize := make([]int, len(shardInfo))
 
 	for i, shardRaw := range shardsRaw {
@@ -476,7 +479,7 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 		shardsSize[i] = shardSize
 		instanceCount += shardSize
 		volumeSize := shardMap["volume_size"].(int)
-		shardInfo[i].Volume = &volume{Size: &volumeSize, VolumeType: shardMap["volume_type"].(string)}
+		shardInfo[i].Volume = &instances.Volume{Size: &volumeSize, VolumeType: shardMap["volume_type"].(string)}
 		shardInfo[i].Nics, shardInfo[i].SecurityGroups, _ = extractDatabaseNetworks(shardMap["network"].([]interface{}))
 		shardInfo[i].AvailabilityZone = shardMap["availability_zone"].(string)
 		shardInfo[i].FlavorRef = shardMap["flavor_id"].(string)
@@ -487,24 +490,24 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 			if err != nil {
 				return diag.Errorf("%s wal_volume", message)
 			}
-			shardInfo[i].Walvolume = &walVolume{Size: &walVolumeOpts.Size, VolumeType: walVolumeOpts.VolumeType}
+			shardInfo[i].Walvolume = &instances.WalVolume{Size: &walVolumeOpts.Size, VolumeType: walVolumeOpts.VolumeType}
 		}
 	}
 
 	for i := 0; i < len(shardInfo); i++ {
 		shardInfo[i].Keypair = d.Get("keypair").(string)
 	}
-	instances := make([]dbClusterInstanceCreateOpts, instanceCount)
+	clusterInstances := make([]clusters.InstanceCreateOpts, instanceCount)
 	k := 0
 	for i, shardSize := range shardsSize {
 		for j := 0; j < shardSize; j++ {
-			instances[k] = shardInfo[i]
+			clusterInstances[k] = shardInfo[i]
 			k++
 		}
 	}
-	createOpts.Instances = instances
+	createOpts.Instances = clusterInstances
 
-	var checkCapabilities *[]instanceCapabilityOpts
+	var checkCapabilities *[]instances.CapabilityOpts
 	if capabilities, ok := d.GetOk("capabilities"); ok {
 		capabilitiesOpts, err := extractDatabaseCapabilities(capabilities.([]interface{}))
 		if err != nil {
@@ -517,10 +520,10 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 	}
 
 	log.Printf("[DEBUG] vkcs_db_cluster_with_shards create options: %#v", createOpts)
-	clust := dbCluster{}
+	clust := clusters.Cluster{}
 	clust.Cluster = createOpts
 
-	cluster, err := dbClusterCreate(DatabaseV1Client, clust).extract()
+	cluster, err := clusters.Create(DatabaseV1Client, clust).Extract()
 	if err != nil {
 		return diag.Errorf("error creating vkcs_db_cluster_with_shards: %s", err)
 	}
@@ -544,9 +547,9 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 
 	if configuration, ok := d.GetOk("configuration_id"); ok {
 		log.Printf("[DEBUG] Attaching configuration %s to vkcs_db_cluster_with_shards %s", configuration, cluster.ID)
-		var attachConfigurationOpts dbClusterAttachConfigurationGroupOpts
+		var attachConfigurationOpts clusters.AttachConfigurationGroupOpts
 		attachConfigurationOpts.ConfigurationAttach.ConfigurationID = configuration.(string)
-		err := instanceAttachConfigurationGroup(DatabaseV1Client, cluster.ID, &attachConfigurationOpts).ExtractErr()
+		err := instances.AttachConfigurationGroup(DatabaseV1Client, cluster.ID, &attachConfigurationOpts).ExtractErr()
 		if err != nil {
 			return diag.Errorf("error attaching configuration group %s to vkcs_db_cluster_with_shards %s: %s",
 				configuration, cluster.ID, err)
@@ -559,13 +562,13 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 }
 
 func resourceDatabaseClusterWithShardsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	cluster, err := dbClusterGet(DatabaseV1Client, d.Id()).extract()
+	cluster, err := clusters.Get(DatabaseV1Client, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "error retrieving vkcs_db_cluster_with_shards"))
 	}
@@ -647,7 +650,7 @@ OuterLoop:
 }
 
 func resourceDatabaseClusterWithShardsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	dbClient, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
@@ -748,13 +751,13 @@ func resourceDatabaseClusterWithShardsUpdate(ctx context.Context, d *schema.Reso
 }
 
 func resourceDatabaseClusterWithShardsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	err = dbClusterDelete(DatabaseV1Client, d.Id()).ExtractErr()
+	err = clusters.Delete(DatabaseV1Client, d.Id()).ExtractErr()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error deleting vkcs_db_cluster_with_shards"))
 	}

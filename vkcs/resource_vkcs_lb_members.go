@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	octaviapools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 )
@@ -111,7 +112,7 @@ func resourceMembers() *schema.Resource {
 }
 
 func resourceMembersCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
@@ -159,7 +160,7 @@ func resourceMembersCreate(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 func resourceMembersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
@@ -185,7 +186,7 @@ func resourceMembersRead(ctx context.Context, d *schema.ResourceData, meta inter
 }
 
 func resourceMembersUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
@@ -231,7 +232,7 @@ func resourceMembersUpdate(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 func resourceMembersDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)

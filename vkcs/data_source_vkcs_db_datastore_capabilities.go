@@ -7,6 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 )
 
 func dataSourceDatabaseDatastoreCapabilities() *schema.Resource {
@@ -135,7 +137,7 @@ func dataSourceDatabaseDatastoreCapabilitiesParam() *schema.Resource {
 }
 
 func dataSourceDatabaseDatastoreCapabilitiesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	region := getRegion(d, config)
 	dbClient, err := config.DatabaseV1Client(region)
 	if err != nil {
@@ -145,7 +147,7 @@ func dataSourceDatabaseDatastoreCapabilitiesRead(ctx context.Context, d *schema.
 	dsName := d.Get("datastore_name").(string)
 	dsVersionID := d.Get("datastore_version_id").(string)
 
-	capabilities, err := dataStoreListCapabilities(dbClient, dsName, dsVersionID).Extract()
+	capabilities, err := datastores.ListCapabilities(dbClient, dsName, dsVersionID).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error retrieving vkcs_db_backup"))
 	}
@@ -158,7 +160,7 @@ func dataSourceDatabaseDatastoreCapabilitiesRead(ctx context.Context, d *schema.
 	return nil
 }
 
-func flattenDatabaseDatastoreCapabilities(capabilities []dataStoreCapability) (r []map[string]interface{}) {
+func flattenDatabaseDatastoreCapabilities(capabilities []datastores.Capability) (r []map[string]interface{}) {
 	for _, c := range capabilities {
 		r = append(r, map[string]interface{}{
 			"name":                      c.Name,
@@ -172,7 +174,7 @@ func flattenDatabaseDatastoreCapabilities(capabilities []dataStoreCapability) (r
 	return
 }
 
-func flattenDatabaseDatastoreCapabilityParams(params map[string]*capabilityParam) (r []map[string]interface{}) {
+func flattenDatabaseDatastoreCapabilityParams(params map[string]*datastores.CapabilityParam) (r []map[string]interface{}) {
 	for name, p := range params {
 		var defaultValue string
 		switch v := p.DefaultValue.(type) {

@@ -8,6 +8,8 @@ import (
 	"github.com/gophercloud/utils/terraform/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
 
 // volInstHash calculates hash of the volume of instance
@@ -171,13 +173,13 @@ func dataSourceDatabaseInstance() *schema.Resource {
 }
 
 func dataSourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating VKCS database client: %s", err)
 	}
 
-	instance, err := instanceGet(DatabaseV1Client, d.Get("id").(string)).extract()
+	instance, err := instances.Get(DatabaseV1Client, d.Get("id").(string)).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error retrieving vkcs_db_instance"))
 	}
@@ -203,7 +205,7 @@ func dataSourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData,
 
 	d.Set("volume", schema.NewSet(volInstHash, []interface{}{m}))
 
-	backupSchedule, err := instanceGetBackupSchedule(DatabaseV1Client, d.Id()).extract()
+	backupSchedule, err := instances.GetBackupSchedule(DatabaseV1Client, d.Id()).Extract()
 	if err != nil {
 		return diag.Errorf("error getting backup schedule for instance: %s: %s", d.Id(), err)
 	}

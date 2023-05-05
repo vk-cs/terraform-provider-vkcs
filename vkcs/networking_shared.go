@@ -7,10 +7,8 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 )
-
-const defaultSDN = "neutron"
-const searchInAllSDNs = "all"
 
 func networkingReadAttributesTags(d *schema.ResourceData, tags []string) {
 	expandObjectReadTags(d, tags)
@@ -83,7 +81,7 @@ func getSDN(d *schema.ResourceData) string {
 		return v.(string)
 	}
 
-	return defaultSDN
+	return networking.DefaultSDN
 }
 
 func validateSDN() schema.SchemaValidateDiagFunc {

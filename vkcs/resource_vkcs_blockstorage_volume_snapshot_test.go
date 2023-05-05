@@ -7,6 +7,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/snapshots"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 )
 
 func TestAccBlockStorageSnapshot_basic(t *testing.T) {
@@ -54,7 +55,7 @@ func testAccCheckBlockStorageSnapshotExists(n string, snapshot *snapshots.Snapsh
 			return fmt.Errorf("no id is set")
 		}
 
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		blockStorageClient, err := config.BlockStorageV3Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("error creating block storage client: %s", err)
@@ -75,7 +76,7 @@ func testAccCheckBlockStorageSnapshotExists(n string, snapshot *snapshots.Snapsh
 }
 
 func testAccCheckBlockStorageSnapshotDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 	blockStorageClient, err := config.BlockStorageV3Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("error creating block storage client: %s", err)

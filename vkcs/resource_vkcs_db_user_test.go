@@ -5,14 +5,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gophercloud/gophercloud/openstack/db/v1/users"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/users"
 )
 
 func TestAccDatabaseUser_basic(t *testing.T) {
 	var user users.User
-	var instance instanceResp
+	var instance instances.InstanceResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -36,7 +38,7 @@ func TestAccDatabaseUser_basic(t *testing.T) {
 
 func TestAccDatabaseUser_update_and_delete(t *testing.T) {
 	var user users.User
-	var instance instanceResp
+	var instance instances.InstanceResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -74,7 +76,7 @@ func TestAccDatabaseUser_update_and_delete(t *testing.T) {
 	})
 }
 
-func testAccCheckDatabaseUserExists(n string, instance *instanceResp, user *users.User) resource.TestCheckFunc {
+func testAccCheckDatabaseUserExists(n string, instance *instances.InstanceResp, user *users.User) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -91,18 +93,18 @@ func testAccCheckDatabaseUserExists(n string, instance *instanceResp, user *user
 			return fmt.Errorf("malformed user name: %s", rs.Primary.ID)
 		}
 
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("error creating cloud database client: %s", err)
 		}
 
-		pages, err := userList(DatabaseClient, instance.ID, "instance").AllPages()
+		pages, err := users.List(DatabaseClient, instance.ID, "instance").AllPages()
 		if err != nil {
 			return fmt.Errorf("unable to retrieve users: %s", err)
 		}
 
-		allUsers, err := ExtractUsers(pages)
+		allUsers, err := users.ExtractUsers(pages)
 		if err != nil {
 			return fmt.Errorf("unable to extract users: %s", err)
 		}
@@ -129,7 +131,7 @@ func testAccCheckDatabaseUserDatabaseCount(n int, user *users.User) resource.Tes
 }
 
 func testAccCheckDatabaseUserDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 
 	DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 	if err != nil {
@@ -146,12 +148,12 @@ func testAccCheckDatabaseUserDestroy(s *terraform.State) error {
 			return fmt.Errorf("malformed username: %s", rs.Primary.ID)
 		}
 
-		pages, err := userList(DatabaseClient, parts[0], "instance").AllPages()
+		pages, err := users.List(DatabaseClient, parts[0], "instance").AllPages()
 		if err != nil {
 			return nil
 		}
 
-		allUsers, err := ExtractUsers(pages)
+		allUsers, err := users.ExtractUsers(pages)
 		if err != nil {
 			return fmt.Errorf("unable to extract users: %s", err)
 		}

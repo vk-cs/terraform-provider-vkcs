@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
 
 // Dbaas timeouts
@@ -62,7 +64,7 @@ func resourceDatabaseInstance() *schema.Resource {
 		CustomizeDiff: resourceDatabaseCustomizeDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				config := meta.(configer)
+				config := meta.(clients.Config)
 				DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 				if err != nil {
 					return nil, fmt.Errorf("error creating VKCS database client: %s", err)
@@ -72,7 +74,7 @@ func resourceDatabaseInstance() *schema.Resource {
 					return nil, fmt.Errorf("error reading vkcs_db_instance")
 				}
 
-				capabilities, err := instanceGetCapabilities(DatabaseV1Client, d.Id()).extract()
+				capabilities, err := instances.GetCapabilities(DatabaseV1Client, d.Id()).Extract()
 				if err != nil {
 					return nil, fmt.Errorf("error getting instance capabilities")
 				}
@@ -80,7 +82,7 @@ func resourceDatabaseInstance() *schema.Resource {
 				d.Set("volume_type", dbImportedStatus)
 				if v, ok := d.GetOk("wal_volume"); ok {
 					walV, _ := extractDatabaseWalVolume(v.([]interface{}))
-					walvolume := walVolume{Size: &walV.Size, VolumeType: dbImportedStatus}
+					walvolume := instances.WalVolume{Size: &walV.Size, VolumeType: dbImportedStatus}
 					d.Set("wal_volume", flattenDatabaseInstanceWalVolume(walvolume))
 				}
 
@@ -457,17 +459,17 @@ func resourceDatabaseInstance() *schema.Resource {
 }
 
 func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
 	size := d.Get("size").(int)
-	createOpts := &dbInstanceCreateOpts{
+	createOpts := &instances.CreateOpts{
 		FlavorRef:              d.Get("flavor_id").(string),
 		Name:                   d.Get("name").(string),
-		Volume:                 &volume{Size: &size, VolumeType: d.Get("volume_type").(string)},
+		Volume:                 &instances.Volume{Size: &size, VolumeType: d.Get("volume_type").(string)},
 		ReplicaOf:              d.Get("replica_of").(string),
 		AvailabilityZone:       d.Get("availability_zone").(string),
 		FloatingIPEnabled:      d.Get("floating_ip_enabled").(bool),
@@ -527,7 +529,7 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			return diag.Errorf("%s wal_volume", message)
 		}
-		createOpts.Walvolume = &walVolume{
+		createOpts.Walvolume = &instances.WalVolume{
 			Size:       &walVolumeOpts.Size,
 			VolumeType: walVolumeOpts.VolumeType,
 		}
@@ -568,7 +570,7 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 		createOpts.BackupSchedule = &backupSchedule
 	}
 
-	var checkCapabilities *[]instanceCapabilityOpts
+	var checkCapabilities *[]instances.CapabilityOpts
 	if capabilities, ok := d.GetOk("capabilities"); ok {
 		capabilitiesOpts, err := extractDatabaseCapabilities(capabilities.([]interface{}))
 		if err != nil {
@@ -582,9 +584,9 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 
 	log.Printf("[DEBUG] vkcs_db_instance create options: %#v", createOpts)
 
-	inst := dbInstance{}
+	inst := instances.Instance{}
 	inst.Instance = createOpts
-	instance, err := instanceCreate(DatabaseV1Client, inst).extract()
+	instance, err := instances.Create(DatabaseV1Client, &inst).Extract()
 	if err != nil {
 		return diag.Errorf("error creating vkcs_db_instance: %s", err)
 	}
@@ -608,9 +610,9 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 
 	if configuration, ok := d.GetOk("configuration_id"); ok {
 		log.Printf("[DEBUG] Attaching configuration %s to vkcs_db_instance %s", configuration, instance.ID)
-		var attachConfigurationOpts instanceAttachConfigurationGroupOpts
+		var attachConfigurationOpts instances.AttachConfigurationGroupOpts
 		attachConfigurationOpts.Instance.Configuration = configuration.(string)
-		err := instanceAttachConfigurationGroup(DatabaseV1Client, instance.ID, &attachConfigurationOpts).ExtractErr()
+		err := instances.AttachConfigurationGroup(DatabaseV1Client, instance.ID, &attachConfigurationOpts).ExtractErr()
 		if err != nil {
 			return diag.Errorf("error attaching configuration group %s to vkcs_db_instance %s: %s",
 				configuration, instance.ID, err)
@@ -620,11 +622,11 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 	if rootEnabled, ok := d.GetOk("root_enabled"); ok {
 		if rootEnabled.(bool) {
 			rootPassword := d.Get("root_password")
-			var rootUserEnableOpts instanceRootUserEnableOpts
+			var rootUserEnableOpts instances.RootUserEnableOpts
 			if rootPassword != "" {
 				rootUserEnableOpts.Password = rootPassword.(string)
 			}
-			rootUser, err := instanceRootUserEnable(DatabaseV1Client, instance.ID, &rootUserEnableOpts).extract()
+			rootUser, err := instances.RootUserEnable(DatabaseV1Client, instance.ID, &rootUserEnableOpts).Extract()
 			if err != nil {
 				return diag.Errorf("error creating root user for instance: %s: %s", instance.ID, err)
 			}
@@ -639,13 +641,13 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	instance, err := instanceGet(DatabaseV1Client, d.Id()).extract()
+	instance, err := instances.Get(DatabaseV1Client, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error retrieving vkcs_db_instance"))
 	}
@@ -667,7 +669,7 @@ func resourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, m
 			walV, _ := extractDatabaseWalVolume(v.([]interface{}))
 			walVolumeType = walV.VolumeType
 		}
-		walvolume := walVolume{Size: instance.WalVolume.Size, VolumeType: walVolumeType}
+		walvolume := instances.WalVolume{Size: instance.WalVolume.Size, VolumeType: walVolumeType}
 		d.Set("wal_volume", flattenDatabaseInstanceWalVolume(walvolume))
 
 		if _, ok := d.GetOk("wal_disk_autoexpand"); ok {
@@ -677,8 +679,8 @@ func resourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, m
 	if instance.ReplicaOf != nil {
 		d.Set("replica_of", instance.ReplicaOf.ID)
 	} else {
-		isRootEnabledResult := instanceRootUserGet(DatabaseV1Client, d.Id())
-		isRootEnabled, err := isRootEnabledResult.extract()
+		isRootEnabledResult := instances.RootUserGet(DatabaseV1Client, d.Id())
+		isRootEnabled, err := isRootEnabledResult.Extract()
 		if err != nil {
 			return diag.Errorf("error checking if root user is enabled for instance: %s: %s", d.Id(), err)
 		}
@@ -687,7 +689,7 @@ func resourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	backupSchedule, err := instanceGetBackupSchedule(DatabaseV1Client, d.Id()).extract()
+	backupSchedule, err := instances.GetBackupSchedule(DatabaseV1Client, d.Id()).Extract()
 	if err != nil {
 		return diag.Errorf("error getting backup schedule for instance: %s: %s", d.Id(), err)
 	}
@@ -735,7 +737,7 @@ func resourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
@@ -753,7 +755,7 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 	if d.HasChange("configuration_id") {
 		old, new := d.GetChange("configuration_id")
 
-		err := instanceDetachConfigurationGroup(DatabaseV1Client, d.Id()).ExtractErr()
+		err := instances.DetachConfigurationGroup(DatabaseV1Client, d.Id()).ExtractErr()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -765,9 +767,9 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 
 		if new != "" {
-			var attachConfigurationOpts instanceAttachConfigurationGroupOpts
+			var attachConfigurationOpts instances.AttachConfigurationGroupOpts
 			attachConfigurationOpts.Instance.Configuration = new.(string)
-			err := instanceAttachConfigurationGroup(DatabaseV1Client, d.Id(), &attachConfigurationOpts).ExtractErr()
+			err := instances.AttachConfigurationGroup(DatabaseV1Client, d.Id(), &attachConfigurationOpts).ExtractErr()
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -782,9 +784,9 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("size") {
 		_, new := d.GetChange("size")
-		var resizeVolumeOpts instanceResizeVolumeOpts
+		var resizeVolumeOpts instances.ResizeVolumeOpts
 		resizeVolumeOpts.Resize.Volume.Size = new.(int)
-		err := instanceAction(DatabaseV1Client, d.Id(), &resizeVolumeOpts).ExtractErr()
+		err := instances.Action(DatabaseV1Client, d.Id(), &resizeVolumeOpts).ExtractErr()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -800,9 +802,9 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if d.HasChange("flavor_id") {
-		var resizeOpts instanceResizeOpts
+		var resizeOpts instances.ResizeOpts
 		resizeOpts.Resize.FlavorRef = d.Get("flavor_id").(string)
-		err := instanceAction(DatabaseV1Client, d.Id(), &resizeOpts).ExtractErr()
+		err := instances.Action(DatabaseV1Client, d.Id(), &resizeOpts).ExtractErr()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -820,9 +822,9 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 	if d.HasChange("replica_of") {
 		old, new := d.GetChange("replica_of")
 		if old != "" && new == "" {
-			detachReplicaOpts := &instanceDetachReplicaOpts{}
+			detachReplicaOpts := &instances.DetachReplicaOpts{}
 			detachReplicaOpts.Instance.ReplicaOf = old.(string)
-			err := instanceDetachReplica(DatabaseV1Client, d.Id(), detachReplicaOpts).ExtractErr()
+			err := instances.DetachReplica(DatabaseV1Client, d.Id(), detachReplicaOpts).ExtractErr()
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -842,18 +844,18 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 		_, new := d.GetChange("root_enabled")
 		if new == true {
 			rootPassword := d.Get("root_password")
-			var rootUserEnableOpts instanceRootUserEnableOpts
+			var rootUserEnableOpts instances.RootUserEnableOpts
 			if rootPassword != "" {
 				rootUserEnableOpts.Password = rootPassword.(string)
 			}
 
-			rootUser, err := instanceRootUserEnable(DatabaseV1Client, d.Id(), &rootUserEnableOpts).extract()
+			rootUser, err := instances.RootUserEnable(DatabaseV1Client, d.Id(), &rootUserEnableOpts).Extract()
 			if err != nil {
 				return diag.Errorf("error creating root user for instance: %s: %s", d.Id(), err)
 			}
 			d.Set("root_password", rootUser.Password)
 		} else {
-			err = instanceRootUserDisable(DatabaseV1Client, d.Id()).ExtractErr()
+			err = instances.RootUserDisable(DatabaseV1Client, d.Id()).ExtractErr()
 			if err != nil {
 				return diag.Errorf("error deleting root_user for instance %s: %s", d.Id(), err)
 			}
@@ -866,14 +868,14 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			return diag.Errorf("unable to determine vkcs_db_instance disk_autoexpand")
 		}
-		var autoExpandOpts instanceUpdateAutoExpandOpts
+		var autoExpandOpts instances.UpdateAutoExpandOpts
 		if autoExpandProperties.AutoExpand {
 			autoExpandOpts.Instance.VolumeAutoresizeEnabled = 1
 		} else {
 			autoExpandOpts.Instance.VolumeAutoresizeEnabled = 0
 		}
 		autoExpandOpts.Instance.VolumeAutoresizeMaxSize = autoExpandProperties.MaxDiskSize
-		err = instanceUpdateAutoExpand(DatabaseV1Client, d.Id(), &autoExpandOpts).ExtractErr()
+		err = instances.UpdateAutoExpand(DatabaseV1Client, d.Id(), &autoExpandOpts).ExtractErr()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -900,10 +902,10 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 
 		if walVolumeOptsNew.Size != walVolumeOptsOld.Size {
-			var resizeWalVolumeOpts instanceResizeWalVolumeOpts
+			var resizeWalVolumeOpts instances.ResizeWalVolumeOpts
 			resizeWalVolumeOpts.Resize.Volume.Size = walVolumeOptsNew.Size
 			resizeWalVolumeOpts.Resize.Volume.Kind = "wal"
-			err = instanceAction(DatabaseV1Client, d.Id(), &resizeWalVolumeOpts).ExtractErr()
+			err = instances.Action(DatabaseV1Client, d.Id(), &resizeWalVolumeOpts).ExtractErr()
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -925,14 +927,14 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			return diag.Errorf("unable to determine vkcs_db_instance wal_disk_autoexpand")
 		}
-		var walAutoExpandOpts instanceUpdateAutoExpandWalOpts
+		var walAutoExpandOpts instances.UpdateAutoExpandWalOpts
 		if walAutoExpandProperties.AutoExpand {
 			walAutoExpandOpts.Instance.WalVolume.VolumeAutoresizeEnabled = 1
 		} else {
 			walAutoExpandOpts.Instance.WalVolume.VolumeAutoresizeEnabled = 0
 		}
 		walAutoExpandOpts.Instance.WalVolume.VolumeAutoresizeMaxSize = walAutoExpandProperties.MaxDiskSize
-		err = instanceUpdateAutoExpand(DatabaseV1Client, d.Id(), &walAutoExpandOpts).ExtractErr()
+		err = instances.UpdateAutoExpand(DatabaseV1Client, d.Id(), &walAutoExpandOpts).ExtractErr()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -952,10 +954,10 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			return diag.Errorf("unable to determine vkcs_db_instance capability")
 		}
-		var applyCapabilityOpts instanceApplyCapabilityOpts
+		var applyCapabilityOpts instances.ApplyCapabilityOpts
 		applyCapabilityOpts.ApplyCapability.Capabilities = newCapabilitiesOpts
 
-		err = instanceAction(DatabaseV1Client, d.Id(), &applyCapabilityOpts).ExtractErr()
+		err = instances.Action(DatabaseV1Client, d.Id(), &applyCapabilityOpts).ExtractErr()
 
 		if err != nil {
 			return diag.Errorf("error applying capability to vkcs_db_instance %s: %s", d.Id(), err)
@@ -983,7 +985,7 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 			return diag.Errorf("unable to determine vkcs_db_instance backup_schedule")
 		}
 
-		err = instanceUpdateBackupSchedule(DatabaseV1Client, d.Id(), &backupScheduleUpdateOpts).ExtractErr()
+		err = instances.UpdateBackupSchedule(DatabaseV1Client, d.Id(), &backupScheduleUpdateOpts).ExtractErr()
 
 		if err != nil {
 			return diag.Errorf("error updating backup schedule for vkcs_db_instance %s: %s", d.Id(), err)
@@ -1000,10 +1002,10 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("cloud_monitoring_enabled") {
 		_, new := d.GetChange("cloud_monitoring_enabled")
-		var cloudMonitoringOpts updateCloudMonitoringOpts
+		var cloudMonitoringOpts instances.UpdateCloudMonitoringOpts
 		cloudMonitoringOpts.CloudMonitoring.Enable = new.(bool)
 
-		err := instanceAction(DatabaseV1Client, d.Id(), &cloudMonitoringOpts).ExtractErr()
+		err := instances.Action(DatabaseV1Client, d.Id(), &cloudMonitoringOpts).ExtractErr()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1014,13 +1016,13 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceDatabaseInstanceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	err = instanceDelete(DatabaseV1Client, d.Id()).ExtractErr()
+	err = instances.Delete(DatabaseV1Client, d.Id()).ExtractErr()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error deleting vkcs_db_instance"))
 	}

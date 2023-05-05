@@ -6,10 +6,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/backups"
 )
 
 func TestAccDatabaseBackup_basic(t *testing.T) {
-	var backup dbBackupResp
+	var backup backups.BackupResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -29,7 +31,7 @@ func TestAccDatabaseBackup_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckDatabaseBackupExists(n string, backup *dbBackupResp) resource.TestCheckFunc {
+func testAccCheckDatabaseBackupExists(n string, backup *backups.BackupResp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -40,13 +42,13 @@ func testAccCheckDatabaseBackupExists(n string, backup *dbBackupResp) resource.T
 			return fmt.Errorf("no id is set")
 		}
 
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS compute client: %s", err)
 		}
 
-		found, err := dbBackupGet(DatabaseClient, rs.Primary.ID).extract()
+		found, err := backups.Get(DatabaseClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
@@ -62,7 +64,7 @@ func testAccCheckDatabaseBackupExists(n string, backup *dbBackupResp) resource.T
 }
 
 func testAccCheckDatabaseBackupDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 
 	DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 	if err != nil {
@@ -73,7 +75,7 @@ func testAccCheckDatabaseBackupDestroy(s *terraform.State) error {
 		if rs.Type != "vkcs_db_backup" {
 			continue
 		}
-		_, err := dbBackupGet(DatabaseClient, rs.Primary.ID).extract()
+		_, err := backups.Get(DatabaseClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("backup still exists")
 		}

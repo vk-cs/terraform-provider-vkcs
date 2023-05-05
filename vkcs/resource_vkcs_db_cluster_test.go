@@ -6,10 +6,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
 )
 
 func TestAccDatabaseCluster_basic(t *testing.T) {
-	var cluster dbClusterResp
+	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -39,7 +41,7 @@ func TestAccDatabaseCluster_basic(t *testing.T) {
 }
 
 func TestAccDatabaseCluster_wal(t *testing.T) {
-	var cluster dbClusterResp
+	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -60,7 +62,7 @@ func TestAccDatabaseCluster_wal(t *testing.T) {
 }
 
 func TestAccDatabaseCluster_wal_no_update(t *testing.T) {
-	var cluster dbClusterResp
+	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -88,7 +90,7 @@ func TestAccDatabaseCluster_wal_no_update(t *testing.T) {
 }
 
 func TestAccDatabaseCluster_shrink(t *testing.T) {
-	var cluster dbClusterResp
+	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -114,7 +116,7 @@ func TestAccDatabaseCluster_shrink(t *testing.T) {
 	})
 }
 
-func testAccCheckDatabaseClusterExists(n string, cluster *dbClusterResp) resource.TestCheckFunc {
+func testAccCheckDatabaseClusterExists(n string, cluster *clusters.ClusterResp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -125,13 +127,13 @@ func testAccCheckDatabaseClusterExists(n string, cluster *dbClusterResp) resourc
 			return fmt.Errorf("no id is set")
 		}
 
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS compute client: %s", err)
 		}
 
-		found, err := dbClusterGet(DatabaseClient, rs.Primary.ID).extract()
+		found, err := clusters.Get(DatabaseClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
@@ -147,7 +149,7 @@ func testAccCheckDatabaseClusterExists(n string, cluster *dbClusterResp) resourc
 }
 
 func testAccCheckDatabaseClusterDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 
 	DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 	if err != nil {
@@ -158,7 +160,7 @@ func testAccCheckDatabaseClusterDestroy(s *terraform.State) error {
 		if rs.Type != "vkcs_db_cluster" {
 			continue
 		}
-		_, err := dbClusterGet(DatabaseClient, rs.Primary.ID).extract()
+		_, err := clusters.Get(DatabaseClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("cluster still exists")
 		}
@@ -167,7 +169,7 @@ func testAccCheckDatabaseClusterDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckDatabaseClusterLeaderExists(cluster *dbClusterResp) resource.TestCheckFunc {
+func testAccCheckDatabaseClusterLeaderExists(cluster *clusters.ClusterResp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, inst := range cluster.Instances {
 			if inst.Role == dbClusterInstanceRoleLeader {

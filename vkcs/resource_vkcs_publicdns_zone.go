@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/publicdns/v2/zones"
 )
 
 const (
@@ -112,25 +114,25 @@ func resourcePublicDNSZone() *schema.Resource {
 }
 
 func resourcePublicDNSZoneCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.PublicDNSV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS public DNS client: %s", err)
 	}
 
-	createOpts := zoneCreateOpts{
-		PrimaryDNS: d.Get("primary_dns").(string),
-		AdminEmail: d.Get("admin_email").(string),
-		Refresh:    d.Get("refresh").(int),
-		Retry:      d.Get("retry").(int),
-		Expire:     d.Get("expire").(int),
-		TTL:        d.Get("ttl").(int),
-		Zone:       d.Get("zone").(string),
+	createOpts := zones.CreateOpts{
+		SOAPrimaryDNS: d.Get("primary_dns").(string),
+		SOAAdminEmail: d.Get("admin_email").(string),
+		SOARefresh:    d.Get("refresh").(int),
+		SOARetry:      d.Get("retry").(int),
+		SOAExpire:     d.Get("expire").(int),
+		SOATTL:        d.Get("ttl").(int),
+		Zone:          d.Get("zone").(string),
 	}
 
 	log.Printf("[DEBUG] vkcs_publicdns_zone create options: %#v", createOpts)
 
-	zone, err := zoneCreate(client, createOpts).Extract()
+	zone, err := zones.Create(client, createOpts).Extract()
 	if err != nil {
 		return diag.FromErr(checkAlreadyExists(err, "Error creating vkcs_publicdns_zone",
 			"vkcs_publicdns_zone", fmt.Sprintf("\"zone\" = %s", createOpts.Zone)))
@@ -143,13 +145,13 @@ func resourcePublicDNSZoneCreate(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourcePublicDNSZoneRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.PublicDNSV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS public DNS client: %s", err)
 	}
 
-	zone, err := zoneGet(client, d.Id()).Extract()
+	zone, err := zones.Get(client, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error retrieving vkcs_publicdns_zone"))
 	}
@@ -171,24 +173,24 @@ func resourcePublicDNSZoneRead(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourcePublicDNSZoneUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.PublicDNSV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS public DNS client: %s", err)
 	}
 
-	updateOpts := zoneUpdateOpts{
-		PrimaryDNS: d.Get("primary_dns").(string),
-		AdminEmail: d.Get("admin_email").(string),
-		Refresh:    d.Get("refresh").(int),
-		Retry:      d.Get("retry").(int),
-		Expire:     d.Get("expire").(int),
-		TTL:        d.Get("ttl").(int),
+	updateOpts := zones.UpdateOpts{
+		SOAPrimaryDNS: d.Get("primary_dns").(string),
+		SOAAdminEmail: d.Get("admin_email").(string),
+		SOARefresh:    d.Get("refresh").(int),
+		SOARetry:      d.Get("retry").(int),
+		SOAExpire:     d.Get("expire").(int),
+		SOATTL:        d.Get("ttl").(int),
 	}
 
 	log.Printf("[DEBUG] vkcs_publicdns_zone create options: %#v", updateOpts)
 
-	_, err = zoneUpdate(client, d.Id(), updateOpts).Extract()
+	_, err = zones.Update(client, d.Id(), updateOpts).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error updating vkcs_publicdns_zone"))
 	}
@@ -197,13 +199,13 @@ func resourcePublicDNSZoneUpdate(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourcePublicDNSZoneDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.PublicDNSV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS public DNS client: %s", err)
 	}
 
-	err = zoneDelete(client, d.Id()).ExtractErr()
+	err = zones.Delete(client, d.Id()).ExtractErr()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error deleting vkcs_publicdns_zone"))
 	}

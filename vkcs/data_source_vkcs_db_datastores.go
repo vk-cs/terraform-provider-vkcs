@@ -7,6 +7,8 @@ import (
 	"github.com/gophercloud/utils/terraform/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 )
 
 func dataSourceDatabaseDatastores() *schema.Resource {
@@ -44,19 +46,19 @@ func dataSourceDatabaseDatastores() *schema.Resource {
 }
 
 func dataSourceDatabaseDatastoresRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	region := getRegion(d, config)
 	dbClient, err := config.DatabaseV1Client(region)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	allPages, err := dataStoreList(dbClient).AllPages()
+	allPages, err := datastores.List(dbClient).AllPages()
 	if err != nil {
 		return diag.Errorf("Error retrieving vkcs_db_datastores: %s", err)
 	}
 
-	allDatastores, err := extractDatastores(allPages)
+	allDatastores, err := datastores.ExtractDatastores(allPages)
 	if err != nil {
 		return diag.Errorf("Error extracting vkcs_db_datastores from response: %s", err)
 	}
@@ -78,7 +80,7 @@ func dataSourceDatabaseDatastoresRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func flattenDatabaseDatastoresDatastores(datastores []dataStore) (r []map[string]interface{}) {
+func flattenDatabaseDatastoresDatastores(datastores []datastores.Datastore) (r []map[string]interface{}) {
 	for _, d := range datastores {
 		r = append(r, map[string]interface{}{
 			"id":   d.ID,

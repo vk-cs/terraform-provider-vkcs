@@ -7,6 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clustertemplates"
 )
 
 func dataSourceKubernetesClusterTemplates() *schema.Resource {
@@ -72,13 +74,13 @@ func flattenClusterTemplates(templates []clusterTemplateResponse) clusterTemplat
 }
 
 func dataSourceVkcsClusterTemplatesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.ContainerInfraV1Client(config.GetRegion())
 	if err != nil {
 		return diag.Errorf("failed to init identity v3 client: %s", err)
 	}
 
-	templates, err := clusterTemplateList(client).Extract()
+	templates, err := clustertemplates.List(client).Extract()
 	if err != nil {
 		return diag.Errorf("failed to list cluster templates: %s", err)
 	}

@@ -6,16 +6,17 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/publicdns/v2/records"
 )
 
 type recordResult interface {
-	ExtractA() (*recordA, error)
-	ExtractAAAA() (*recordAAAA, error)
-	ExtractCNAME() (*recordCNAME, error)
-	ExtractMX() (*recordMX, error)
-	ExtractNS() (*recordNS, error)
-	ExtractSRV() (*recordSRV, error)
-	ExtractTXT() (*recordTXT, error)
+	ExtractA() (*records.RecordA, error)
+	ExtractAAAA() (*records.RecordAAAA, error)
+	ExtractCNAME() (*records.RecordCNAME, error)
+	ExtractMX() (*records.RecordMX, error)
+	ExtractNS() (*records.RecordNS, error)
+	ExtractSRV() (*records.RecordSRV, error)
+	ExtractTXT() (*records.RecordTXT, error)
 }
 
 func publicDNSRecordExtract(res recordResult, recordType string) (interface{}, error) {
@@ -44,9 +45,9 @@ func publicDNSRecordExtract(res recordResult, recordType string) (interface{}, e
 	return r, err
 }
 
-func publicDNSRecordStateRefreshFunc(client publicDNSClient, zoneID string, id string, recordType string) resource.StateRefreshFunc {
+func publicDNSRecordStateRefreshFunc(client *gophercloud.ServiceClient, zoneID string, id string, recordType string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		res := recordGet(client, zoneID, id, recordType)
+		res := records.Get(client, zoneID, id, recordType)
 		record, err := publicDNSRecordExtract(res, recordType)
 
 		if err != nil {

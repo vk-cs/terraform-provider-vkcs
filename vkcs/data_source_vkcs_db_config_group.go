@@ -6,6 +6,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	configgroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/config_groups"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 )
 
 func dataSourceDatabaseConfigGroup() *schema.Resource {
@@ -70,13 +73,13 @@ func dataSourceDatabaseConfigGroup() *schema.Resource {
 }
 
 func dataSourceDatabaseConfigGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 	configGroupID := d.Get("config_group_id").(string)
-	configGroup, err := dbConfigGroupGet(DatabaseV1Client, configGroupID).extract()
+	configGroup, err := configgroups.Get(DatabaseV1Client, configGroupID).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error retrieving vkcs_db_config_group"))
 	}
@@ -84,7 +87,7 @@ func dataSourceDatabaseConfigGroupRead(ctx context.Context, d *schema.ResourceDa
 	log.Printf("[DEBUG] Retrieved vkcs_db_config_group %s: %#v", configGroupID, configGroup)
 
 	d.Set("name", configGroup.Name)
-	ds := dataStoreShort{
+	ds := datastores.DatastoreShort{
 		Type:    configGroup.DatastoreName,
 		Version: configGroup.DatastoreVersionName,
 	}

@@ -6,10 +6,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
 )
 
 func TestAccDatabaseClusterWithShards_basic(t *testing.T) {
-	var cluster dbClusterResp
+	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -28,7 +30,7 @@ func TestAccDatabaseClusterWithShards_basic(t *testing.T) {
 }
 
 func TestAccDatabaseClusterWithShards_update(t *testing.T) {
-	var cluster dbClusterResp
+	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -71,7 +73,7 @@ func TestAccDatabaseClusterWithShards_update(t *testing.T) {
 }
 
 func TestAccDatabaseClusterWithShards_resize(t *testing.T) {
-	var cluster dbClusterResp
+	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -140,7 +142,7 @@ func TestAccDatabaseClusterWithShards_resize(t *testing.T) {
 }
 
 func testAccCheckDatabaseClusterWithShardsDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 
 	DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 	if err != nil {
@@ -151,7 +153,7 @@ func testAccCheckDatabaseClusterWithShardsDestroy(s *terraform.State) error {
 		if rs.Type != "vkcs_db_cluster_with_shards" {
 			continue
 		}
-		_, err := dbClusterGet(DatabaseClient, rs.Primary.ID).extract()
+		_, err := clusters.Get(DatabaseClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("cluster still exists")
 		}

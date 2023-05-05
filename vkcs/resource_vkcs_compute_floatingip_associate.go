@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
@@ -70,7 +72,7 @@ func resourceComputeFloatingIPAssociate() *schema.Resource {
 }
 
 func resourceComputeFloatingIPAssociateCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
@@ -126,7 +128,7 @@ func resourceComputeFloatingIPAssociateCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceComputeFloatingIPAssociateRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
@@ -141,7 +143,7 @@ func resourceComputeFloatingIPAssociateRead(_ context.Context, d *schema.Resourc
 	// Now check and see whether the floating IP still exists.
 	// First try to do this by querying the Network API.
 	networkEnabled := true
-	networkClient, err := config.NetworkingV2Client(getRegion(d, config), searchInAllSDNs)
+	networkClient, err := config.NetworkingV2Client(getRegion(d, config), networking.SearchInAllSDNs)
 	if err != nil {
 		networkEnabled = false
 	}
@@ -196,7 +198,7 @@ func resourceComputeFloatingIPAssociateRead(_ context.Context, d *schema.Resourc
 }
 
 func resourceComputeFloatingIPAssociateDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)

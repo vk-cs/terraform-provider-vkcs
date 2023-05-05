@@ -6,6 +6,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	cg "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/config_groups"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 )
 
 func resourceDatabaseConfigGroup() *schema.Resource {
@@ -78,13 +81,13 @@ func resourceDatabaseConfigGroup() *schema.Resource {
 }
 
 func resourceDatabaseConfigGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	createOpts := dbConfigGroupCreateOpts{
+	createOpts := cg.CreateOpts{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 	}
@@ -105,11 +108,11 @@ func resourceDatabaseConfigGroupCreate(ctx context.Context, d *schema.ResourceDa
 
 	log.Printf("[DEBUG] vkcs_db_backup create options: %#v", createOpts)
 
-	configGrp := dbConfigGroup{
+	configGrp := cg.ConfigGroup{
 		Configuration: &createOpts,
 	}
 
-	configGroup, err := dbConfigGroupCreate(DatabaseV1Client, &configGrp).extract()
+	configGroup, err := cg.Create(DatabaseV1Client, &configGrp).Extract()
 	if err != nil {
 		return diag.Errorf("error creating vkcs_db_config_group: %s", err)
 	}
@@ -121,13 +124,13 @@ func resourceDatabaseConfigGroupCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceDatabaseConfigGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	configGroup, err := dbConfigGroupGet(DatabaseV1Client, d.Id()).extract()
+	configGroup, err := cg.Get(DatabaseV1Client, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error retrieving vkcs_db_config_group"))
 	}
@@ -135,7 +138,7 @@ func resourceDatabaseConfigGroupRead(ctx context.Context, d *schema.ResourceData
 	log.Printf("[DEBUG] Retrieved vkcs_db_config_group %s: %#v", d.Id(), configGroup)
 
 	d.Set("name", configGroup.Name)
-	ds := dataStoreShort{
+	ds := datastores.DatastoreShort{
 		Type:    configGroup.DatastoreName,
 		Version: configGroup.DatastoreVersionName,
 	}
@@ -150,7 +153,7 @@ func resourceDatabaseConfigGroupRead(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceDatabaseConfigGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
@@ -168,18 +171,18 @@ func resourceDatabaseConfigGroupUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("unable to determine vkcs_db_config_group values: %s", err)
 	}
 
-	updateOpts := dbConfigGroupUpdateOpts{
+	updateOpts := cg.UpdateOpts{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 		Values:      values,
 	}
 
 	log.Printf("[DEBUG] vkcs_db_config_group update options: %#v", updateOpts)
-	update := dbConfigGroupUpdateOpt{
+	update := cg.UpdateOpt{
 		Configuration: &updateOpts,
 	}
 
-	err = dbConfigGroupUpdate(DatabaseV1Client, d.Id(), &update).ExtractErr()
+	err = cg.Update(DatabaseV1Client, d.Id(), &update).ExtractErr()
 	if err != nil {
 		return diag.Errorf("error updating vkcs_db_config_group: %s", err)
 	}
@@ -187,13 +190,13 @@ func resourceDatabaseConfigGroupUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceDatabaseConfigGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	err = dbConfigGroupDelete(DatabaseV1Client, d.Id()).ExtractErr()
+	err = cg.Delete(DatabaseV1Client, d.Id()).ExtractErr()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error deleting vkcs_db_config_group"))
 	}

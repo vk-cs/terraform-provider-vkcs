@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/mapstructure"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 )
 
 var decoderConfig = &mapstructure.DecoderConfig{
@@ -91,7 +92,7 @@ func checkAlreadyExists(err error, msg, resourceName, conflict string) error {
 // getRegion returns the region that was specified in the resource. If a
 // region was not set, the provider-level region is checked. The provider-level
 // region can either be set by the region argument or by OS_REGION_NAME.
-func getRegion(d *schema.ResourceData, config configer) string {
+func getRegion(d *schema.ResourceData, config clients.Config) string {
 	if v, ok := d.GetOk("region"); ok {
 		return v.(string)
 	}

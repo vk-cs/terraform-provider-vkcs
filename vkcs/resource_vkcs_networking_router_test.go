@@ -6,6 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 )
@@ -85,8 +87,8 @@ func TestAccNetworkingRouter_vendor_opts(t *testing.T) {
 }
 
 func testAccCheckNetworkingRouterDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
-	networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
+	config := testAccProvider.Meta().(clients.Config)
+	networkingClient, err := config.NetworkingV2Client(osRegionName, networking.DefaultSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -116,8 +118,8 @@ func testAccCheckNetworkingRouterExists(n string, router *routers.Router) resour
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(configer)
-		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
+		config := testAccProvider.Meta().(clients.Config)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, networking.DefaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}

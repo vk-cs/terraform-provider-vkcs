@@ -18,6 +18,9 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 )
 
 const (
@@ -145,9 +148,9 @@ func getAllInstanceNetworks(d *schema.ResourceData, meta interface{}) ([]Instanc
 // getInstanceNetworkInfo will query for network information in order to make
 // an accurate determination of a network's name and a network's ID.
 func getInstanceNetworkInfo(d *schema.ResourceData, meta interface{}, queryType, queryTerm string) (map[string]interface{}, error) {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 
-	networkClient, err := config.NetworkingV2Client(getRegion(d, config), searchInAllSDNs)
+	networkClient, err := config.NetworkingV2Client(getRegion(d, config), networking.SearchInAllSDNs)
 	if err == nil {
 		networkInfo, err := getInstanceNetworkInfoNeutron(networkClient, queryType, queryTerm)
 		if err != nil {
@@ -329,7 +332,7 @@ func expandInstanceNetworks(allInstanceNetworks []InstanceNetwork) []servers.Net
 // flattenInstanceNetworks collects instance network information from different
 // sources and aggregates it all together into a map array.
 func flattenInstanceNetworks(d *schema.ResourceData, meta interface{}) ([]map[string]interface{}, error) {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return nil, fmt.Errorf("error creating VKCS compute client: %s", err)

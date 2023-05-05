@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/shares"
 )
@@ -60,7 +61,7 @@ func TestAccSFSShareAccess_basic(t *testing.T) {
 }
 
 func testAccCheckSFSShareAccessDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(*config)
+	config := testAccProvider.Meta().(clients.Config)
 	sfsClient, err := config.SharedfilesystemV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
@@ -103,7 +104,7 @@ func testAccCheckSFSShareAccessExists(n string, share *shares.AccessRight) resou
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(*config)
+		config := testAccProvider.Meta().(clients.Config)
 		sfsClient, err := config.SharedfilesystemV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)

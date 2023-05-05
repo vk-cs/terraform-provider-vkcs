@@ -3,11 +3,12 @@ package vkcs
 import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/publicdns/v2/zones"
 )
 
-func publicDNSZoneStateRefreshFunc(client publicDNSClient, zoneID string) resource.StateRefreshFunc {
+func publicDNSZoneStateRefreshFunc(client *gophercloud.ServiceClient, zoneID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		zone, err := zoneGet(client, zoneID).Extract()
+		zone, err := zones.Get(client, zoneID).Extract()
 
 		if err != nil {
 			if _, ok := err.(gophercloud.ErrDefault404); ok {

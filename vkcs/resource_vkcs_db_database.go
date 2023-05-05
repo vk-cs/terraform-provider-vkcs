@@ -8,6 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/databases"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
 
 func resourceDatabaseDatabase() *schema.Resource {
@@ -64,7 +69,7 @@ func resourceDatabaseDatabase() *schema.Resource {
 }
 
 func resourceDatabaseDatabaseCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
@@ -78,31 +83,31 @@ func resourceDatabaseDatabaseCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("error while getting instance or cluster: %s", err)
 	}
 	var dbmsType string
-	if instanceResource, ok := dbmsResp.(*instanceResp); ok {
+	if instanceResource, ok := dbmsResp.(*instances.InstanceResp); ok {
 		if isOperationNotSupported(instanceResource.DataStore.Type, Redis, Tarantool) {
 			return diag.Errorf("operation not supported for this datastore")
 		}
 		if instanceResource.ReplicaOf != nil {
 			return diag.Errorf("operation not supported for replica")
 		}
-		dbmsType = dbmsTypeInstance
+		dbmsType = db.DBMSTypeInstance
 	}
-	if clusterResource, ok := dbmsResp.(*dbClusterResp); ok {
+	if clusterResource, ok := dbmsResp.(*clusters.ClusterResp); ok {
 		if isOperationNotSupported(clusterResource.DataStore.Type, Redis, Tarantool) {
 			return diag.Errorf("operation not supported for this datastore")
 		}
-		dbmsType = dbmsTypeCluster
+		dbmsType = db.DBMSTypeCluster
 	}
-	var databasesList databaseBatchCreateOpts
+	var databasesList databases.BatchCreateOpts
 
-	db := databaseCreateOpts{
+	db := databases.CreateOpts{
 		Name:    databaseName,
 		CharSet: d.Get("charset").(string),
 		Collate: d.Get("collate").(string),
 	}
 
 	databasesList.Databases = append(databasesList.Databases, db)
-	err = databaseCreate(DatabaseV1Client, dbmsID, &databasesList, dbmsType).ExtractErr()
+	err = databases.Create(DatabaseV1Client, dbmsID, &databasesList, dbmsType).ExtractErr()
 	if err != nil {
 		return diag.Errorf("error creating vkcs_db_database: %s", err)
 	}
@@ -130,7 +135,7 @@ func resourceDatabaseDatabaseCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceDatabaseDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating vkcs database client: %s", err)
@@ -148,7 +153,7 @@ func resourceDatabaseDatabaseRead(ctx context.Context, d *schema.ResourceData, m
 	if dbmsTypeRaw, ok := d.GetOk("dbms_type"); ok {
 		dbmsType = dbmsTypeRaw.(string)
 	} else {
-		dbmsType = dbmsTypeInstance
+		dbmsType = db.DBMSTypeInstance
 	}
 
 	_, err = getDBMSResource(DatabaseV1Client, dbmsID)
@@ -174,7 +179,7 @@ func resourceDatabaseDatabaseRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceDatabaseDatabaseDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating vkcs database client: %s", err)
@@ -198,7 +203,7 @@ func resourceDatabaseDatabaseDelete(ctx context.Context, d *schema.ResourceData,
 		return nil
 	}
 
-	err = databaseDelete(DatabaseV1Client, dbmsID, databaseName, dbmsType).ExtractErr()
+	err = databases.Delete(DatabaseV1Client, dbmsID, databaseName, dbmsType).ExtractErr()
 	if err != nil {
 		return diag.Errorf("error deleting vkcs_db_database %s: %s", d.Id(), err)
 	}

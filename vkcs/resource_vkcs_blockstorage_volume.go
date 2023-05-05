@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 )
 
 const (
@@ -126,7 +127,7 @@ func resourceBlockStorageVolume() *schema.Resource {
 }
 
 func resourceBlockStorageVolumeCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS block storage client: %s", err)
@@ -174,7 +175,7 @@ func resourceBlockStorageVolumeCreate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceBlockStorageVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS block storage client: %s", err)
@@ -201,7 +202,7 @@ func resourceBlockStorageVolumeRead(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS block storage client: %s", err)
@@ -281,7 +282,7 @@ func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceBlockStorageVolumeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS block storage client: %s", err)

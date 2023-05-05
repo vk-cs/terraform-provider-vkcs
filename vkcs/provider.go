@@ -2,162 +2,11 @@ package vkcs
 
 import (
 	"context"
-	"fmt"
-	"net/http"
-	"time"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/utils/terraform/auth"
-	"github.com/gophercloud/utils/terraform/mutexkv"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 )
-
-const (
-	maxRetriesCount         = 3
-	defaultIdentityEndpoint = "https://infra.mail.ru/identity/v3/"
-	defaultUserDomainName   = "users"
-	defaultRegionName       = "RegionOne"
-	requestsMaxRetriesCount = 3
-	requestsRetryDelay      = 30 * time.Millisecond
-)
-
-// configer is interface to work with gophercloud.Config calls
-type configer interface {
-	LoadAndValidate() error
-	GetRegion() string
-	ComputeV2Client(region string) (*gophercloud.ServiceClient, error)
-	ImageV2Client(region string) (*gophercloud.ServiceClient, error)
-	NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error)
-	PublicDNSV2Client(region string) (*gophercloud.ServiceClient, error)
-	BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error)
-	KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error)
-	ContainerInfraV1Client(region string) (ContainerClient, error)
-	IdentityV3Client(region string) (ContainerClient, error)
-	DatabaseV1Client(region string) (*gophercloud.ServiceClient, error)
-	GetMutex() *mutexkv.MutexKV
-}
-
-// config uses openstackbase.Config as the base/foundation of this provider's
-type config struct {
-	auth.Config
-	ContainerInfraV1MicroVersion string
-}
-
-var _ configer = &config{}
-
-// GetRegion is implementation of getRegion method
-func (c *config) GetRegion() string {
-	return c.Region
-}
-
-func (c *config) ComputeV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.ComputeV2Client(region)
-}
-
-func (c *config) ImageV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.ImageV2Client(region)
-}
-
-func (c *config) NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error) {
-	client, err := c.Config.NetworkingV2Client(region)
-	if err != nil {
-		return client, err
-	}
-	if sdn != searchInAllSDNs {
-		client.MoreHeaders = map[string]string{
-			"X-SDN": sdn,
-		}
-	}
-	return client, err
-}
-
-func (c *config) PublicDNSV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.CommonServiceClientInit(newPublicDNSV2, region, "publicdns")
-}
-
-func (c *config) BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.BlockStorageV3Client(region)
-}
-
-func (c *config) KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.KeyManagerV1Client(region)
-}
-
-// DatabaseV1Client is implementation of DatabaseV1Client method
-func (c *config) DatabaseV1Client(region string) (*gophercloud.ServiceClient, error) {
-	client, clientErr := c.Config.DatabaseV1Client(region)
-	client.ProviderClient.RetryFunc = func(context context.Context, method, url string, options *gophercloud.RequestOpts, err error, failCount uint) error {
-		if failCount >= requestsMaxRetriesCount {
-			return err
-		}
-		switch errType := err.(type) {
-		case gophercloud.ErrDefault500, gophercloud.ErrDefault503:
-			time.Sleep(requestsRetryDelay)
-			return nil
-		case gophercloud.ErrUnexpectedResponseCode:
-			if errType.Actual == http.StatusGatewayTimeout {
-				time.Sleep(requestsRetryDelay)
-				return nil
-			}
-			return err
-		default:
-			return err
-		}
-	}
-	return client, clientErr
-}
-
-// ContainerInfraV1Client is implementation of ContainerInfraV1Client method
-func (c *config) ContainerInfraV1Client(region string) (ContainerClient, error) {
-	client, err := c.Config.ContainerInfraV1Client(region)
-	if err != nil {
-		return client, err
-	}
-	client.MoreHeaders = map[string]string{
-		"MCS-API-Version": fmt.Sprintf("container-infra %s", c.ContainerInfraV1MicroVersion),
-	}
-	return client, err
-}
-
-// IdentityV3Client is implementation of ContainerInfraV1Client method
-func (c *config) IdentityV3Client(region string) (ContainerClient, error) {
-	return c.Config.IdentityV3Client(region)
-}
-
-func (c *config) GetMutex() *mutexkv.MutexKV {
-	return c.Config.MutexKV
-}
-
-func newConfig(d *schema.ResourceData, terraformVersion string) (configer, diag.Diagnostics) {
-	config := &config{
-		auth.Config{
-			Username:         d.Get("username").(string),
-			Password:         d.Get("password").(string),
-			TenantID:         d.Get("project_id").(string),
-			Region:           d.Get("region").(string),
-			IdentityEndpoint: d.Get("auth_url").(string),
-			UserDomainID:     d.Get("user_domain_id").(string),
-			UserDomainName:   d.Get("user_domain_name").(string),
-			AllowReauth:      true,
-			MaxRetries:       maxRetriesCount,
-			TerraformVersion: terraformVersion,
-			SDKVersion:       meta.SDKVersionString(),
-			MutexKV:          mutexkv.NewMutexKV(),
-		},
-		d.Get("cloud_containers_api_version").(string),
-	}
-
-	if config.UserDomainID != "" {
-		config.UserDomainName = ""
-	}
-
-	if err := config.LoadAndValidate(); err != nil {
-		return nil, diag.FromErr(err)
-	}
-	return config, nil
-}
 
 // Provider returns a schema.Provider for VKCS.
 func Provider() *schema.Provider {
@@ -166,7 +15,7 @@ func Provider() *schema.Provider {
 			"auth_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_AUTH_URL", defaultIdentityEndpoint),
+				DefaultFunc: schema.EnvDefaultFunc("OS_AUTH_URL", clients.DefaultIdentityEndpoint),
 				Description: "The Identity authentication URL.",
 			},
 			"project_id": {
@@ -197,19 +46,19 @@ func Provider() *schema.Provider {
 			"user_domain_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_USER_DOMAIN_NAME", defaultUserDomainName),
+				DefaultFunc: schema.EnvDefaultFunc("OS_USER_DOMAIN_NAME", clients.DefaultUserDomainName),
 				Description: "The name of the domain where the user resides.",
 			},
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_REGION_NAME", defaultRegionName),
+				DefaultFunc: schema.EnvDefaultFunc("OS_REGION_NAME", clients.DefaultRegionName),
 				Description: "A region to use.",
 			},
 			"cloud_containers_api_version": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  cloudContainersAPIVersion,
+				Default:  clients.ContainerInfraAPIVersion,
 				Description: "Cloud Containers API version to use.\n" +
 					"_NOTE_ Only for custom VKCS deployments.",
 			},
@@ -315,7 +164,7 @@ func Provider() *schema.Provider {
 			// We can therefore assume that if it's missing it's 0.10 or 0.11
 			terraformVersion = "0.11+compatible"
 		}
-		return newConfig(d, terraformVersion)
+		return clients.ConfigureProvider(d, terraformVersion)
 	}
 
 	return provider

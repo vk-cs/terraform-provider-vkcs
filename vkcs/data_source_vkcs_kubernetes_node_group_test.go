@@ -6,13 +6,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/nodegroups"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccKubernetesNodeGroupDataSource_basic(t *testing.T) {
-	var cluster cluster
-	var nodeGroup nodeGroup
+	var cluster clusters.Cluster
+	var nodeGroup nodegroups.NodeGroup
 
 	clusterName := "testcluster" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	createClusterFixture := clusterFixture(clusterName, clusterTemplateID, osFlavorID,

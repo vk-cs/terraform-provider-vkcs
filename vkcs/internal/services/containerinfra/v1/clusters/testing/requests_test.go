@@ -1,4 +1,4 @@
-package vkcs
+package testing
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	th "github.com/gophercloud/gophercloud/testhelper"
 	fake "github.com/gophercloud/gophercloud/testhelper/client"
 	"github.com/stretchr/testify/assert"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
 )
 
 func TestClusterCreateOpts(t *testing.T) {
@@ -19,7 +20,7 @@ func TestClusterCreateOpts(t *testing.T) {
 
 	mcount := 2
 
-	createOpts := clusterCreateOpts{
+	createOpts := clusters.CreateOpts{
 		ClusterTemplateID:  "95663bae-6763-4a53-9424-831975285cc1",
 		Keypair:            "default",
 		Labels:             labels,
@@ -41,63 +42,7 @@ func TestClusterCreateOpts(t *testing.T) {
 	assert.Len(t, b, 12)
 }
 
-func TestPatchOpts(t *testing.T) {
-
-	patchOpts := nodeGroupClusterPatchOpts{
-		{
-			Path:  "/max_nodes",
-			Value: 10,
-			Op:    "replace",
-		},
-		{
-			Path:  "/min_nodes",
-			Value: 2,
-			Op:    "replace",
-		},
-		{
-			Path:  "/autoscaling_enabled",
-			Value: false,
-			Op:    "replace",
-		},
-		{
-			Path:  "/max_node_unavailable",
-			Value: 80,
-			Op:    "replace",
-		},
-	}
-
-	b, _ := patchOpts.PatchMap()
-
-	assert.IsType(t, []map[string]interface{}{}, b)
-	assert.Len(t, b, 4)
-}
-
-func TestAddBatchOpts(t *testing.T) {
-
-	addGroups := []nodeGroup{
-		{
-			Name:     "test1",
-			FlavorID: "95663bae-6763-4a53-9424-831975285cc1",
-		},
-		{
-			Name:     "test2",
-			FlavorID: "95663bae-6763-4a53-9424-831975285cc1",
-		},
-	}
-
-	addbatchOpts := nodeGroupBatchAddParams{
-		Action:  "batch_add_ng",
-		Payload: addGroups,
-	}
-
-	b, _ := addbatchOpts.Map()
-
-	assert.IsType(t, []interface{}{}, b["payload"])
-	assert.Len(t, b["payload"], 2)
-	assert.Len(t, b, 2)
-}
-
-func k8sconfigFixture(t *testing.T, id string) {
+func k8sConfigFixture(t *testing.T, id string) {
 	switch id {
 	case "notfound":
 		th.Mux.HandleFunc(fmt.Sprintf("/clusters/%s/kube_config", id), func(w http.ResponseWriter, r *http.Request) {
@@ -122,10 +67,10 @@ func TestK8sConfigGet(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	k8sconfigFixture(t, "123")
+	k8sConfigFixture(t, "123")
 
 	serviceClient := fake.ServiceClient()
-	config, err := k8sConfigGet(serviceClient, "123")
+	config, err := clusters.KubeConfigGet(serviceClient, "123")
 	assert.NoError(t, err)
 	assert.EqualValues(t, "example", config)
 }
@@ -134,9 +79,9 @@ func TestK8sConfigGetError(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	k8sconfigFixture(t, "notfound")
+	k8sConfigFixture(t, "notfound")
 
 	serviceClient := fake.ServiceClient()
-	_, err := k8sConfigGet(serviceClient, "notfound")
+	_, err := clusters.KubeConfigGet(serviceClient, "notfound")
 	assert.Error(t, err)
 }

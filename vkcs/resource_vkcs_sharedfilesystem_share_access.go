@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/errors"
@@ -81,7 +82,7 @@ func resourceSharedFilesystemShareAccess() *schema.Resource {
 }
 
 func resourceSharedFilesystemShareAccessCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
@@ -146,7 +147,7 @@ func resourceSharedFilesystemShareAccessCreate(ctx context.Context, d *schema.Re
 }
 
 func resourceSharedFilesystemShareAccessRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
@@ -179,7 +180,7 @@ func resourceSharedFilesystemShareAccessRead(ctx context.Context, d *schema.Reso
 }
 
 func resourceSharedFilesystemShareAccessDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
@@ -245,7 +246,7 @@ func resourceSharedFilesystemShareAccessImport(ctx context.Context, d *schema.Re
 		return nil, err
 	}
 
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
 		return nil, fmt.Errorf("error creating VKCS sharedfilesystem client: %s", err)

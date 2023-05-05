@@ -6,6 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 )
 
 func dataSourceDatabaseDatastoreParameters() *schema.Resource {
@@ -71,7 +73,7 @@ func dataSourceDatabaseDatastoreParameters() *schema.Resource {
 }
 
 func dataSourceDatabaseDatastoreParametersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	region := getRegion(d, config)
 	dbClient, err := config.DatabaseV1Client(region)
 	if err != nil {
@@ -81,7 +83,7 @@ func dataSourceDatabaseDatastoreParametersRead(ctx context.Context, d *schema.Re
 	dsName := d.Get("datastore_name").(string)
 	dsVersionID := d.Get("datastore_version_id").(string)
 
-	params, err := dataStoreListParameters(dbClient, dsName, dsVersionID).Extract()
+	params, err := datastores.ListParameters(dbClient, dsName, dsVersionID).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error retrieving vkcs_db_backup"))
 	}
@@ -94,7 +96,7 @@ func dataSourceDatabaseDatastoreParametersRead(ctx context.Context, d *schema.Re
 	return nil
 }
 
-func flattenDatabaseDatastoreParameters(params []dataStoreParam) (r []map[string]interface{}) {
+func flattenDatabaseDatastoreParameters(params []datastores.Param) (r []map[string]interface{}) {
 	for _, p := range params {
 		r = append(r, map[string]interface{}{
 			"name":             p.Name,

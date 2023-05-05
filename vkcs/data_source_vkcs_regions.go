@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/regions"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 )
 
 func dataSourceVkcsRegions() *schema.Resource {
@@ -32,7 +32,7 @@ func dataSourceVkcsRegions() *schema.Resource {
 }
 
 func dataSourceVkcsRegionsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.IdentityV3Client(config.GetRegion())
 	if err != nil {
 		return diag.Errorf("failed to init identity v3 client: %s", err)
@@ -40,7 +40,7 @@ func dataSourceVkcsRegionsRead(ctx context.Context, d *schema.ResourceData, meta
 
 	opts := regions.ListOpts{}
 
-	allPages, err := regions.List(client.(*gophercloud.ServiceClient), opts).AllPages()
+	allPages, err := regions.List(client, opts).AllPages()
 	if err != nil {
 		return diag.Errorf("failed to list regions: %s", err)
 	}

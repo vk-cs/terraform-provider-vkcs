@@ -8,6 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/users"
 )
 
 func resourceDatabaseUser() *schema.Resource {
@@ -77,7 +82,7 @@ func resourceDatabaseUser() *schema.Resource {
 }
 
 func resourceDatabaseUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
@@ -92,25 +97,25 @@ func resourceDatabaseUserCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.Errorf("error while getting resource: %s", err)
 	}
 	var dbmsType string
-	if instanceResource, ok := dbmsResp.(*instanceResp); ok {
+	if instanceResource, ok := dbmsResp.(*instances.InstanceResp); ok {
 		if isOperationNotSupported(instanceResource.DataStore.Type, Redis, Tarantool) {
 			return diag.Errorf("operation not supported for this datastore")
 		}
 		if instanceResource.ReplicaOf != nil {
 			return diag.Errorf("operation not supported for replica")
 		}
-		dbmsType = dbmsTypeInstance
+		dbmsType = db.DBMSTypeInstance
 	}
-	if clusterResource, ok := dbmsResp.(*dbClusterResp); ok {
+	if clusterResource, ok := dbmsResp.(*clusters.ClusterResp); ok {
 		if isOperationNotSupported(clusterResource.DataStore.Type, Redis, Tarantool) {
 			return diag.Errorf("operation not supported for this datastore")
 		}
-		dbmsType = dbmsTypeCluster
+		dbmsType = db.DBMSTypeCluster
 	}
 
-	var usersList userBatchCreateOpts
+	var usersList users.BatchCreateOpts
 
-	u := userCreateOpts{
+	u := users.CreateOpts{
 		Name:     userName,
 		Password: d.Get("password").(string),
 		Host:     d.Get("host").(string),
@@ -121,7 +126,7 @@ func resourceDatabaseUserCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 	usersList.Users = append(usersList.Users, u)
 
-	err = userCreate(DatabaseV1Client, dbmsID, &usersList, dbmsType).ExtractErr()
+	err = users.Create(DatabaseV1Client, dbmsID, &usersList, dbmsType).ExtractErr()
 	if err != nil {
 		return diag.Errorf("error creating vkcs_db_user: %s", err)
 	}
@@ -149,7 +154,7 @@ func resourceDatabaseUserCreate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceDatabaseUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating vkcs database client: %s", err)
@@ -166,7 +171,7 @@ func resourceDatabaseUserRead(ctx context.Context, d *schema.ResourceData, meta 
 	if dbmsTypeRaw, ok := d.GetOk("dbms_type"); ok {
 		dbmsType = dbmsTypeRaw.(string)
 	} else {
-		dbmsType = dbmsTypeInstance
+		dbmsType = db.DBMSTypeInstance
 	}
 
 	_, err = getDBMSResource(DatabaseV1Client, dbmsID)
@@ -198,7 +203,7 @@ func resourceDatabaseUserRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceDatabaseUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
@@ -241,7 +246,7 @@ func resourceDatabaseUserUpdate(ctx context.Context, d *schema.ResourceData, met
 
 		for _, databaseForDeletion := range databasesForDeletion {
 			databaseName := databaseForDeletion.(string)
-			err = userDeleteDatabase(DatabaseV1Client, dbmsID, userName, databaseName, dbmsType).ExtractErr()
+			err = users.DeleteDatabase(DatabaseV1Client, dbmsID, userName, databaseName, dbmsType).ExtractErr()
 			if err != nil {
 				return diag.Errorf("error deleting database from vkcs_db_user: %s", err)
 			}
@@ -250,10 +255,10 @@ func resourceDatabaseUserUpdate(ctx context.Context, d *schema.ResourceData, met
 		for i, newDatabase := range newDatabases.([]interface{}) {
 			newDatabasesOpts[i] = map[string]string{"name": newDatabase.(string)}
 		}
-		userUpdateDatabasesOpts := userUpdateDatabasesOpts{
+		userUpdateDatabasesOpts := users.UpdateDatabasesOpts{
 			Databases: newDatabasesOpts,
 		}
-		err = userUpdateDatabases(DatabaseV1Client, dbmsID, userName, &userUpdateDatabasesOpts, dbmsType).ExtractErr()
+		err = users.UpdateDatabases(DatabaseV1Client, dbmsID, userName, &userUpdateDatabasesOpts, dbmsType).ExtractErr()
 		if err != nil {
 			return diag.Errorf("error adding databases to vkcs_db_user: %s", err)
 		}
@@ -263,12 +268,12 @@ func resourceDatabaseUserUpdate(ctx context.Context, d *schema.ResourceData, met
 			return diag.Errorf("error waiting for vkcs_db_user %s to be updated: %s", userName, err)
 		}
 	}
-	var userUpdateParams userUpdateOpts
+	var userUpdateParams users.UpdateOpts
 
 	if d.HasChange("password") {
 		_, new := d.GetChange("password")
 		userUpdateParams.User.Password = new.(string)
-		err = userUpdate(DatabaseV1Client, dbmsID, userName, &userUpdateParams, dbmsType).ExtractErr()
+		err = users.Update(DatabaseV1Client, dbmsID, userName, &userUpdateParams, dbmsType).ExtractErr()
 		if err != nil {
 			return diag.Errorf("error updating vkcs_db_user: %s", err)
 		}
@@ -286,7 +291,7 @@ func resourceDatabaseUserUpdate(ctx context.Context, d *schema.ResourceData, met
 		userUpdateParams.User.Host = new.(string)
 	}
 	if d.HasChange("name") || d.HasChange("host") {
-		err = userUpdate(DatabaseV1Client, dbmsID, userName, &userUpdateParams, dbmsType).ExtractErr()
+		err = users.Update(DatabaseV1Client, dbmsID, userName, &userUpdateParams, dbmsType).ExtractErr()
 		if err != nil {
 			return diag.Errorf("error updating vkcs_db_user: %s", err)
 		}
@@ -297,7 +302,7 @@ func resourceDatabaseUserUpdate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceDatabaseUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating vkcs database client: %s", err)
@@ -321,7 +326,7 @@ func resourceDatabaseUserDelete(ctx context.Context, d *schema.ResourceData, met
 		return nil
 	}
 
-	err = userDelete(DatabaseV1Client, dbmsID, userName, dbmsType).ExtractErr()
+	err = users.Delete(DatabaseV1Client, dbmsID, userName, dbmsType).ExtractErr()
 	if err != nil {
 		return diag.Errorf("error deleting vkcs_db_user %s: %s", d.Id(), err)
 	}

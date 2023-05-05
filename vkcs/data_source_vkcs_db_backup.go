@@ -6,6 +6,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/backups"
 )
 
 func dataSourceDatabaseBackup() *schema.Resource {
@@ -104,14 +107,14 @@ func dataSourceDatabaseBackup() *schema.Resource {
 }
 
 func dataSourceDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating VKCS database client: %s", err)
 	}
 
 	backupID := d.Get("backup_id").(string)
-	backup, err := dbBackupGet(DatabaseV1Client, backupID).extract()
+	backup, err := backups.Get(DatabaseV1Client, backupID).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error retrieving vkcs_db_backup"))
 	}
@@ -121,10 +124,10 @@ func dataSourceDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("name", backup.Name)
 	if backup.InstanceID != "" {
 		d.Set("dbms_id", backup.InstanceID)
-		d.Set("dbms_type", dbmsTypeInstance)
+		d.Set("dbms_type", db.DBMSTypeInstance)
 	} else {
 		d.Set("dbms_id", backup.ClusterID)
-		d.Set("dbms_type", dbmsTypeCluster)
+		d.Set("dbms_type", db.DBMSTypeCluster)
 	}
 	d.Set("description", backup.Description)
 	d.Set("location_ref", backup.LocationRef)

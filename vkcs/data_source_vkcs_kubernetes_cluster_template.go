@@ -7,6 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clustertemplates"
 )
 
 func dataSourceKubernetesClusterTemplate() *schema.Resource {
@@ -173,7 +175,7 @@ func dataSourceKubernetesClusterTemplate() *schema.Resource {
 }
 
 func dataSourceKubernetesClusterTemplateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(config.GetRegion())
 	if err != nil {
 		return diag.Errorf("error creating VKCS container infra client: %s", err)
@@ -183,8 +185,8 @@ func dataSourceKubernetesClusterTemplateRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 	templateIdentifier := d.Get(templateIdentifierKey).(string)
-	var ct *clusterTemplate
-	ct, err = clusterTemplateGet(containerInfraClient, templateIdentifier).Extract()
+	var ct *clustertemplates.ClusterTemplate
+	ct, err = clustertemplates.Get(containerInfraClient, templateIdentifier).Extract()
 	if err != nil {
 		return diag.Errorf("error getting vkcs_kubernetes_clustertemplate %s: %s", templateIdentifier, err)
 	}

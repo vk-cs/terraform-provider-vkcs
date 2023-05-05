@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/snapshots"
 )
@@ -73,7 +74,7 @@ func dataSourceBlockStorageSnapshot() *schema.Resource {
 }
 
 func dataSourceBlockStorageSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS block storage client: %s", err)

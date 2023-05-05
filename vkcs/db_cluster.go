@@ -9,9 +9,11 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
 
-func flattenDatabaseClusterWalVolume(w walVolume) []map[string]interface{} {
+func flattenDatabaseClusterWalVolume(w instances.WalVolume) []map[string]interface{} {
 	walvolume := make([]map[string]interface{}, 1)
 	walvolume[0] = make(map[string]interface{})
 	walvolume[0]["size"] = w.Size
@@ -19,7 +21,7 @@ func flattenDatabaseClusterWalVolume(w walVolume) []map[string]interface{} {
 	return walvolume
 }
 
-func flattenDatabaseClusterInstances(insts []dbClusterInstanceResp) []map[string]interface{} {
+func flattenDatabaseClusterInstances(insts []clusters.ClusterInstanceResp) []map[string]interface{} {
 	instances := make([]map[string]interface{}, len(insts))
 	for i, inst := range insts {
 		instances[i] = flattenDatabaseClusterInstance(inst)
@@ -28,7 +30,7 @@ func flattenDatabaseClusterInstances(insts []dbClusterInstanceResp) []map[string
 	return instances
 }
 
-func flattenDatabaseClusterInstance(inst dbClusterInstanceResp) map[string]interface{} {
+func flattenDatabaseClusterInstance(inst clusters.ClusterInstanceResp) map[string]interface{} {
 	instance := make(map[string]interface{})
 	instance["instance_id"] = inst.ID
 	instance["ip"] = inst.IP
@@ -37,14 +39,14 @@ func flattenDatabaseClusterInstance(inst dbClusterInstanceResp) map[string]inter
 	return instance
 }
 
-func flattenDatabaseClusterShards(shardsInsts map[string][]dbClusterInstanceResp) (r []map[string]interface{}) {
+func flattenDatabaseClusterShards(shardsInsts map[string][]clusters.ClusterInstanceResp) (r []map[string]interface{}) {
 	for id, insts := range shardsInsts {
 		r = append(r, flattenDatabaseClusterShard(id, insts))
 	}
 	return
 }
 
-func flattenDatabaseClusterShard(id string, shardInsts []dbClusterInstanceResp) map[string]interface{} {
+func flattenDatabaseClusterShard(id string, shardInsts []clusters.ClusterInstanceResp) map[string]interface{} {
 	shard := make(map[string]interface{})
 	shard["shard_id"] = id
 	shard["size"] = len(shardInsts)
@@ -58,22 +60,22 @@ func flattenDatabaseClusterShard(id string, shardInsts []dbClusterInstanceResp) 
 	return shard
 }
 
-func getDatabaseClusterShardInstances(insts []dbClusterInstanceResp) map[string][]dbClusterInstanceResp {
-	shardsInstances := make(map[string][]dbClusterInstanceResp)
+func getDatabaseClusterShardInstances(insts []clusters.ClusterInstanceResp) map[string][]clusters.ClusterInstanceResp {
+	shardsInstances := make(map[string][]clusters.ClusterInstanceResp)
 	for _, inst := range insts {
 		shardsInstances[inst.ShardID] = append(shardsInstances[inst.ShardID], inst)
 	}
 	return shardsInstances
 }
 
-func flattenDatabaseClusterShardInstances(insts []dbClusterInstanceResp) (r []map[string]interface{}) {
+func flattenDatabaseClusterShardInstances(insts []clusters.ClusterInstanceResp) (r []map[string]interface{}) {
 	for _, inst := range insts {
 		r = append(r, flattenDatabaseClusterShardInstance(inst))
 	}
 	return
 }
 
-func flattenDatabaseClusterShardInstance(inst dbClusterInstanceResp) map[string]interface{} {
+func flattenDatabaseClusterShardInstance(inst clusters.ClusterInstanceResp) map[string]interface{} {
 	instance := make(map[string]interface{})
 	instance["instance_id"] = inst.ID
 	instance["ip"] = inst.IP
@@ -88,13 +90,13 @@ func expandDatabaseClusterShrinkOptions(v []interface{}) []string {
 	return opts
 }
 
-func databaseClusterDetermineShrinkedInstances(toDelete int, shrinkOptions []string, instances []dbClusterInstanceResp, shardID string) ([]dbClusterShrinkOpts, error) {
-	ids := []dbClusterShrinkOpts{}
+func databaseClusterDetermineShrinkedInstances(toDelete int, shrinkOptions []string, instances []clusters.ClusterInstanceResp, shardID string) ([]clusters.ShrinkOpts, error) {
+	ids := []clusters.ShrinkOpts{}
 	foundIDs := 0
 	if len(shrinkOptions) == 0 {
 		for _, instance := range instances {
 			if instance.Role != dbClusterInstanceRoleLeader && instance.ShardID == shardID {
-				ids = append(ids, dbClusterShrinkOpts{ID: instance.ID})
+				ids = append(ids, clusters.ShrinkOpts{ID: instance.ID})
 				foundIDs++
 				if foundIDs == toDelete {
 					break
@@ -117,7 +119,7 @@ func databaseClusterDetermineShrinkedInstances(toDelete int, shrinkOptions []str
 				}
 			}
 			if !needToRemain {
-				ids = append(ids, dbClusterShrinkOpts{ID: instance.ID})
+				ids = append(ids, clusters.ShrinkOpts{ID: instance.ID})
 				foundIDs++
 			}
 		}
@@ -129,7 +131,7 @@ func databaseClusterDetermineShrinkedInstances(toDelete int, shrinkOptions []str
 	return ids, nil
 }
 
-func databaseClusterValidateShrinkOptions(shrinkOptions []string, instances []dbClusterInstanceResp, shardID string) error {
+func databaseClusterValidateShrinkOptions(shrinkOptions []string, instances []clusters.ClusterInstanceResp, shardID string) error {
 	for _, opt := range shrinkOptions {
 		optIsValid := false
 		for _, instance := range instances {
@@ -186,7 +188,7 @@ func databaseClusterCheckDeleted(d *schema.ResourceData, err error) error {
 
 type dbResourceUpdateContext struct {
 	Ctx       context.Context
-	Client    databaseClient
+	Client    *gophercloud.ServiceClient
 	D         *schema.ResourceData
 	StateConf *resource.StateChangeConf
 }
@@ -226,22 +228,22 @@ var (
 func databaseClusterActionUpdateConfiguration(updateCtx *dbResourceUpdateContext) error {
 	old, new := updateCtx.D.GetChange("configuration_id")
 
-	var detachOpts dbClusterDetachConfigurationGroupOpts
+	var detachOpts clusters.DetachConfigurationGroupOpts
 	detachOpts.ConfigurationDetach.ConfigurationID = old.(string)
 
-	var attachOpts *dbClusterAttachConfigurationGroupOpts
+	var attachOpts *clusters.AttachConfigurationGroupOpts
 	if new != "" {
-		attachOpts = &dbClusterAttachConfigurationGroupOpts{}
+		attachOpts = &clusters.AttachConfigurationGroupOpts{}
 		attachOpts.ConfigurationAttach.ConfigurationID = new.(string)
 	}
 
 	return databaseClusterActionUpdateConfigurationBase(updateCtx, &detachOpts, attachOpts)
 }
 
-func databaseClusterActionUpdateConfigurationBase(updateCtx *dbResourceUpdateContext, detachOpts *dbClusterDetachConfigurationGroupOpts, attachOpts *dbClusterAttachConfigurationGroupOpts) error {
+func databaseClusterActionUpdateConfigurationBase(updateCtx *dbResourceUpdateContext, detachOpts *clusters.DetachConfigurationGroupOpts, attachOpts *clusters.AttachConfigurationGroupOpts) error {
 	dbClient, clusterID := updateCtx.Client, updateCtx.D.Id()
 
-	err := dbClusterAction(dbClient, clusterID, detachOpts).ExtractErr()
+	err := clusters.ClusterAction(dbClient, clusterID, detachOpts).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("%w: %s", errDBClusterActionUpdateConfiguration, err)
 	}
@@ -253,7 +255,7 @@ func databaseClusterActionUpdateConfigurationBase(updateCtx *dbResourceUpdateCon
 	}
 
 	if attachOpts != nil {
-		err := dbClusterAction(dbClient, clusterID, attachOpts).ExtractErr()
+		err := clusters.ClusterAction(dbClient, clusterID, attachOpts).ExtractErr()
 		if err != nil {
 			return fmt.Errorf("%w: %s", errDBClusterActionUpdateConfiguration, err)
 		}
@@ -272,7 +274,7 @@ func databaseClusterUpdateDiskAutoexpand(updateCtx *dbResourceUpdateContext) err
 		return errDBClusterUpdateDiskAutoexpandExtract
 	}
 
-	var autoExpandOpts dbClusterUpdateAutoExpandOpts
+	var autoExpandOpts clusters.UpdateAutoExpandOpts
 	if autoExpandProperties.AutoExpand {
 		autoExpandOpts.Cluster.VolumeAutoresizeEnabled = 1
 	} else {
@@ -283,10 +285,10 @@ func databaseClusterUpdateDiskAutoexpand(updateCtx *dbResourceUpdateContext) err
 	return databaseClusterUpdateDiskAutoexpandBase(updateCtx, autoExpandOpts)
 }
 
-func databaseClusterUpdateDiskAutoexpandBase(updateCtx *dbResourceUpdateContext, autoExpandOpts dbClusterUpdateAutoExpandOpts) error {
+func databaseClusterUpdateDiskAutoexpandBase(updateCtx *dbResourceUpdateContext, autoExpandOpts clusters.UpdateAutoExpandOpts) error {
 	dbClient, clusterID := updateCtx.Client, updateCtx.D.Id()
 
-	err := dbClusterUpdateAutoExpand(dbClient, clusterID, &autoExpandOpts).ExtractErr()
+	err := clusters.UpdateAutoExpand(dbClient, clusterID, &autoExpandOpts).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("%w: %s", errDBClusterUpdateDiskAutoexpand, err)
 	}
@@ -305,7 +307,7 @@ func databaseClusterUpdateWalDiskAutoexpand(updateCtx *dbResourceUpdateContext) 
 		return errDBClusterUpdateWalDiskAutoexpandExtract
 	}
 
-	var walAutoExpandOpts dbClusterUpdateAutoExpandWalOpts
+	var walAutoExpandOpts clusters.UpdateAutoExpandWalOpts
 	if walAutoExpandProperties.AutoExpand {
 		walAutoExpandOpts.Cluster.WalVolume.VolumeAutoresizeEnabled = 1
 	} else {
@@ -316,10 +318,10 @@ func databaseClusterUpdateWalDiskAutoexpand(updateCtx *dbResourceUpdateContext) 
 	return databaseClusterUpdateWalDiskAutoexpandBase(updateCtx, walAutoExpandOpts)
 }
 
-func databaseClusterUpdateWalDiskAutoexpandBase(updateCtx *dbResourceUpdateContext, walAutoExpandOpts dbClusterUpdateAutoExpandWalOpts) error {
+func databaseClusterUpdateWalDiskAutoexpandBase(updateCtx *dbResourceUpdateContext, walAutoExpandOpts clusters.UpdateAutoExpandWalOpts) error {
 	dbClient, clusterID := updateCtx.Client, updateCtx.D.Id()
 
-	err := dbClusterUpdateAutoExpand(dbClient, clusterID, &walAutoExpandOpts).ExtractErr()
+	err := clusters.UpdateAutoExpand(dbClient, clusterID, &walAutoExpandOpts).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("%w: %s", errDBClusterUpdateWalDiskAutoexpand, err)
 	}
@@ -333,14 +335,14 @@ func databaseClusterUpdateWalDiskAutoexpandBase(updateCtx *dbResourceUpdateConte
 
 func databaseClusterUpdateCloudMonitoring(updateCtx *dbResourceUpdateContext) error {
 	enabled := updateCtx.D.Get("cloud_monitoring_enabled").(bool)
-	var cloudMonitoringOpts updateCloudMonitoringOpts
+	var cloudMonitoringOpts clusters.UpdateCloudMonitoringOpts
 	cloudMonitoringOpts.CloudMonitoring.Enable = enabled
 	return databaseClusterUpdateCloudMonitoringBase(updateCtx, cloudMonitoringOpts)
 }
 
-func databaseClusterUpdateCloudMonitoringBase(updateCtx *dbResourceUpdateContext, cloudMonitoringOpts updateCloudMonitoringOpts) error {
+func databaseClusterUpdateCloudMonitoringBase(updateCtx *dbResourceUpdateContext, cloudMonitoringOpts clusters.UpdateCloudMonitoringOpts) error {
 	clusterID := updateCtx.D.Id()
-	err := dbClusterAction(updateCtx.Client, clusterID, &cloudMonitoringOpts).ExtractErr()
+	err := clusters.ClusterAction(updateCtx.Client, clusterID, &cloudMonitoringOpts).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("%w: %s", errDBClusterUpdateCloudMonitoring, err)
 	}
@@ -357,7 +359,7 @@ func databaseClusterActionApplyCapabilities(updateCtx *dbResourceUpdateContext) 
 		return errDBClusterActionApplyCapabilitiesExtract
 	}
 
-	var applyCapabilityOpts dbClusterApplyCapabilityOpts
+	var applyCapabilityOpts clusters.ApplyCapabilityOpts
 	applyCapabilityOpts.ApplyCapability.Capabilities = opts
 
 	updateCtx.StateConf.Refresh = databaseClusterStateRefreshFunc(dbClient, clusterID, &opts)
@@ -365,10 +367,10 @@ func databaseClusterActionApplyCapabilities(updateCtx *dbResourceUpdateContext) 
 	return databaseClusterActionApplyCapabilitiesBase(updateCtx, applyCapabilityOpts)
 }
 
-func databaseClusterActionApplyCapabilitiesBase(updateCtx *dbResourceUpdateContext, applyCapabilityOpts dbClusterApplyCapabilityOpts) error {
+func databaseClusterActionApplyCapabilitiesBase(updateCtx *dbResourceUpdateContext, applyCapabilityOpts clusters.ApplyCapabilityOpts) error {
 	dbClient, clusterID := updateCtx.Client, updateCtx.D.Id()
 
-	err := dbClusterAction(dbClient, clusterID, &applyCapabilityOpts).ExtractErr()
+	err := clusters.ClusterAction(dbClient, clusterID, &applyCapabilityOpts).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("%w: %s", errDBClusterActionApplyCapabitilies, err)
 	}
@@ -388,11 +390,11 @@ func databaseClusterActionGrow(updateCtx *dbResourceUpdateContext, shardID strin
 	}
 
 	volumeSize := d.Get(pathPrefix + "volume_size").(int)
-	growOpts := dbClusterGrowOpts{
+	growOpts := clusters.GrowOpts{
 		Keypair:          d.Get("keypair").(string),
 		AvailabilityZone: d.Get(pathPrefix + "availability_zone").(string),
 		FlavorRef:        d.Get(pathPrefix + "flavor_id").(string),
-		Volume:           &volume{Size: &volumeSize, VolumeType: d.Get(pathPrefix + "volume_type").(string)},
+		Volume:           &instances.Volume{Size: &volumeSize, VolumeType: d.Get(pathPrefix + "volume_type").(string)},
 		ShardID:          shardID,
 	}
 
@@ -401,7 +403,7 @@ func databaseClusterActionGrow(updateCtx *dbResourceUpdateContext, shardID strin
 		if err != nil {
 			return errDBClusterActionResizeWalVolumeExtract
 		}
-		growOpts.Walvolume = &walVolume{
+		growOpts.Walvolume = &instances.WalVolume{
 			Size:       &walVolumeOpts.Size,
 			VolumeType: walVolumeOpts.VolumeType,
 		}
@@ -425,15 +427,15 @@ func databaseClusterActionGrow(updateCtx *dbResourceUpdateContext, shardID strin
 	return databaseClusterActionGrowBase(updateCtx, growOpts, growSize)
 }
 
-func databaseClusterActionGrowBase(updateCtx *dbResourceUpdateContext, growOpts dbClusterGrowOpts, growSize int) error {
+func databaseClusterActionGrowBase(updateCtx *dbResourceUpdateContext, growOpts clusters.GrowOpts, growSize int) error {
 	clusterID := updateCtx.D.Id()
-	opts := make([]dbClusterGrowOpts, growSize)
+	opts := make([]clusters.GrowOpts, growSize)
 	for i := 0; i < growSize; i++ {
 		opts[i] = growOpts
 	}
-	growClusterOpts := dbClusterGrowClusterOpts{Grow: opts}
+	growClusterOpts := clusters.GrowClusterOpts{Grow: opts}
 
-	err := dbClusterAction(updateCtx.Client, clusterID, &growClusterOpts).ExtractErr()
+	err := clusters.ClusterAction(updateCtx.Client, clusterID, &growClusterOpts).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("%w: %s", errDBClusterActionGrow, err)
 	}
@@ -464,7 +466,7 @@ func databaseClusterActionShrink(updateCtx *dbResourceUpdateContext, shardID str
 			errDBClusterActionShrinkWrongOptions)
 	}
 
-	cluster, err := dbClusterGet(updateCtx.Client, d.Id()).extract()
+	cluster, err := clusters.Get(updateCtx.Client, d.Id()).Extract()
 	if err != nil {
 		return databaseClusterCheckDeleted(d, err)
 	}
@@ -484,13 +486,13 @@ func databaseClusterActionShrink(updateCtx *dbResourceUpdateContext, shardID str
 	return databaseClusterActionShrinkBase(updateCtx, ids)
 }
 
-func databaseClusterActionShrinkBase(updateCtx *dbResourceUpdateContext, shrinkOpts []dbClusterShrinkOpts) error {
+func databaseClusterActionShrinkBase(updateCtx *dbResourceUpdateContext, shrinkOpts []clusters.ShrinkOpts) error {
 	clusterID := updateCtx.D.Id()
-	shrinkClusterOpts := dbClusterShrinkClusterOpts{
+	shrinkClusterOpts := clusters.ShrinkClusterOpts{
 		Shrink: shrinkOpts,
 	}
 
-	err := dbClusterAction(updateCtx.Client, clusterID, &shrinkClusterOpts).ExtractErr()
+	err := clusters.ClusterAction(updateCtx.Client, clusterID, &shrinkClusterOpts).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("%w: %s", errDBClusterActionShrink, err)
 	}
@@ -507,7 +509,7 @@ func databaseClusterActionResizeVolume(updateCtx *dbResourceUpdateContext, shard
 	}
 
 	_, volumeSize := d.GetChange(pathPrefix + "volume_size")
-	var resizeVolumeOpts dbClusterResizeVolumeOpts
+	var resizeVolumeOpts clusters.ResizeVolumeOpts
 	resizeVolumeOpts.Resize.Volume.Size = volumeSize.(int)
 	resizeVolumeOpts.Resize.ShardID = shardID
 
@@ -517,9 +519,9 @@ func databaseClusterActionResizeVolume(updateCtx *dbResourceUpdateContext, shard
 	return databaseClusterActionResizeVolumeBase(updateCtx, resizeVolumeOpts)
 }
 
-func databaseClusterActionResizeVolumeBase(updateCtx *dbResourceUpdateContext, opts dbClusterResizeVolumeOpts) error {
+func databaseClusterActionResizeVolumeBase(updateCtx *dbResourceUpdateContext, opts clusters.ResizeVolumeOpts) error {
 	clusterID := updateCtx.D.Id()
-	err := dbClusterAction(updateCtx.Client, clusterID, &opts).ExtractErr()
+	err := clusters.ClusterAction(updateCtx.Client, clusterID, &opts).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("%w: %s", errDBClusterActionResizeVolume, err)
 	}
@@ -546,7 +548,7 @@ func databaseClusterActionResizeWalVolume(updateCtx *dbResourceUpdateContext, sh
 	}
 
 	if walVolumeOptsNew.Size != walVolumeOptsOld.Size {
-		var resizeWalVolumeOpts dbClusterResizeWalVolumeOpts
+		var resizeWalVolumeOpts clusters.ResizeWalVolumeOpts
 		resizeWalVolumeOpts.Resize.Volume.Size = walVolumeOptsNew.Size
 		resizeWalVolumeOpts.Resize.Volume.Kind = "wal"
 		resizeWalVolumeOpts.Resize.ShardID = shardID
@@ -560,9 +562,9 @@ func databaseClusterActionResizeWalVolume(updateCtx *dbResourceUpdateContext, sh
 	return nil
 }
 
-func databaseClusterActionResizeWalVolumeBase(updateCtx *dbResourceUpdateContext, opts dbClusterResizeWalVolumeOpts) error {
+func databaseClusterActionResizeWalVolumeBase(updateCtx *dbResourceUpdateContext, opts clusters.ResizeWalVolumeOpts) error {
 	clusterID := updateCtx.D.Id()
-	err := dbClusterAction(updateCtx.Client, clusterID, &opts).ExtractErr()
+	err := clusters.ClusterAction(updateCtx.Client, clusterID, &opts).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("%w: %s", errDBClusterActionResizeWalVolume, err)
 	}
@@ -577,7 +579,7 @@ func databaseClusterActionResizeFlavor(updateCtx *dbResourceUpdateContext, shard
 		return err
 	}
 
-	var resizeOpts dbClusterResizeOpts
+	var resizeOpts clusters.ResizeOpts
 	resizeOpts.Resize.FlavorRef = d.Get(pathPrefix + "flavor_id").(string)
 	resizeOpts.Resize.ShardID = shardID
 
@@ -587,9 +589,9 @@ func databaseClusterActionResizeFlavor(updateCtx *dbResourceUpdateContext, shard
 	return databaseClusterActionResizeFlavorBase(updateCtx, resizeOpts)
 }
 
-func databaseClusterActionResizeFlavorBase(updateCtx *dbResourceUpdateContext, opts dbClusterResizeOpts) error {
+func databaseClusterActionResizeFlavorBase(updateCtx *dbResourceUpdateContext, opts clusters.ResizeOpts) error {
 	clusterID := updateCtx.D.Id()
-	err := dbClusterAction(updateCtx.Client, clusterID, &opts).ExtractErr()
+	err := clusters.ClusterAction(updateCtx.Client, clusterID, &opts).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("%w: %s", errDBClusterActionResizeFlavor, err)
 	}
@@ -597,7 +599,7 @@ func databaseClusterActionResizeFlavorBase(updateCtx *dbResourceUpdateContext, o
 	return updateCtx.WaitForStateContext()
 }
 
-func getClusterStatus(c *dbClusterResp) string {
+func getClusterStatus(c *clusters.ClusterResp) string {
 	instancesStatus := string(dbInstanceStatusActive)
 	for _, inst := range c.Instances {
 		if inst.Status == string(dbInstanceStatusError) {
@@ -621,9 +623,9 @@ func getClusterStatus(c *dbClusterResp) string {
 	return c.Task.Name
 }
 
-func databaseClusterStateRefreshFunc(client databaseClient, clusterID string, capabilitiesOpts *[]instanceCapabilityOpts) resource.StateRefreshFunc {
+func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterID string, capabilitiesOpts *[]instances.CapabilityOpts) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		c, err := dbClusterGet(client, clusterID).extract()
+		c, err := clusters.Get(client, clusterID).Extract()
 		if err != nil {
 			if _, ok := err.(gophercloud.ErrDefault404); ok {
 				return c, "DELETED", nil
@@ -638,7 +640,7 @@ func databaseClusterStateRefreshFunc(client databaseClient, clusterID string, ca
 		if clusterStatus == string(dbClusterStatusActive) {
 			if capabilitiesOpts != nil {
 				for _, i := range c.Instances {
-					instCapabilities, err := instanceGetCapabilities(client, i.ID).extract()
+					instCapabilities, err := instances.GetCapabilities(client, i.ID).Extract()
 					if err != nil {
 						return nil, "", fmt.Errorf("error getting cluster instance capabilities: %s", err)
 					}

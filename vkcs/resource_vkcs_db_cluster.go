@@ -12,6 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
 
 type dbClusterStatus string
@@ -42,7 +45,7 @@ func resourceDatabaseCluster() *schema.Resource {
 		CustomizeDiff: resourceDatabaseCustomizeDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				config := meta.(configer)
+				config := meta.(clients.Config)
 				DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 				if err != nil {
 					return nil, fmt.Errorf("error creating VKCS database client: %s", err)
@@ -52,7 +55,7 @@ func resourceDatabaseCluster() *schema.Resource {
 					return nil, fmt.Errorf("error reading vkcs_cluster")
 				}
 
-				capabilities, err := clusterGetCapabilities(DatabaseV1Client, d.Id()).extract()
+				capabilities, err := clusters.GetCapabilities(DatabaseV1Client, d.Id()).Extract()
 				if err != nil {
 					return nil, fmt.Errorf("error getting cluster capabilities")
 				}
@@ -60,7 +63,7 @@ func resourceDatabaseCluster() *schema.Resource {
 				d.Set("volume_type", dbImportedStatus)
 				if v, ok := d.GetOk("wal_volume"); ok {
 					walV, _ := extractDatabaseWalVolume(v.([]interface{}))
-					walvolume := walVolume{Size: &walV.Size, VolumeType: dbImportedStatus}
+					walvolume := instances.WalVolume{Size: &walV.Size, VolumeType: dbImportedStatus}
 					d.Set("wal_volume", flattenDatabaseClusterWalVolume(walvolume))
 				}
 				return []*schema.ResourceData{d}, nil
@@ -441,13 +444,13 @@ func resourceDatabaseCluster() *schema.Resource {
 }
 
 func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	createOpts := &dbClusterCreateOpts{
+	createOpts := &clusters.CreateOpts{
 		Name:                   d.Get("name").(string),
 		FloatingIPEnabled:      d.Get("floating_ip_enabled").(bool),
 		CloudMonitoringEnabled: d.Get("cloud_monitoring_enabled").(bool),
@@ -498,13 +501,13 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	clusterSize := d.Get("cluster_size").(int)
-	instances := make([]dbClusterInstanceCreateOpts, clusterSize)
+	clusterInstances := make([]clusters.InstanceCreateOpts, clusterSize)
 	volumeSize := d.Get("volume_size").(int)
-	createDBInstanceOpts := dbClusterInstanceCreateOpts{
+	createDBInstanceOpts := clusters.InstanceCreateOpts{
 		Keypair:          d.Get("keypair").(string),
 		AvailabilityZone: d.Get("availability_zone").(string),
 		FlavorRef:        d.Get("flavor_id").(string),
-		Volume:           &volume{Size: &volumeSize, VolumeType: d.Get("volume_type").(string)},
+		Volume:           &instances.Volume{Size: &volumeSize, VolumeType: d.Get("volume_type").(string)},
 	}
 
 	if v, ok := d.GetOk("network"); ok {
@@ -519,17 +522,17 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 		if err != nil {
 			return diag.Errorf("%s wal_volume", message)
 		}
-		createDBInstanceOpts.Walvolume = &walVolume{
+		createDBInstanceOpts.Walvolume = &instances.WalVolume{
 			Size:       &walVolumeOpts.Size,
 			VolumeType: walVolumeOpts.VolumeType,
 		}
 	}
 
 	for i := 0; i < clusterSize; i++ {
-		instances[i] = createDBInstanceOpts
+		clusterInstances[i] = createDBInstanceOpts
 	}
 
-	createOpts.Instances = instances
+	createOpts.Instances = clusterInstances
 
 	if v, ok := d.GetOk("backup_schedule"); ok {
 		backupSchedule, err := extractDatabaseBackupSchedule(v.([]interface{}))
@@ -539,7 +542,7 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 		createOpts.BackupSchedule = &backupSchedule
 	}
 
-	var checkCapabilities *[]instanceCapabilityOpts
+	var checkCapabilities *[]instances.CapabilityOpts
 	if capabilities, ok := d.GetOk("capabilities"); ok {
 		capabilitiesOpts, err := extractDatabaseCapabilities(capabilities.([]interface{}))
 		if err != nil {
@@ -552,10 +555,10 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	log.Printf("[DEBUG] vkcs_db_cluster create options: %#v", createOpts)
-	clust := dbCluster{}
+	clust := clusters.Cluster{}
 	clust.Cluster = createOpts
 
-	cluster, err := dbClusterCreate(DatabaseV1Client, clust).extract()
+	cluster, err := clusters.Create(DatabaseV1Client, clust).Extract()
 	if err != nil {
 		return diag.Errorf("error creating vkcs_db_cluster: %s", err)
 	}
@@ -579,9 +582,9 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 
 	if configuration, ok := d.GetOk("configuration_id"); ok {
 		log.Printf("[DEBUG] Attaching configuration %s to vkcs_db_cluster %s", configuration, cluster.ID)
-		var attachConfigurationOpts dbClusterAttachConfigurationGroupOpts
+		var attachConfigurationOpts clusters.AttachConfigurationGroupOpts
 		attachConfigurationOpts.ConfigurationAttach.ConfigurationID = configuration.(string)
-		err := instanceAttachConfigurationGroup(DatabaseV1Client, cluster.ID, &attachConfigurationOpts).ExtractErr()
+		err := instances.AttachConfigurationGroup(DatabaseV1Client, cluster.ID, &attachConfigurationOpts).ExtractErr()
 		if err != nil {
 			return diag.Errorf("error attaching configuration group %s to vkcs_db_cluster %s: %s",
 				configuration, cluster.ID, err)
@@ -594,13 +597,13 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceDatabaseClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	cluster, err := dbClusterGet(DatabaseV1Client, d.Id()).extract()
+	cluster, err := clusters.Get(DatabaseV1Client, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error retrieving vkcs_db_cluster"))
 	}
@@ -624,7 +627,7 @@ func resourceDatabaseClusterRead(ctx context.Context, d *schema.ResourceData, me
 			walV, _ := extractDatabaseWalVolume(v.([]interface{}))
 			walVolumeType = walV.VolumeType
 		}
-		walvolume := walVolume{Size: cluster.Instances[0].WalVolume.Size, VolumeType: walVolumeType}
+		walvolume := instances.WalVolume{Size: cluster.Instances[0].WalVolume.Size, VolumeType: walVolumeType}
 		d.Set("wal_volume", flattenDatabaseClusterWalVolume(walvolume))
 
 		if _, ok := d.GetOk("wal_disk_autoexpand"); ok {
@@ -634,7 +637,7 @@ func resourceDatabaseClusterRead(ctx context.Context, d *schema.ResourceData, me
 
 	d.Set("instances", flattenDatabaseClusterInstances(cluster.Instances))
 
-	backupSchedule, err := dbClusterGetBackupSchedule(DatabaseV1Client, d.Id()).extract()
+	backupSchedule, err := clusters.GetBackupSchedule(DatabaseV1Client, d.Id()).Extract()
 	if err != nil {
 		return diag.Errorf("error getting backup schedule for cluster: %s: %s", d.Id(), err)
 	}
@@ -657,7 +660,7 @@ func resourceDatabaseClusterRead(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceDatabaseClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	dbClient, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
@@ -747,7 +750,7 @@ func resourceDatabaseClusterUpdate(ctx context.Context, d *schema.ResourceData, 
 			return diag.Errorf("unable to determine vkcs_db_cluster backup_schedule")
 		}
 
-		err = dbClusterUpdateBackupSchedule(dbClient, clusterID, &backupScheduleUpdateOpts).ExtractErr()
+		err = clusters.UpdateBackupSchedule(dbClient, clusterID, &backupScheduleUpdateOpts).ExtractErr()
 
 		if err != nil {
 			return diag.Errorf("error updating backup schedule for vkcs_db_cluster %s: %s", d.Id(), err)
@@ -773,13 +776,13 @@ func resourceDatabaseClusterUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceDatabaseClusterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	err = dbClusterDelete(DatabaseV1Client, d.Id()).ExtractErr()
+	err = clusters.Delete(DatabaseV1Client, d.Id()).ExtractErr()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error deleting vkcs_db_cluster"))
 	}

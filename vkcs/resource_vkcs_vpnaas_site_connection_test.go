@@ -6,6 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/siteconnections"
@@ -40,8 +42,8 @@ func TestAccVPNaaSSiteConnection_basic(t *testing.T) {
 }
 
 func testAccCheckSiteConnectionDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(*config)
-	networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
+	config := testAccProvider.Meta().(clients.Config)
+	networkingClient, err := config.NetworkingV2Client(osRegionName, networking.DefaultSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -71,8 +73,8 @@ func testAccCheckSiteConnectionExists(n string, conn *siteconnections.Connection
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(*config)
-		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
+		config := testAccProvider.Meta().(clients.Config)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, networking.DefaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}

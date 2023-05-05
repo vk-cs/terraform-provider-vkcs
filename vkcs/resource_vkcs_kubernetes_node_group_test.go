@@ -8,10 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/nodegroups"
 )
 
-func nodeGroupFixture(name, flavorID string, count, max, min int, autoscaling bool) *nodeGroupCreateOpts {
-	return &nodeGroupCreateOpts{
+func nodeGroupFixture(name, flavorID string, count, max, min int, autoscaling bool) *nodegroups.CreateOpts {
+	return &nodegroups.CreateOpts{
 		Name:        name,
 		FlavorID:    flavorID,
 		NodeCount:   count,
@@ -35,8 +38,8 @@ const nodeGroupResourceFixture = `
 		}`
 
 func TestAccKubernetesNodeGroup_basic(t *testing.T) {
-	var cluster cluster
-	var nodeGroup nodeGroup
+	var cluster clusters.Cluster
+	var nodeGroup nodegroups.NodeGroup
 
 	clusterName := "testcluster" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	createClusterFixture := clusterFixture(clusterName, clusterTemplateID, osFlavorID,
@@ -80,7 +83,7 @@ func TestAccKubernetesNodeGroup_basic(t *testing.T) {
 	})
 }
 
-func checkNodeGroupAttrs(resourceName string, nodeGroup *nodeGroupCreateOpts) resource.TestCheckFunc {
+func checkNodeGroupAttrs(resourceName string, nodeGroup *nodegroups.CreateOpts) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if s.Empty() == true {
 			return fmt.Errorf("state not updated")
@@ -99,7 +102,7 @@ func checkNodeGroupAttrs(resourceName string, nodeGroup *nodeGroupCreateOpts) re
 	}
 }
 
-func checkNodeGroupPatchAttrs(resourceName string, nodeGroup *nodeGroupCreateOpts) resource.TestCheckFunc {
+func checkNodeGroupPatchAttrs(resourceName string, nodeGroup *nodegroups.CreateOpts) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if s.Empty() == true {
 			return fmt.Errorf("state not updated")
@@ -115,7 +118,7 @@ func checkNodeGroupPatchAttrs(resourceName string, nodeGroup *nodeGroupCreateOpt
 	}
 }
 
-func testAccCheckKubernetesNodeGroupExists(n, clusterResourceName string, nodeGroup *nodeGroup) resource.TestCheckFunc {
+func testAccCheckKubernetesNodeGroupExists(n, clusterResourceName string, nodeGroup *nodegroups.NodeGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, found, err := getNgAndResource(n, s)
 		if err != nil {
@@ -180,26 +183,26 @@ func testAccCheckKubernetesNodeGroupPatched(n string) resource.TestCheckFunc {
 	}
 }
 
-func getNgAndResource(n string, s *terraform.State) (*terraform.ResourceState, *nodeGroup, error) {
+func getNgAndResource(n string, s *terraform.State) (*terraform.ResourceState, *nodegroups.NodeGroup, error) {
 	rs, ok := s.RootModule().Resources[n]
 	if !ok {
 		return nil, nil, fmt.Errorf("node group not found: %s", n)
 	}
 
-	config := testAccProvider.Meta().(*config)
+	config := testAccProvider.Meta().(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(osRegionName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating container infra client: %s", err)
 	}
 
-	found, err := nodeGroupGet(containerInfraClient, rs.Primary.ID).Extract()
+	found, err := nodegroups.Get(containerInfraClient, rs.Primary.ID).Extract()
 	if err != nil {
 		return nil, nil, err
 	}
 	return rs, found, nil
 }
 
-func testAccKubernetesNodeGroupBasic(clusterName, clusterResource string, fixture *nodeGroupCreateOpts) string {
+func testAccKubernetesNodeGroupBasic(clusterName, clusterResource string, fixture *nodegroups.CreateOpts) string {
 	return fmt.Sprintf(
 		nodeGroupResourceFixture,
 		clusterResource,

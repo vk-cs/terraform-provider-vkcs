@@ -1,6 +1,10 @@
-package vkcs
+package clients
 
 import "github.com/gophercloud/gophercloud"
+
+const (
+	ContainerInfraAPIVersion = "1.28"
+)
 
 func initClientOpts(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts, clientType string) (*gophercloud.ServiceClient, error) {
 	sc := new(gophercloud.ServiceClient)

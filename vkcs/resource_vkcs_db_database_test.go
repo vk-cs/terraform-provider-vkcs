@@ -5,14 +5,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gophercloud/gophercloud/openstack/db/v1/databases"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/databases"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
 
 func TestAccDatabaseDatabase_basic(t *testing.T) {
 	var database databases.Database
-	var instance instanceResp
+	var instance instances.InstanceResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -34,7 +36,7 @@ func TestAccDatabaseDatabase_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckDatabaseDatabaseExists(n string, instance *instanceResp, database *databases.Database) resource.TestCheckFunc {
+func testAccCheckDatabaseDatabaseExists(n string, instance *instances.InstanceResp, database *databases.Database) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -50,18 +52,18 @@ func testAccCheckDatabaseDatabaseExists(n string, instance *instanceResp, databa
 			return fmt.Errorf("Malformed database name: %s", rs.Primary.ID)
 		}
 
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating cloud database client: %s", err)
 		}
 
-		pages, err := databaseList(DatabaseClient, instance.ID, "instance").AllPages()
+		pages, err := databases.List(DatabaseClient, instance.ID, "instance").AllPages()
 		if err != nil {
 			return fmt.Errorf("Unable to retrieve databases: %s", err)
 		}
 
-		allDatabases, err := ExtractDBs(pages)
+		allDatabases, err := databases.ExtractDatabases(pages)
 		if err != nil {
 			return fmt.Errorf("Unable to extract databases: %s", err)
 		}
@@ -78,7 +80,7 @@ func testAccCheckDatabaseDatabaseExists(n string, instance *instanceResp, databa
 }
 
 func testAccCheckDatabaseDatabaseDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 
 	DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 	if err != nil {
@@ -95,12 +97,12 @@ func testAccCheckDatabaseDatabaseDestroy(s *terraform.State) error {
 			return fmt.Errorf("Malformed database name: %s", rs.Primary.ID)
 		}
 
-		pages, err := databaseList(DatabaseClient, parts[0], "instance").AllPages()
+		pages, err := databases.List(DatabaseClient, parts[0], "instance").AllPages()
 		if err != nil {
 			return nil
 		}
 
-		allDatabase, err := ExtractDBs(pages)
+		allDatabase, err := databases.ExtractDatabases(pages)
 		if err != nil {
 			return fmt.Errorf("Unable to extract databases: %s", err)
 		}
