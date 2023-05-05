@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/ipsecpolicies"
@@ -103,7 +104,7 @@ func resourceIPSecPolicy() *schema.Resource {
 }
 
 func resourceIPSecPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
@@ -160,7 +161,7 @@ func resourceIPSecPolicyCreate(ctx context.Context, d *schema.ResourceData, meta
 func resourceIPSecPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] Retrieve information about IPSec policy: %s", d.Id())
 
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
@@ -196,7 +197,7 @@ func resourceIPSecPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func resourceIPSecPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
@@ -274,7 +275,7 @@ func resourceIPSecPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta
 func resourceIPSecPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] Destroy IPSec policy: %s", d.Id())
 
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)

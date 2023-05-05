@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	octavialoadbalancers "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 )
@@ -96,7 +97,7 @@ func dataSourceLoadBalancer() *schema.Resource {
 }
 
 func dataSourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)

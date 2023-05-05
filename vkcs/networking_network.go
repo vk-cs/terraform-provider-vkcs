@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/dns"
@@ -37,7 +38,7 @@ type networkExtended struct {
 
 // networkingNetworkID retrieves network ID by the provided name.
 func networkingNetworkID(d *schema.ResourceData, meta interface{}, networkName string) (string, error) {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return "", fmt.Errorf("error creating VKCS network client: %s", err)
@@ -68,7 +69,7 @@ func networkingNetworkID(d *schema.ResourceData, meta interface{}, networkName s
 
 // networkingNetworkName retrieves network name by the provided ID.
 func networkingNetworkName(d *schema.ResourceData, meta interface{}, networkID string) (string, error) {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return "", fmt.Errorf("error creating VKCS network client: %s", err)

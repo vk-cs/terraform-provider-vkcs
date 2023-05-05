@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/attributestags"
@@ -179,7 +180,7 @@ func resourceNetworkingSubnet() *schema.Resource {
 }
 
 func resourceNetworkingSubnetCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
@@ -279,7 +280,7 @@ func resourceNetworkingSubnetCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
@@ -325,7 +326,7 @@ func resourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceNetworkingSubnetUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
@@ -405,7 +406,7 @@ func resourceNetworkingSubnetUpdate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceNetworkingSubnetDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)

@@ -7,6 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 )
 
 func dataSourceDatabaseDatastore() *schema.Resource {
@@ -85,19 +87,19 @@ func dataSourceDatabaseDatastore() *schema.Resource {
 }
 
 func dataSourceDatabaseDatastoreRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	region := getRegion(d, config)
 	dbClient, err := config.DatabaseV1Client(region)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	allPages, err := dataStoreList(dbClient).AllPages()
+	allPages, err := datastores.List(dbClient).AllPages()
 	if err != nil {
 		return diag.Errorf("Error retrieving datastores: %s", err)
 	}
 
-	datastoresInfo, err := extractDatastores(allPages)
+	datastoresInfo, err := datastores.ExtractDatastores(allPages)
 	if err != nil {
 		return diag.Errorf("Error extracting datastores from response: %s", err)
 	}
@@ -117,7 +119,7 @@ func dataSourceDatabaseDatastoreRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	dsID := allDatastores[0].ID
-	ds, err := dataStoreGet(dbClient, dsID).Extract()
+	ds, err := datastores.Get(dbClient, dsID).Extract()
 	if err != nil {
 		return diag.Errorf("Error retrieving vkcs_db_datastore: %s", err)
 	}
@@ -138,8 +140,8 @@ func dataSourceDatabaseDatastoreRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func filterDatabaseDatastores(dsSlice []dataStore, id, name string) []dataStore {
-	var res []dataStore
+func filterDatabaseDatastores(dsSlice []datastores.Datastore, id, name string) []datastores.Datastore {
+	var res []datastores.Datastore
 	for _, ds := range dsSlice {
 		if (name == "" || ds.Name == name) && (id == "" || ds.ID == id) {
 			res = append(res, ds)
@@ -148,7 +150,7 @@ func filterDatabaseDatastores(dsSlice []dataStore, id, name string) []dataStore 
 	return res
 }
 
-func flattenDatabaseDatastoreVersions(versions []dataStoreVersion) (r []map[string]interface{}) {
+func flattenDatabaseDatastoreVersions(versions []datastores.Version) (r []map[string]interface{}) {
 	for _, v := range versions {
 		r = append(r, map[string]interface{}{
 			"id":   v.ID,

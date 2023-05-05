@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/mock"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
 )
 
 const clusterResourceFixture = `
@@ -28,8 +30,8 @@ const clusterResourceFixture = `
 `
 
 func clusterFixture(name, clusterTemplateID, flavorID, keypair,
-	networkID, subnetID, az string, masterCount int) *clusterCreateOpts {
-	return &clusterCreateOpts{
+	networkID, subnetID, az string, masterCount int) *clusters.CreateOpts {
+	return &clusters.CreateOpts{
 		Name:              name,
 		MasterCount:       masterCount,
 		ClusterTemplateID: clusterTemplateID,
@@ -41,7 +43,7 @@ func clusterFixture(name, clusterTemplateID, flavorID, keypair,
 	}
 }
 
-func checkClusterAttrs(resourceName string, cluster *clusterCreateOpts) resource.TestCheckFunc {
+func checkClusterAttrs(resourceName string, cluster *clusters.CreateOpts) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if s.Empty() == true {
 			return fmt.Errorf("state not updated")
@@ -97,7 +99,7 @@ func TestMockAccKubernetesCluster_basic(t *testing.T) {
 	// Check deleted
 	clientFixture.On("Get", testAccURL+"/clusters/"+clusterUUID, mock.Anything, getRequestOpts(200)).Return(gophercloud.ErrDefault404{}).Twice()
 
-	var cluster cluster
+	var cluster clusters.Cluster
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheckKubernetes(t) },
@@ -122,7 +124,7 @@ func TestMockAccKubernetesCluster_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckKubernetesClusterExists(n string, cluster *cluster) resource.TestCheckFunc {
+func testAccCheckKubernetesClusterExists(n string, cluster *clusters.Cluster) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, found, err := getClusterAndResource(n, s)
 		if err != nil {
@@ -156,19 +158,19 @@ func testAccCheckKubernetesClusterScaled(n string) resource.TestCheckFunc {
 	}
 }
 
-func getClusterAndResource(n string, s *terraform.State) (*terraform.ResourceState, *cluster, error) {
+func getClusterAndResource(n string, s *terraform.State) (*terraform.ResourceState, *clusters.Cluster, error) {
 	rs, ok := s.RootModule().Resources[n]
 	if !ok {
 		return nil, nil, fmt.Errorf("cluster not found: %s", n)
 	}
 
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(osRegionName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating container infra client: %s", err)
 	}
 
-	found, err := clusterGet(containerInfraClient, rs.Primary.ID).Extract()
+	found, err := clusters.Get(containerInfraClient, rs.Primary.ID).Extract()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -176,7 +178,7 @@ func getClusterAndResource(n string, s *terraform.State) (*terraform.ResourceSta
 }
 
 func testAccCheckKubernetesClusterDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("error creating container infra client: %s", err)
@@ -187,7 +189,7 @@ func testAccCheckKubernetesClusterDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := clusterGet(containerInfraClient, rs.Primary.ID).Extract()
+		_, err := clusters.Get(containerInfraClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("сluster still exists")
 		}
@@ -196,7 +198,7 @@ func testAccCheckKubernetesClusterDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccKubernetesClusterBasic(createOpts *clusterCreateOpts) string {
+func testAccKubernetesClusterBasic(createOpts *clusters.CreateOpts) string {
 
 	return fmt.Sprintf(
 		clusterResourceFixture,
@@ -209,4 +211,14 @@ func testAccKubernetesClusterBasic(createOpts *clusterCreateOpts) string {
 		createOpts.SubnetID,
 		createOpts.AvailabilityZone,
 	)
+}
+
+func getRequestOpts(codes ...int) *gophercloud.RequestOpts {
+	reqOpts := &gophercloud.RequestOpts{
+		OkCodes: codes,
+	}
+	if len(codes) != 0 {
+		reqOpts.OkCodes = codes
+	}
+	return reqOpts
 }

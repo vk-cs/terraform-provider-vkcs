@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies"
 )
@@ -137,7 +138,7 @@ func TestAccLBL7Rule_basic(t *testing.T) {
 }
 
 func testAccCheckLBL7RuleDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(*config)
+	config := testAccProvider.Meta().(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
@@ -180,7 +181,7 @@ func testAccCheckLBL7RuleExists(n string, l7rule *l7policies.Rule) resource.Test
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(*config)
+		config := testAccProvider.Meta().(clients.Config)
 		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)

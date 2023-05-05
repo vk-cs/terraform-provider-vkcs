@@ -15,6 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/mitchellh/mapstructure"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/publicdns/v2/records"
 )
 
 const (
@@ -208,7 +210,7 @@ func resourcePublicDNSRecordDescription() string {
 }
 
 func resourcePublicDNSRecordCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.PublicDNSV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS public DNS client: %s", err)
@@ -217,22 +219,22 @@ func resourcePublicDNSRecordCreate(ctx context.Context, d *schema.ResourceData, 
 	zoneID := d.Get("zone_id").(string)
 	recordType := d.Get("type").(string)
 
-	var createOpts optsBuilder
+	var createOpts records.CreateOptsBuilder
 	switch recordType {
 	case recordTypeA:
-		createOpts = recordACreateOpts{}
+		createOpts = records.RecordACreateOpts{}
 	case recordTypeAAAA:
-		createOpts = recordAAAACreateOpts{}
+		createOpts = records.RecordAAAACreateOpts{}
 	case recordTypeCNAME:
-		createOpts = recordCNAMECreateOpts{}
+		createOpts = records.RecordCNAMECreateOpts{}
 	case recordTypeMX:
-		createOpts = recordMXCreateOpts{}
+		createOpts = records.RecordMXCreateOpts{}
 	case recordTypeNS:
-		createOpts = recordNSCreateOpts{}
+		createOpts = records.RecordNSCreateOpts{}
 	case recordTypeSRV:
-		createOpts = recordSRVCreateOpts{}
+		createOpts = records.RecordSRVCreateOpts{}
 	case recordTypeTXT:
-		createOpts = recordTXTCreateOpts{}
+		createOpts = records.RecordTXTCreateOpts{}
 	}
 
 	m := publicDNSRecordResourceDataMap(d)
@@ -243,7 +245,7 @@ func resourcePublicDNSRecordCreate(ctx context.Context, d *schema.ResourceData, 
 	log.Printf("[DEBUG] vkcs_publicdns_record create options: zone_id: %s, type: %s, opts: %#v",
 		zoneID, recordType, createOpts)
 
-	res := recordCreate(client, zoneID, createOpts, recordType)
+	res := records.Create(client, zoneID, createOpts, recordType)
 	r, err := publicDNSRecordExtract(res, recordType)
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_publicdns_record: %s", err)
@@ -261,7 +263,7 @@ func resourcePublicDNSRecordCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourcePublicDNSRecordRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.PublicDNSV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS public DNS client: %s", err)
@@ -270,7 +272,7 @@ func resourcePublicDNSRecordRead(ctx context.Context, d *schema.ResourceData, me
 	zoneID := d.Get("zone_id").(string)
 	recordType := d.Get("type").(string)
 
-	res := recordGet(client, zoneID, d.Id(), recordType)
+	res := records.Get(client, zoneID, d.Id(), recordType)
 	r, err := publicDNSRecordExtract(res, recordType)
 
 	if err != nil {
@@ -327,7 +329,7 @@ func resourcePublicDNSRecordRead(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourcePublicDNSRecordUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.PublicDNSV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS public DNS client: %s", err)
@@ -336,22 +338,22 @@ func resourcePublicDNSRecordUpdate(ctx context.Context, d *schema.ResourceData, 
 	zoneID := d.Get("zone_id").(string)
 	recordType := d.Get("type").(string)
 
-	var updateOpts optsBuilder
+	var updateOpts records.UpdateOptsBuilder
 	switch recordType {
 	case recordTypeA:
-		updateOpts = recordAUpdateOpts{}
+		updateOpts = records.RecordACreateOpts{}
 	case recordTypeAAAA:
-		updateOpts = recordAAAAUpdateOpts{}
+		updateOpts = records.RecordAAAACreateOpts{}
 	case recordTypeCNAME:
-		updateOpts = recordCNAMEUpdateOpts{}
+		updateOpts = records.RecordCNAMECreateOpts{}
 	case recordTypeMX:
-		updateOpts = recordMXUpdateOpts{}
+		updateOpts = records.RecordMXCreateOpts{}
 	case recordTypeNS:
-		updateOpts = recordNSUpdateOpts{}
+		updateOpts = records.RecordNSCreateOpts{}
 	case recordTypeSRV:
-		updateOpts = recordSRVUpdateOpts{}
+		updateOpts = records.RecordSRVCreateOpts{}
 	case recordTypeTXT:
-		updateOpts = recordTXTUpdateOpts{}
+		updateOpts = records.RecordTXTCreateOpts{}
 	}
 
 	m := publicDNSRecordResourceDataMap(d)
@@ -362,7 +364,7 @@ func resourcePublicDNSRecordUpdate(ctx context.Context, d *schema.ResourceData, 
 	log.Printf("[DEBUG] vkcs_publicdns_record update options: zone_id: %s, type: %s, opts: %#v",
 		zoneID, recordType, updateOpts)
 
-	res := recordUpdate(client, zoneID, d.Id(), updateOpts, recordType)
+	res := records.Update(client, zoneID, d.Id(), updateOpts, recordType)
 	_, err = publicDNSRecordExtract(res, recordType)
 
 	if err != nil {
@@ -373,7 +375,7 @@ func resourcePublicDNSRecordUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourcePublicDNSRecordDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.PublicDNSV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS public DNS client: %s", err)
@@ -382,7 +384,7 @@ func resourcePublicDNSRecordDelete(ctx context.Context, d *schema.ResourceData, 
 	zoneID := d.Get("zone_id").(string)
 	recordType := d.Get("type").(string)
 
-	err = recordDelete(client, zoneID, d.Id(), recordType).ExtractErr()
+	err = records.Delete(client, zoneID, d.Id(), recordType).ExtractErr()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err,
 			fmt.Sprintf("Error deleting vkcs_publicdns_record: zone_id: %s, type: %s, id:", zoneID, recordType)))

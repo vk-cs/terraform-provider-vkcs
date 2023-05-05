@@ -6,9 +6,12 @@ import (
 	"log"
 	"time"
 
+	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/valid"
 )
 
@@ -258,7 +261,7 @@ func resourceKubernetesCluster() *schema.Resource {
 }
 
 func resourceKubernetesClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating container infra client: %s", err)
@@ -271,7 +274,7 @@ func resourceKubernetesClusterCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	createOpts := clusterCreateOpts{
+	createOpts := clusters.CreateOpts{
 		ClusterTemplateID:    d.Get("cluster_template_id").(string),
 		MasterFlavorID:       d.Get("master_flavor").(string),
 		Keypair:              d.Get("keypair").(string),
@@ -306,7 +309,7 @@ func resourceKubernetesClusterCreate(ctx context.Context, d *schema.ResourceData
 		createOpts.InsecureRegistries = insecureRegistries
 	}
 
-	s, err := clusterCreate(containerInfraClient, &createOpts).Extract()
+	s, err := clusters.Create(containerInfraClient, &createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("error creating vkcs_kubernetes_cluster: %s", err)
 	}
@@ -333,13 +336,13 @@ func resourceKubernetesClusterCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating container infra client: %s", err)
 	}
 
-	cluster, err := clusterGet(containerInfraClient, d.Id()).Extract()
+	cluster, err := clusters.Get(containerInfraClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "error retrieving vkcs_kubernetes_cluster"))
 	}
@@ -402,7 +405,7 @@ func resourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceKubernetesClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating container infra client: %s", err)
@@ -417,13 +420,13 @@ func resourceKubernetesClusterUpdate(ctx context.Context, d *schema.ResourceData
 		Target:       []string{string(clusterStatusRunning)},
 	}
 
-	cluster, err := clusterGet(containerInfraClient, d.Id()).Extract()
+	cluster, err := clusters.Get(containerInfraClient, d.Id()).Extract()
 	if err != nil {
 		return diag.Errorf("error retrieving cluster: %s", err)
 	}
 
 	switch cluster.NewStatus {
-	case clusterStatusShutoff:
+	case string(clusterStatusShutoff):
 		changed, err := checkForStatus(ctx, d, containerInfraClient, cluster)
 		if err != nil {
 			return diag.FromErr(err)
@@ -440,7 +443,7 @@ func resourceKubernetesClusterUpdate(ctx context.Context, d *schema.ResourceData
 		} else {
 			return diag.Errorf("changing cluster attributes is prohibited when cluster has SHUTOFF status")
 		}
-	case clusterStatusRunning:
+	case string(clusterStatusRunning):
 		err := checkForClusterTemplateID(ctx, d, containerInfraClient, stateConf)
 		if err != nil {
 			return diag.FromErr(err)
@@ -460,14 +463,14 @@ func resourceKubernetesClusterUpdate(ctx context.Context, d *schema.ResourceData
 	return resourceKubernetesClusterRead(ctx, d, meta)
 }
 
-func checkForClusterTemplateID(ctx context.Context, d *schema.ResourceData, containerInfraClient ContainerClient, stateConf *resource.StateChangeConf) error {
+func checkForClusterTemplateID(ctx context.Context, d *schema.ResourceData, containerInfraClient *gophercloud.ServiceClient, stateConf *resource.StateChangeConf) error {
 	if d.HasChange("cluster_template_id") {
-		upgradeOpts := clusterUpgradeOpts{
+		upgradeOpts := clusters.UpgradeOpts{
 			ClusterTemplateID: d.Get("cluster_template_id").(string),
 			RollingEnabled:    true,
 		}
 
-		_, err := clusterUpgrade(containerInfraClient, d.Id(), &upgradeOpts).Extract()
+		_, err := clusters.Upgrade(containerInfraClient, d.Id(), &upgradeOpts).Extract()
 		if err != nil {
 			return fmt.Errorf("error upgrade cluster : %s", err)
 		}
@@ -481,16 +484,16 @@ func checkForClusterTemplateID(ctx context.Context, d *schema.ResourceData, cont
 	return nil
 }
 
-func checkForMasterFlavor(ctx context.Context, d *schema.ResourceData, containerInfraClient ContainerClient, stateConf *resource.StateChangeConf) error {
+func checkForMasterFlavor(ctx context.Context, d *schema.ResourceData, containerInfraClient *gophercloud.ServiceClient, stateConf *resource.StateChangeConf) error {
 	if d.HasChange("master_flavor") {
-		upgradeOpts := clusterActionsBaseOpts{
+		upgradeOpts := clusters.ActionsBaseOpts{
 			Action: "resize_masters",
 			Payload: map[string]string{
 				"flavor": d.Get("master_flavor").(string),
 			},
 		}
 
-		_, err := clusterUpdateMasters(containerInfraClient, d.Id(), &upgradeOpts).Extract()
+		_, err := clusters.UpdateMasters(containerInfraClient, d.Id(), &upgradeOpts).Extract()
 		if err != nil {
 			return fmt.Errorf("error updating cluster's falvor : %s", err)
 		}
@@ -504,7 +507,7 @@ func checkForMasterFlavor(ctx context.Context, d *schema.ResourceData, container
 	return nil
 }
 
-func checkForStatus(ctx context.Context, d *schema.ResourceData, containerInfraClient ContainerClient, cluster *cluster) (bool, error) {
+func checkForStatus(ctx context.Context, d *schema.ResourceData, containerInfraClient *gophercloud.ServiceClient, cluster *clusters.Cluster) (bool, error) {
 
 	turnOffConf := &resource.StateChangeConf{
 		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, d.Id()),
@@ -526,13 +529,13 @@ func checkForStatus(ctx context.Context, d *schema.ResourceData, containerInfraC
 
 	if d.HasChange("status") {
 		currentStatus := d.Get("status").(clusterStatus)
-		if cluster.NewStatus != clusterStatusRunning && cluster.NewStatus != clusterStatusShutoff {
+		if cluster.NewStatus != string(clusterStatusRunning) && cluster.NewStatus != string(clusterStatusShutoff) {
 			return false, fmt.Errorf("turning on/off is prohibited due to cluster's status %s", cluster.NewStatus)
 		}
-		switchStateOpts := clusterActionsBaseOpts{
+		switchStateOpts := clusters.ActionsBaseOpts{
 			Action: stateStatusMap[currentStatus],
 		}
-		_, err := clusterSwitchState(containerInfraClient, d.Id(), &switchStateOpts).Extract()
+		_, err := clusters.SwitchState(containerInfraClient, d.Id(), &switchStateOpts).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error during switching state: %s", err)
 		}
@@ -559,13 +562,13 @@ func checkForStatus(ctx context.Context, d *schema.ResourceData, containerInfraC
 }
 
 func resourceKubernetesClusterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.ContainerInfraV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("failed to get container infra client: %s", err)
 	}
 
-	if err := clusterDelete(client, d.Id()).ExtractErr(); err != nil {
+	if err := clusters.Delete(client, d.Id()).ExtractErr(); err != nil {
 		return diag.FromErr(checkDeleted(d, err, "failed to delete vkcs_kubernetes_cluster"))
 	}
 

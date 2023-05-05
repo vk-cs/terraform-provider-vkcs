@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/utils/terraform/hashcode"
@@ -50,7 +51,7 @@ func dataSourceComputeAvailabilityZones() *schema.Resource {
 }
 
 func dataSourceComputeAvailabilityZonesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	region := getRegion(d, config)
 	computeClient, err := config.ComputeV2Client(region)
 	if err != nil {

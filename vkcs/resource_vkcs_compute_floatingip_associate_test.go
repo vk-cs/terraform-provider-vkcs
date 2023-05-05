@@ -9,6 +9,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 )
 
 func TestAccComputeFloatingIPAssociate_basic(t *testing.T) {
@@ -115,7 +116,7 @@ func TestAccComputeFloatingIPAssociate_waitUntilAssociated(t *testing.T) {
 }
 
 func testAccCheckComputeFloatingIPAssociateDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 	computeClient, err := config.ComputeV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS compute client: %s", err)
@@ -159,7 +160,7 @@ func testAccCheckComputeFloatingIPAssociateDestroy(s *terraform.State) error {
 func testAccCheckComputeFloatingIPAssociateAssociated(
 	fip *floatingips.FloatingIP, instance *servers.Server, n int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		computeClient, err := config.ComputeV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS compute client: %s", err)

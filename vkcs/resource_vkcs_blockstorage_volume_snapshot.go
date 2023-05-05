@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 )
 
 const (
@@ -89,7 +90,7 @@ func resourceBlockStorageSnapshot() *schema.Resource {
 }
 
 func resourceBlockStorageSnapshotCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating VKCS block storage client: %s", err)
@@ -135,7 +136,7 @@ func resourceBlockStorageSnapshotCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceBlockStorageSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating VKCS block storage client: %s", err)
@@ -157,7 +158,7 @@ func resourceBlockStorageSnapshotRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceBlockStorageSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating VKCS block storage client: %s", err)
@@ -215,7 +216,7 @@ func resourceBlockStorageSnapshotUpdate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceBlockStorageSnapshotDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	blockStorageClient, err := config.BlockStorageV3Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating VKCS block storage client: %s", err)

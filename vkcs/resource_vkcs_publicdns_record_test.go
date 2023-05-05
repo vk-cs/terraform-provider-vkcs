@@ -7,10 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/publicdns/v2/records"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/publicdns/v2/zones"
 )
 
 func TestAccPublicDNSRecord_basic(t *testing.T) {
-	var z zone
+	var z zones.Zone
 	var r map[string]interface{}
 	zoneName := fmt.Sprintf("vkcs-tf-acctest-%s.com", acctest.RandString(5))
 
@@ -57,7 +60,7 @@ func TestAccPublicDNSRecord_update(t *testing.T) {
 }
 
 func testAccCheckPublicDNSRecordDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(*config)
+	config := testAccProvider.Meta().(clients.Config)
 	client, err := config.PublicDNSV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS public DNS client: %s", err)
@@ -70,7 +73,7 @@ func testAccCheckPublicDNSRecordDestroy(s *terraform.State) error {
 
 		zoneID := rs.Primary.Attributes["zone_id"]
 		recordType := rs.Primary.Attributes["type"]
-		res := recordGet(client, zoneID, rs.Primary.ID, recordType)
+		res := records.Get(client, zoneID, rs.Primary.ID, recordType)
 		_, err := publicDNSRecordExtract(res, recordType)
 		if err == nil {
 			return fmt.Errorf("Record still exists: %s", rs.Primary.ID)
@@ -91,7 +94,7 @@ func testAccCheckPublicDNSRecordExists(n string, r *map[string]interface{}) reso
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(*config)
+		config := testAccProvider.Meta().(clients.Config)
 		client, err := config.PublicDNSV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS public DNS client: %s", err)
@@ -99,7 +102,7 @@ func testAccCheckPublicDNSRecordExists(n string, r *map[string]interface{}) reso
 
 		zoneID := rs.Primary.Attributes["zone_id"]
 		recordType := rs.Primary.Attributes["type"]
-		res := recordGet(client, zoneID, rs.Primary.ID, recordType)
+		res := records.Get(client, zoneID, rs.Primary.ID, recordType)
 
 		record, err := publicDNSRecordExtract(res, recordType)
 		if err != nil {

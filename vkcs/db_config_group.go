@@ -3,6 +3,9 @@ package vkcs
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/gophercloud/gophercloud"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 )
 
 func extractDatabaseConfigGroupValues(rawValues map[string]interface{}, dsParameterTypes map[string]string) (map[string]interface{}, error) {
@@ -49,7 +52,7 @@ func flattenDatabaseConfigGroupValues(values map[string]interface{}) map[string]
 	return rawValues
 }
 
-func getDSParameterTypesMap(dsParameters []dbDatastoreParametersResp) map[string]string {
+func getDSParameterTypesMap(dsParameters []datastores.Param) map[string]string {
 	dsParameterTypes := make(map[string]string)
 	for _, dsParameter := range dsParameters {
 		dsParameterTypes[dsParameter.Name] = dsParameter.Type
@@ -57,8 +60,8 @@ func getDSParameterTypesMap(dsParameters []dbDatastoreParametersResp) map[string
 	return dsParameterTypes
 }
 
-func retrieveDatabaseConfigGroupValues(client databaseClient, datastore dataStoreShort, v map[string]interface{}) (map[string]interface{}, error) {
-	dsParameters, err := dbDatastoreParametersGet(client, datastore.Type, datastore.Version).extract()
+func retrieveDatabaseConfigGroupValues(client *gophercloud.ServiceClient, datastore datastores.DatastoreShort, v map[string]interface{}) (map[string]interface{}, error) {
+	dsParameters, err := datastores.ListParameters(client, datastore.Type, datastore.Version).Extract()
 	if err != nil {
 		return nil, fmt.Errorf("unable to determine vkcs_db_config_group parameter types")
 	}

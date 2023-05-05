@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/securityservices"
 )
@@ -103,7 +104,7 @@ func resourceSharedFilesystemSecurityService() *schema.Resource {
 }
 
 func resourceSharedFilesystemSecurityServiceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
@@ -134,7 +135,7 @@ func resourceSharedFilesystemSecurityServiceCreate(ctx context.Context, d *schem
 }
 
 func resourceSharedFilesystemSecurityServiceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
@@ -168,7 +169,7 @@ func resourceSharedFilesystemSecurityServiceRead(ctx context.Context, d *schema.
 }
 
 func resourceSharedFilesystemSecurityServiceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
@@ -227,7 +228,7 @@ func resourceSharedFilesystemSecurityServiceUpdate(ctx context.Context, d *schem
 }
 
 func resourceSharedFilesystemSecurityServiceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)

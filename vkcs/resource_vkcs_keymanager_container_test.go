@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/containers"
@@ -108,7 +109,7 @@ func TestAccKeyManagerContainer_acls_update(t *testing.T) {
 }
 
 func testAccCheckContainerDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 	kmClient, err := config.KeyManagerV1Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS KeyManager client: %s", err)
@@ -139,7 +140,7 @@ func testAccCheckContainerExists(n string, container *containers.Container) reso
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		kmClient, err := config.KeyManagerV1Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS KeyManager client: %s", err)

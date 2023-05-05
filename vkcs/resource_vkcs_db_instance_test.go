@@ -6,10 +6,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
 
 func TestAccDatabaseInstance_basic(t *testing.T) {
-	var instance instanceResp
+	var instance instances.InstanceResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -39,7 +41,7 @@ func TestAccDatabaseInstance_basic(t *testing.T) {
 }
 
 func TestAccDatabaseInstance_rootUser(t *testing.T) {
-	var instance instanceResp
+	var instance instances.InstanceResp
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
@@ -59,7 +61,7 @@ func TestAccDatabaseInstance_rootUser(t *testing.T) {
 }
 
 func TestAccDatabaseInstance_wal(t *testing.T) {
-	var instance instanceResp
+	var instance instances.InstanceResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -80,7 +82,7 @@ func TestAccDatabaseInstance_wal(t *testing.T) {
 }
 
 func TestAccDatabaseInstance_wal_no_update(t *testing.T) {
-	var instance instanceResp
+	var instance instances.InstanceResp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -107,7 +109,7 @@ func TestAccDatabaseInstance_wal_no_update(t *testing.T) {
 	})
 }
 
-func testAccCheckDatabaseInstanceExists(n string, instance *instanceResp) resource.TestCheckFunc {
+func testAccCheckDatabaseInstanceExists(n string, instance *instances.InstanceResp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -118,13 +120,13 @@ func testAccCheckDatabaseInstanceExists(n string, instance *instanceResp) resour
 			return fmt.Errorf("no id is set")
 		}
 
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS compute client: %s", err)
 		}
 
-		found, err := instanceGet(DatabaseClient, rs.Primary.ID).extract()
+		found, err := instances.Get(DatabaseClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
@@ -140,7 +142,7 @@ func testAccCheckDatabaseInstanceExists(n string, instance *instanceResp) resour
 }
 
 func testAccCheckDatabaseInstanceDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 
 	DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 	if err != nil {
@@ -151,7 +153,7 @@ func testAccCheckDatabaseInstanceDestroy(s *terraform.State) error {
 		if rs.Type != "vkcs_db_instance" {
 			continue
 		}
-		_, err := instanceGet(DatabaseClient, rs.Primary.ID).extract()
+		_, err := instances.Get(DatabaseClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("instance still exists")
 		}
@@ -160,7 +162,7 @@ func testAccCheckDatabaseInstanceDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckDatabaseRootUserExists(n string, instance *instanceResp) resource.TestCheckFunc {
+func testAccCheckDatabaseRootUserExists(n string, instance *instances.InstanceResp) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -172,14 +174,14 @@ func testAccCheckDatabaseRootUserExists(n string, instance *instanceResp) resour
 			return fmt.Errorf("no id is set")
 		}
 
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		DatabaseClient, err := config.DatabaseV1Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("error creating cloud database client: %s", err)
 		}
 
-		isRootEnabledResult := instanceRootUserGet(DatabaseClient, rs.Primary.ID)
-		isRootEnabled, err := isRootEnabledResult.extract()
+		isRootEnabledResult := instances.RootUserGet(DatabaseClient, rs.Primary.ID)
+		isRootEnabled, err := isRootEnabledResult.Extract()
 		if err != nil {
 			return fmt.Errorf("error checking if root user is enabled for instance: %s: %s", rs.Primary.ID, err)
 		}

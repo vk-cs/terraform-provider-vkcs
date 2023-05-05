@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
@@ -111,7 +112,7 @@ func resourceL7Policy() *schema.Resource {
 }
 
 func resourceL7PolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
@@ -199,7 +200,7 @@ func resourceL7PolicyCreate(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 func resourceL7PolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
@@ -225,7 +226,7 @@ func resourceL7PolicyRead(ctx context.Context, d *schema.ResourceData, meta inte
 }
 
 func resourceL7PolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
@@ -334,7 +335,7 @@ func resourceL7PolicyUpdate(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 func resourceL7PolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
@@ -383,7 +384,7 @@ func resourceL7PolicyDelete(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 func resourceL7PolicyImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(getRegion(d, config))
 	if err != nil {
 		return nil, fmt.Errorf("error creating VKCS loadbalancer client: %s", err)

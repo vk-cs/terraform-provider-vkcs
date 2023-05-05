@@ -6,6 +6,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
 
 func dataSourceDatabaseUser() *schema.Resource {
@@ -56,7 +60,7 @@ func dataSourceDatabaseUser() *schema.Resource {
 }
 
 func dataSourceDatabaseUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating vkcs database client: %s", err)
@@ -75,11 +79,11 @@ func dataSourceDatabaseUserRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.Errorf("error while getting resource: %s", err)
 	}
 	var dbmsType string
-	if _, ok := dbmsResp.(instanceResp); ok {
-		dbmsType = dbmsTypeInstance
+	if _, ok := dbmsResp.(instances.InstanceResp); ok {
+		dbmsType = db.DBMSTypeInstance
 	}
-	if _, ok := dbmsResp.(dbClusterResp); ok {
-		dbmsType = dbmsTypeCluster
+	if _, ok := dbmsResp.(clusters.ClusterResp); ok {
+		dbmsType = db.DBMSTypeCluster
 	}
 	exists, userObj, err := databaseUserExists(DatabaseV1Client, dbmsID, userName, dbmsType)
 	if err != nil {

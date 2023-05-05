@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
@@ -56,7 +57,7 @@ func resourceComputeVolumeAttach() *schema.Resource {
 }
 
 func resourceComputeVolumeAttachCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
@@ -122,7 +123,7 @@ func resourceComputeVolumeAttachCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceComputeVolumeAttachRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
@@ -148,7 +149,7 @@ func resourceComputeVolumeAttachRead(_ context.Context, d *schema.ResourceData, 
 }
 
 func resourceComputeVolumeAttachDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)

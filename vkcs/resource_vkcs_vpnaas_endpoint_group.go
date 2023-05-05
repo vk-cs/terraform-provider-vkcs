@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/endpointgroups"
@@ -69,7 +70,7 @@ func resourceEndpointGroup() *schema.Resource {
 }
 
 func resourceEndpointGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
@@ -120,7 +121,7 @@ func resourceEndpointGroupCreate(ctx context.Context, d *schema.ResourceData, me
 func resourceEndpointGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] Retrieve information about group: %s", d.Id())
 
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
@@ -143,7 +144,7 @@ func resourceEndpointGroupRead(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceEndpointGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
@@ -197,7 +198,7 @@ func resourceEndpointGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 func resourceEndpointGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] Destroy group: %s", d.Id())
 
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)

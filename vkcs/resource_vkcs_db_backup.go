@@ -8,6 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/backups"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
 
 const (
@@ -137,7 +142,7 @@ func resourceDatabaseBackup() *schema.Resource {
 }
 
 func resourceDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
@@ -151,29 +156,29 @@ func resourceDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	var dbmsType string
-	if instanceResource, ok := dbmsResp.(*instanceResp); ok {
+	if instanceResource, ok := dbmsResp.(*instances.InstanceResp); ok {
 		if isOperationNotSupported(instanceResource.DataStore.Type, Redis, Tarantool) {
 			return diag.Errorf("operation not supported for this datastore")
 		}
 		if instanceResource.ReplicaOf != nil {
 			return diag.Errorf("operation not supported for replica")
 		}
-		dbmsType = dbmsTypeInstance
+		dbmsType = db.DBMSTypeInstance
 	}
-	if clusterResource, ok := dbmsResp.(*dbClusterResp); ok {
+	if clusterResource, ok := dbmsResp.(*clusters.ClusterResp); ok {
 		if isOperationNotSupported(clusterResource.DataStore.Type, Redis, Tarantool) {
 			return diag.Errorf("operation not supported for this datastore")
 		}
-		dbmsType = dbmsTypeCluster
+		dbmsType = db.DBMSTypeCluster
 	}
 
-	b := dbBackupCreateOpts{
+	b := backups.BackupCreateOpts{
 		Name:            d.Get("name").(string),
 		Description:     d.Get("description").(string),
 		ContainerPrefix: d.Get("container_prefix").(string),
 	}
 
-	if dbmsType == dbmsTypeInstance {
+	if dbmsType == db.DBMSTypeInstance {
 		b.Instance = d.Get("dbms_id").(string)
 	} else {
 		b.Cluster = d.Get("dbms_id").(string)
@@ -181,10 +186,10 @@ func resourceDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, m
 
 	log.Printf("[DEBUG] vkcs_db_backup create options: %#v", b)
 
-	back := dbBackup{
+	back := backups.Backup{
 		Backup: &b,
 	}
-	backup, err := dbBackupCreate(DatabaseV1Client, &back).extract()
+	backup, err := backups.Create(DatabaseV1Client, &back).Extract()
 	if err != nil {
 		return diag.Errorf("error creating vkcs_db_backup: %s", err)
 	}
@@ -213,13 +218,13 @@ func resourceDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	backup, err := dbBackupGet(DatabaseV1Client, d.Id()).extract()
+	backup, err := backups.Get(DatabaseV1Client, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error retrieving vkcs_db_backup"))
 	}
@@ -229,10 +234,10 @@ func resourceDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("name", backup.Name)
 	if backup.InstanceID != "" {
 		d.Set("dbms_id", backup.InstanceID)
-		d.Set("dbms_type", dbmsTypeInstance)
+		d.Set("dbms_type", db.DBMSTypeInstance)
 	} else {
 		d.Set("dbms_id", backup.ClusterID)
-		d.Set("dbms_type", dbmsTypeCluster)
+		d.Set("dbms_type", db.DBMSTypeCluster)
 	}
 	d.Set("description", backup.Description)
 	d.Set("location_ref", backup.LocationRef)
@@ -247,13 +252,13 @@ func resourceDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceDatabaseBackupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	err = dbBackupDelete(DatabaseV1Client, d.Id()).ExtractErr()
+	err = backups.Delete(DatabaseV1Client, d.Id()).ExtractErr()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "Error deleting vkcs_db_backup"))
 	}

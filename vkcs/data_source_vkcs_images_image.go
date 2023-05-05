@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 )
@@ -189,7 +190,7 @@ func dataSourceImagesImage() *schema.Resource {
 
 // dataSourceImagesImageRead performs the image lookup.
 func dataSourceImagesImageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	imageClient, err := config.ImageV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS image client: %s", err)

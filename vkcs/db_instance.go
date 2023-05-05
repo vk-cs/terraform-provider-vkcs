@@ -5,6 +5,9 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/mitchellh/mapstructure"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -30,8 +33,8 @@ func getClusterWithShardsDatastores() []string {
 	return []string{Clickhouse}
 }
 
-func extractDatabaseRestorePoint(v []interface{}) (restorePoint, error) {
-	var R restorePoint
+func extractDatabaseRestorePoint(v []interface{}) (instances.RestorePoint, error) {
+	var R instances.RestorePoint
 	in := v[0].(map[string]interface{})
 	err := mapstructure.Decode(in, &R)
 	if err != nil {
@@ -40,8 +43,8 @@ func extractDatabaseRestorePoint(v []interface{}) (restorePoint, error) {
 	return R, nil
 }
 
-func extractDatabaseDatastore(v []interface{}) (dataStoreShort, error) {
-	var D dataStoreShort
+func extractDatabaseDatastore(v []interface{}) (datastores.DatastoreShort, error) {
+	var D datastores.DatastoreShort
 	in := v[0].(map[string]interface{})
 	err := mapStructureDecoder(&D, &in, decoderConfig)
 	if err != nil {
@@ -50,7 +53,7 @@ func extractDatabaseDatastore(v []interface{}) (dataStoreShort, error) {
 	return D, nil
 }
 
-func flattenDatabaseInstanceDatastore(d dataStoreShort) []map[string]interface{} {
+func flattenDatabaseInstanceDatastore(d datastores.DatastoreShort) []map[string]interface{} {
 	datastore := make([]map[string]interface{}, 1)
 	datastore[0] = make(map[string]interface{})
 	datastore[0]["type"] = d.Type
@@ -58,11 +61,11 @@ func flattenDatabaseInstanceDatastore(d dataStoreShort) []map[string]interface{}
 	return datastore
 }
 
-func extractDatabaseNetworks(v []interface{}) ([]networkOpts, []string, error) {
-	Networks := make([]networkOpts, len(v))
+func extractDatabaseNetworks(v []interface{}) ([]instances.NetworkOpts, []string, error) {
+	Networks := make([]instances.NetworkOpts, len(v))
 	var SecurityGroups []string
 	for i, network := range v {
-		var N networkOpts
+		var N instances.NetworkOpts
 		networkMap := network.(map[string]interface{})
 		sg, ok := networkMap["security_groups"]
 		if ok {
@@ -77,8 +80,8 @@ func extractDatabaseNetworks(v []interface{}) ([]networkOpts, []string, error) {
 	return Networks, SecurityGroups, nil
 }
 
-func extractDatabaseAutoExpand(v []interface{}) (instanceAutoExpandOpts, error) {
-	var A instanceAutoExpandOpts
+func extractDatabaseAutoExpand(v []interface{}) (instances.AutoExpandOpts, error) {
+	var A instances.AutoExpandOpts
 	in := v[0].(map[string]interface{})
 	err := mapstructure.Decode(in, &A)
 	if err != nil {
@@ -99,8 +102,8 @@ func flattenDatabaseInstanceAutoExpand(autoExpandInt int, maxDiskSize int) []map
 	return autoExpand
 }
 
-func extractDatabaseWalVolume(v []interface{}) (walVolumeOpts, error) {
-	var W walVolumeOpts
+func extractDatabaseWalVolume(v []interface{}) (instances.WalVolumeOpts, error) {
+	var W instances.WalVolumeOpts
 	in := v[0].(map[string]interface{})
 	err := mapstructure.Decode(in, &W)
 	if err != nil {
@@ -109,7 +112,7 @@ func extractDatabaseWalVolume(v []interface{}) (walVolumeOpts, error) {
 	return W, nil
 }
 
-func flattenDatabaseInstanceWalVolume(w walVolume) []map[string]interface{} {
+func flattenDatabaseInstanceWalVolume(w instances.WalVolume) []map[string]interface{} {
 	walvolume := make([]map[string]interface{}, 1)
 	walvolume[0] = make(map[string]interface{})
 	walvolume[0]["size"] = w.Size
@@ -117,10 +120,10 @@ func flattenDatabaseInstanceWalVolume(w walVolume) []map[string]interface{} {
 	return walvolume
 }
 
-func extractDatabaseCapabilities(v []interface{}) ([]instanceCapabilityOpts, error) {
-	capabilities := make([]instanceCapabilityOpts, len(v))
+func extractDatabaseCapabilities(v []interface{}) ([]instances.CapabilityOpts, error) {
+	capabilities := make([]instances.CapabilityOpts, len(v))
 	for i, capability := range v {
-		var C instanceCapabilityOpts
+		var C instances.CapabilityOpts
 		err := mapstructure.Decode(capability.(map[string]interface{}), &C)
 		if err != nil {
 			return nil, err
@@ -130,7 +133,7 @@ func extractDatabaseCapabilities(v []interface{}) ([]instanceCapabilityOpts, err
 	return capabilities, nil
 }
 
-func flattenDatabaseInstanceCapabilities(c []databaseCapability) []map[string]interface{} {
+func flattenDatabaseInstanceCapabilities(c []instances.DatabaseCapability) []map[string]interface{} {
 	capabilities := make([]map[string]interface{}, len(c))
 	for i, capability := range c {
 		capabilities[i] = make(map[string]interface{})
@@ -140,8 +143,8 @@ func flattenDatabaseInstanceCapabilities(c []databaseCapability) []map[string]in
 	return capabilities
 }
 
-func extractDatabaseBackupSchedule(v []interface{}) (backupSchedule, error) {
-	var B backupSchedule
+func extractDatabaseBackupSchedule(v []interface{}) (instances.BackupSchedule, error) {
+	var B instances.BackupSchedule
 	in := v[0].(map[string]interface{})
 	err := mapStructureDecoder(&B, &in, decoderConfig)
 	if err != nil {
@@ -150,7 +153,7 @@ func extractDatabaseBackupSchedule(v []interface{}) (backupSchedule, error) {
 	return B, nil
 }
 
-func flattenDatabaseBackupSchedule(b backupSchedule) []map[string]interface{} {
+func flattenDatabaseBackupSchedule(b instances.BackupSchedule) []map[string]interface{} {
 	backupschedule := make([]map[string]interface{}, 1)
 	backupschedule[0] = make(map[string]interface{})
 	backupschedule[0]["name"] = b.Name
@@ -162,9 +165,9 @@ func flattenDatabaseBackupSchedule(b backupSchedule) []map[string]interface{} {
 	return backupschedule
 }
 
-func databaseInstanceStateRefreshFunc(client databaseClient, instanceID string, capabilitiesOpts *[]instanceCapabilityOpts) resource.StateRefreshFunc {
+func databaseInstanceStateRefreshFunc(client *gophercloud.ServiceClient, instanceID string, capabilitiesOpts *[]instances.CapabilityOpts) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		i, err := instanceGet(client, instanceID).extract()
+		i, err := instances.Get(client, instanceID).Extract()
 		if err != nil {
 			if _, ok := err.(gophercloud.ErrDefault404); ok {
 				return i, "DELETED", nil
@@ -178,7 +181,7 @@ func databaseInstanceStateRefreshFunc(client databaseClient, instanceID string, 
 
 		if i.Status == string(dbInstanceStatusActive) {
 			if capabilitiesOpts != nil {
-				instCapabilities, err := instanceGetCapabilities(client, instanceID).extract()
+				instCapabilities, err := instances.GetCapabilities(client, instanceID).Extract()
 				if err != nil {
 					return nil, "", fmt.Errorf("error getting instance capabilities: %s", err)
 				}
@@ -198,7 +201,7 @@ func databaseInstanceStateRefreshFunc(client databaseClient, instanceID string, 
 	}
 }
 
-func checkDBMSCapabilities(neededCapabilities []instanceCapabilityOpts, actualCapabilities []databaseCapability) (bool, error) {
+func checkDBMSCapabilities(neededCapabilities []instances.CapabilityOpts, actualCapabilities []instances.DatabaseCapability) (bool, error) {
 	// this is workaround for situation when capabilities are applied sequentially and not all of them are returned by api
 	if len(neededCapabilities) != len(actualCapabilities) {
 		return false, nil
@@ -223,12 +226,12 @@ func checkDBMSCapabilities(neededCapabilities []instanceCapabilityOpts, actualCa
 	return true, nil
 }
 
-func getDBMSResource(client databaseClient, dbmsID string) (interface{}, error) {
-	instanceResource, err := instanceGet(client, dbmsID).extract()
+func getDBMSResource(client *gophercloud.ServiceClient, dbmsID string) (interface{}, error) {
+	instanceResource, err := instances.Get(client, dbmsID).Extract()
 	if err == nil {
 		return instanceResource, nil
 	}
-	clusterResource, err := dbClusterGet(client, dbmsID).extract()
+	clusterResource, err := clusters.Get(client, dbmsID).Extract()
 	if err == nil {
 		return clusterResource, nil
 	}

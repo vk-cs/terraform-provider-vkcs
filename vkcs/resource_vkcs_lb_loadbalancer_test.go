@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
@@ -79,7 +80,7 @@ func TestAccLBLoadBalancer_vip_port_id(t *testing.T) {
 }
 
 func testAccCheckLBLoadBalancerDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(*config)
+	config := testAccProvider.Meta().(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
@@ -111,7 +112,7 @@ func testAccCheckLBLoadBalancerExists(
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(*config)
+		config := testAccProvider.Meta().(clients.Config)
 		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
@@ -142,7 +143,7 @@ func testAccCheckLBLoadBalancerHasTag(n, tag string) resource.TestCheckFunc {
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(*config)
+		config := testAccProvider.Meta().(clients.Config)
 		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
@@ -178,7 +179,7 @@ func testAccCheckLBLoadBalancerTagCount(n string, expected int) resource.TestChe
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(*config)
+		config := testAccProvider.Meta().(clients.Config)
 		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)

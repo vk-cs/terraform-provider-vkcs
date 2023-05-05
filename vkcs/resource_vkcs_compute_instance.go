@@ -31,6 +31,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 )
 
 func resourceComputeInstance() *schema.Resource {
@@ -395,7 +396,7 @@ func resourceComputeInstance() *schema.Resource {
 }
 
 func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
@@ -579,7 +580,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
@@ -692,7 +693,7 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 }
 
 func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
@@ -967,7 +968,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
@@ -1067,7 +1068,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 		VolumesAttached []map[string]interface{} `json:"os-extended-volumes:volumes_attached"`
 	}
 
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return nil, fmt.Errorf("error creating VKCS compute client: %s", err)

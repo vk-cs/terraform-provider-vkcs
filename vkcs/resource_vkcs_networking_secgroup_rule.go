@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 )
@@ -142,7 +143,7 @@ func resourceNetworkingSecGroupRule() *schema.Resource {
 }
 
 func resourceNetworkingSecGroupRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
@@ -210,7 +211,7 @@ func resourceNetworkingSecGroupRuleCreate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceNetworkingSecGroupRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
@@ -239,7 +240,7 @@ func resourceNetworkingSecGroupRuleRead(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceNetworkingSecGroupRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(getRegion(d, config), getSDN(d))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)

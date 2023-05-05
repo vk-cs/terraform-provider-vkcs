@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 )
@@ -143,7 +144,7 @@ func TestAccLBListenerConfig_octavia_insert_headers(t *testing.T) {
 }
 
 func testAccCheckLBListenerDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(*config)
+	config := testAccProvider.Meta().(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
@@ -174,7 +175,7 @@ func testAccCheckLBListenerExists(n string, listener *listeners.Listener) resour
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(*config)
+		config := testAccProvider.Meta().(clients.Config)
 		lbClient, err := config.LoadBalancerV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)

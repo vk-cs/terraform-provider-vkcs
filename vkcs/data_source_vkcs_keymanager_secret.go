@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/acls"
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/secrets"
@@ -192,7 +193,7 @@ func dataSourceKeyManagerSecret() *schema.Resource {
 }
 
 func dataSourceKeyManagerSecretRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS keymanager client: %s", err)

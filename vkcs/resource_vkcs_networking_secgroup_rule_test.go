@@ -6,6 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
@@ -169,8 +171,8 @@ func TestAccNetworkingSecGroupRule_numericProtocol(t *testing.T) {
 }
 
 func testAccCheckNetworkingSecGroupRuleDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
-	networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
+	config := testAccProvider.Meta().(clients.Config)
+	networkingClient, err := config.NetworkingV2Client(osRegionName, networking.DefaultSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -200,8 +202,8 @@ func testAccCheckNetworkingSecGroupRuleExists(n string, securityGroupRule *rules
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(configer)
-		networkingClient, err := config.NetworkingV2Client(osRegionName, defaultSDN)
+		config := testAccProvider.Meta().(clients.Config)
+		networkingClient, err := config.NetworkingV2Client(osRegionName, networking.DefaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}

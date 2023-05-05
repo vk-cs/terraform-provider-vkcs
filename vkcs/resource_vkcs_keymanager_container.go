@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/acls"
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/containers"
@@ -153,7 +154,7 @@ func resourceKeyManagerContainer() *schema.Resource {
 }
 
 func resourceKeyManagerContainerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS KeyManager client: %s", err)
@@ -214,7 +215,7 @@ func resourceKeyManagerContainerCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceKeyManagerContainerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS keymanager client: %s", err)
@@ -252,7 +253,7 @@ func resourceKeyManagerContainerRead(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceKeyManagerContainerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS keymanager client: %s", err)
@@ -270,7 +271,7 @@ func resourceKeyManagerContainerUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceKeyManagerContainerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	kmClient, err := config.KeyManagerV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS keymanager client: %s", err)

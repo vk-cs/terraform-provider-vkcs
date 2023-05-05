@@ -7,6 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
 )
 
 func dataSourceKubernetesCluster() *schema.Resource {
@@ -177,7 +179,7 @@ func dataSourceKubernetesCluster() *schema.Resource {
 }
 
 func dataSourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating container infra client: %s", err)
@@ -187,7 +189,7 @@ func dataSourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 	clusterIdentifier := d.Get(clusterIdentifierName).(string)
-	c, err := clusterGet(containerInfraClient, clusterIdentifier).Extract()
+	c, err := clusters.Get(containerInfraClient, clusterIdentifier).Extract()
 	if err != nil {
 		return diag.Errorf("error getting vkcs_kubernetes_cluster %s: %s", clusterIdentifier, err)
 	}
@@ -218,7 +220,7 @@ func dataSourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData
 	d.Set("insecure_registries", c.InsecureRegistries)
 	d.Set("dns_domain", c.DNSDomain)
 
-	k8sConfig, err := k8sConfigGet(containerInfraClient, c.UUID)
+	k8sConfig, err := clusters.KubeConfigGet(containerInfraClient, c.UUID)
 	if err != nil {
 		log.Printf("[DEBUG] error getting k8s config for cluster %s: %s", c.UUID, err)
 		d.Set("k8s_config", "error")

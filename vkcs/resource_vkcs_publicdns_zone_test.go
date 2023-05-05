@@ -7,10 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/publicdns/v2/zones"
 )
 
 func TestAccPublicDNSZone_basic(t *testing.T) {
-	var z zone
+	var z zones.Zone
 	zoneName := fmt.Sprintf("vkcs-tf-acctest-%s.com", acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
@@ -39,7 +41,7 @@ func TestAccPublicDNSZone_basic(t *testing.T) {
 }
 
 func testAccCheckPublicDNSZoneDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(*config)
+	config := testAccProvider.Meta().(clients.Config)
 	client, err := config.PublicDNSV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS public DNS client: %s", err)
@@ -50,7 +52,7 @@ func testAccCheckPublicDNSZoneDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := zoneGet(client, rs.Primary.ID).Extract()
+		_, err := zones.Get(client, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Zone still exists: %s", rs.Primary.ID)
 		}
@@ -59,7 +61,7 @@ func testAccCheckPublicDNSZoneDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckPublicDNSZoneExists(n string, z *zone) resource.TestCheckFunc {
+func testAccCheckPublicDNSZoneExists(n string, z *zones.Zone) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -70,13 +72,13 @@ func testAccCheckPublicDNSZoneExists(n string, z *zone) resource.TestCheckFunc {
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(*config)
+		config := testAccProvider.Meta().(clients.Config)
 		client, err := config.PublicDNSV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS public DNS client: %s", err)
 		}
 
-		found, err := zoneGet(client, rs.Primary.ID).Extract()
+		found, err := zones.Get(client, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

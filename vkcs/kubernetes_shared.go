@@ -6,10 +6,12 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/mitchellh/mapstructure"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/nodegroups"
 )
 
-func extractKubernetesGroupMap(nodeGroups []interface{}) ([]nodeGroup, error) {
-	filledNodeGroups := make([]nodeGroup, len(nodeGroups))
+func extractKubernetesGroupMap(nodeGroups []interface{}) ([]nodegroups.NodeGroup, error) {
+	filledNodeGroups := make([]nodegroups.NodeGroup, len(nodeGroups))
 	for i, ng := range nodeGroups {
 		g := ng.(map[string]interface{})
 		for k, v := range g {
@@ -17,7 +19,7 @@ func extractKubernetesGroupMap(nodeGroups []interface{}) ([]nodeGroup, error) {
 				delete(g, k)
 			}
 		}
-		var nodeGroup nodeGroup
+		var nodeGroup nodegroups.NodeGroup
 		err := mapStructureDecoder(&nodeGroup, &g, decoderConfig)
 		if err != nil {
 			return nil, err
@@ -39,10 +41,10 @@ func extractKubernetesLabelsMap(v map[string]interface{}) (map[string]string, er
 	return m, nil
 }
 
-func extractNodeGroupLabelsList(v []interface{}) ([]nodeGroupLabel, error) {
-	labels := make([]nodeGroupLabel, len(v))
+func extractNodeGroupLabelsList(v []interface{}) ([]nodegroups.Label, error) {
+	labels := make([]nodegroups.Label, len(v))
 	for i, label := range v {
-		var L nodeGroupLabel
+		var L nodegroups.Label
 		err := mapstructure.Decode(label.(map[string]interface{}), &L)
 		if err != nil {
 			return nil, err
@@ -52,10 +54,10 @@ func extractNodeGroupLabelsList(v []interface{}) ([]nodeGroupLabel, error) {
 	return labels, nil
 }
 
-func extractNodeGroupTaintsList(v []interface{}) ([]nodeGroupTaint, error) {
-	taints := make([]nodeGroupTaint, len(v))
+func extractNodeGroupTaintsList(v []interface{}) ([]nodegroups.Taint, error) {
+	taints := make([]nodegroups.Taint, len(v))
 	for i, taint := range v {
-		var T nodeGroupTaint
+		var T nodegroups.Taint
 		err := mapstructure.Decode(taint.(map[string]interface{}), &T)
 		if err != nil {
 			return nil, err
@@ -65,7 +67,7 @@ func extractNodeGroupTaintsList(v []interface{}) ([]nodeGroupTaint, error) {
 	return taints, nil
 }
 
-func flattenNodeGroupLabelsList(v []nodeGroupLabel) []map[string]interface{} {
+func flattenNodeGroupLabelsList(v []nodegroups.Label) []map[string]interface{} {
 	labels := make([]map[string]interface{}, len(v))
 	for i, label := range v {
 		m := map[string]interface{}{"key": label.Key, "value": label.Value}
@@ -74,7 +76,7 @@ func flattenNodeGroupLabelsList(v []nodeGroupLabel) []map[string]interface{} {
 	return labels
 }
 
-func flattenNodeGroupTaintsList(v []nodeGroupTaint) []map[string]interface{} {
+func flattenNodeGroupTaintsList(v []nodegroups.Taint) []map[string]interface{} {
 	taints := make([]map[string]interface{}, len(v))
 	for i, taint := range v {
 		m := map[string]interface{}{"key": taint.Key, "value": taint.Value, "effect": taint.Effect}
@@ -83,19 +85,35 @@ func flattenNodeGroupTaintsList(v []nodeGroupTaint) []map[string]interface{} {
 	return taints
 }
 
-func kubernetesStateRefreshFunc(client ContainerClient, clusterID string) resource.StateRefreshFunc {
+func kubernetesStateRefreshFunc(client *gophercloud.ServiceClient, clusterID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		c, err := clusterGet(client, clusterID).Extract()
+		c, err := clusters.Get(client, clusterID).Extract()
 		if err != nil {
 			if _, ok := err.(gophercloud.ErrDefault404); ok {
 				return c, string(clusterStatusDeleted), nil
 			}
 			return nil, "", err
 		}
-		if c.NewStatus == clusterStatusError {
+		if c.NewStatus == string(clusterStatusError) {
 			err = fmt.Errorf("vkcs_kubernetes_cluster is in an error state: %s", c.StatusReason)
-			return c, string(c.NewStatus), err
+			return c, c.NewStatus, err
 		}
-		return c, string(c.NewStatus), nil
+		return c, c.NewStatus, nil
 	}
+}
+
+type nodesFlatSchema []map[string]interface{}
+
+func flattenNodes(nodes []*nodegroups.Node) nodesFlatSchema {
+	flatSchema := nodesFlatSchema{}
+	for _, node := range nodes {
+		flatSchema = append(flatSchema, map[string]interface{}{
+			"name":          node.Name,
+			"uuid":          node.UUID,
+			"node_group_id": node.NodeGroupID,
+			"created_at":    getTimestamp(node.CreatedAt),
+			"updated_at":    getTimestamp(node.UpdatedAt),
+		})
+	}
+	return flatSchema
 }

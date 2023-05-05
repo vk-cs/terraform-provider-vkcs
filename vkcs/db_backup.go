@@ -5,11 +5,12 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/backups"
 )
 
-func databaseBackupStateRefreshFunc(client databaseClient, backupID string) resource.StateRefreshFunc {
+func databaseBackupStateRefreshFunc(client *gophercloud.ServiceClient, backupID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		b, err := dbBackupGet(client, backupID).extract()
+		b, err := backups.Get(client, backupID).Extract()
 		if err != nil {
 			if _, ok := err.(gophercloud.ErrDefault404); ok {
 				return b, "DELETED", nil

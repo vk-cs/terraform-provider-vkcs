@@ -6,6 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/nodegroups"
 )
 
 func dataSourceKubernetesNodeGroup() *schema.Resource {
@@ -127,13 +129,13 @@ func dataSourceKubernetesNodeGroup() *schema.Resource {
 }
 
 func dataSourceKubernetesNodeGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating container infra client: %s", err)
 	}
 
-	nodeGroup, err := nodeGroupGet(containerInfraClient, d.Get("uuid").(string)).Extract()
+	nodeGroup, err := nodegroups.Get(containerInfraClient, d.Get("uuid").(string)).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "error retrieving vkcs_kubernetes_node_group"))
 	}

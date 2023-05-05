@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/nodegroups"
 )
 
 func TestExpandContainerInfraLabelsMap(t *testing.T) {
@@ -40,8 +41,8 @@ func TestExpandKubernetesGroupMap(t *testing.T) {
 	}
 	groups = append(groups, group)
 
-	var expectedGroups []nodeGroup
-	expgroup := nodeGroup{
+	var expectedGroups []nodegroups.NodeGroup
+	expgroup := nodegroups.NodeGroup{
 		Name:       "test",
 		NodeCount:  ncount,
 		MaxNodes:   maxn,
@@ -72,7 +73,7 @@ func TestExtractNodeGroupLabelsList(t *testing.T) {
 			"key": "label_without_value",
 		},
 	}
-	expectedLabels := []nodeGroupLabel{
+	expectedLabels := []nodegroups.Label{
 		{
 			Key:   "bar",
 			Value: "baz",
@@ -108,7 +109,7 @@ func TestExtractNodeGroupTaintsList(t *testing.T) {
 		},
 	}
 
-	expectedTaints := []nodeGroupTaint{
+	expectedTaints := []nodegroups.Taint{
 		{
 			Key:    "key1",
 			Value:  "val1",

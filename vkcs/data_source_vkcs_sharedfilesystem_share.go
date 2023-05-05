@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/shares"
 )
@@ -97,7 +98,7 @@ func dataSourceSharedFilesystemShare() *schema.Resource {
 }
 
 func dataSourceSharedFilesystemShareRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*config)
+	config := meta.(clients.Config)
 	sfsClient, err := config.SharedfilesystemV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem sfsClient: %s", err)

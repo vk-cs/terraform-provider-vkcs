@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 )
@@ -159,7 +160,7 @@ func TestAccImagesImage_properties(t *testing.T) {
 }
 
 func testAccCheckImagesImageDestroy(s *terraform.State) error {
-	config := testAccProvider.Meta().(configer)
+	config := testAccProvider.Meta().(clients.Config)
 	imageClient, err := config.ImageV2Client(osRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS Image: %s", err)
@@ -190,7 +191,7 @@ func testAccCheckImagesImageExists(n string, image *images.Image) resource.TestC
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		imageClient, err := config.ImageV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS Image: %s", err)
@@ -222,7 +223,7 @@ func testAccCheckImagesImageHasTag(n, tag string) resource.TestCheckFunc {
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		imageClient, err := config.ImageV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS Image: %s", err)
@@ -258,7 +259,7 @@ func testAccCheckImagesImageTagCount(n string, expected int) resource.TestCheckF
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := testAccProvider.Meta().(configer)
+		config := testAccProvider.Meta().(clients.Config)
 		imageClient, err := config.ImageV2Client(osRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS Image: %s", err)

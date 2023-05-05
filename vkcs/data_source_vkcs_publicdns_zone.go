@@ -6,6 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/publicdns/v2/zones"
 )
 
 func dataSourcePublicDNSZone() *schema.Resource {
@@ -94,13 +96,13 @@ func dataSourcePublicDNSZone() *schema.Resource {
 }
 
 func dataSourcePublicDNSZoneRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	client, err := config.PublicDNSV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS public DNS client: %s", err)
 	}
 
-	opts := zoneListOpts{}
+	opts := zones.ListOpts{}
 
 	if v, ok := d.GetOk("id"); ok {
 		opts.ID = v.(string)
@@ -111,31 +113,31 @@ func dataSourcePublicDNSZoneRead(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if v, ok := d.GetOk("primary_dns"); ok {
-		opts.PrimaryDNS = v.(string)
+		opts.SOAPrimaryDNS = v.(string)
 	}
 
 	if v, ok := d.GetOk("admin_email"); ok {
-		opts.AdminEmail = v.(string)
+		opts.SOAAdminEmail = v.(string)
 	}
 
 	if v, ok := d.GetOk("serial"); ok {
-		opts.Serial = v.(int)
+		opts.SOASerial = v.(int)
 	}
 
 	if v, ok := d.GetOk("refresh"); ok {
-		opts.Refresh = v.(int)
+		opts.SOARefresh = v.(int)
 	}
 
 	if v, ok := d.GetOk("retry"); ok {
-		opts.Retry = v.(int)
+		opts.SOARetry = v.(int)
 	}
 
 	if v, ok := d.GetOk("expire"); ok {
-		opts.Expire = v.(int)
+		opts.SOAExpire = v.(int)
 	}
 
 	if v, ok := d.GetOk("ttl"); ok {
-		opts.TTL = v.(int)
+		opts.SOATTL = v.(int)
 	}
 
 	if v, ok := d.GetOk("status"); ok {
@@ -144,7 +146,7 @@ func dataSourcePublicDNSZoneRead(ctx context.Context, d *schema.ResourceData, me
 
 	log.Printf("[DEBUG] vkcs_publicdns_zone list options: %#v", opts)
 
-	zones, err := zoneList(client, opts).Extract()
+	zones, err := zones.List(client, opts).Extract()
 	if err != nil {
 		return diag.Errorf("Error retrieving vkcs_publicdns_zone: %s", err)
 	}

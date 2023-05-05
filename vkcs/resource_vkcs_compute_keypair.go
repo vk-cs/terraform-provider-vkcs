@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 )
@@ -69,7 +70,7 @@ func resourceComputeKeypair() *schema.Resource {
 }
 
 func resourceComputeKeypairCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
@@ -100,7 +101,7 @@ func resourceComputeKeypairCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceComputeKeypairRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
@@ -122,7 +123,7 @@ func resourceComputeKeypairRead(_ context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceComputeKeypairDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)

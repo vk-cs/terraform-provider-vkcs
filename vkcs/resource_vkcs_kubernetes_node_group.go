@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/nodegroups"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/randutil"
 )
 
@@ -180,13 +182,13 @@ func resourceKubernetesNodeGroup() *schema.Resource {
 }
 
 func resourceKubernetesNodeGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating container infra client: %s", err)
 	}
 
-	createOpts := nodeGroupCreateOpts{
+	createOpts := nodegroups.CreateOpts{
 		ClusterID:          d.Get("cluster_id").(string),
 		FlavorID:           d.Get("flavor_id").(string),
 		MaxNodes:           d.Get("max_nodes").(int),
@@ -237,7 +239,7 @@ func resourceKubernetesNodeGroupCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("node_count parameter must be > 0")
 	}
 
-	s, err := nodeGroupCreate(containerInfraClient, &createOpts).Extract()
+	s, err := nodegroups.Create(containerInfraClient, &createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("error creating vkcs_kubernetes_node_group: %s", err)
 	}
@@ -264,13 +266,13 @@ func resourceKubernetesNodeGroupCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceKubernetesNodeGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating container infra client: %s", err)
 	}
 
-	s, err := nodeGroupGet(containerInfraClient, d.Id()).Extract()
+	s, err := nodegroups.Get(containerInfraClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(checkDeleted(d, err, "error retrieving vkcs_kubernetes_node_group"))
 	}
@@ -321,7 +323,7 @@ func resourceKubernetesNodeGroupRead(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating container infra client: %s", err)
@@ -337,15 +339,15 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("node_count") {
-		s, err := nodeGroupGet(containerInfraClient, d.Id()).Extract()
+		s, err := nodegroups.Get(containerInfraClient, d.Id()).Extract()
 		if err != nil {
 			return diag.Errorf("error retrieving kubernetes_node_group : %s", err)
 		}
-		scaleOpts := nodeGroupScaleOpts{
+		scaleOpts := nodegroups.ScaleOpts{
 			Delta: d.Get("node_count").(int) - s.NodeCount,
 		}
 
-		_, err = nodeGroupScale(containerInfraClient, d.Id(), &scaleOpts).Extract()
+		_, err = nodegroups.Scale(containerInfraClient, d.Id(), &scaleOpts).Extract()
 		if err != nil {
 			return diag.Errorf("error scaling vkcs_kubernetes_node_group : %s", err)
 		}
@@ -358,10 +360,10 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 
 	}
 
-	var patchOpts nodeGroupClusterPatchOpts
+	var patchOpts nodegroups.PatchOpts
 
 	if d.HasChange("max_nodes") {
-		patchOpts = append(patchOpts, nodeGroupPatchParams{
+		patchOpts = append(patchOpts, nodegroups.PatchParams{
 			Path:  "/max_nodes",
 			Value: d.Get("max_nodes").(int),
 			Op:    "replace",
@@ -369,7 +371,7 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("min_nodes") {
-		patchOpts = append(patchOpts, nodeGroupPatchParams{
+		patchOpts = append(patchOpts, nodegroups.PatchParams{
 			Path:  "/min_nodes",
 			Value: d.Get("min_nodes").(int),
 			Op:    "replace",
@@ -377,7 +379,7 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("autoscaling_enabled") {
-		patchOpts = append(patchOpts, nodeGroupPatchParams{
+		patchOpts = append(patchOpts, nodegroups.PatchParams{
 			Path:  "/autoscaling_enabled",
 			Value: strconv.FormatBool(d.Get("autoscaling_enabled").(bool)),
 			Op:    "replace",
@@ -391,7 +393,7 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		patchOpts = append(patchOpts, nodeGroupPatchParams{
+		patchOpts = append(patchOpts, nodegroups.PatchParams{
 			Path:  "/labels",
 			Value: labels,
 			Op:    "replace",
@@ -405,7 +407,7 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		patchOpts = append(patchOpts, nodeGroupPatchParams{
+		patchOpts = append(patchOpts, nodegroups.PatchParams{
 			Path:  "/taints",
 			Value: taints,
 			Op:    "replace",
@@ -413,7 +415,7 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("max_node_unavailable") {
-		patchOpts = append(patchOpts, nodeGroupPatchParams{
+		patchOpts = append(patchOpts, nodegroups.PatchParams{
 			Path:  "/max_node_unavailable",
 			Value: d.Get("max_node_unavailable").(int),
 			Op:    "replace",
@@ -421,7 +423,7 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if len(patchOpts) > 0 {
-		_, err := nodeGroupPatch(containerInfraClient, d.Id(), &patchOpts).Extract()
+		_, err := nodegroups.Patch(containerInfraClient, d.Id(), &patchOpts).Extract()
 		if err != nil {
 			return diag.Errorf("error updating vkcs_kubernetes_node_group : %s", err)
 		}
@@ -437,13 +439,13 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceKubernetesNodeGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(configer)
+	config := meta.(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(getRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating container infra client: %s", err)
 	}
 
-	if err := nodeGroupDelete(containerInfraClient, d.Id()).ExtractErr(); err != nil {
+	if err := nodegroups.Delete(containerInfraClient, d.Id()).ExtractErr(); err != nil {
 		return diag.FromErr(checkDeleted(d, err, "error deleting vkcs_kubernetes_node_group"))
 	}
 
