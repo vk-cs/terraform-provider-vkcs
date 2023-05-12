@@ -76,7 +76,7 @@ func ConfigureProvider(d *schema.ResourceData, terraformVersion string) (Config,
 
 var _ Config = &configer{}
 
-// GetRegion is implementation of getRegion method
+// GetRegion is implementation of GetRegion method
 func (c *configer) GetRegion() string {
 	return c.Region
 }
