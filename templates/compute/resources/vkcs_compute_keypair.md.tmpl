@@ -1,0 +1,24 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a keypair resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+### Import an Existing Public Key
+{{tffile "templates/compute/resources/vkcs_compute_keypair/import_existing/main.tf"}}
+
+### Generate a Public/Private Key Pair
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Keypairs can be imported using the `name`, e.g.
+{{codefile "shell" .ImportFile}}

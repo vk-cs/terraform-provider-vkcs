@@ -1,0 +1,29 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a floating IP resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+### Simple floating IP allocation
+{{tffile .ExampleFile}}
+
+### Floating IP allocation using a list of subnets
+If one of the subnets in a list has an exhausted pool, terraform will try the
+next subnet ID from the list.
+
+{{tffile "templates/network/resources/vkcs_networking_floatingip/subnet_list/main.tf"}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+Floating IPs can be imported using the `id`, e.g.
+
+{{codefile "shell" "templates/network/resources/vkcs_networking_floatingip/import.sh"}}

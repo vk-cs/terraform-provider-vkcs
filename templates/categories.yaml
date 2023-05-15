@@ -1,0 +1,14 @@
+subCategoryMapping:
+  regions: Regions,
+  compute: Virtual Machines
+  blockstorage: Disks (block storage)
+  image: Images
+  sharedfilesystem: File Share (NFS)
+  network: Network
+  firewall: Firewall
+  lb: Load Balancers
+  vpnaas: VPN
+  publicdns: DNS
+  kubernetes: Kubernetes
+  db: Databases
+  keymanager: Key Manager

@@ -1,0 +1,34 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Attaches a Block Storage Volume to an Instance.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+### Basic attachment of a single volume to a single instance
+{{tffile "templates/compute/resources/vkcs_compute_volume_attach/basic-single-single/main.tf"}}
+
+### Attaching multiple volumes to a single instance
+{{tffile "templates/compute/resources/vkcs_compute_volume_attach/multi-single/main.tf"}}
+
+Note that the above example will not guarantee that the volumes are attached in
+a deterministic manner. The volumes will be attached in a seemingly random
+order.
+
+If you want to ensure that the volumes are attached in a given order, create
+explicit dependencies between the volumes, such as:
+
+{{tffile "templates/compute/resources/vkcs_compute_volume_attach/multi-single-ordered/main.tf"}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Volume Attachments can be imported using the Instance ID and Volume ID separated by a slash, e.g.
+
+{{codefile "shell" "templates/compute/resources/vkcs_compute_volume_attach/import.sh"}}

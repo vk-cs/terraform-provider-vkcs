@@ -1,0 +1,22 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Configure a Shared File System security service.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+This resource can be imported by specifying the ID of the security service:
+
+{{codefile "shell" "templates/sharedfilesystem/resources/vkcs_sharedfilesystem_securityservice/import.sh"}}

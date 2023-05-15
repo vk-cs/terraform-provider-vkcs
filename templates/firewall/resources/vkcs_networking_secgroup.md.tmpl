@@ -1,0 +1,44 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a security group resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Default Security Group Rules
+
+In most cases, VKCS will create some egress security group rules for each
+new security group. These security group rules will not be managed by
+Terraform, so if you prefer to have *all* aspects of your infrastructure
+managed by Terraform, set `delete_default_rules` to `true` and then create
+separate security group rules such as the following:
+
+```hcl
+resource "vkcs_networking_secgroup_rule" "secgroup_rule_v4" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  security_group_id = "${vkcs_networking_secgroup.secgroup.id}"
+}
+
+resource "vkcs_networking_secgroup_rule" "secgroup_rule_v6" {
+  direction         = "egress"
+  ethertype         = "IPv6"
+  security_group_id = "${vkcs_networking_secgroup.secgroup.id}"
+}
+```
+
+## Import
+
+Security Groups can be imported using the `id`, e.g.
+
+{{codefile "shell" "templates/firewall/resources/vkcs_networking_secgroup/import.sh"}}

@@ -1,0 +1,24 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a blockstorage volume.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Volumes can be imported using the `id`, e.g.
+
+{{codefile "shell" .ImportFile}}
+
+After the import you can use ```terraform show``` to view imported fields and write their values to your .tf file.

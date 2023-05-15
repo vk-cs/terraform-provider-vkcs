@@ -1,0 +1,36 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a db cluster.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+### Basic cluster
+{{tffile .ExampleFile}}
+
+### Cluster restored from backup
+{{tffile "templates/db/resources/vkcs_db_cluster/cluster_from_backup/main.tf"}}
+
+### Cluster with scheduled PITR backup
+{{tffile "templates/db/resources/vkcs_db_cluster/cluster_with_pitr/main.tf"}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Clusters can be imported using the `id`, e.g.
+
+{{codefile "shell" .ImportFile}}
+
+After the import you can use ```terraform show``` to view imported fields and write their values to your .tf file.
+
+You should at least add following fields to your .tf file:
+
+`name, flavor_id, cluster_size, volume_size, volume_type, datastore`
+
+Please, use `"IMPORTED"` as value for `volume_type` field.
