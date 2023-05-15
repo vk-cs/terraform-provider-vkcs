@@ -110,7 +110,7 @@ func ResourcePublicDNSZone() *schema.Resource {
 				Description: "The status of the zone.",
 			},
 		},
-		Description: "Manages a public DNS record resource within VKCS. **New since v.0.2.0**.",
+		Description: "Manages a public DNS record resource within VKCS.",
 	}
 }
 

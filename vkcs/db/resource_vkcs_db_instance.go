@@ -161,7 +161,7 @@ func ResourceDatabaseInstance() *schema.Resource {
 							ForceNew:      false,
 							Deprecated:    "Please, use wal_disk_autoexpand block instead",
 							ConflictsWith: []string{"wal_disk_autoexpand.0.autoexpand"},
-							Description:   "Indicates whether wal volume autoresize is enabled. ***Deprecated***. Please, use wal_disk_autoexpand block instead.",
+							Description:   "Indicates whether wal volume autoresize is enabled.",
 						},
 						"max_disk_size": {
 							Type:          schema.TypeInt,
@@ -169,7 +169,7 @@ func ResourceDatabaseInstance() *schema.Resource {
 							ForceNew:      false,
 							Deprecated:    "Please, use wal_disk_autoexpand block instead",
 							ConflictsWith: []string{"wal_disk_autoexpand.0.max_disk_size"},
-							Description:   "Maximum disk size for wal volume autoresize. ***Deprecated***. Please, use wal_disk_autoexpand block instead.",
+							Description:   "Maximum disk size for wal volume autoresize.",
 						},
 					},
 				},
@@ -217,7 +217,7 @@ func ResourceDatabaseInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
-							Description: "The port id of the network. Changing this creates a new instance. ***Deprecated*** This argument is deprecated, please do not use it.",
+							Description: "The port id of the network. Changing this creates a new instance.",
 							Deprecated:  "This argument is deprecated, please do not use it.",
 						},
 						"fixed_ip_v4": {
@@ -231,7 +231,7 @@ func ResourceDatabaseInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
-							Description: "The id of the subnet. Changing this creates a new instance. **New since v.0.1.15**.",
+							Description: "The id of the subnet. Changing this creates a new instance.",
 						},
 						"security_groups": {
 							Type:        schema.TypeSet,
@@ -239,7 +239,7 @@ func ResourceDatabaseInstance() *schema.Resource {
 							ForceNew:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Set:         schema.HashString,
-							Description: "An array of one or more security group IDs to associate with the instance. Changing this creates a new instance. **New since v.0.2.0**.",
+							Description: "An array of one or more security group IDs to associate with the instance. Changing this creates a new instance.",
 						},
 					},
 				},
@@ -398,7 +398,7 @@ func ResourceDatabaseInstance() *schema.Resource {
 						},
 					},
 				},
-				Description: "Object that represents backup to restore instance from. **New since v.0.1.4**.",
+				Description: "Object that represents backup to restore instance from.",
 			},
 
 			"backup_schedule": {
@@ -435,14 +435,14 @@ func ResourceDatabaseInstance() *schema.Resource {
 						},
 					},
 				},
-				Description: "Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4**.",
+				Description: "Object that represents configuration of PITR backup. This functionality is available only for postgres datastore.",
 			},
 
 			"cloud_monitoring_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				ForceNew:    false,
-				Description: "Enable cloud monitoring for the instance. Changing this for Redis or MongoDB creates a new instance. **New since v.0.2.0**",
+				Description: "Enable cloud monitoring for the instance. Changing this for Redis or MongoDB creates a new instance.",
 			},
 
 			// Computed values

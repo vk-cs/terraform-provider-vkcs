@@ -174,7 +174,7 @@ func ResourceDatabaseCluster() *schema.Resource {
 			"loadbalancer_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The id of the loadbalancer attached to the cluster. **New since v.0.1.15**.",
+				Description: "The id of the loadbalancer attached to the cluster.",
 			},
 
 			"network": {
@@ -194,14 +194,14 @@ func ResourceDatabaseCluster() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
-							Description: "The port id of the network. Changing this creates a new cluster. ***Deprecated*** This argument is deprecated, please do not use it.",
+							Description: "The port id of the network. Changing this creates a new cluster.",
 							Deprecated:  "This argument is deprecated, please do not use it.",
 						},
 						"subnet_id": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
-							Description: "The id of the subnet. Changing this creates a new cluster. **New since v.0.1.15**.",
+							Description: "The id of the subnet. Changing this creates a new cluster.",
 						},
 						"security_groups": {
 							Type:        schema.TypeSet,
@@ -209,7 +209,7 @@ func ResourceDatabaseCluster() *schema.Resource {
 							ForceNew:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Set:         schema.HashString,
-							Description: "An array of one or more security group IDs to associate with the cluster instances. Changing this creates a new cluster. **New since v.0.2.0**.",
+							Description: "An array of one or more security group IDs to associate with the cluster instances. Changing this creates a new cluster.",
 						},
 					},
 				},
@@ -355,7 +355,7 @@ func ResourceDatabaseCluster() *schema.Resource {
 						},
 					},
 				},
-				Description: "Object that represents backup to restore cluster from. **New since v.0.1.4**.",
+				Description: "Object that represents backup to restore cluster from.",
 			},
 			"backup_schedule": {
 				Type:     schema.TypeList,
@@ -391,7 +391,7 @@ func ResourceDatabaseCluster() *schema.Resource {
 						},
 					},
 				},
-				Description: "Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4**",
+				Description: "Object that represents configuration of PITR backup. This functionality is available only for postgres datastore.",
 			},
 
 			"shrink_options": {
@@ -408,7 +408,7 @@ func ResourceDatabaseCluster() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				ForceNew:    false,
-				Description: "Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance. **New since v.0.2.0**",
+				Description: "Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance.",
 			},
 
 			// Computed values

@@ -69,7 +69,7 @@ func DataSourceDatabaseDatastoreParameters() *schema.Resource {
 				Description: "Versions of the datastore.",
 			},
 		},
-		Description: "Use this data source to get configuration parameters supported for a VKCS datastore. **New since v.0.2.0**.",
+		Description: "Use this data source to get configuration parameters supported for a VKCS datastore.",
 	}
 }
 

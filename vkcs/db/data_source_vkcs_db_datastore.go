@@ -83,7 +83,7 @@ func DataSourceDatabaseDatastore() *schema.Resource {
 				Description: "Versions of the datastore.",
 			},
 		},
-		Description: "Use this data source to get information on a VKCS db datastore. **New since v.0.2.0**.",
+		Description: "Use this data source to get information on a VKCS db datastore.",
 	}
 }
 

@@ -248,14 +248,14 @@ func ResourceDatabaseClusterWithShards() *schema.Resource {
 						},
 					},
 				},
-				Description: "Object that represents backup to restore instance from. **New since v.0.1.4**.",
+				Description: "Object that represents backup to restore instance from.",
 			},
 
 			"cloud_monitoring_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				ForceNew:    false,
-				Description: "Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance. **New since v.0.2.0**",
+				Description: "Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance.",
 			},
 
 			"shard": {
@@ -351,14 +351,14 @@ func ResourceDatabaseClusterWithShards() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										ForceNew:    true,
-										Description: "The port id of the network. Changing this creates a new cluster. ***Deprecated*** This argument is deprecated, please do not use it.",
+										Description: "The port id of the network. Changing this creates a new cluster.",
 										Deprecated:  "This argument is deprecated, please do not use it.",
 									},
 									"subnet_id": {
 										Type:        schema.TypeString,
 										Optional:    true,
 										ForceNew:    true,
-										Description: "The id of the subnet. Changing this creates a new cluster. **New since v.0.1.15**.",
+										Description: "The id of the subnet. Changing this creates a new cluster.",
 									},
 									"security_groups": {
 										Type:        schema.TypeSet,
@@ -366,7 +366,7 @@ func ResourceDatabaseClusterWithShards() *schema.Resource {
 										ForceNew:    true,
 										Elem:        &schema.Schema{Type: schema.TypeString},
 										Set:         schema.HashString,
-										Description: "An array of one or more security group IDs to associate with the shard instances. Changing this creates a new cluster. **New since v.0.2.0**.",
+										Description: "An array of one or more security group IDs to associate with the shard instances. Changing this creates a new cluster.",
 									},
 								},
 								Description: "Object that represents network of the cluster shard. Changing this creates a new cluster.",
@@ -401,7 +401,7 @@ func ResourceDatabaseClusterWithShards() *schema.Resource {
 									},
 								},
 							},
-							Description: "Shard instances info. **New since v.0.1.15**.",
+							Description: "Shard instances info.",
 						},
 					},
 				},

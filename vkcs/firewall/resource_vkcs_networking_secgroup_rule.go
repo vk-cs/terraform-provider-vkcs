@@ -58,7 +58,7 @@ func ResourceNetworkingSecGroupRule() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     true,
-				Description:  "The layer 3 protocol type, the only valid value is __IPv4__. Changing this creates a new security group rule. **Note** This argument is deprecated, please do not use it.",
+				Description:  "The layer 3 protocol type, the only valid value is __IPv4__. Changing this creates a new security group rule.",
 				Default:      "IPv4",
 				Deprecated:   "Only IPv4 can be used as ethertype. This argument is deprecated, please do not use it.",
 				ValidateFunc: validation.StringInSlice([]string{"IPv4"}, false),

@@ -137,8 +137,7 @@ func ResourceDatabaseBackup() *schema.Resource {
 				Description: "Metadata of the backup",
 			},
 		},
-		Description: "Provides a db backup resource. This can be used to create and delete db backup.\n" +
-			"**New since v.0.1.4**.",
+		Description: "Provides a db backup resource. This can be used to create and delete db backup.",
 	}
 }
 
