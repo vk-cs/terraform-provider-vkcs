@@ -104,8 +104,8 @@ func ResourceLoadBalancer() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
-				Description: "A list of security group IDs to apply to the loadbalancer. The security groups must be specified by ID and not name (as opposed to how they are configured with the Compute Instance). ***Deprecated*** This argument is deprecated, please do not use it.",
-				Deprecated:  "This argument is deprecated, please do not use it",
+				Description: "A list of security group IDs to apply to the loadbalancer. The security groups must be specified by ID and not name (as opposed to how they are configured with the Compute Instance).",
+				Deprecated:  "This argument is deprecated, please do not use it.",
 			},
 
 			"tags": {

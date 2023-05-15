@@ -42,7 +42,7 @@ func DataSourceDatabaseDatastores() *schema.Resource {
 				},
 			},
 		},
-		Description: "Use this data source to get a list of datastores from VKCS. **New since v.0.2.0**.",
+		Description: "Use this data source to get a list of datastores from VKCS.",
 	}
 }
 

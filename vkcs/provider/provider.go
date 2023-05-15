@@ -22,7 +22,7 @@ import (
 )
 
 // Provider returns a schema.Provider for VKCS.
-func Provider() *schema.Provider {
+func ProviderBase() *schema.Provider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"auth_url": {
@@ -178,6 +178,16 @@ func Provider() *schema.Provider {
 			terraformVersion = "0.11+compatible"
 		}
 		return clients.ConfigureProvider(d, terraformVersion)
+	}
+
+	return provider
+}
+
+// Provider returns a schema.Provider for VKCS.
+func Provider() *schema.Provider {
+	provider, err := wrapProvider(ProviderBase())
+	if err != nil {
+		panic(err)
 	}
 
 	return provider

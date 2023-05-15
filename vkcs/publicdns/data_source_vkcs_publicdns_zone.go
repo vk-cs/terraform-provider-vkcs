@@ -92,7 +92,7 @@ func DataSourcePublicDNSZone() *schema.Resource {
 				Description: "The status of the zone.",
 			},
 		},
-		Description: "Use this data source to get the ID of a VKCS public DNS zone. **New since v.0.2.0**.",
+		Description: "Use this data source to get the ID of a VKCS public DNS zone.",
 	}
 }
 

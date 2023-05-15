@@ -4,16 +4,19 @@ PKG_NAME=vkcs
 
 default: build
 
-build: fmtcheck
+generate:
+	go generate ./...
+
+build: fmtcheck generate
 	go install
 
-build_darwin: fmtcheck
+build_darwin: fmtcheck generate
 	GOOS=darwin CGO_ENABLED=0 go build -o terraform-provider-vkcs_darwin
 
-build_linux: fmtcheck
+build_linux: fmtcheck generate
 	GOOS=linux CGO_ENABLED=0 go build -o terraform-provider-vkcs_linux
 
-build_windows: fmtcheck
+build_windows: fmtcheck generate
 	GOOS=windows CGO_ENABLED=0 go build -o terraform-provider-vkcs_windows
 
 test: fmtcheck

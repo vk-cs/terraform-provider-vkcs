@@ -166,7 +166,7 @@ func DataSourceDatabaseInstance() *schema.Resource {
 						},
 					},
 				},
-				Description: "Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4**.",
+				Description: "Object that represents configuration of PITR backup. This functionality is available only for postgres datastore.",
 			},
 		},
 		Description: "Use this data source to get the information on a db instance resource.",
