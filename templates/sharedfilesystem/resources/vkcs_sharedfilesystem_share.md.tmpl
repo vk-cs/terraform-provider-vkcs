@@ -1,0 +1,22 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Configure a Shared File System share.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+This resource can be imported by specifying the ID of the share:
+
+{{codefile "shell" "templates/sharedfilesystem/resources/vkcs_sharedfilesystem_share/import.sh"}}

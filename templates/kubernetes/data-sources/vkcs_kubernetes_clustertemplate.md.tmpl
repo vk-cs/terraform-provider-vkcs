@@ -1,0 +1,17 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Get information on an VKCS kubernetes cluster template.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+{{tffile .ExampleFile}}
+{{tffile "templates/kubernetes/data-sources/vkcs_kubernetes_clustertemplate/with_version/main.tf"}}
+{{ .SchemaMarkdown }}

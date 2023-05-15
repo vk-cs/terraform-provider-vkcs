@@ -1,0 +1,21 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a L7 rule resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Load Balancer L7 Rule can be imported using the L7 Policy ID and L7 Rule ID separated by a slash, e.g.:
+
+{{codefile "shell" "templates/lb/resources/vkcs_lb_l7rule/import.sh"}}

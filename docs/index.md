@@ -47,22 +47,22 @@ provider "vkcs" {
 ```
 
 ## Argument Reference
-- `auth_url` **String** (*Optional*) The Identity authentication URL.
+- `auth_url` optional *string* &rarr;  The Identity authentication URL.
 
-- `cloud_containers_api_version` **String** (*Optional*) Cloud Containers API version to use.
+- `cloud_containers_api_version` optional *string* &rarr;  Cloud Containers API version to use.
 _NOTE_ Only for custom VKCS deployments.
 
-- `password` **String** (*Optional* Sensitive) Password to login with.
+- `password` optional sensitive *string* &rarr;  Password to login with.
 
-- `project_id` **String** (*Optional*) The ID of Project to login with.
+- `project_id` optional *string* &rarr;  The ID of Project to login with.
 
-- `region` **String** (*Optional*) A region to use.
+- `region` optional *string* &rarr;  A region to use.
 
-- `user_domain_id` **String** (*Optional*) The id of the domain where the user resides.
+- `user_domain_id` optional *string* &rarr;  The id of the domain where the user resides.
 
-- `user_domain_name` **String** (*Optional*) The name of the domain where the user resides.
+- `user_domain_name` optional *string* &rarr;  The name of the domain where the user resides.
 
-- `username` **String** (*Optional*) User name to login with.
+- `username` optional *string* &rarr;  User name to login with.
 
 
 

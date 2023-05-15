@@ -1,0 +1,17 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  List available vkcs kubernetes cluster templates.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+Enabled VKCS Kubernetes Cluster Templates:
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}

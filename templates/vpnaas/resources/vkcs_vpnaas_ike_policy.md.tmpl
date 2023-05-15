@@ -1,0 +1,21 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a IKE policy resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Services can be imported using the `id`, e.g.
+
+{{codefile "shell" "templates/vpnaas/resources/vkcs_vpnaas_ike_policy/import.sh"}}

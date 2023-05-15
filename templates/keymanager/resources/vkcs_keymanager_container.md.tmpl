@@ -1,0 +1,28 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a key container resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+### Simple secret
+The container with the TLS certificates, which can be used by the loadbalancer HTTPS listener.
+{{tffile .ExampleFile}}
+
+### Container with the ACL
+~> **Note** Only read ACLs are supported
+{{tffile "templates/keymanager/resources/vkcs_keymanager_container/acl/main.tf"}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+Containers can be imported using the container id (the last part of the container reference), e.g.:
+
+{{codefile "shell" "templates/keymanager/resources/vkcs_keymanager_container/import.sh"}}

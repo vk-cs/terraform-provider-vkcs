@@ -1,0 +1,21 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a monitor resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Load Balancer Pool Monitor can be imported using the Monitor ID, e.g.:
+
+{{codefile "shell" "templates/lb/resources/vkcs_lb_monitor/import.sh"}}

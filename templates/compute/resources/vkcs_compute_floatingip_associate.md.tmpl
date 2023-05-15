@@ -1,0 +1,24 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Associate a floating IP to an instance
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+### Automatically detect the correct network
+{{tffile "templates/compute/resources/vkcs_compute_floatingip_associate/auto/main.tf"}}
+
+### Explicitly set the network to attach to
+{{tffile "templates/compute/resources/vkcs_compute_floatingip_associate/explicit/main.tf"}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+This resource can be imported by specifying all three arguments, separated by a forward slash:
+{{codefile "shell" "templates/compute/resources/vkcs_compute_floatingip_associate/import.sh"}}
