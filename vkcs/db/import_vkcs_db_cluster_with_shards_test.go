@@ -7,7 +7,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
-func TestAccDatabaseClusterWithShards_importBasic(t *testing.T) {
+func TestAccDatabaseClusterWithShards_importBasic_big(t *testing.T) {
 	resourceName := "vkcs_db_cluster_with_shards.basic"
 
 	resource.Test(t, resource.TestCase{

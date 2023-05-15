@@ -11,7 +11,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
 )
 
-func TestAccDatabaseClusterWithShards_basic(t *testing.T) {
+func TestAccDatabaseClusterWithShards_basic_big(t *testing.T) {
 	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
@@ -30,7 +30,7 @@ func TestAccDatabaseClusterWithShards_basic(t *testing.T) {
 	})
 }
 
-func TestAccDatabaseClusterWithShards_update(t *testing.T) {
+func TestAccDatabaseClusterWithShards_update_big(t *testing.T) {
 	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
@@ -73,7 +73,7 @@ func TestAccDatabaseClusterWithShards_update(t *testing.T) {
 	})
 }
 
-func TestAccDatabaseClusterWithShards_resize(t *testing.T) {
+func TestAccDatabaseClusterWithShards_resize_big(t *testing.T) {
 	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
