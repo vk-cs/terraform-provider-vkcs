@@ -12,7 +12,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
 )
 
-func TestAccDatabaseCluster_basic(t *testing.T) {
+func TestAccDatabaseCluster_basic_big(t *testing.T) {
 	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
@@ -42,7 +42,7 @@ func TestAccDatabaseCluster_basic(t *testing.T) {
 	})
 }
 
-func TestAccDatabaseCluster_wal(t *testing.T) {
+func TestAccDatabaseCluster_wal_big(t *testing.T) {
 	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
@@ -63,7 +63,7 @@ func TestAccDatabaseCluster_wal(t *testing.T) {
 	})
 }
 
-func TestAccDatabaseCluster_wal_no_update(t *testing.T) {
+func TestAccDatabaseCluster_wal_no_update_big(t *testing.T) {
 	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
@@ -91,7 +91,7 @@ func TestAccDatabaseCluster_wal_no_update(t *testing.T) {
 	})
 }
 
-func TestAccDatabaseCluster_shrink(t *testing.T) {
+func TestAccDatabaseCluster_shrink_big(t *testing.T) {
 	var cluster clusters.ClusterResp
 
 	resource.Test(t, resource.TestCase{
