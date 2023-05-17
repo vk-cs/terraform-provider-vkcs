@@ -27,6 +27,7 @@ type dbBackupStatus string
 
 var (
 	dbBackupStatusBuild   dbBackupStatus = "BUILDING"
+	dbBackupStatusNew     dbBackupStatus = "NEW"
 	dbBackupStatusActive  dbBackupStatus = "COMPLETED"
 	dbBackupStatusError   dbBackupStatus = "ERROR"
 	dbBackupStatusDeleted dbBackupStatus = "DELETED"
@@ -198,7 +199,7 @@ func resourceDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, m
 	log.Printf("[DEBUG] Waiting for vkcs_db_backup %s to become available", backup.ID)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{string(dbBackupStatusBuild)},
+		Pending:    []string{string(dbBackupStatusNew), string(dbBackupStatusBuild)},
 		Target:     []string{string(dbBackupStatusActive)},
 		Refresh:    databaseBackupStateRefreshFunc(DatabaseV1Client, backup.ID),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
