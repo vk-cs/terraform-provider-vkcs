@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_publicdns_zone
 
-Use this data source to get the ID of a VKCS public DNS zone. **New since v.0.2.0**.
+Use this data source to get the ID of a VKCS public DNS zone. **New since v0.2.0**.
 
 ## Example Usage
 

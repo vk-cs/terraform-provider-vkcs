@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_publicdns_zone
 
-Manages a public DNS record resource within VKCS. **New since v.0.2.0**.
+Manages a public DNS record resource within VKCS. **New since v0.2.0**.
 
 ## Example Usage
 ```terraform

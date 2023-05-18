@@ -8,8 +8,7 @@ description: |-
 
 # vkcs_db_backup
 
-Provides a db backup resource. This can be used to create and delete db backup.
-**New since v.0.1.4**.
+Provides a db backup resource. This can be used to create and delete db backup. **New since v0.1.4**.
 
 ## Example Usage
 

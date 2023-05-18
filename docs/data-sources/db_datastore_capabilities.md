@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_db_datastore_capabilities
 
-Use this data source to get capabilities supported for a VKCS datastore. **New since v.0.2.0**.
+Use this data source to get capabilities supported for a VKCS datastore. **New since v0.2.0**.
 
 ## Example Usage
 

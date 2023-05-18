@@ -27,7 +27,7 @@ resource "vkcs_lb_loadbalancer" "lb_1" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new LB loadbalancer.
 
-- `security_group_ids` optional deprecated *set of* *string* &rarr;  A list of security group IDs to apply to the loadbalancer. The security groups must be specified by ID and not name (as opposed to how they are configured with the Compute Instance). ***Deprecated*** This argument is deprecated, please do not use it.
+- `security_group_ids` optional deprecated *set of* *string* &rarr;  A list of security group IDs to apply to the loadbalancer. The security groups must be specified by ID and not name (as opposed to how they are configured with the Compute Instance). **Deprecated** This argument is deprecated, please do not use it.
 
 - `tags` optional *set of* *string* &rarr;  A list of simple strings assigned to the loadbalancer.
 
