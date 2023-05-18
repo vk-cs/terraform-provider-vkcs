@@ -252,8 +252,9 @@ func ResourceComputeInstance() *schema.Resource {
 						"boot_index": {
 							Type:        schema.TypeInt,
 							Optional:    true,
+							Default:     -1,
 							ForceNew:    true,
-							Description: "The boot index of the volume. It defaults to 0. Changing this creates a new server.",
+							Description: "The boot index of the volume. It defaults to -1. Changing this creates a new server. _note_ You must set the boot index to 0 for one of the block devices if more than one is defined.",
 						},
 						"delete_on_termination": {
 							Type:        schema.TypeBool,
@@ -485,7 +486,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if vL, ok := d.GetOk("block_device"); ok {
-		blockDevices, err := resourceInstanceBlockDevicesV2(d, vL.([]interface{}))
+		blockDevices, err := ResourceInstanceBlockDevicesV2(d, vL.([]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1105,7 +1106,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 			Size                int                    `json:"size"`
 			Bootable            string                 `json:"bootable"`
 		}{}
-		for i, b := range serverWithAttachments.VolumesAttached {
+		for _, b := range serverWithAttachments.VolumesAttached {
 			rawVolume := volumesV3.Get(blockStorageClient, b["id"].(string))
 			if err := rawVolume.ExtractInto(&volMetaData); err != nil {
 				log.Printf("[DEBUG] unable to unmarshal raw struct to volume metadata: %s", err)
@@ -1115,7 +1116,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 			v := map[string]interface{}{
 				"delete_on_termination": true,
 				"uuid":                  volMetaData.VolumeImageMetadata["image_id"],
-				"boot_index":            i,
+				"boot_index":            -1,
 				"destination_type":      "volume",
 				"source_type":           "image",
 				"volume_size":           volMetaData.Size,
@@ -1128,6 +1129,8 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 				bds = append(bds, v)
 			}
 		}
+
+		bds[0]["boot_index"] = 0
 
 		d.Set("block_device", bds)
 	}
@@ -1177,7 +1180,7 @@ func resourceInstanceMetadataV2(d *schema.ResourceData) map[string]string {
 	return m
 }
 
-func resourceInstanceBlockDevicesV2(_ *schema.ResourceData, bds []interface{}) ([]bootfromvolume.BlockDevice, error) {
+func ResourceInstanceBlockDevicesV2(_ *schema.ResourceData, bds []interface{}) ([]bootfromvolume.BlockDevice, error) {
 	blockDeviceOpts := make([]bootfromvolume.BlockDevice, len(bds))
 	for i, bd := range bds {
 		bdM := bd.(map[string]interface{})
@@ -1214,6 +1217,10 @@ func resourceInstanceBlockDevicesV2(_ *schema.ResourceData, bds []interface{}) (
 		default:
 			return blockDeviceOpts, fmt.Errorf("unknown block device destination type %s", destinationType)
 		}
+	}
+
+	if len(blockDeviceOpts) == 1 {
+		blockDeviceOpts[0].BootIndex = 0
 	}
 
 	log.Printf("[DEBUG] Block Device Options: %+v", blockDeviceOpts)
@@ -1358,7 +1365,10 @@ func resourceComputeSchedulerHintsHash(v interface{}) int {
 
 func checkBlockDeviceConfig(d *schema.ResourceData) error {
 	if vL, ok := d.GetOk("block_device"); ok {
-		for _, v := range vL.([]interface{}) {
+		vLs := vL.([]interface{})
+		isBootIdxZeroSet := (len(vLs) <= 1)
+
+		for _, v := range vLs {
 			vM := v.(map[string]interface{})
 
 			if vM["source_type"] != "blank" && vM["uuid"] == "" {
@@ -1376,6 +1386,14 @@ func checkBlockDeviceConfig(d *schema.ResourceData) error {
 					return fmt.Errorf("you must specify a volume_size when creating a blank block device")
 				}
 			}
+
+			if vM["boot_index"] == 0 {
+				isBootIdxZeroSet = true
+			}
+		}
+
+		if !isBootIdxZeroSet {
+			return fmt.Errorf("you must set boot_index to 0 for one of block_devices")
 		}
 	}
 

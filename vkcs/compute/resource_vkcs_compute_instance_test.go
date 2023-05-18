@@ -1,20 +1,24 @@
 package compute_test
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/compute"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 )
 
 func TestAccComputeInstance_basic(t *testing.T) {
@@ -271,6 +275,45 @@ func TestAccComputeInstance_blockDeviceExistingVolume(t *testing.T) {
 				Config: acctest.AccTestRenderConfig(testAccComputeInstanceBlockDeviceExistingVolume),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+				),
+			},
+		},
+	})
+}
+
+func TestAccComputeInstance_blockDeviceBootIndexDefault(t *testing.T) {
+	var instance servers.Server
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceBlockDeviceBootIndexDefault),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+				),
+			},
+		},
+	})
+}
+
+func TestAccComputeInstance_blockDeviceBootIndicesDefaults(t *testing.T) {
+	var instance servers.Server
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceBlockDevicesBootIndicesDefaults),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					resource.TestCheckResourceAttr("vkcs_compute_instance.instance_1", "block_device.0.boot_index", "0"),
+					resource.TestCheckResourceAttr("vkcs_compute_instance.instance_1", "block_device.1.boot_index", "-1"),
+					resource.TestCheckResourceAttr("vkcs_compute_instance.instance_1", "block_device.2.boot_index", "-1"),
 				),
 			},
 		},
@@ -572,6 +615,146 @@ func TestAccComputeInstance_tags(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestResourceInstanceBlockDevicesV2(t *testing.T) {
+	for _, c := range []struct {
+		name         string
+		resourceData *schema.ResourceData
+		blockDevices []map[string]interface{}
+		expected     []bootfromvolume.BlockDevice
+		expectedErr  error
+	}{
+		{
+			"one block device",
+			nil,
+			[]map[string]interface{}{
+				{
+					"uuid":                  "7a619268-4432-456a-a67c-0f5c58933c2c",
+					"volume_size":           10,
+					"boot_index":            -1,
+					"delete_on_termination": true,
+					"guest_format":          "ext2",
+					"volume_type":           "ceph-ssd",
+					"device_type":           "disk",
+					"disk_bus":              "virtio",
+					"source_type":           "image",
+					"destination_type":      "local",
+				},
+			},
+			[]bootfromvolume.BlockDevice{
+				{
+					UUID:                "7a619268-4432-456a-a67c-0f5c58933c2c",
+					VolumeSize:          10,
+					BootIndex:           0,
+					DeleteOnTermination: true,
+					GuestFormat:         "ext2",
+					VolumeType:          "ceph-ssd",
+					DeviceType:          "disk",
+					DiskBus:             "virtio",
+					SourceType:          bootfromvolume.SourceImage,
+					DestinationType:     bootfromvolume.DestinationLocal,
+				},
+			},
+			nil,
+		},
+
+		{
+			"multiple block devices",
+			nil,
+			[]map[string]interface{}{
+				{
+					"uuid":                  "7a619268-4432-456a-a67c-0f5c58933c2c",
+					"volume_size":           10,
+					"boot_index":            -1,
+					"delete_on_termination": true,
+					"guest_format":          "ext2",
+					"volume_type":           "ceph-ssd",
+					"device_type":           "disk",
+					"disk_bus":              "virtio",
+					"source_type":           "image",
+					"destination_type":      "local",
+				},
+				{
+					"uuid":                  "44338d06-ff25-4cc2-bedd-df3c1a8cab28",
+					"volume_size":           10,
+					"boot_index":            -1,
+					"delete_on_termination": true,
+					"guest_format":          "ext2",
+					"volume_type":           "ceph-ssd",
+					"device_type":           "disk",
+					"disk_bus":              "virtio",
+					"source_type":           "image",
+					"destination_type":      "local",
+				},
+				{
+					"uuid":                  "34d137c5-0d8e-4db2-bae1-1f6d394a9e52",
+					"volume_size":           10,
+					"boot_index":            0,
+					"delete_on_termination": true,
+					"guest_format":          "ext2",
+					"volume_type":           "ceph-ssd",
+					"device_type":           "disk",
+					"disk_bus":              "virtio",
+					"source_type":           "image",
+					"destination_type":      "local",
+				},
+			},
+			[]bootfromvolume.BlockDevice{
+				{
+					UUID:                "7a619268-4432-456a-a67c-0f5c58933c2c",
+					VolumeSize:          10,
+					BootIndex:           -1,
+					DeleteOnTermination: true,
+					GuestFormat:         "ext2",
+					VolumeType:          "ceph-ssd",
+					DeviceType:          "disk",
+					DiskBus:             "virtio",
+					SourceType:          bootfromvolume.SourceImage,
+					DestinationType:     bootfromvolume.DestinationLocal,
+				},
+				{
+					UUID:                "44338d06-ff25-4cc2-bedd-df3c1a8cab28",
+					VolumeSize:          10,
+					BootIndex:           -1,
+					DeleteOnTermination: true,
+					GuestFormat:         "ext2",
+					VolumeType:          "ceph-ssd",
+					DeviceType:          "disk",
+					DiskBus:             "virtio",
+					SourceType:          bootfromvolume.SourceImage,
+					DestinationType:     bootfromvolume.DestinationLocal,
+				},
+				{
+					UUID:                "34d137c5-0d8e-4db2-bae1-1f6d394a9e52",
+					VolumeSize:          10,
+					BootIndex:           0,
+					DeleteOnTermination: true,
+					GuestFormat:         "ext2",
+					VolumeType:          "ceph-ssd",
+					DeviceType:          "disk",
+					DiskBus:             "virtio",
+					SourceType:          bootfromvolume.SourceImage,
+					DestinationType:     bootfromvolume.DestinationLocal,
+				},
+			},
+			nil,
+		},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			bds := make([]interface{}, len(c.blockDevices))
+			for i, bd := range c.blockDevices {
+				bds[i] = bd
+			}
+			actual, actualErr := compute.ResourceInstanceBlockDevicesV2(c.resourceData, bds)
+			if !errors.Is(c.expectedErr, actualErr) {
+				t.Fatalf("Unexpected error: wanted %s got %s", c.expectedErr, actualErr)
+			}
+			if diff := cmp.Diff(c.expected, actual); diff != "" {
+				t.Fatalf("Unexpected diff (-wanted, +got): %s", diff)
+			}
+		})
+	}
 }
 
 func testAccCheckComputeInstanceDestroy(s *terraform.State) error {
@@ -956,18 +1139,18 @@ resource "vkcs_compute_instance" "instance_1" {
     source_type = "image"
     destination_type = "local"
     boot_index = 0
-		delete_on_termination = true
-		device_type = "disk"
-		disk_bus = "virtio"
+	delete_on_termination = true
+	device_type = "disk"
+	disk_bus = "virtio"
   }
   block_device {
     source_type = "blank"
     destination_type = "volume"
     volume_size = 1
     boot_index = 1
-		delete_on_termination = true
-		device_type = "disk"
-		disk_bus = "virtio"
+	delete_on_termination = true
+	device_type = "disk"
+	disk_bus = "virtio"
   }
   network {
     uuid = vkcs_networking_network.base.id
@@ -1005,6 +1188,81 @@ resource "vkcs_compute_instance" "instance_1" {
     source_type = "volume"
     destination_type = "volume"
     boot_index = 1
+    delete_on_termination = true
+  }
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
+}
+`
+
+const testAccComputeInstanceBlockDeviceBootIndexDefault = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
+
+resource "vkcs_blockstorage_volume" "volume_1" {
+  name = "volume_1"
+  size = 1
+  availability_zone = "{{.AvailabilityZone}}"
+  volume_type = "{{.VolumeType}}"
+}
+
+resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_router_interface.base"]
+  name = "instance_1"
+  availability_zone = "{{.AvailabilityZone}}"
+  security_groups = ["default"]
+  block_device {
+    uuid = data.vkcs_images_image.base.id
+    source_type = "image"
+    destination_type = "local"
+    delete_on_termination = true
+  }
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
+}
+`
+
+const testAccComputeInstanceBlockDevicesBootIndicesDefaults = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
+
+resource "vkcs_blockstorage_volume" "volume_1" {
+  name = "volume_1"
+  size = 1
+  availability_zone = "{{.AvailabilityZone}}"
+  volume_type = "{{.VolumeType}}"
+}
+
+resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_router_interface.base"]
+  name = "instance_1"
+  availability_zone = "{{.AvailabilityZone}}"
+  security_groups = ["default"]
+  block_device {
+    uuid = data.vkcs_images_image.base.id
+    source_type = "image"
+	boot_index = 0
+    destination_type = "local"
+    delete_on_termination = true
+  }
+  block_device {
+    source_type = "blank"
+    destination_type = "volume"
+    volume_size = 1
+    delete_on_termination = true
+  }
+  block_device {
+    source_type = "blank"
+    destination_type = "volume"
+    volume_size = 1
     delete_on_termination = true
   }
   network {

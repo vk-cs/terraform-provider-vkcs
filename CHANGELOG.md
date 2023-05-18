@@ -9,6 +9,7 @@ description: |-
 
 #### v0.2.2 (unreleased)
 - Remove "optional" property from ip attribute of DB instance
+- Add validation and default value for block_device.boot_index of Compute instance resource
 - Fix error of concurrent file read/write in Image resource
 - Fix error when creating DB instance replica with specified configuration_id
 - Fix errors related to unexpected new statuses for DB instance and DB backup resources
