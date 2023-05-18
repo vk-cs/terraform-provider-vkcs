@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_publicdns_record
 
-Manages a public DNS zone record resource within VKCS. **New since v.0.2.0**.<br>
+Manages a public DNS zone record resource within VKCS.<br>
 **Note:** Although some arguments are marked as optional, it is actually required to set values for them depending on record \"type\". Use this map to get information about which arguments you have to set:
 
 | Record type | Required arguments |
@@ -22,7 +22,7 @@ Manages a public DNS zone record resource within VKCS. **New since v.0.2.0**.<br
 | TXT | content |
 
 
-
+ **New since v0.2.0**.
 
 ## Example Usage
 ### Single record

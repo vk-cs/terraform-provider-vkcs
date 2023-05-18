@@ -151,7 +151,7 @@ resource "vkcs_db_instance" "db-instance" {
 
 - `availability_zone` optional *string* &rarr;  The name of the availability zone of the instance. Changing this creates a new instance.
 
-- `backup_schedule` optional &rarr;  Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4**.
+- `backup_schedule` optional &rarr;  Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v0.1.4**.
   - `interval_hours` **required** *number* &rarr;  Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.
 
   - `keep_count` **required** *number* &rarr;  Number of backups to be stored.
@@ -167,7 +167,7 @@ resource "vkcs_db_instance" "db-instance" {
 
   - `settings` optional *map of* *string* &rarr;  Map of key-value settings of the capability.
 
-- `cloud_monitoring_enabled` optional *boolean* &rarr;  Enable cloud monitoring for the instance. Changing this for Redis or MongoDB creates a new instance. **New since v.0.2.0**
+- `cloud_monitoring_enabled` optional *boolean* &rarr;  Enable cloud monitoring for the instance. Changing this for Redis or MongoDB creates a new instance. **New since v0.2.0**.
 
 - `configuration_id` optional *string* &rarr;  The id of the configuration attached to instance.
 
@@ -183,11 +183,11 @@ resource "vkcs_db_instance" "db-instance" {
 - `network` optional &rarr;  Object that represents network of the instance. Changing this creates a new instance.
   - `fixed_ip_v4` optional *string* &rarr;  The IPv4 address. Changing this creates a new instance. **Note** This argument conflicts with "replica_of". Setting both at the same time causes "fixed_ip_v4" to be ignored.
 
-  - `port` optional deprecated *string* &rarr;  The port id of the network. Changing this creates a new instance. ***Deprecated*** This argument is deprecated, please do not use it.
+  - `port` optional deprecated *string* &rarr;  The port id of the network. Changing this creates a new instance. **Deprecated** This argument is deprecated, please do not use it.
 
-  - `security_groups` optional *set of* *string* &rarr;  An array of one or more security group IDs to associate with the instance. Changing this creates a new instance. **New since v.0.2.0**.
+  - `security_groups` optional *set of* *string* &rarr;  An array of one or more security group IDs to associate with the instance. Changing this creates a new instance. **New since v0.2.0**.
 
-  - `subnet_id` optional *string* &rarr;  The id of the subnet. Changing this creates a new instance. **New since v.0.1.15**.
+  - `subnet_id` optional *string* &rarr;  The id of the subnet. Changing this creates a new instance. **New since v0.1.15**.
 
   - `uuid` optional *string* &rarr;  The id of the network. Changing this creates a new instance.**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
 
@@ -195,7 +195,7 @@ resource "vkcs_db_instance" "db-instance" {
 
 - `replica_of` optional *string* &rarr;  ID of the instance, that current instance is replica of.
 
-- `restore_point` optional &rarr;  Object that represents backup to restore instance from. **New since v.0.1.4**.
+- `restore_point` optional &rarr;  Object that represents backup to restore instance from. **New since v0.1.4**.
   - `backup_id` **required** *string* &rarr;  ID of the backup.
 
   - `target` optional *string* &rarr;  Used only for restoring from postgresql PITR backups. Timestamp of needed backup in format "2021-10-06 01:02:00". You can specify "latest" to use most recent backup.
@@ -214,9 +214,9 @@ resource "vkcs_db_instance" "db-instance" {
 
   - `volume_type` **required** *string* &rarr;  The type of the instance wal volume.
 
-  - `autoexpand` optional deprecated *boolean* &rarr;  Indicates whether wal volume autoresize is enabled. ***Deprecated***. Please, use wal_disk_autoexpand block instead.
+  - `autoexpand` optional deprecated *boolean* &rarr;  Indicates whether wal volume autoresize is enabled. **Deprecated** Please, use wal_disk_autoexpand block instead.
 
-  - `max_disk_size` optional deprecated *number* &rarr;  Maximum disk size for wal volume autoresize. ***Deprecated***. Please, use wal_disk_autoexpand block instead.
+  - `max_disk_size` optional deprecated *number* &rarr;  Maximum disk size for wal volume autoresize. **Deprecated** Please, use wal_disk_autoexpand block instead.
 
 
 ## Attributes Reference

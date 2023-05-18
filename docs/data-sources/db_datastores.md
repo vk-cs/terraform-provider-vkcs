@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_db_datastores
 
-Use this data source to get a list of datastores from VKCS. **New since v.0.2.0**.
+Use this data source to get a list of datastores from VKCS. **New since v0.2.0**.
 
 ## Example Usage
 

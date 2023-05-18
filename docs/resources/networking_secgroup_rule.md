@@ -35,7 +35,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
 
 - `description` optional *string* &rarr;  A description of the rule. Changing this creates a new security group rule.
 
-- `ethertype` optional deprecated *string* &rarr;  The layer 3 protocol type, the only valid value is __IPv4__. Changing this creates a new security group rule. **Note** This argument is deprecated, please do not use it.
+- `ethertype` optional deprecated *string* &rarr;  The layer 3 protocol type, the only valid value is __IPv4__. Changing this creates a new security group rule. **Deprecated** Only IPv4 can be used as ethertype. This argument is deprecated, please do not use it.
 
 - `port_range_max` optional *number* &rarr;  The higher part of the allowed port range, valid integer value needs to be between 1 and 65535. Changing this creates a new security group rule.
 
