@@ -26,10 +26,11 @@ const (
 type dbBackupStatus string
 
 var (
-	dbBackupStatusBuild   dbBackupStatus = "BUILDING"
-	dbBackupStatusActive  dbBackupStatus = "COMPLETED"
-	dbBackupStatusError   dbBackupStatus = "ERROR"
-	dbBackupStatusDeleted dbBackupStatus = "DELETED"
+	dbBackupStatusBuild    dbBackupStatus = "BUILDING"
+	dbBackupStatusActive   dbBackupStatus = "COMPLETED"
+	dbBackupStatusError    dbBackupStatus = "ERROR"
+	dbBackupStatusToDelete dbBackupStatus = "TO_DELETE"
+	dbBackupStatusDeleted  dbBackupStatus = "DELETED"
 )
 
 func ResourceDatabaseBackup() *schema.Resource {
@@ -264,7 +265,7 @@ func resourceDatabaseBackupDelete(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{string(dbBackupStatusActive)},
+		Pending:    []string{string(dbBackupStatusActive), string(dbBackupStatusToDelete)},
 		Target:     []string{string(dbBackupStatusDeleted)},
 		Refresh:    databaseBackupStateRefreshFunc(DatabaseV1Client, d.Id()),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
