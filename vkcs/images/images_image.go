@@ -14,11 +14,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
+	"github.com/gofrs/flock"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var imagesDefaultStoreEndpointMasks = []string{"*.devmail.ru$", "^ams.*"}
@@ -94,6 +94,19 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 			return "", fmt.Errorf("unable to create dir %s: %s", dir, err)
 		}
 		filename := filepath.Join(dir, fmt.Sprintf("%x.img", md5.Sum([]byte(furl))))
+		lockFilename := filename + ".lock"
+
+		lock := flock.New(lockFilename)
+		err := lock.Lock()
+		if err != nil {
+			return "", fmt.Errorf("unable to create file lock %s: %s", lockFilename, err)
+		}
+		defer func() {
+			err := lock.Unlock()
+			if err != nil {
+				log.Printf("[WARN] There was an error unlocking filelock: %s", err)
+			}
+		}()
 
 		if _, err := os.Stat(filename); err != nil {
 			if !os.IsNotExist(err) {

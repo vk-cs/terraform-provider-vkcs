@@ -9,6 +9,7 @@ description: |-
 
 #### v0.2.2 (unreleased)
 - Remove "optional" property from ip attribute of DB instance
+- Fix error of concurrent file read/write in Image resource
 
 #### v0.2.1
 - Support shards/instances/volumes resizing in DB cluster with shards
