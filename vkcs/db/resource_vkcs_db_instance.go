@@ -1029,7 +1029,8 @@ func resourceDatabaseInstanceDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{string(dbInstanceStatusActive), string(dbInstanceStatusShutdown)},
+		Pending: []string{string(dbInstanceStatusActive), string(dbInstanceStatusBackup),
+			string(dbInstanceStatusShutdown)},
 		Target:     []string{string(dbInstanceStatusDeleted)},
 		Refresh:    databaseInstanceStateRefreshFunc(DatabaseV1Client, d.Id(), nil),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
