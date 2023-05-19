@@ -237,7 +237,8 @@
                 "boot_index": {
                   "type": "TypeInt",
                   "optional": true,
-                  "description": "The boot index of the volume. It defaults to 0. Changing this creates a new server.",
+                  "default": -1,
+                  "description": "The boot index of the volume. It defaults to -1. Changing this creates a new server. _note_ You must set the boot index to 0 for one of the block devices if more than one is defined.",
                   "force_new": true
                 },
                 "delete_on_termination": {
@@ -1603,7 +1604,6 @@
           },
           "ip": {
             "type": "TypeList",
-            "optional": true,
             "description": "IP address of the instance.",
             "computed": true,
             "elem": {
