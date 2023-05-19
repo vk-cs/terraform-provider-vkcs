@@ -21,6 +21,7 @@ type CreateOpts struct {
 	FlavorRef              string                     `json:"flavorRef,omitempty"`
 	Volume                 *Volume                    `json:"volume" required:"true"`
 	Name                   string                     `json:"name" required:"true"`
+	Configuration          string                     `json:"configuration,omitempty"`
 	Datastore              *datastores.DatastoreShort `json:"datastore" required:"true"`
 	Nics                   []NetworkOpts              `json:"nics" required:"true"`
 	ReplicaOf              string                     `json:"replica_of,omitempty"`
