@@ -55,15 +55,4 @@ To update documentation contents, please, update "description" field of necessar
 Documentation templates are located in templates/ folder.
 PR with renewed provider documentation is generated automatically when updates are merged into master branch.
 
-Publishing provider
--------------------
-Before publishing, remove "(unreleased)" mark from CHANGELOG in separate PR. After this PR is merged, you can publish the provider.
-
-Provider publishes via action [release](https://github.com/vk-cs/terraform-provider-vkcs/blob/master/.github/workflows/release.yml).
-To call the action create new tag.
-```sh
-$ git tag v0.1.0
-$ git push origin v0.1.0
-```
-
 Thank You!
