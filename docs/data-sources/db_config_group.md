@@ -8,8 +8,7 @@ description: |-
 
 # vkcs_db_config_group
 
-Use this data source to get the information on a db config group resource.
-**New since v.0.1.7**.
+Use this data source to get the information on a db config group resource. **New since v0.1.7**.
 
 ## Example Usage
 

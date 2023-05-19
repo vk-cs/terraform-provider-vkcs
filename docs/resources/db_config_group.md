@@ -8,8 +8,7 @@ description: |-
 
 # vkcs_db_config_group
 
-Provides a db config group resource. This can be used to create, update and delete db config group.
-**New since v.0.1.7**.
+Provides a db config group resource. This can be used to create, update and delete db config group. **New since v0.1.7**.
 
 ## Example Usage
 

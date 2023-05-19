@@ -21,7 +21,7 @@ data "vkcs_db_instance" "db-instance" {
 ## Argument Reference
 - `id` **required** *string* &rarr;  The id of the instance.
 
-- `backup_schedule` optional &rarr;  Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v.0.1.4**.
+- `backup_schedule` optional &rarr;  Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v0.1.4**.
   - `interval_hours` **required** *number* &rarr;  Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.
 
   - `keep_count` **required** *number* &rarr;  Number of backups to be stored.
