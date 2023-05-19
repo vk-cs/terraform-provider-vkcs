@@ -11,7 +11,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
 
-func TestAccDatabaseInstance_basic(t *testing.T) {
+func TestAccDatabaseInstance_basic_big(t *testing.T) {
 	var instance instances.InstanceResp
 
 	resource.Test(t, resource.TestCase{
