@@ -8,7 +8,7 @@ import (
 
 // InstanceResp represents result of database instance get
 type InstanceResp struct {
-	СomputeInstanceID string                     `json:"compute_instance_id"`
+	ComputeInstanceID string                     `json:"compute_instance_id"`
 	Configuration     *Configuration             `json:"configuration"`
 	ConfigurationID   string                     `json:"configuration_id"`
 	ID                string                     `json:"id"`
