@@ -114,7 +114,6 @@ resource "vkcs_compute_instance" "compute" {
   name            = "compute-instance"
   flavor_id       = data.vkcs_compute_flavor.compute.id
   security_groups = ["default"]
-  image_id = data.vkcs_images_image.compute.id
   availability_zone = "GZ1"
 
   block_device {
@@ -132,7 +131,6 @@ resource "vkcs_compute_instance" "compute" {
     destination_type      = "volume"
     volume_type           = "ceph-ssd"
     volume_size           = 8
-    boot_index            = 1
     delete_on_termination = true
   }
 
@@ -339,7 +337,7 @@ resource "vkcs_compute_instance" "instance_1" {
 - `block_device` optional &rarr;  Configuration of block devices. The block_device structure is documented below. Changing this creates a new server. You can specify multiple block devices which will create an instance with multiple disks. This configuration is very flexible, so please see the following [reference](https://docs.openstack.org/nova/latest/user/block-device-mapping.html) for more information.
   - `source_type` **required** *string* &rarr;  The source type of the device. Must be one of "blank", "image", "volume", or "snapshot". Changing this creates a new server.
 
-  - `boot_index` optional *number* &rarr;  The boot index of the volume. It defaults to 0. Changing this creates a new server.
+  - `boot_index` optional *number* &rarr;  The boot index of the volume. It defaults to -1. Changing this creates a new server. <br>**Note:** You must set the boot index to 0 for one of the block devices if more than one is defined.
 
   - `delete_on_termination` optional *boolean* &rarr;  Delete the volume / block device upon termination of the instance. Defaults to false. Changing this creates a new server.
 
