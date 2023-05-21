@@ -7,51 +7,44 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
-func TestAccDataSourceVkcsRegion(t *testing.T) {
-	tests := map[string]struct {
-		name     string
-		testCase resource.TestCase
-	}{
-		"no params": {
-			name: "data.vkcs_region.empty",
-			testCase: resource.TestCase{
-				ProviderFactories: acctest.AccTestProviders,
-				Steps: []resource.TestStep{
-					{
-						Config: `data "vkcs_region" "empty" {}`,
-						Check: resource.ComposeTestCheckFunc(
-							resource.TestCheckResourceAttr("data.vkcs_region.empty", "id", "RegionOne"),
-							resource.TestCheckResourceAttr("data.vkcs_region.empty", "description", ""),
-							resource.TestCheckResourceAttr("data.vkcs_region.empty", "parent_region", ""),
-						),
-					},
-				},
+func TestAccRegionDataSource_basic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: acctest.AccTestProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRegionDataSourceConfigBasic,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.vkcs_region.default", "id", "RegionOne"),
+					resource.TestCheckResourceAttr("data.vkcs_region.default", "description", ""),
+					resource.TestCheckResourceAttr("data.vkcs_region.default", "parent_region", ""),
+				),
 			},
 		},
-		"id provided": {
-			name: "data.vkcs_region.id",
-			testCase: resource.TestCase{
-				ProviderFactories: acctest.AccTestProviders,
-				Steps: []resource.TestStep{
-					{
-						Config: `data "vkcs_region" "id" {
-									id="RegionAms"
-								}`,
-						Check: resource.ComposeTestCheckFunc(
-							resource.TestCheckResourceAttr("data.vkcs_region.id", "id", "RegionAms"),
-							resource.TestCheckResourceAttr("data.vkcs_region.id", "description", ""),
-							resource.TestCheckResourceAttr("data.vkcs_region.id", "parent_region", ""),
-						),
-					},
-				},
-			},
-		},
-	}
-
-	for name := range tests {
-		tt := tests[name]
-		t.Run(name, func(t *testing.T) {
-			resource.ParallelTest(t, tt.testCase)
-		})
-	}
+	})
 }
+
+func TestAccRegionDataSource_id(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: acctest.AccTestProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRegionDataSourceConfigID,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.vkcs_region.id", "id", "RegionAms"),
+					resource.TestCheckResourceAttr("data.vkcs_region.id", "description", ""),
+					resource.TestCheckResourceAttr("data.vkcs_region.id", "parent_region", ""),
+				),
+			},
+		},
+	})
+}
+
+const testAccRegionDataSourceConfigBasic = `
+data "vkcs_region" "default" {}
+`
+
+const testAccRegionDataSourceConfigID = `
+data "vkcs_region" "id" {
+	id = "RegionAms"
+}
+`
