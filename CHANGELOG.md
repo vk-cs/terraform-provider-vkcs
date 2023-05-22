@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.2.3 (unreleased)
+- Fix duplicate entry error on recreating Kubernetes cluster
+
 #### v0.2.2
 - Remove "optional" property from ip attribute of DB instance
 - Add validation and default value for block_device.boot_index of Compute instance resource

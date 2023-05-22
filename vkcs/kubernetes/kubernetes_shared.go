@@ -91,7 +91,7 @@ func kubernetesStateRefreshFunc(client *gophercloud.ServiceClient, clusterID str
 		c, err := clusters.Get(client, clusterID).Extract()
 		if err != nil {
 			if _, ok := err.(gophercloud.ErrDefault404); ok {
-				return c, string(clusterStatusDeleted), nil
+				return c, string(clusterStatusNotFound), nil
 			}
 			return nil, "", err
 		}
