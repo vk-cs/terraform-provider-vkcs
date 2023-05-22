@@ -32,6 +32,7 @@ type clusterStatus string
 var (
 	clusterStatusDeleting     clusterStatus = "DELETING"
 	clusterStatusDeleted      clusterStatus = "DELETED"
+	clusterStatusNotFound     clusterStatus = "NOT_FOUND"
 	clusterStatusReconciling  clusterStatus = "RECONCILING"
 	clusterStatusProvisioning clusterStatus = "PROVISIONING"
 	clusterStatusRunning      clusterStatus = "RUNNING"
@@ -574,8 +575,8 @@ func resourceKubernetesClusterDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending:      []string{string(clusterStatusDeleting)},
-		Target:       []string{string(clusterStatusDeleted)},
+		Pending:      []string{string(clusterStatusDeleting), string(clusterStatusDeleted)},
+		Target:       []string{string(clusterStatusNotFound)},
 		Refresh:      kubernetesStateRefreshFunc(client, d.Id()),
 		Timeout:      d.Timeout(schema.TimeoutDelete),
 		Delay:        deleteDelay * time.Second,
