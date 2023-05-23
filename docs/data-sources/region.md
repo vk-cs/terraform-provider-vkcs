@@ -1,5 +1,5 @@
 ---
-subcategory: "Regions,"
+subcategory: "Regions"
 layout: "vkcs"
 page_title: "vkcs: vkcs_region"
 description: |-
