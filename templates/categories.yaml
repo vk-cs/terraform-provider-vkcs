@@ -1,5 +1,5 @@
 subCategoryMapping:
-  regions: Regions,
+  regions: Regions
   compute: Virtual Machines
   blockstorage: Disks (block storage)
   image: Images
