@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/mitchellh/mapstructure"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/nodegroups"
@@ -86,7 +86,7 @@ func flattenNodeGroupTaintsList(v []nodegroups.Taint) []map[string]interface{} {
 	return taints
 }
 
-func kubernetesStateRefreshFunc(client *gophercloud.ServiceClient, clusterID string) resource.StateRefreshFunc {
+func kubernetesStateRefreshFunc(client *gophercloud.ServiceClient, clusterID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		c, err := clusters.Get(client, clusterID).Extract()
 		if err != nil {

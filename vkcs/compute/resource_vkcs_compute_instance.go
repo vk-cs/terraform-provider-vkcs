@@ -28,7 +28,7 @@ import (
 	imagesutils "github.com/gophercloud/utils/openstack/imageservice/v2/images"
 	"github.com/gophercloud/utils/terraform/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
@@ -532,7 +532,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		"[DEBUG] Waiting for instance (%s) to become running",
 		server.ID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"BUILD"},
 		Target:     []string{"ACTIVE"},
 		Refresh:    ServerStateRefreshFunc(computeClient, server.ID),
@@ -541,7 +541,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		MinTimeout: 3 * time.Second,
 	}
 
-	err = resource.RetryContext(ctx, stateConf.Timeout, func() *resource.RetryError {
+	err = retry.RetryContext(ctx, stateConf.Timeout, func() *retry.RetryError {
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			log.Printf("[DEBUG] Retrying after error: %s", err)
@@ -562,7 +562,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		if err != nil {
 			return diag.Errorf("Error stopping VKCS instance: %s", err)
 		}
-		stopStateConf := &resource.StateChangeConf{
+		stopStateConf := &retry.StateChangeConf{
 			//Pending:    []string{"ACTIVE"},
 			Target:     []string{"SHUTOFF"},
 			Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
@@ -722,7 +722,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 			if err != nil {
 				return diag.Errorf("Error shelve VKCS instance: %s", err)
 			}
-			shelveStateConf := &resource.StateChangeConf{
+			shelveStateConf := &retry.StateChangeConf{
 				//Pending:    []string{"ACTIVE"},
 				Target:     []string{"SHELVED_OFFLOADED"},
 				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
@@ -742,7 +742,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 			if err != nil {
 				return diag.Errorf("Error stopping VKCS instance: %s", err)
 			}
-			stopStateConf := &resource.StateChangeConf{
+			stopStateConf := &retry.StateChangeConf{
 				//Pending:    []string{"ACTIVE"},
 				Target:     []string{"SHUTOFF"},
 				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
@@ -772,7 +772,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 					return diag.Errorf("Error starting VKCS instance: %s", err)
 				}
 			}
-			startStateConf := &resource.StateChangeConf{
+			startStateConf := &retry.StateChangeConf{
 				//Pending:    []string{"SHUTOFF"},
 				Target:     []string{"ACTIVE"},
 				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
@@ -903,7 +903,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 
 		// Resize instance without confirmation if specified by user.
 		if ignoreResizeConfirmation {
-			stateConf := &resource.StateChangeConf{
+			stateConf := &retry.StateChangeConf{
 				Pending:    []string{"RESIZE", "VERIFY_RESIZE"},
 				Target:     []string{"ACTIVE", "SHUTOFF"},
 				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
@@ -917,7 +917,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 				return diag.Errorf("Error waiting for instance (%s) to resize: %s", d.Id(), err)
 			}
 		} else {
-			stateConf := &resource.StateChangeConf{
+			stateConf := &retry.StateChangeConf{
 				Pending:    []string{"RESIZE"},
 				Target:     []string{"VERIFY_RESIZE"},
 				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
@@ -938,7 +938,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 				return diag.Errorf("Error confirming resize of VKCS server: %s", err)
 			}
 
-			stateConf = &resource.StateChangeConf{
+			stateConf = &retry.StateChangeConf{
 				Pending:    []string{"VERIFY_RESIZE"},
 				Target:     []string{"ACTIVE", "SHUTOFF"},
 				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
@@ -981,7 +981,7 @@ func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, 
 		if err != nil {
 			log.Printf("[WARN] Error stopping vkcs_compute_instance: %s", err)
 		} else {
-			stopStateConf := &resource.StateChangeConf{
+			stopStateConf := &retry.StateChangeConf{
 				Pending:    []string{"ACTIVE"},
 				Target:     []string{"SHUTOFF"},
 				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
@@ -1009,7 +1009,7 @@ func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, 
 		} else {
 			for _, network := range allInstanceNetworks {
 				if network.Port != "" {
-					stateConf := &resource.StateChangeConf{
+					stateConf := &retry.StateChangeConf{
 						Pending:    []string{""},
 						Target:     []string{"DETACHED"},
 						Refresh:    computeInterfaceAttachDetachFunc(computeClient, d.Id(), network.Port),
@@ -1046,7 +1046,7 @@ func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, 
 	// Wait for the instance to delete before moving on.
 	log.Printf("[DEBUG] Waiting for instance (%s) to delete", d.Id())
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"ACTIVE", "SHUTOFF"},
 		Target:     []string{"DELETED", "SOFT_DELETED"},
 		Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
@@ -1147,9 +1147,9 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 	return results, nil
 }
 
-// ServerStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
+// ServerStateRefreshFunc returns a retry.StateRefreshFunc that is used to watch
 // an VKCS instance.
-func ServerStateRefreshFunc(client *gophercloud.ServiceClient, instanceID string) resource.StateRefreshFunc {
+func ServerStateRefreshFunc(client *gophercloud.ServiceClient, instanceID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		s, err := servers.Get(client, instanceID).Extract()
 		if err != nil {

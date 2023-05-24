@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
@@ -104,7 +104,7 @@ func resourceComputeFloatingIPAssociateCreate(ctx context.Context, d *schema.Res
 	}
 
 	if waitUntilAssociated {
-		stateConf := &resource.StateChangeConf{
+		stateConf := &retry.StateChangeConf{
 			Pending:    []string{"NOT_ASSOCIATED"},
 			Target:     []string{"ASSOCIATED"},
 			Refresh:    computeFloatingIPAssociateCheckAssociation(computeClient, instanceID, floatingIP),

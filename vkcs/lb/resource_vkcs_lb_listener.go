@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
@@ -240,7 +240,7 @@ func resourceListenerCreate(ctx context.Context, d *schema.ResourceData, meta in
 
 	log.Printf("[DEBUG] vkcs_lb_listener create options: %#v", createOpts)
 	var listener *octavialisteners.Listener
-	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
+	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 		listener, err = octavialisteners.Create(lbClient, createOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
@@ -428,7 +428,7 @@ func resourceListenerUpdate(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	log.Printf("[DEBUG] vkcs_lb_listener %s update options: %#v", d.Id(), updateOpts)
-	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
+	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 		_, err = octavialisteners.Update(lbClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
@@ -465,7 +465,7 @@ func resourceListenerDelete(ctx context.Context, d *schema.ResourceData, meta in
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	log.Printf("[DEBUG] Deleting vkcs_lb_listener %s", d.Id())
-	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
+	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 		err = octavialisteners.Delete(lbClient, d.Id()).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/publicdns/v2/records"
 )
 
@@ -45,7 +45,7 @@ func PublicDNSRecordExtract(res recordResult, recordType string) (interface{}, e
 	return r, err
 }
 
-func publicDNSRecordStateRefreshFunc(client *gophercloud.ServiceClient, zoneID string, id string, recordType string) resource.StateRefreshFunc {
+func publicDNSRecordStateRefreshFunc(client *gophercloud.ServiceClient, zoneID string, id string, recordType string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		res := records.Get(client, zoneID, id, recordType)
 		record, err := PublicDNSRecordExtract(res, recordType)

@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
@@ -240,7 +240,7 @@ func resourceKeyManagerSecretCreate(ctx context.Context, d *schema.ResourceData,
 
 	uuid := KeyManagerSecretGetUUIDfromSecretRef(secret.SecretRef)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"PENDING"},
 		Target:     []string{"ACTIVE"},
 		Refresh:    keyManagerSecretWaitForSecretCreation(kmClient, uuid),
@@ -297,7 +297,7 @@ func resourceKeyManagerSecretCreate(ctx context.Context, d *schema.ResourceData,
 			return diag.Errorf("Error creating metadata for vkcs_keymanager_secret with ID %s: %s", uuid, err)
 		}
 
-		stateConf = &resource.StateChangeConf{
+		stateConf = &retry.StateChangeConf{
 			Pending:    []string{"PENDING"},
 			Target:     []string{"ACTIVE"},
 			Refresh:    keyManagerSecretMetadataV1WaitForSecretMetadataCreation(kmClient, uuid),
@@ -466,7 +466,7 @@ func resourceKeyManagerSecretDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error creating VKCS keymanager client: %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"PENDING"},
 		Target:     []string{"DELETED"},
 		Refresh:    keyManagerSecretWaitForSecretDeletion(kmClient, d.Id()),

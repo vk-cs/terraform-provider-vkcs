@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	db "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/databases"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/users"
 )
@@ -27,7 +27,7 @@ func flattenDatabaseUserDatabases(v []db.Database) []interface{} {
 	return databases
 }
 
-func databaseUserStateRefreshFunc(client *gophercloud.ServiceClient, dbmsID string, userName string, dbmsType string) resource.StateRefreshFunc {
+func databaseUserStateRefreshFunc(client *gophercloud.ServiceClient, dbmsID string, userName string, dbmsType string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		pages, err := users.List(client, dbmsID, dbmsType).AllPages()
 		if err != nil {

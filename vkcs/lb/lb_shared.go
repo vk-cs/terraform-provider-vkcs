@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
@@ -65,7 +65,7 @@ func waitForLBListener(ctx context.Context, lbClient *gophercloud.ServiceClient,
 
 	lbID := listener.Loadbalancers[0].ID
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target:     []string{target},
 		Pending:    pending,
 		Refresh:    resourceLBListenerRefreshFunc(lbClient, lbID, listener),
@@ -88,7 +88,7 @@ func waitForLBListener(ctx context.Context, lbClient *gophercloud.ServiceClient,
 	return nil
 }
 
-func resourceLBListenerRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, listener *octavialisteners.Listener) resource.StateRefreshFunc {
+func resourceLBListenerRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, listener *octavialisteners.Listener) retry.StateRefreshFunc {
 	if listener.ProvisioningStatus != "" {
 		return func() (interface{}, string, error) {
 			lb, status, err := resourceLBLoadBalancerRefreshFunc(lbClient, lbID)()
@@ -114,7 +114,7 @@ func resourceLBListenerRefreshFunc(lbClient *gophercloud.ServiceClient, lbID str
 func waitForLBLoadBalancer(ctx context.Context, lbClient *gophercloud.ServiceClient, lbID string, target string, pending []string, timeout time.Duration) error {
 	log.Printf("[DEBUG] Waiting for loadbalancer %s to become %s.", lbID, target)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target:     []string{target},
 		Pending:    pending,
 		Refresh:    resourceLBLoadBalancerRefreshFunc(lbClient, lbID),
@@ -139,7 +139,7 @@ func waitForLBLoadBalancer(ctx context.Context, lbClient *gophercloud.ServiceCli
 	return nil
 }
 
-func resourceLBLoadBalancerRefreshFunc(lbClient *gophercloud.ServiceClient, id string) resource.StateRefreshFunc {
+func resourceLBLoadBalancerRefreshFunc(lbClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		lb, err := octavialoadbalancers.Get(lbClient, id).Extract()
 		if err != nil {
@@ -158,7 +158,7 @@ func waitForLBMember(ctx context.Context, lbClient *gophercloud.ServiceClient, p
 		return err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target:     []string{target},
 		Pending:    pending,
 		Refresh:    resourceLBMemberRefreshFunc(lbClient, lbID, parentPool.ID, member),
@@ -181,7 +181,7 @@ func waitForLBMember(ctx context.Context, lbClient *gophercloud.ServiceClient, p
 	return nil
 }
 
-func resourceLBMemberRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, poolID string, member *octaviapools.Member) resource.StateRefreshFunc {
+func resourceLBMemberRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, poolID string, member *octaviapools.Member) retry.StateRefreshFunc {
 	if member.ProvisioningStatus != "" {
 		return func() (interface{}, string, error) {
 			lb, status, err := resourceLBLoadBalancerRefreshFunc(lbClient, lbID)()
@@ -212,7 +212,7 @@ func waitForLBMonitor(ctx context.Context, lbClient *gophercloud.ServiceClient, 
 		return err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target:     []string{target},
 		Pending:    pending,
 		Refresh:    resourceLBMonitorRefreshFunc(lbClient, lbID, monitor),
@@ -234,7 +234,7 @@ func waitForLBMonitor(ctx context.Context, lbClient *gophercloud.ServiceClient, 
 	return nil
 }
 
-func resourceLBMonitorRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, monitor *octaviamonitors.Monitor) resource.StateRefreshFunc {
+func resourceLBMonitorRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, monitor *octaviamonitors.Monitor) retry.StateRefreshFunc {
 	if monitor.ProvisioningStatus != "" {
 		return func() (interface{}, string, error) {
 			lb, status, err := resourceLBLoadBalancerRefreshFunc(lbClient, lbID)()
@@ -265,7 +265,7 @@ func waitForLBPool(ctx context.Context, lbClient *gophercloud.ServiceClient, poo
 		return err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target:     []string{target},
 		Pending:    pending,
 		Refresh:    resourceLBPoolRefreshFunc(lbClient, lbID, pool),
@@ -288,7 +288,7 @@ func waitForLBPool(ctx context.Context, lbClient *gophercloud.ServiceClient, poo
 	return nil
 }
 
-func resourceLBPoolRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, pool *octaviapools.Pool) resource.StateRefreshFunc {
+func resourceLBPoolRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, pool *octaviapools.Pool) retry.StateRefreshFunc {
 	if pool.ProvisioningStatus != "" {
 		return func() (interface{}, string, error) {
 			lb, status, err := resourceLBLoadBalancerRefreshFunc(lbClient, lbID)()
@@ -331,7 +331,7 @@ func lbFindLBIDviaPool(lbClient *gophercloud.ServiceClient, pool *octaviapools.P
 	return "", fmt.Errorf("unable to determine loadbalancer ID from pool %s", pool.ID)
 }
 
-func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.ServiceClient, lbID, resourceType, resourceID string, parentID string) resource.StateRefreshFunc {
+func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.ServiceClient, lbID, resourceType, resourceID string, parentID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		statuses, err := octavialoadbalancers.GetStatuses(lbClient, lbID).Extract()
 		if err != nil {
@@ -435,7 +435,7 @@ func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.Servic
 	}
 }
 
-func resourceLBL7PolicyRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, l7policy *octavial7policies.L7Policy) resource.StateRefreshFunc {
+func resourceLBL7PolicyRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, l7policy *octavial7policies.L7Policy) retry.StateRefreshFunc {
 	if l7policy.ProvisioningStatus != "" {
 		return func() (interface{}, string, error) {
 			lb, status, err := resourceLBLoadBalancerRefreshFunc(lbClient, lbID)()
@@ -467,7 +467,7 @@ func waitForLBL7Policy(ctx context.Context, lbClient *gophercloud.ServiceClient,
 
 	lbID := parentListener.Loadbalancers[0].ID
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target:     []string{target},
 		Pending:    pending,
 		Refresh:    resourceLBL7PolicyRefreshFunc(lbClient, lbID, l7policy),
@@ -519,7 +519,7 @@ func getListenerIDForL7Policy(lbClient *gophercloud.ServiceClient, id string) (s
 	return "", fmt.Errorf("unable to find Listener ID associated with the %s L7 Policy ID", id)
 }
 
-func resourceLBL7RuleRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, l7policyID string, l7rule *octavial7policies.Rule) resource.StateRefreshFunc {
+func resourceLBL7RuleRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, l7policyID string, l7rule *octavial7policies.Rule) retry.StateRefreshFunc {
 	if l7rule.ProvisioningStatus != "" {
 		return func() (interface{}, string, error) {
 			lb, status, err := resourceLBLoadBalancerRefreshFunc(lbClient, lbID)()
@@ -551,7 +551,7 @@ func waitForLBL7Rule(ctx context.Context, lbClient *gophercloud.ServiceClient, p
 
 	lbID := parentListener.Loadbalancers[0].ID
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target:     []string{target},
 		Pending:    pending,
 		Refresh:    resourceLBL7RuleRefreshFunc(lbClient, lbID, parentL7policy.ID, l7rule),

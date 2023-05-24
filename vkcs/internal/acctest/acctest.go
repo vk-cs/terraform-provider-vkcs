@@ -2,12 +2,18 @@ package acctest
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"testing"
 	"text/template"
 
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/provider"
 )
@@ -47,12 +53,35 @@ var AccTestValues map[string]string = map[string]string{
 
 var AccTestProviders map[string]func() (*schema.Provider, error)
 var AccTestProvider *schema.Provider
+var AccTestProtoV6ProviderFactories map[string]func() (tfprotov6.ProviderServer, error)
 
 func init() {
 	AccTestProvider = provider.Provider()
 	AccTestProviders = map[string]func() (*schema.Provider, error){
 		"vkcs": func() (*schema.Provider, error) {
 			return AccTestProvider, nil
+		},
+	}
+	AccTestProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+		"vkcs": func() (tfprotov6.ProviderServer, error) {
+			ctx := context.Background()
+			providers := []func() tfprotov6.ProviderServer{
+				providerserver.NewProtocol6(provider.New()),
+				func() tfprotov6.ProviderServer {
+					server, _ := tf5to6server.UpgradeServer(
+						ctx,
+						provider.Provider().GRPCProvider,
+					)
+					return server
+				},
+			}
+
+			muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
+			if err != nil {
+				return nil, err
+			}
+
+			return muxServer, nil
 		},
 	}
 }
@@ -163,4 +192,20 @@ func AccTestRenderConfig(testConfig string, values ...map[string]string) string 
 	_ = t.Execute(buf, tmplValues)
 
 	return buf.String()
+}
+
+func AccTestGetStepsWithMigrationCases(steps []resource.TestStep) (migrationSteps []resource.TestStep) {
+	for _, step := range steps {
+		migrationSteps = append(migrationSteps, resource.TestStep{
+			Config: step.Config,
+			Check:  step.Check,
+			ExternalProviders: map[string]resource.ExternalProvider{
+				"vkcs": {
+					VersionConstraint: "0.2.1",
+					Source:            "vk-cs/vkcs",
+				},
+			},
+		})
+	}
+	return append(migrationSteps, steps...)
 }

@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
@@ -597,7 +597,7 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 	// Wait for the instance to become available.
 	log.Printf("[DEBUG] Waiting for vkcs_db_instance %s to become available", instance.ID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(dbInstanceStatusBuild), string(dbInstanceStatusBackup)},
 		Target:     []string{string(dbInstanceStatusActive)},
 		Refresh:    databaseInstanceStateRefreshFunc(DatabaseV1Client, instance.ID, checkCapabilities),
@@ -735,7 +735,7 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error creating VKCS database client: %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(dbInstanceStatusBuild)},
 		Target:     []string{string(dbInstanceStatusActive)},
 		Refresh:    databaseInstanceStateRefreshFunc(DatabaseV1Client, d.Id(), nil),
@@ -955,7 +955,7 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 			return diag.Errorf("error applying capability to vkcs_db_instance %s: %s", d.Id(), err)
 		}
 
-		applyCapabilityInstanceConf := &resource.StateChangeConf{
+		applyCapabilityInstanceConf := &retry.StateChangeConf{
 			Pending:    []string{string(dbInstanceStatusCapabilityApplying), string(dbInstanceStatusBuild)},
 			Target:     []string{string(dbInstanceStatusActive)},
 			Refresh:    databaseInstanceStateRefreshFunc(DatabaseV1Client, d.Id(), &newCapabilitiesOpts),
@@ -1019,7 +1019,7 @@ func resourceDatabaseInstanceDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_db_instance"))
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{string(dbInstanceStatusActive), string(dbInstanceStatusBackup),
 			string(dbInstanceStatusShutdown)},
 		Target:     []string{string(dbInstanceStatusDeleted)},

@@ -10,7 +10,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/mapstructure"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
@@ -138,22 +138,22 @@ func MapValueSpecs(d *schema.ResourceData) map[string]string {
 	return m
 }
 
-func CheckForRetryableError(err error) *resource.RetryError {
+func CheckForRetryableError(err error) *retry.RetryError {
 	switch e := err.(type) {
 	case gophercloud.ErrDefault500:
-		return resource.RetryableError(err)
+		return retry.RetryableError(err)
 	case gophercloud.ErrDefault409:
-		return resource.RetryableError(err)
+		return retry.RetryableError(err)
 	case gophercloud.ErrDefault503:
-		return resource.RetryableError(err)
+		return retry.RetryableError(err)
 	case gophercloud.ErrUnexpectedResponseCode:
 		if e.GetStatusCode() == 504 || e.GetStatusCode() == 502 {
-			return resource.RetryableError(err)
+			return retry.RetryableError(err)
 		} else {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 	default:
-		return resource.NonRetryableError(err)
+		return retry.NonRetryableError(err)
 	}
 }
 

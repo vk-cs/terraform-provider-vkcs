@@ -4,25 +4,25 @@ import (
 	"fmt"
 	"testing"
 
-	sdk_acctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	fm_acctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/nodegroups"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccKubernetesNodeGroupDataSource_basic(t *testing.T) {
 	var cluster clusters.Cluster
 	var nodeGroup nodegroups.NodeGroup
 
-	clusterName := "testcluster" + sdk_acctest.RandStringFromCharSet(8, sdk_acctest.CharSetAlphaNum)
+	clusterName := "testcluster" + fm_acctest.RandStringFromCharSet(8, fm_acctest.CharSetAlphaNum)
 	createClusterFixture := clusterFixture(clusterName, acctest.ClusterTemplateID, acctest.OsFlavorID,
 		acctest.OsKeypairName, acctest.OsNetworkID, acctest.OsSubnetworkID, "MS1", 1)
 	clusterResourceName := "vkcs_kubernetes_cluster." + clusterName
 
-	nodeGroupName := "testng" + sdk_acctest.RandStringFromCharSet(8, sdk_acctest.CharSetAlphaNum)
+	nodeGroupName := "testng" + fm_acctest.RandStringFromCharSet(8, fm_acctest.CharSetAlphaNum)
 	nodeGroupFixture := nodeGroupFixture(nodeGroupName, acctest.OsFlavorID, 1, 3, 1, false)
 	nodeGroupResourceName := "vkcs_kubernetes_node_group." + nodeGroupName
 	nodeGroupDataSourceName := "data.vkcs_kubernetes_node_group." + nodeGroupName

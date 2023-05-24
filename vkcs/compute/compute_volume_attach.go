@@ -5,11 +5,10 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 func ComputeVolumeAttachParseID(id string) (string, string, error) {
@@ -24,7 +23,7 @@ func ComputeVolumeAttachParseID(id string) (string, string, error) {
 	return instanceID, attachmentID, nil
 }
 
-func computeVolumeAttachAttachFunc(computeClient *gophercloud.ServiceClient, blockStorageClient *gophercloud.ServiceClient, instanceID, attachmentID string, volumeID string) resource.StateRefreshFunc {
+func computeVolumeAttachAttachFunc(computeClient *gophercloud.ServiceClient, blockStorageClient *gophercloud.ServiceClient, instanceID, attachmentID string, volumeID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		va, err := volumeattach.Get(computeClient, instanceID, attachmentID).Extract()
 		if err != nil {
@@ -49,7 +48,7 @@ func computeVolumeAttachAttachFunc(computeClient *gophercloud.ServiceClient, blo
 	}
 }
 
-func computeVolumeAttachDetachFunc(computeClient *gophercloud.ServiceClient, instanceID, attachmentID string) resource.StateRefreshFunc {
+func computeVolumeAttachDetachFunc(computeClient *gophercloud.ServiceClient, instanceID, attachmentID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] vkcs_compute_volume_attach attempting to detach VKCS volume %s from instance %s",
 			attachmentID, instanceID)

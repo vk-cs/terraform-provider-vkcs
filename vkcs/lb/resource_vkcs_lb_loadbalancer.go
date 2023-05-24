@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
@@ -257,7 +257,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, met
 		}
 
 		log.Printf("[DEBUG] Updating vkcs_lb_loadbalancer %s with options: %#v", d.Id(), updateOpts)
-		err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
+		err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 			_, err = octavialoadbalancers.Update(lbClient, d.Id(), updateOpts).Extract()
 			if err != nil {
 				return util.CheckForRetryableError(err)
@@ -288,7 +288,7 @@ func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, met
 
 	log.Printf("[DEBUG] Deleting vkcs_lb_loadbalancer %s", d.Id())
 	timeout := d.Timeout(schema.TimeoutDelete)
-	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
+	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 		err = octavialoadbalancers.Delete(lbClient, d.Id(), nil).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)

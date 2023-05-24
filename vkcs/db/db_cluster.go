@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
@@ -190,7 +190,7 @@ type dbResourceUpdateContext struct {
 	Ctx       context.Context
 	Client    *gophercloud.ServiceClient
 	D         *schema.ResourceData
-	StateConf *resource.StateChangeConf
+	StateConf *retry.StateChangeConf
 }
 
 func (uCtx *dbResourceUpdateContext) WaitForStateContext() error {
@@ -623,7 +623,7 @@ func getClusterStatus(c *clusters.ClusterResp) string {
 	return c.Task.Name
 }
 
-func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterID string, capabilitiesOpts *[]instances.CapabilityOpts) resource.StateRefreshFunc {
+func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterID string, capabilitiesOpts *[]instances.CapabilityOpts) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		c, err := clusters.Get(client, clusterID).Extract()
 		if err != nil {

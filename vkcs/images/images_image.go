@@ -15,9 +15,10 @@ import (
 	"strings"
 
 	"github.com/gofrs/flock"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -154,7 +155,7 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 	}
 }
 
-func resourceImagesImageRefreshFunc(client *gophercloud.ServiceClient, id string) resource.StateRefreshFunc {
+func resourceImagesImageRefreshFunc(client *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		img, err := images.Get(client, id).Extract()
 		if err != nil {

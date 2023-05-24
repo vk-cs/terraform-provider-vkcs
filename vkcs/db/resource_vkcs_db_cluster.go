@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
@@ -566,7 +566,7 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 	// Wait for the cluster to become available.
 	log.Printf("[DEBUG] Waiting for vkcs_db_cluster %s to become available", cluster.ID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(dbClusterStatusBuild), string(dbClusterStatusBackup)},
 		Target:     []string{string(dbClusterStatusActive)},
 		Refresh:    databaseClusterStateRefreshFunc(DatabaseV1Client, cluster.ID, checkCapabilities),
@@ -667,7 +667,7 @@ func resourceDatabaseClusterUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	clusterID := d.Id()
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(dbClusterStatusBuild)},
 		Target:     []string{string(dbClusterStatusActive)},
 		Refresh:    databaseClusterStateRefreshFunc(dbClient, d.Id(), nil),
@@ -787,7 +787,7 @@ func resourceDatabaseClusterDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_db_cluster"))
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(dbClusterStatusActive), string(dbClusterStatusDeleting)},
 		Target:     []string{string(dbClusterStatusDeleted)},
 		Refresh:    databaseClusterStateRefreshFunc(DatabaseV1Client, d.Id(), nil),

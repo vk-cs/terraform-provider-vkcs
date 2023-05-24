@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"testing"
 
-	sdk_acctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	fm_acctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
 func TestAccKubernetesClusterDataSourceBasic(t *testing.T) {
 
-	var clusterName = "testcluster" + sdk_acctest.RandStringFromCharSet(8, sdk_acctest.CharSetAlphaNum)
+	var clusterName = "testcluster" + fm_acctest.RandStringFromCharSet(8, fm_acctest.CharSetAlphaNum)
 	datasourceName := "data.vkcs_kubernetes_cluster." + clusterName
 
 	createClusterFixture := clusterFixture(clusterName, acctest.ClusterTemplateID, acctest.OsFlavorID,

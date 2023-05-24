@@ -3,7 +3,7 @@ package networking
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
@@ -99,7 +99,7 @@ func networkingNetworkName(d *schema.ResourceData, meta interface{}, networkID s
 	return networkName, err
 }
 
-func resourceNetworkingNetworkStateRefreshFunc(client *gophercloud.ServiceClient, networkID string) resource.StateRefreshFunc {
+func resourceNetworkingNetworkStateRefreshFunc(client *gophercloud.ServiceClient, networkID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		n, err := networks.Get(client, networkID).Extract()
 		if err != nil {
