@@ -365,7 +365,6 @@ func resourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("name", cluster.Name)
 	d.Set("api_address", cluster.APIAddress)
 	d.Set("cluster_template_id", cluster.ClusterTemplateID)
-	d.Set("discovery_url", cluster.DiscoveryURL)
 	d.Set("master_flavor", cluster.MasterFlavorID)
 	d.Set("keypair", cluster.KeyPair)
 	d.Set("master_count", cluster.MasterCount)
