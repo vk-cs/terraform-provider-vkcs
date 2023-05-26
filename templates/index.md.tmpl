@@ -14,7 +14,7 @@ Use the navigation to the left to read about the available resources.
 
 ## Example Usage
 
-Terraform 1.0 and later:
+Terraform 1.1.5 and later:
 
 ```terraform
 # Configure the vkcs provider

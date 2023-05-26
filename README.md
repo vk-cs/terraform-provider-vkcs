@@ -6,7 +6,7 @@ Terraform VKCS Provider
 Requirements
 ------------
 
--	[Terraform](https://www.terraform.io/downloads.html) 1.0.x
+-	[Terraform](https://www.terraform.io/downloads.html) 1.1.5 and later
 -	[Go](https://golang.org/doc/install) 1.18 (to build the provider plugin)
 
 Using The Provider

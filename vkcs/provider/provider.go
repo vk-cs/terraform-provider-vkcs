@@ -3,8 +3,13 @@ package provider
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	sdkdiag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	sdkschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/blockstorage"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/compute"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/db"
@@ -22,61 +27,54 @@ import (
 )
 
 // Provider returns a schema.Provider for VKCS.
-func ProviderBase() *schema.Provider {
-	provider := &schema.Provider{
-		Schema: map[string]*schema.Schema{
+func ProviderBase() *sdkschema.Provider {
+	provider := &sdkschema.Provider{
+		Schema: map[string]*sdkschema.Schema{
 			"auth_url": {
-				Type:        schema.TypeString,
+				Type:        sdkschema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_AUTH_URL", clients.DefaultIdentityEndpoint),
 				Description: "The Identity authentication URL.",
 			},
 			"project_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_PROJECT_ID", ""),
+				Type:        sdkschema.TypeString,
+				Optional:    true,
 				Description: "The ID of Project to login with.",
 			},
 			"password": {
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:        sdkschema.TypeString,
+				Optional:    true,
 				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_PASSWORD", ""),
 				Description: "Password to login with.",
 			},
 			"username": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_USERNAME", ""),
+				Type:        sdkschema.TypeString,
+				Optional:    true,
 				Description: "User name to login with.",
 			},
 			"user_domain_id": {
-				Type:        schema.TypeString,
+				Type:        sdkschema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_USER_DOMAIN_ID", ""),
 				Description: "The id of the domain where the user resides.",
 			},
 			"user_domain_name": {
-				Type:        schema.TypeString,
+				Type:        sdkschema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_USER_DOMAIN_NAME", clients.DefaultUserDomainName),
 				Description: "The name of the domain where the user resides.",
 			},
 			"region": {
-				Type:        schema.TypeString,
+				Type:        sdkschema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_REGION_NAME", clients.DefaultRegionName),
 				Description: "A region to use.",
 			},
 			"cloud_containers_api_version": {
-				Type:        schema.TypeString,
+				Type:        sdkschema.TypeString,
 				Optional:    true,
 				Default:     clients.ContainerInfraAPIVersion,
 				Description: "Cloud Containers API version to use. _note_ Only for custom VKCS deployments.",
 			},
 		},
 
-		DataSourcesMap: map[string]*schema.Resource{
+		DataSourcesMap: map[string]*sdkschema.Resource{
 			"vkcs_compute_keypair":               compute.DataSourceComputeKeypair(),
 			"vkcs_compute_instance":              compute.DataSourceComputeInstance(),
 			"vkcs_compute_availability_zones":    compute.DataSourceComputeAvailabilityZones(),
@@ -98,7 +96,6 @@ func ProviderBase() *schema.Provider {
 			"vkcs_sharedfilesystem_share":        sharedfilesystem.DataSourceSharedFilesystemShare(),
 			"vkcs_db_database":                   db.DataSourceDatabaseDatabase(),
 			"vkcs_db_datastore":                  db.DataSourceDatabaseDatastore(),
-			"vkcs_db_datastore_capabilities":     db.DataSourceDatabaseDatastoreCapabilities(),
 			"vkcs_db_datastore_parameters":       db.DataSourceDatabaseDatastoreParameters(),
 			"vkcs_db_datastores":                 db.DataSourceDatabaseDatastores(),
 			"vkcs_db_instance":                   db.DataSourceDatabaseInstance(),
@@ -114,7 +111,7 @@ func ProviderBase() *schema.Provider {
 			"vkcs_publicdns_zone":                publicdns.DataSourcePublicDNSZone(),
 		},
 
-		ResourcesMap: map[string]*schema.Resource{
+		ResourcesMap: map[string]*sdkschema.Resource{
 			"vkcs_compute_instance":                   compute.ResourceComputeInstance(),
 			"vkcs_compute_interface_attach":           compute.ResourceComputeInterfaceAttach(),
 			"vkcs_compute_keypair":                    compute.ResourceComputeKeypair(),
@@ -169,25 +166,108 @@ func ProviderBase() *schema.Provider {
 		},
 	}
 
-	provider.ConfigureContextFunc = func(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	provider.ConfigureContextFunc = func(_ context.Context, d *sdkschema.ResourceData) (interface{}, sdkdiag.Diagnostics) {
 		terraformVersion := provider.TerraformVersion
 		if terraformVersion == "" {
 			// Terraform 0.12 introduced this field to the protocol
 			// We can therefore assume that if it's missing it's 0.10 or 0.11
 			terraformVersion = "0.11+compatible"
 		}
-		return clients.ConfigureProvider(d, terraformVersion)
+		return clients.ConfigureSdkProvider(d, terraformVersion)
 	}
 
 	return provider
 }
 
 // Provider returns a schema.Provider for VKCS.
-func Provider() *schema.Provider {
+func Provider() *sdkschema.Provider {
 	provider, err := wrapProvider(ProviderBase())
 	if err != nil {
 		panic(err)
 	}
 
 	return provider
+}
+
+// Ensure the implementation satisfies the expected interfaces
+var (
+	_ provider.Provider = &vkcsProvider{}
+)
+
+// New is a helper function to simplify provider server and testing implementation.
+func New() provider.Provider {
+	return &vkcsProvider{}
+}
+
+// vkcsProvider is the provider implementation.
+type vkcsProvider struct{}
+
+// Metadata returns the provider type name.
+func (p *vkcsProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
+	resp.TypeName = "vkcs_framework"
+}
+
+// Schema defines the provider-level schema for configuration data.
+func (p *vkcsProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"auth_url": schema.StringAttribute{
+				Optional:    true,
+				Description: "The Identity authentication URL.",
+			},
+			"project_id": schema.StringAttribute{
+				Optional:    true,
+				Description: "The ID of Project to login with.",
+			},
+			"password": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				Description: "Password to login with.",
+			},
+			"username": schema.StringAttribute{
+				Optional:    true,
+				Description: "User name to login with.",
+			},
+			"user_domain_id": schema.StringAttribute{
+				Optional:    true,
+				Description: "The id of the domain where the user resides.",
+			},
+			"user_domain_name": schema.StringAttribute{
+				Optional:    true,
+				Description: "The name of the domain where the user resides.",
+			},
+			"region": schema.StringAttribute{
+				Optional:    true,
+				Description: "A region to use.",
+			},
+			"cloud_containers_api_version": schema.StringAttribute{
+				Optional: true,
+				Description: "Cloud Containers API version to use.\n" +
+					"_NOTE_ Only for custom VKCS deployments.",
+			},
+		},
+	}
+}
+
+// Configure prepares a HashiCups API client for data sources and resources.
+func (p *vkcsProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	config, diags := clients.ConfigureProvider(ctx, req)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.DataSourceData = config
+	resp.ResourceData = config
+}
+
+// DataSources defines the data sources implemented in the provider.
+func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSource {
+	return []func() datasource.DataSource{
+		db.NewDatastoreCapabilitiesDataSource,
+	}
+}
+
+// Resources defines the resources implemented in the provider.
+func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
+	return nil
 }

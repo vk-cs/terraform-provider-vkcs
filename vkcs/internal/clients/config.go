@@ -4,12 +4,16 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/utils/terraform/auth"
 	"github.com/gophercloud/utils/terraform/mutexkv"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/provider"
+	sdkdiag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
@@ -45,23 +49,42 @@ type configer struct {
 	ContainerInfraV1MicroVersion string
 }
 
-func ConfigureProvider(d *schema.ResourceData, terraformVersion string) (Config, diag.Diagnostics) {
+func getConfigParam(d *schema.ResourceData, key string, envKey string, defaultVal string) (param string) {
+	tfAttr := d.Get(key)
+	if tfAttr != nil {
+		param = tfAttr.(string)
+	}
+	if param == "" {
+		param = os.Getenv(envKey)
+	}
+	if param == "" {
+		param = defaultVal
+	}
+	return param
+}
+
+func ConfigureSdkProvider(d *schema.ResourceData, terraformVersion string) (Config, sdkdiag.Diagnostics) {
+	containerInfraV1MicroVersion := d.Get("cloud_containers_api_version").(string)
+	if containerInfraV1MicroVersion == "" {
+		containerInfraV1MicroVersion = CloudContainersAPIVersion
+	}
+
 	config := &configer{
 		auth.Config{
-			Username:         d.Get("username").(string),
-			Password:         d.Get("password").(string),
-			TenantID:         d.Get("project_id").(string),
-			Region:           d.Get("region").(string),
-			IdentityEndpoint: d.Get("auth_url").(string),
-			UserDomainID:     d.Get("user_domain_id").(string),
-			UserDomainName:   d.Get("user_domain_name").(string),
+			Username:         getConfigParam(d, "username", "OS_USERNAME", ""),
+			Password:         getConfigParam(d, "password", "OS_PASSWORD", ""),
+			TenantID:         getConfigParam(d, "project_id", "OS_PROJECT_ID", ""),
+			Region:           getConfigParam(d, "region", "OS_REGION_NAME", DefaultRegionName),
+			IdentityEndpoint: getConfigParam(d, "auth_url", "OS_AUTH_URL", DefaultIdentityEndpoint),
+			UserDomainID:     getConfigParam(d, "user_domain_id", "OS_USER_DOMAIN_ID", ""),
+			UserDomainName:   getConfigParam(d, "user_domain_name", "OS_USER_DOMAIN_NAME", DefaultUserDomainName),
 			AllowReauth:      true,
 			MaxRetries:       maxRetriesCount,
 			TerraformVersion: terraformVersion,
 			SDKVersion:       meta.SDKVersionString(),
 			MutexKV:          mutexkv.NewMutexKV(),
 		},
-		d.Get("cloud_containers_api_version").(string),
+		containerInfraV1MicroVersion,
 	}
 
 	if config.UserDomainID != "" {
@@ -69,7 +92,7 @@ func ConfigureProvider(d *schema.ResourceData, terraformVersion string) (Config,
 	}
 
 	if err := config.LoadAndValidate(); err != nil {
-		return nil, diag.FromErr(err)
+		return nil, sdkdiag.FromErr(err)
 	}
 	return config, nil
 }
@@ -164,4 +187,78 @@ func (c *configer) LoadBalancerV2Client(region string) (*gophercloud.ServiceClie
 
 func (c *configer) GetMutex() *mutexkv.MutexKV {
 	return c.Config.MutexKV
+}
+
+func (c *configer) updateWithEnv() {
+	if c.Username == "" {
+		c.Username = os.Getenv("OS_USERNAME")
+	}
+	if c.Password == "" {
+		c.Password = os.Getenv("OS_PASSWORD")
+	}
+	if c.TenantID == "" {
+		c.TenantID = os.Getenv("OS_PROJECT_ID")
+	}
+	if c.Region == "" {
+		c.Region = os.Getenv("OS_REGION_NAME")
+	}
+	if c.IdentityEndpoint == "" {
+		c.IdentityEndpoint = os.Getenv("OS_AUTH_URL")
+	}
+	if c.UserDomainID == "" {
+		c.UserDomainID = os.Getenv("OS_USER_DOMAIN_ID")
+	}
+	if c.UserDomainName == "" {
+		c.UserDomainName = os.Getenv("OS_USER_DOMAIN_NAME")
+	}
+}
+
+func ConfigureProvider(ctx context.Context, req provider.ConfigureRequest) (Config, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	config := configer{}
+
+	req.Config.GetAttribute(ctx, path.Root("auth_url"), &config.IdentityEndpoint)
+	req.Config.GetAttribute(ctx, path.Root("username"), &config.Username)
+	req.Config.GetAttribute(ctx, path.Root("password"), &config.Password)
+	req.Config.GetAttribute(ctx, path.Root("project_id"), &config.TenantID)
+	req.Config.GetAttribute(ctx, path.Root("user_domain_id"), &config.UserDomainID)
+	req.Config.GetAttribute(ctx, path.Root("user_domain_name"), &config.UserDomainName)
+	req.Config.GetAttribute(ctx, path.Root("region"), &config.Region)
+	req.Config.GetAttribute(ctx, path.Root("cloud_containers_api_version"), &config.ContainerInfraV1MicroVersion)
+	config.updateWithEnv()
+
+	if config.UserDomainID != "" {
+		config.UserDomainName = ""
+	}
+
+	terraformVersion := req.TerraformVersion
+	if terraformVersion == "" {
+		// Terraform 0.12 introduced this field to the protocol
+		// We can therefore assume that if it's missing it's 0.10 or 0.11
+		terraformVersion = "0.11+compatible"
+	}
+	config.TerraformVersion = terraformVersion
+
+	if config.ContainerInfraV1MicroVersion == "" {
+		config.ContainerInfraV1MicroVersion = CloudContainersAPIVersion
+	}
+	if config.Region == "" {
+		config.Region = DefaultRegionName
+	}
+	if config.IdentityEndpoint == "" {
+		config.IdentityEndpoint = DefaultIdentityEndpoint
+	}
+	if config.UserDomainName == "" {
+		config.UserDomainName = DefaultUserDomainName
+	}
+
+	config.AllowReauth = true
+	config.MaxRetries = maxRetriesCount
+	config.MutexKV = mutexkv.NewMutexKV()
+
+	if err := config.LoadAndValidate(); err != nil {
+		diags.AddError("Config validation error", err.Error())
+	}
+
+	return &config, diags
 }
