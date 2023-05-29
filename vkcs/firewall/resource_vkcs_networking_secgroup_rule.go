@@ -109,7 +109,7 @@ func ResourceNetworkingSecGroupRule() *schema.Resource {
 				ForceNew:      true,
 				Computed:      true,
 				ConflictsWith: []string{"remote_ip_prefix"},
-				Description:   "The remote group id, the value needs to be an ID of a security group in the same tenant. Changing this creates a new security group rule. **Note**: Only one of `remote_group_id` or `remote_ip_prefix` may be set.",
+				Description:   "The remote group id, the value needs to be an ID of a security group in the same tenant. Changing this creates a new security group rule. _note_ Only one of `remote_group_id` or `remote_ip_prefix` may be set.",
 			},
 
 			"remote_ip_prefix": {
@@ -121,7 +121,7 @@ func ResourceNetworkingSecGroupRule() *schema.Resource {
 					return strings.ToLower(v.(string))
 				},
 				ConflictsWith: []string{"remote_group_id"},
-				Description:   "The remote CIDR, the value needs to be a valid CIDR (i.e. 192.168.0.0/16). Changing this creates a new security group rule. **Note**: Only one of `remote_group_id` or `remote_ip_prefix` may be set.",
+				Description:   "The remote CIDR, the value needs to be a valid CIDR (i.e. 192.168.0.0/16). Changing this creates a new security group rule. _note_ Only one of `remote_group_id` or `remote_ip_prefix` may be set.",
 			},
 
 			"security_group_id": {

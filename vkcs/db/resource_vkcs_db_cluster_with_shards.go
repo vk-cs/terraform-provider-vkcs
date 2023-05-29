@@ -341,11 +341,10 @@ func ResourceDatabaseClusterWithShards() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"uuid": {
-										Type:     schema.TypeString,
-										Optional: true,
-										ForceNew: true,
-										Description: "The id of the network. Changing this creates a new cluster." +
-											"**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.",
+										Type:        schema.TypeString,
+										Optional:    true,
+										ForceNew:    true,
+										Description: "The id of the network. Changing this creates a new cluster. _note_ Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.",
 									},
 									"port": {
 										Type:        schema.TypeString,

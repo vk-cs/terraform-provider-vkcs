@@ -26,13 +26,13 @@ func DataSourceKubernetesCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The name of the cluster. **Note**: Only one of `name` or `cluster_id` must be specified.",
+				Description: "The name of the cluster. _note_ Only one of `name` or `cluster_id` must be specified.",
 			},
 			"cluster_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The UUID of the Kubernetes cluster template. **Note**: Only one of `name` or `cluster_id` must be specified.",
+				Description: "The UUID of the Kubernetes cluster template. _note_ Only one of `name` or `cluster_id` must be specified.",
 			},
 			"project_id": {
 				Type:        schema.TypeString,

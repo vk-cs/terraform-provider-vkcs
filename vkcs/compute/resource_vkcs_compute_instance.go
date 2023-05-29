@@ -117,7 +117,7 @@ func ResourceComputeInstance() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
-				Description: "An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. *Note*: When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. *Note*: Names should be used and not ids, as ids trigger unnecessary updates.",
+				Description: "An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. _note_ When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. _note_ Names should be used and not ids, as ids trigger unnecessary updates.",
 			},
 			"availability_zone": {
 				Type:             schema.TypeString,
@@ -354,7 +354,7 @@ func ResourceComputeInstance() *schema.Resource {
 					"active", "shutoff", "shelved_offloaded",
 				}, true),
 				DiffSuppressFunc: suppressPowerStateDiffs,
-				Description:      "Provide the VM state. Only 'active' and 'shutoff' are supported values. *Note*: If the initial power_state is the shutoff the VM will be stopped immediately after build and the provisioners like remote-exec or files are not supported.",
+				Description:      "Provide the VM state. Only 'active' and 'shutoff' are supported values. _note_ If the initial power_state is the shutoff the VM will be stopped immediately after build and the provisioners like remote-exec or files are not supported.",
 			},
 			"tags": {
 				Type:        schema.TypeSet,
