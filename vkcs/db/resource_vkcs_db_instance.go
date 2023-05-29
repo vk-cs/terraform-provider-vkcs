@@ -207,11 +207,10 @@ func ResourceDatabaseInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"uuid": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
-							Description: "The id of the network. Changing this creates a new instance." +
-								"**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The id of the network. Changing this creates a new instance. _note_ Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.",
 						},
 						"port": {
 							Type:        schema.TypeString,
@@ -221,11 +220,10 @@ func ResourceDatabaseInstance() *schema.Resource {
 							Deprecated:  "This argument is deprecated, please do not use it.",
 						},
 						"fixed_ip_v4": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
-							Description: "The IPv4 address. Changing this creates a new instance. " +
-								"**Note** This argument conflicts with \"replica_of\". Setting both at the same time causes \"fixed_ip_v4\" to be ignored.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The IPv4 address. Changing this creates a new instance. _note_ This argument conflicts with \"replica_of\". Setting both at the same time causes \"fixed_ip_v4\" to be ignored.",
 						},
 						"subnet_id": {
 							Type:        schema.TypeString,

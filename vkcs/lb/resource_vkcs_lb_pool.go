@@ -69,7 +69,7 @@ func ResourcePool() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The load balancer on which to provision this pool. Changing this creates a new pool. Note: One of LoadbalancerID or ListenerID must be provided.",
+				Description: "The load balancer on which to provision this pool. Changing this creates a new pool. _note_ One of LoadbalancerID or ListenerID must be provided.",
 			},
 
 			// One of loadbalancer_id or listener_id must be provided
@@ -77,7 +77,7 @@ func ResourcePool() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The Listener on which the members of the pool will be associated with. Changing this creates a new pool. Note:  One of LoadbalancerID or ListenerID must be provided.",
+				Description: "The Listener on which the members of the pool will be associated with. Changing this creates a new pool. _note_ One of LoadbalancerID or ListenerID must be provided.",
 			},
 
 			"lb_method": {

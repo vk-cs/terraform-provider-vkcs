@@ -26,7 +26,7 @@ func DataSourceKubernetesClusterTemplate() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The UUID of the cluster template. **Note**: Only one of `name` or `version` or `cluster_template_uuid` must be specified.",
+				Description: "The UUID of the cluster template. _note_ Only one of `name` or `version` or `cluster_template_uuid` must be specified.",
 			},
 			"region": {
 				Type:        schema.TypeString,
@@ -38,7 +38,7 @@ func DataSourceKubernetesClusterTemplate() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The name of the cluster template. **Note**: Only one of `name` or `version` or `cluster_template_uuid` must be specified.",
+				Description: "The name of the cluster template. _note_ Only one of `name` or `version` or `cluster_template_uuid` must be specified.",
 			},
 			"project_id": {
 				Type:        schema.TypeString,

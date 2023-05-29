@@ -69,11 +69,10 @@ func ProviderBase() *schema.Provider {
 				Description: "A region to use.",
 			},
 			"cloud_containers_api_version": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  clients.ContainerInfraAPIVersion,
-				Description: "Cloud Containers API version to use.\n" +
-					"_NOTE_ Only for custom VKCS deployments.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     clients.ContainerInfraAPIVersion,
+				Description: "Cloud Containers API version to use. _note_ Only for custom VKCS deployments.",
 			},
 		},
 
