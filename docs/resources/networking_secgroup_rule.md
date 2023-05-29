@@ -60,9 +60,9 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the networking client. A networking client is needed to create a port. If omitted, the `region` argument of the provider is used. Changing this creates a new security group rule.
 
-- `remote_group_id` optional *string* &rarr;  The remote group id, the value needs to be an ID of a security group in the same tenant. Changing this creates a new security group rule. **Note**: Only one of `remote_group_id` or `remote_ip_prefix` may be set.
+- `remote_group_id` optional *string* &rarr;  The remote group id, the value needs to be an ID of a security group in the same tenant. Changing this creates a new security group rule. <br>**Note:** Only one of `remote_group_id` or `remote_ip_prefix` may be set.
 
-- `remote_ip_prefix` optional *string* &rarr;  The remote CIDR, the value needs to be a valid CIDR (i.e. 192.168.0.0/16). Changing this creates a new security group rule. **Note**: Only one of `remote_group_id` or `remote_ip_prefix` may be set.
+- `remote_ip_prefix` optional *string* &rarr;  The remote CIDR, the value needs to be a valid CIDR (i.e. 192.168.0.0/16). Changing this creates a new security group rule. <br>**Note:** Only one of `remote_group_id` or `remote_ip_prefix` may be set.
 
 - `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
 

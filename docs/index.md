@@ -49,8 +49,7 @@ provider "vkcs" {
 ## Argument Reference
 - `auth_url` optional *string* &rarr;  The Identity authentication URL.
 
-- `cloud_containers_api_version` optional *string* &rarr;  Cloud Containers API version to use.
-_NOTE_ Only for custom VKCS deployments.
+- `cloud_containers_api_version` optional *string* &rarr;  Cloud Containers API version to use. <br>**Note:** Only for custom VKCS deployments.
 
 - `password` optional sensitive *string* &rarr;  Password to login with.
 

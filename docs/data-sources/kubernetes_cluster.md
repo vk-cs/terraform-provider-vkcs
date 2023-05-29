@@ -23,11 +23,11 @@ data "vkcs_kubernetes_cluster" "mycluster" {
 }
 ```
 ## Argument Reference
-- `cluster_id` optional *string* &rarr;  The UUID of the Kubernetes cluster template. **Note**: Only one of `name` or `cluster_id` must be specified.
+- `cluster_id` optional *string* &rarr;  The UUID of the Kubernetes cluster template. <br>**Note:** Only one of `name` or `cluster_id` must be specified.
 
 - `dns_domain` optional *string* &rarr;  Custom DNS cluster domain.
 
-- `name` optional *string* &rarr;  The name of the cluster. **Note**: Only one of `name` or `cluster_id` must be specified.
+- `name` optional *string* &rarr;  The name of the cluster. <br>**Note:** Only one of `name` or `cluster_id` must be specified.
 
 - `region` optional *string* &rarr;  The region in which to obtain the Container Infra client. If omitted, the `region` argument of the provider is used.
 

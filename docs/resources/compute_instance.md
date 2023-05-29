@@ -389,14 +389,14 @@ resource "vkcs_compute_instance" "instance_1" {
 
   - `file` **required** *string* &rarr;  The absolute path of the destination file.
 
-- `power_state` optional *string* &rarr;  Provide the VM state. Only 'active' and 'shutoff' are supported values. *Note*: If the initial power_state is the shutoff the VM will be stopped immediately after build and the provisioners like remote-exec or files are not supported.
+- `power_state` optional *string* &rarr;  Provide the VM state. Only 'active' and 'shutoff' are supported values. <br>**Note:** If the initial power_state is the shutoff the VM will be stopped immediately after build and the provisioners like remote-exec or files are not supported.
 
 - `region` optional *string* &rarr;  The region in which to create the server instance. If omitted, the `region` argument of the provider is used. Changing this creates a new server.
 
 - `scheduler_hints` optional &rarr;  Provide the Nova scheduler with hints on how the instance should be launched. The available hints are described below.
   - `group` optional *string* &rarr;  A UUID of a Server Group. The instance will be placed into that group.
 
-- `security_groups` optional *set of* *string* &rarr;  An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. *Note*: When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. *Note*: Names should be used and not ids, as ids trigger unnecessary updates.
+- `security_groups` optional *set of* *string* &rarr;  An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. <br>**Note:** When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. <br>**Note:** Names should be used and not ids, as ids trigger unnecessary updates.
 
 - `stop_before_destroy` optional *boolean* &rarr;  Whether to try stop instance gracefully before destroying it, thus giving chance for guest OS daemons to stop correctly. If instance doesn't stop within timeout, it will be destroyed anyway.
 

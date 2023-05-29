@@ -181,7 +181,7 @@ resource "vkcs_db_instance" "db-instance" {
 - `keypair` optional *string* &rarr;  Name of the keypair to be attached to instance. Changing this creates a new instance.
 
 - `network` optional &rarr;  Object that represents network of the instance. Changing this creates a new instance.
-  - `fixed_ip_v4` optional *string* &rarr;  The IPv4 address. Changing this creates a new instance. **Note** This argument conflicts with "replica_of". Setting both at the same time causes "fixed_ip_v4" to be ignored.
+  - `fixed_ip_v4` optional *string* &rarr;  The IPv4 address. Changing this creates a new instance. <br>**Note:** This argument conflicts with "replica_of". Setting both at the same time causes "fixed_ip_v4" to be ignored.
 
   - `port` optional deprecated *string* &rarr;  The port id of the network. Changing this creates a new instance. **Deprecated** This argument is deprecated, please do not use it.
 
@@ -189,7 +189,7 @@ resource "vkcs_db_instance" "db-instance" {
 
   - `subnet_id` optional *string* &rarr;  The id of the subnet. Changing this creates a new instance. **New since v0.1.15**.
 
-  - `uuid` optional *string* &rarr;  The id of the network. Changing this creates a new instance.**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
+  - `uuid` optional *string* &rarr;  The id of the network. Changing this creates a new instance. <br>**Note:** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
 
 - `region` optional *string* &rarr;  Region to create resource in.
 
