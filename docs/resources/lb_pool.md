@@ -32,9 +32,9 @@ resource "vkcs_lb_pool" "pool_1" {
 
 - `description` optional *string* &rarr;  Human-readable description for the pool.
 
-- `listener_id` optional *string* &rarr;  The Listener on which the members of the pool will be associated with. Changing this creates a new pool. Note:  One of LoadbalancerID or ListenerID must be provided.
+- `listener_id` optional *string* &rarr;  The Listener on which the members of the pool will be associated with. Changing this creates a new pool. <br>**Note:** One of LoadbalancerID or ListenerID must be provided.
 
-- `loadbalancer_id` optional *string* &rarr;  The load balancer on which to provision this pool. Changing this creates a new pool. Note: One of LoadbalancerID or ListenerID must be provided.
+- `loadbalancer_id` optional *string* &rarr;  The load balancer on which to provision this pool. Changing this creates a new pool. <br>**Note:** One of LoadbalancerID or ListenerID must be provided.
 
 - `name` optional *string* &rarr;  Human-readable name for the pool.
 

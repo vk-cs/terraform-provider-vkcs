@@ -31,9 +31,9 @@ output "example_template_id" {
 }
 ```
 ## Argument Reference
-- `cluster_template_uuid` optional *string* &rarr;  The UUID of the cluster template. **Note**: Only one of `name` or `version` or `cluster_template_uuid` must be specified.
+- `cluster_template_uuid` optional *string* &rarr;  The UUID of the cluster template. <br>**Note:** Only one of `name` or `version` or `cluster_template_uuid` must be specified.
 
-- `name` optional *string* &rarr;  The name of the cluster template. **Note**: Only one of `name` or `version` or `cluster_template_uuid` must be specified.
+- `name` optional *string* &rarr;  The name of the cluster template. <br>**Note:** Only one of `name` or `version` or `cluster_template_uuid` must be specified.
 
 - `region` optional *string* &rarr;  The region in which to obtain the V1 Container Infra client. If omitted, the `region` argument of the provider is used.
 

@@ -164,7 +164,7 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
   - `subnet_id` optional *string* &rarr;  The id of the subnet. Changing this creates a new cluster. **New since v0.1.15**.
 
-  - `uuid` optional *string* &rarr;  The id of the network. Changing this creates a new cluster.**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
+  - `uuid` optional *string* &rarr;  The id of the network. Changing this creates a new cluster. <br>**Note:** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
 
 - `region` optional *string* &rarr;  Region to create resource in.
 

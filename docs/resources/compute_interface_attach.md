@@ -133,14 +133,11 @@ resource "vkcs_compute_interface_attach" "ai_2" {
 ## Argument Reference
 - `instance_id` **required** *string* &rarr;  The ID of the Instance to attach the Port or Network to.
 
-- `fixed_ip` optional *string* &rarr;  An IP address to assosciate with the port.
-_NOTE_: This option cannot be used with port_id. You must specify a network_id. The IP address must lie in a range on the supplied network.
+- `fixed_ip` optional *string* &rarr;  An IP address to assosciate with the port. <br>**Note:** This option cannot be used with port_id. You must specify a network_id. The IP address must lie in a range on the supplied network.
 
-- `network_id` optional *string* &rarr;  The ID of the Network to attach to an Instance. A port will be created automatically.
-_NOTE_: This option and `port_id` are mutually exclusive.
+- `network_id` optional *string* &rarr;  The ID of the Network to attach to an Instance. A port will be created automatically. <br>**Note:** This option and `port_id` are mutually exclusive.
 
-- `port_id` optional *string* &rarr;  The ID of the Port to attach to an Instance.
-_NOTE_: This option and `network_id` are mutually exclusive.
+- `port_id` optional *string* &rarr;  The ID of the Port to attach to an Instance. <br>**Note:** This option and `network_id` are mutually exclusive.
 
 - `region` optional *string* &rarr;  The region in which to create the interface attachment. If omitted, the `region` argument of the provider is used. Changing this creates a new attachment.
 
