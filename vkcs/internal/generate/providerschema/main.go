@@ -65,7 +65,7 @@ func (g ProviderSchemaJSONGenerator) codeForSchema() string {
 
 	pSchema := strings.ReplaceAll(compactSchemaJSON.String(), "`", "`+\"`\"+`")
 
-	return fmt.Sprintf("const providerSchemaBase = `%s`", pSchema)
+	return fmt.Sprintf("const ProviderSchemaJSON = `%s`", pSchema)
 }
 
 func goFmtAndWriteToFile(filePath, fileContents string) error {

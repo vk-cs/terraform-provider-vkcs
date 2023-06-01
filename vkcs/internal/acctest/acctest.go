@@ -56,7 +56,7 @@ var AccTestProvider *schema.Provider
 var AccTestProtoV6ProviderFactories map[string]func() (tfprotov6.ProviderServer, error)
 
 func init() {
-	AccTestProvider = provider.Provider()
+	AccTestProvider = provider.SDKProvider()
 	AccTestProviders = map[string]func() (*schema.Provider, error){
 		"vkcs": func() (*schema.Provider, error) {
 			return AccTestProvider, nil
@@ -66,11 +66,11 @@ func init() {
 		"vkcs": func() (tfprotov6.ProviderServer, error) {
 			ctx := context.Background()
 			providers := []func() tfprotov6.ProviderServer{
-				providerserver.NewProtocol6(provider.New()),
+				providerserver.NewProtocol6(provider.Provider()),
 				func() tfprotov6.ProviderServer {
 					server, _ := tf5to6server.UpgradeServer(
 						ctx,
-						provider.Provider().GRPCProvider,
+						provider.SDKProvider().GRPCProvider,
 					)
 					return server
 				},

@@ -12,13 +12,13 @@ import (
 )
 
 func TestProvider(t *testing.T) {
-	if err := provider.Provider().InternalValidate(); err != nil {
+	if err := provider.SDKProvider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
 
 func TestProvider_impl(t *testing.T) {
-	var _ = provider.Provider()
+	var _ = provider.SDKProvider()
 }
 
 // Steps for configuring OpenStack with SSL validation are here:
@@ -31,7 +31,7 @@ func TestAccProvider_caCertFile(t *testing.T) {
 		t.Skip("OS_CACERT is not set; skipping VKCS CA test.")
 	}
 
-	p := provider.Provider()
+	p := provider.SDKProvider()
 
 	caFile, err := envVarFile("OS_CACERT")
 	if err != nil {
@@ -57,7 +57,7 @@ func TestAccProvider_caCertString(t *testing.T) {
 		t.Skip("OS_CACERT is not set; skipping VKCS CA test.")
 	}
 
-	p := provider.Provider()
+	p := provider.SDKProvider()
 
 	caContents, err := envVarContents("OS_CACERT")
 	if err != nil {
@@ -81,7 +81,7 @@ func TestAccProvider_clientCertFile(t *testing.T) {
 		t.Skip("OS_CERT or OS_KEY is not set; skipping VKCS client SSL auth test.")
 	}
 
-	p := provider.Provider()
+	p := provider.SDKProvider()
 
 	certFile, err := envVarFile("OS_CERT")
 	if err != nil {
@@ -113,7 +113,7 @@ func TestAccProvider_clientCertString(t *testing.T) {
 		t.Skip("OS_CERT or OS_KEY is not set; skipping VKCS client SSL auth test.")
 	}
 
-	p := provider.Provider()
+	p := provider.SDKProvider()
 
 	certContents, err := envVarContents("OS_CERT")
 	if err != nil {

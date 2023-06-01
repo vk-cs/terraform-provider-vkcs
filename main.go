@@ -21,14 +21,14 @@ func main() {
 
 	upgradedSdkServer, err := tf5to6server.UpgradeServer(
 		ctx,
-		provider.Provider().GRPCProvider,
+		provider.SDKProvider().GRPCProvider,
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	providers := []func() tfprotov6.ProviderServer{
-		providerserver.NewProtocol6(provider.New()),
+		providerserver.NewProtocol6(provider.Provider()),
 		func() tfprotov6.ProviderServer {
 			return upgradedSdkServer
 		},
