@@ -7,7 +7,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
-func TestAccIPSecPolicy_importBasic(t *testing.T) {
+func TestAccVPNaaSIPSecPolicy_importBasic(t *testing.T) {
 	resourceName := "vkcs_vpnaas_ipsec_policy.policy_1"
 
 	resource.Test(t, resource.TestCase{

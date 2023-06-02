@@ -7,7 +7,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
-func TestAccEndpointGroup_importBasic(t *testing.T) {
+func TestAccVPNaaSEndpointGroup_importBasic(t *testing.T) {
 	resourceName := "vkcs_vpnaas_endpoint_group.group_1"
 
 	resource.Test(t, resource.TestCase{

@@ -7,7 +7,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
-func TestAccRegionDataSource_basic(t *testing.T) {
+func TestAccRegionsRegionDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: acctest.AccTestProviders,
 		Steps: []resource.TestStep{
@@ -23,7 +23,7 @@ func TestAccRegionDataSource_basic(t *testing.T) {
 	})
 }
 
-func TestAccRegionDataSource_id(t *testing.T) {
+func TestAccRegionsRegionDataSource_id(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: acctest.AccTestProviders,
 		Steps: []resource.TestStep{

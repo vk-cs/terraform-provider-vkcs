@@ -7,7 +7,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
-func TestAccSiteConnection_importBasic(t *testing.T) {
+func TestAccVPNaaSSiteConnection_importBasic(t *testing.T) {
 	resourceName := "vkcs_vpnaas_site_connection.conn_1"
 
 	resource.Test(t, resource.TestCase{

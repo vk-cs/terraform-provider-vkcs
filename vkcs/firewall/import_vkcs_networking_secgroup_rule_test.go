@@ -7,16 +7,16 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
-func TestAccNetworkingSecGroupRule_importBasic(t *testing.T) {
+func TestAccFirewallSecGroupRule_importBasic(t *testing.T) {
 	resourceName := "vkcs_networking_secgroup_rule.secgroup_rule_1"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccCheckNetworkingSecGroupRuleDestroy,
+		CheckDestroy:      testAccFirewallCheckSecGroupRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingSecGroupRuleBasic,
+				Config: testAccFirewallSecGroupRuleBasic,
 			},
 
 			{
