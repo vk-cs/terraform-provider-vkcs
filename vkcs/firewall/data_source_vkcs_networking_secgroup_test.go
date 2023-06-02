@@ -9,16 +9,16 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
-func TestAccNetworkingSecGroupDataSource_basic(t *testing.T) {
+func TestAccFirewallSecGroupDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingSecGroupDataSourceGroup,
+				Config: testAccFirewallSecGroupDataSourceGroup,
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccNetworkingSecGroupDataSourceBasic, map[string]string{"TestAccNetworkingSecGroupDataSourceGroup": testAccNetworkingSecGroupDataSourceGroup}),
+				Config: acctest.AccTestRenderConfig(testAccFirewallSecGroupDataSourceBasic, map[string]string{"TestAccFirewallSecGroupDataSourceGroup": testAccFirewallSecGroupDataSourceGroup}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSecGroupDataSourceID("data.vkcs_networking_secgroup.secgroup_1"),
 					resource.TestCheckResourceAttr(
@@ -35,16 +35,16 @@ func TestAccNetworkingSecGroupDataSource_basic(t *testing.T) {
 	})
 }
 
-func TestAccNetworkingSecGroupDataSource_secGroupID(t *testing.T) {
+func TestAccFirewallSecGroupDataSource_secGroupID(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingSecGroupDataSourceGroup,
+				Config: testAccFirewallSecGroupDataSourceGroup,
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccNetworkingSecGroupDataSourceSecGroupID, map[string]string{"TestAccNetworkingSecGroupDataSourceGroup": testAccNetworkingSecGroupDataSourceGroup}),
+				Config: acctest.AccTestRenderConfig(testAccFirewallSecGroupDataSourceSecGroupID, map[string]string{"TestAccFirewallSecGroupDataSourceGroup": testAccFirewallSecGroupDataSourceGroup}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSecGroupDataSourceID("data.vkcs_networking_secgroup.secgroup_1"),
 					resource.TestCheckResourceAttr(
@@ -74,7 +74,7 @@ func testAccCheckNetworkingSecGroupDataSourceID(n string) resource.TestCheckFunc
 	}
 }
 
-const testAccNetworkingSecGroupDataSourceGroup = `
+const testAccFirewallSecGroupDataSourceGroup = `
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name        = "secgroup_1"
   description = "My neutron security group"
@@ -85,8 +85,8 @@ resource "vkcs_networking_secgroup" "secgroup_1" {
 }
 `
 
-const testAccNetworkingSecGroupDataSourceBasic = `
-{{.TestAccNetworkingSecGroupDataSourceGroup}}
+const testAccFirewallSecGroupDataSourceBasic = `
+{{.TestAccFirewallSecGroupDataSourceGroup}}
 
 data "vkcs_networking_secgroup" "secgroup_1" {
   name = vkcs_networking_secgroup.secgroup_1.name
@@ -96,8 +96,8 @@ data "vkcs_networking_secgroup" "secgroup_1" {
 }
 `
 
-const testAccNetworkingSecGroupDataSourceSecGroupID = `
-	{{.TestAccNetworkingSecGroupDataSourceGroup}}
+const testAccFirewallSecGroupDataSourceSecGroupID = `
+{{.TestAccFirewallSecGroupDataSourceGroup}}
 
 data "vkcs_networking_secgroup" "secgroup_1" {
   secgroup_id = vkcs_networking_secgroup.secgroup_1.id

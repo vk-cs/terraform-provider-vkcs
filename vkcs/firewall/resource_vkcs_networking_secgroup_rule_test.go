@@ -14,7 +14,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 )
 
-func TestAccNetworkingSecGroupRule_basic(t *testing.T) {
+func TestAccFirewallSecGroupRule_basic(t *testing.T) {
 	var secgroup1 groups.SecGroup
 	var secgroup2 groups.SecGroup
 	var secgroupRule1 rules.SecGroupRule
@@ -23,18 +23,18 @@ func TestAccNetworkingSecGroupRule_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccCheckNetworkingSecGroupRuleDestroy,
+		CheckDestroy:      testAccFirewallCheckSecGroupRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingSecGroupRuleBasic,
+				Config: testAccFirewallSecGroupRuleBasic,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSecGroupExists(
+					testAccFirewallCheckSecGroupExists(
 						"vkcs_networking_secgroup.secgroup_1", &secgroup1),
-					testAccCheckNetworkingSecGroupExists(
+					testAccFirewallCheckSecGroupExists(
 						"vkcs_networking_secgroup.secgroup_2", &secgroup2),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_1", &secgroupRule1),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_2", &secgroupRule2),
 					resource.TestCheckResourceAttr(
 						"vkcs_networking_secgroup_rule.secgroup_rule_1", "description", "secgroup_rule_1"),
@@ -46,21 +46,21 @@ func TestAccNetworkingSecGroupRule_basic(t *testing.T) {
 	})
 }
 
-func TestAccNetworkingSecGroupRule_timeout(t *testing.T) {
+func TestAccFirewallSecGroupRule_timeout(t *testing.T) {
 	var secgroup1 groups.SecGroup
 	var secgroup2 groups.SecGroup
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccCheckNetworkingSecGroupRuleDestroy,
+		CheckDestroy:      testAccFirewallCheckSecGroupRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingSecGroupRuleTimeout,
+				Config: testAccFirewallSecGroupRuleTimeout,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSecGroupExists(
+					testAccFirewallCheckSecGroupExists(
 						"vkcs_networking_secgroup.secgroup_1", &secgroup1),
-					testAccCheckNetworkingSecGroupExists(
+					testAccFirewallCheckSecGroupExists(
 						"vkcs_networking_secgroup.secgroup_2", &secgroup2),
 				),
 			},
@@ -68,7 +68,7 @@ func TestAccNetworkingSecGroupRule_timeout(t *testing.T) {
 	})
 }
 
-func TestAccNetworkingSecGroupRule_protocols(t *testing.T) {
+func TestAccFirewallSecGroupRule_protocols(t *testing.T) {
 	var secgroup1 groups.SecGroup
 	var secgroupRuleAh rules.SecGroupRule
 	var secgroupRuleDccp rules.SecGroupRule
@@ -86,36 +86,36 @@ func TestAccNetworkingSecGroupRule_protocols(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccCheckNetworkingSecGroupRuleDestroy,
+		CheckDestroy:      testAccFirewallCheckSecGroupRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingSecGroupRuleProtocols,
+				Config: testAccFirewallSecGroupRuleProtocols,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSecGroupExists(
+					testAccFirewallCheckSecGroupExists(
 						"vkcs_networking_secgroup.secgroup_1", &secgroup1),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_ah", &secgroupRuleAh),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_dccp", &secgroupRuleDccp),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_egp", &secgroupRuleEgp),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_esp", &secgroupRuleEsp),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_gre", &secgroupRuleGre),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_igmp", &secgroupRuleIgmp),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_ospf", &secgroupRuleOspf),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_pgm", &secgroupRulePgm),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_rsvp", &secgroupRuleRsvp),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_sctp", &secgroupRuleSctp),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_udplite", &secgroupRuleUdplite),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_vrrp", &secgroupRuleVrrp),
 					resource.TestCheckResourceAttr(
 						"vkcs_networking_secgroup_rule.secgroup_rule_ah", "protocol", "ah"),
@@ -147,21 +147,21 @@ func TestAccNetworkingSecGroupRule_protocols(t *testing.T) {
 	})
 }
 
-func TestAccNetworkingSecGroupRule_numericProtocol(t *testing.T) {
+func TestAccFirewallSecGroupRule_numericProtocol(t *testing.T) {
 	var secgroup1 groups.SecGroup
 	var secgroupRule1 rules.SecGroupRule
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccCheckNetworkingSecGroupRuleDestroy,
+		CheckDestroy:      testAccFirewallCheckSecGroupRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingSecGroupRuleNumericProtocol,
+				Config: testAccFirewallSecGroupRuleNumericProtocol,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSecGroupExists(
+					testAccFirewallCheckSecGroupExists(
 						"vkcs_networking_secgroup.secgroup_1", &secgroup1),
-					testAccCheckNetworkingSecGroupRuleExists(
+					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_1", &secgroupRule1),
 					resource.TestCheckResourceAttr(
 						"vkcs_networking_secgroup_rule.secgroup_rule_1", "protocol", "6"),
@@ -171,7 +171,7 @@ func TestAccNetworkingSecGroupRule_numericProtocol(t *testing.T) {
 	})
 }
 
-func testAccCheckNetworkingSecGroupRuleDestroy(s *terraform.State) error {
+func testAccFirewallCheckSecGroupRuleDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
 	if err != nil {
@@ -192,7 +192,7 @@ func testAccCheckNetworkingSecGroupRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckNetworkingSecGroupRuleExists(n string, securityGroupRule *rules.SecGroupRule) resource.TestCheckFunc {
+func testAccFirewallCheckSecGroupRuleExists(n string, securityGroupRule *rules.SecGroupRule) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -224,7 +224,7 @@ func testAccCheckNetworkingSecGroupRuleExists(n string, securityGroupRule *rules
 	}
 }
 
-const testAccNetworkingSecGroupRuleBasic = `
+const testAccFirewallSecGroupRuleBasic = `
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name = "secgroup_1"
   description = "terraform security group rule acceptance test"
@@ -257,7 +257,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_2" {
 }
 `
 
-const testAccNetworkingSecGroupRuleTimeout = `
+const testAccFirewallSecGroupRuleTimeout = `
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name = "secgroup_1"
   description = "terraform security group rule acceptance test"
@@ -297,7 +297,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_2" {
 }
 `
 
-const testAccNetworkingSecGroupRuleProtocols = `
+const testAccFirewallSecGroupRuleProtocols = `
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name = "secgroup_1"
   description = "terraform security group rule acceptance test"
@@ -400,7 +400,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_vrrp" {
 }
 `
 
-const testAccNetworkingSecGroupRuleNumericProtocol = `
+const testAccFirewallSecGroupRuleNumericProtocol = `
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name = "secgroup_1"
   description = "terraform security group rule acceptance test"

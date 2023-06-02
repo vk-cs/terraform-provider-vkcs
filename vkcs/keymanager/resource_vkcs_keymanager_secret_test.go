@@ -83,7 +83,7 @@ func TestAccKeyManagerSecret_updateMetadata(t *testing.T) {
 	})
 }
 
-func TestAccUpdateSecret_payload(t *testing.T) {
+func TestAccKeyManagerUpdateSecret_payload(t *testing.T) {
 	var secret secrets.Secret
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: acctest.AccTestProviders,

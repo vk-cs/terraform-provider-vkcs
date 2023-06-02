@@ -13,23 +13,23 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 )
 
-func TestAccNetworkingSecGroup_basic(t *testing.T) {
+func TestAccFirewallSecGroup_basic(t *testing.T) {
 	var securityGroup groups.SecGroup
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccCheckNetworkingSecGroupDestroy,
+		CheckDestroy:      testAccFirewallCheckSecGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingSecGroupBasic,
+				Config: testAccFirewallSecGroupBasic,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSecGroupExists("vkcs_networking_secgroup.secgroup_1", &securityGroup),
-					testAccCheckNetworkingSecGroupRuleCount(&securityGroup, 2),
+					testAccFirewallCheckSecGroupExists("vkcs_networking_secgroup.secgroup_1", &securityGroup),
+					testAccFirewallCheckSecGroupRuleCount(&securityGroup, 2),
 				),
 			},
 			{
-				Config: testAccNetworkingSecGroupUpdate,
+				Config: testAccFirewallSecGroupUpdate,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPtr("vkcs_networking_secgroup.secgroup_1", "id", &securityGroup.ID),
 					resource.TestCheckResourceAttr("vkcs_networking_secgroup.secgroup_1", "name", "security_group_2"),
@@ -39,38 +39,38 @@ func TestAccNetworkingSecGroup_basic(t *testing.T) {
 	})
 }
 
-func TestAccNetworkingSecGroup_noDefaultRules(t *testing.T) {
+func TestAccFirewallSecGroup_noDefaultRules(t *testing.T) {
 	var securityGroup groups.SecGroup
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccCheckNetworkingSecGroupDestroy,
+		CheckDestroy:      testAccFirewallCheckSecGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingSecGroupNoDefaultRules,
+				Config: testAccFirewallSecGroupNoDefaultRules,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSecGroupExists(
+					testAccFirewallCheckSecGroupExists(
 						"vkcs_networking_secgroup.secgroup_1", &securityGroup),
-					testAccCheckNetworkingSecGroupRuleCount(&securityGroup, 0),
+					testAccFirewallCheckSecGroupRuleCount(&securityGroup, 0),
 				),
 			},
 		},
 	})
 }
 
-func TestAccNetworkingSecGroup_timeout(t *testing.T) {
+func TestAccFirewallSecGroup_timeout(t *testing.T) {
 	var securityGroup groups.SecGroup
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccCheckNetworkingSecGroupDestroy,
+		CheckDestroy:      testAccFirewallCheckSecGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingSecGroupTimeout,
+				Config: testAccFirewallSecGroupTimeout,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSecGroupExists(
+					testAccFirewallCheckSecGroupExists(
 						"vkcs_networking_secgroup.secgroup_1", &securityGroup),
 				),
 			},
@@ -78,7 +78,7 @@ func TestAccNetworkingSecGroup_timeout(t *testing.T) {
 	})
 }
 
-func testAccCheckNetworkingSecGroupDestroy(s *terraform.State) error {
+func testAccFirewallCheckSecGroupDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
 	if err != nil {
@@ -99,7 +99,7 @@ func testAccCheckNetworkingSecGroupDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckNetworkingSecGroupExists(n string, sg *groups.SecGroup) resource.TestCheckFunc {
+func testAccFirewallCheckSecGroupExists(n string, sg *groups.SecGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -131,7 +131,7 @@ func testAccCheckNetworkingSecGroupExists(n string, sg *groups.SecGroup) resourc
 	}
 }
 
-func testAccCheckNetworkingSecGroupRuleCount(sg *groups.SecGroup, count int) resource.TestCheckFunc {
+func testAccFirewallCheckSecGroupRuleCount(sg *groups.SecGroup, count int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if len(sg.Rules) == count {
 			return nil
@@ -142,21 +142,21 @@ func testAccCheckNetworkingSecGroupRuleCount(sg *groups.SecGroup, count int) res
 	}
 }
 
-const testAccNetworkingSecGroupBasic = `
+const testAccFirewallSecGroupBasic = `
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name = "security_group"
   description = "terraform security group acceptance test"
 }
 `
 
-const testAccNetworkingSecGroupUpdate = `
+const testAccFirewallSecGroupUpdate = `
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name = "security_group_2"
   description = "terraform security group acceptance test"
 }
 `
 
-const testAccNetworkingSecGroupNoDefaultRules = `
+const testAccFirewallSecGroupNoDefaultRules = `
 resource "vkcs_networking_secgroup" "secgroup_1" {
 	name = "security_group_1"
 	description = "terraform security group acceptance test"
@@ -164,7 +164,7 @@ resource "vkcs_networking_secgroup" "secgroup_1" {
 }
 `
 
-const testAccNetworkingSecGroupTimeout = `
+const testAccFirewallSecGroupTimeout = `
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name = "security_group"
   description = "terraform security group acceptance test"
