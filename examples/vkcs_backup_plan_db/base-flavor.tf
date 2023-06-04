@@ -1,0 +1,1 @@
+../vkcs_compute_flavor_name/main.tf

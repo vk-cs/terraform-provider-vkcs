@@ -10,6 +10,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/mapstructure"
@@ -82,6 +83,19 @@ func CheckDeleted(d *schema.ResourceData, err error, msg string) error {
 	}
 
 	return fmt.Errorf("%s %s: %s", msg, d.Id(), err)
+}
+
+// checkDeletedResource checks the error to see if it's a 404 (Not Found) and, if so,
+// sets the resource ID to the empty string instead of throwing an error.
+func CheckDeletedResource(ctx context.Context, r *resource.ReadResponse, err error) error {
+	if _, ok := err.(gophercloud.ErrDefault404); ok {
+		r.State.RemoveResource(ctx)
+		return nil
+	}
+	var id string
+	r.State.GetAttribute(ctx, path.Root("id"), &id)
+
+	return fmt.Errorf("%s: %s", id, err)
 }
 
 // checkDeletedDatasource checks the error to see if it's a 404 (Not Found) and, if so,

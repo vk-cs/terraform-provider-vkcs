@@ -30,3 +30,8 @@ func newContainerInfraAddonsV1(client *gophercloud.ProviderClient, eo gopherclou
 	sc.ResourceBase = sc.Endpoint + "v1/"
 	return sc, err
 }
+
+func newBackupV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
+	sc, err := initClientOpts(client, eo, "data-protect")
+	return sc, err
+}

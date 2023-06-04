@@ -12,3 +12,4 @@ subCategoryMapping:
   kubernetes: Kubernetes
   db: Databases
   keymanager: Key Manager
+  backup: Backup

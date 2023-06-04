@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/backup"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	wrapper "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/providerwrapper/framework"
@@ -105,5 +106,6 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		kubernetes.NewAddonResource,
+		backup.NewPlanResource,
 	}
 }

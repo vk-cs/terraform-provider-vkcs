@@ -29,6 +29,7 @@ const (
 type Config interface {
 	LoadAndValidate() error
 	GetRegion() string
+	GetTenantID() string
 	ComputeV2Client(region string) (*gophercloud.ServiceClient, error)
 	ImageV2Client(region string) (*gophercloud.ServiceClient, error)
 	NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error)
@@ -41,6 +42,7 @@ type Config interface {
 	DatabaseV1Client(region string) (*gophercloud.ServiceClient, error)
 	SharedfilesystemV2Client(region string) (*gophercloud.ServiceClient, error)
 	LoadBalancerV2Client(region string) (*gophercloud.ServiceClient, error)
+	BackupV1Client(region string, tenantID string) (*gophercloud.ServiceClient, error)
 	GetMutex() *mutexkv.MutexKV
 }
 
@@ -103,6 +105,10 @@ var _ Config = &configer{}
 // GetRegion is implementation of GetRegion method
 func (c *configer) GetRegion() string {
 	return c.Region
+}
+
+func (c *configer) GetTenantID() string {
+	return c.TenantID
 }
 
 func (c *configer) ComputeV2Client(region string) (*gophercloud.ServiceClient, error) {
@@ -189,6 +195,12 @@ func (c *configer) SharedfilesystemV2Client(region string) (*gophercloud.Service
 
 func (c *configer) LoadBalancerV2Client(region string) (*gophercloud.ServiceClient, error) {
 	return c.Config.LoadBalancerV2Client(region)
+}
+
+func (c *configer) BackupV1Client(region string, tenantID string) (*gophercloud.ServiceClient, error) {
+	client, err := c.CommonServiceClientInit(newBackupV1, region, "data-protect")
+	client.Endpoint = fmt.Sprintf("%s%s/", client.Endpoint, tenantID)
+	return client, err
 }
 
 func (c *configer) GetMutex() *mutexkv.MutexKV {

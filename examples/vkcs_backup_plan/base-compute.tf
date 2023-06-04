@@ -1,0 +1,1 @@
+../vkcs_compute_instance_basic/main.tf

@@ -2,6 +2,7 @@ package clusters
 
 import (
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
@@ -91,6 +92,27 @@ type CreateResult struct {
 // GetResult represents result of database cluster get
 type GetResult struct {
 	commonClusterResult
+}
+
+// Page represents a page of database clusters
+type Page struct {
+	pagination.SinglePageBase
+}
+
+// IsEmpty indicates whether a database cluster collection is empty.
+func (r Page) IsEmpty() (bool, error) {
+	is, err := ExtractClusters(r)
+	return len(is) == 0, err
+}
+
+// ExtractClusters retrieves a slice of database clusterResp structs from a paginated
+// collection.
+func ExtractClusters(r pagination.Page) ([]ClusterResp, error) {
+	var s struct {
+		Clusters []ClusterResp `json:"clusters"`
+	}
+	err := (r.(Page)).ExtractInto(&s)
+	return s.Clusters, err
 }
 
 type DeleteResult struct {

@@ -1,0 +1,28 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a backup plan resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+### Create plan for compute instance with full_retention policy and with incremental backups
+{{tffile .ExampleFile}}
+
+### Create plan for compute instance with gfs_retention policy, without incremental backups, using UTC timezone
+{{tffile "examples/vkcs_backup_plan_gfs/main.tf"}}
+
+### Create plan for db instance with full_retention policy, making backup every 12 hours
+{{tffile "examples/vkcs_backup_plan_db/main.tf"}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+Keypairs can be imported using the `name`, e.g.
+{{codefile "shell" "templates/backup/resources/vkcs_backup_plan/import.sh"}}
