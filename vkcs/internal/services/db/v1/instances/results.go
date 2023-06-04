@@ -2,6 +2,7 @@ package instances
 
 import (
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 )
@@ -125,6 +126,27 @@ type GetCapabilitiesResult struct {
 
 type GetBackupScheduleResult struct {
 	commonBackupScheduleResult
+}
+
+// Page represents a page of database instances
+type Page struct {
+	pagination.SinglePageBase
+}
+
+// IsEmpty indicates whether a database instance collection is empty.
+func (r Page) IsEmpty() (bool, error) {
+	is, err := ExtractInstances(r)
+	return len(is) == 0, err
+}
+
+// ExtractInstances retrieves a slice of database instanceResp structs from a paginated
+// collection.
+func ExtractInstances(r pagination.Page) ([]InstanceResp, error) {
+	var s struct {
+		Instances []InstanceResp `json:"instances"`
+	}
+	err := (r.(Page)).ExtractInto(&s)
+	return s.Instances, err
 }
 
 // RootUserResp represents parameters of root user response

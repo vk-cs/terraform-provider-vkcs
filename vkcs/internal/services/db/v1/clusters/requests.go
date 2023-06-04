@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 )
@@ -328,4 +329,12 @@ func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
 		r.Header = result.Header
 	}
 	return
+}
+
+// List will list all database instances
+func List(client *gophercloud.ServiceClient) pagination.Pager {
+	return pagination.NewPager(client, clustersURL(client),
+		func(r pagination.PageResult) pagination.Page {
+			return Page{pagination.SinglePageBase(r)}
+		})
 }

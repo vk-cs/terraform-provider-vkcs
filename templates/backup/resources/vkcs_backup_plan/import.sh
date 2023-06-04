@@ -1,0 +1,1 @@
+terraform import vkcs_backup_plan.mybackupplan 5dfe75cb-a00f-4bc8-9551-bd38f64747e7

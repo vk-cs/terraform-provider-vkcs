@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+### v0.3.1
+- Add vkcs_backup_plan resource
+
 #### v0.3.0
 - Provide support for Kubernetes cluster addons
 - Mark resources created with error as "tainted" which allows their deleting via terraform
