@@ -581,8 +581,13 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 		checkCapabilities = nil
 	}
 
-	if configuration, ok := d.GetOk("configuration_id"); ok {
-		createOpts.Configuration = configuration.(string)
+	var configuration string
+	if v, ok := d.GetOk("configuration_id"); ok {
+		configuration = v.(string)
+	}
+
+	if configuration != "" && createOpts.ReplicaOf != "" {
+		createOpts.Configuration = configuration
 	}
 
 	log.Printf("[DEBUG] vkcs_db_instance create options: %#v", createOpts)
@@ -609,6 +614,17 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return diag.Errorf("error waiting for vkcs_db_instance %s to become ready: %s", instance.ID, err)
+	}
+
+	if configuration != "" && createOpts.ReplicaOf == "" {
+		log.Printf("[DEBUG] Attaching configuration %s to vkcs_db_instance %s", configuration, instance.ID)
+		var attachConfigurationOpts instances.AttachConfigurationGroupOpts
+		attachConfigurationOpts.Instance.Configuration = configuration
+		err := instances.AttachConfigurationGroup(DatabaseV1Client, instance.ID, &attachConfigurationOpts).ExtractErr()
+		if err != nil {
+			return diag.Errorf("error attaching configuration group %s to vkcs_db_instance %s: %s",
+				configuration, instance.ID, err)
+		}
 	}
 
 	if rootEnabled, ok := d.GetOk("root_enabled"); ok {
