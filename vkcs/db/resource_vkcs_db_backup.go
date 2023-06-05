@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db"
@@ -199,7 +199,7 @@ func resourceDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, m
 	// Wait for the backup to become available.
 	log.Printf("[DEBUG] Waiting for vkcs_db_backup %s to become available", backup.ID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(dbBackupStatusNew), string(dbBackupStatusBuild)},
 		Target:     []string{string(dbBackupStatusActive)},
 		Refresh:    databaseBackupStateRefreshFunc(DatabaseV1Client, backup.ID),
@@ -265,7 +265,7 @@ func resourceDatabaseBackupDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_db_backup"))
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(dbBackupStatusActive), string(dbBackupStatusToDelete)},
 		Target:     []string{string(dbBackupStatusDeleted)},
 		Refresh:    databaseBackupStateRefreshFunc(DatabaseV1Client, d.Id()),

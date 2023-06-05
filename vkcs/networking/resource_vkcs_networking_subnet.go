@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
@@ -251,7 +251,7 @@ func resourceNetworkingSubnetCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	log.Printf("[DEBUG] Waiting for vkcs_networking_subnet %s to become available", s.ID)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target:     []string{"ACTIVE"},
 		Refresh:    networkingSubnetStateRefreshFunc(networkingClient, s.ID),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
@@ -413,7 +413,7 @@ func resourceNetworkingSubnetDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"ACTIVE"},
 		Target:     []string{"DELETED"},
 		Refresh:    networkingSubnetStateRefreshFuncDelete(networkingClient, d.Id()),

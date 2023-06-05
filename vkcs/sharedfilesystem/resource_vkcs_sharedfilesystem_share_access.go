@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
@@ -108,7 +108,7 @@ func resourceSharedFilesystemShareAccessCreate(ctx context.Context, d *schema.Re
 	timeout := d.Timeout(schema.TimeoutCreate)
 
 	var access *shares.AccessRight
-	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
+	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 		access, err = shares.GrantAccess(sfsClient, shareID, grantOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
@@ -128,7 +128,7 @@ func resourceSharedFilesystemShareAccessCreate(ctx context.Context, d *schema.Re
 	}
 
 	log.Printf("[DEBUG] Waiting for vkcs_sharedfilesystem_share_access %s to become available.", access.ID)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target:     []string{"active"},
 		Pending:    []string{"new", "queued_to_apply", "applying"},
 		Refresh:    sharedFilesystemShareAccessStateRefreshFunc(sfsClient, shareID, access.ID),
@@ -196,7 +196,7 @@ func resourceSharedFilesystemShareAccessDelete(ctx context.Context, d *schema.Re
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	log.Printf("[DEBUG] Attempting to delete vkcs_sharedfilesystem_share_access %s", d.Id())
-	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
+	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 		err = shares.RevokeAccess(sfsClient, shareID, revokeOpts).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)
@@ -220,7 +220,7 @@ func resourceSharedFilesystemShareAccessDelete(ctx context.Context, d *schema.Re
 	}
 
 	log.Printf("[DEBUG] Waiting for vkcs_sharedfilesystem_share_access %s to become denied.", d.Id())
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target:     []string{"denied"},
 		Pending:    []string{"active", "new", "queued_to_deny", "denying"},
 		Refresh:    sharedFilesystemShareAccessStateRefreshFunc(sfsClient, shareID, d.Id()),

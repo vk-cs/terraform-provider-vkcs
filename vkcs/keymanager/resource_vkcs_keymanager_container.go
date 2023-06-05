@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
@@ -178,7 +178,7 @@ func resourceKeyManagerContainerCreate(ctx context.Context, d *schema.ResourceDa
 
 	uuid := keyManagerContainerGetUUIDfromContainerRef(container.ContainerRef)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"PENDING"},
 		Target:     []string{"ACTIVE"},
 		Refresh:    keyManagerContainerWaitForContainerCreation(kmClient, uuid),
@@ -278,7 +278,7 @@ func resourceKeyManagerContainerDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("Error creating VKCS keymanager client: %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"PENDING"},
 		Target:     []string{"DELETED"},
 		Refresh:    keyManagerContainerWaitForContainerDeletion(kmClient, d.Id()),

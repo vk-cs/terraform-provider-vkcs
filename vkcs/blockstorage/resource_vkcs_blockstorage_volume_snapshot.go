@@ -7,7 +7,7 @@ import (
 
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/snapshots"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
@@ -116,7 +116,7 @@ func resourceBlockStorageSnapshotCreate(ctx context.Context, d *schema.ResourceD
 	// Wait for the volume snapshot to become available.
 	log.Printf("[DEBUG] Waiting for vkcs_blockstorage_volume_snapshot %s to become available", snapshot.ID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{bsSnapshotStatusBuild},
 		Target:     []string{bsSnapshotStatusActive},
 		Refresh:    blockStorageSnapshotStateRefreshFunc(blockStorageClient, snapshot.ID),
@@ -176,7 +176,7 @@ func resourceBlockStorageSnapshotUpdate(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.Errorf("error updating vkcs_blockstorage_snapshot")
 	}
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{bsSnapshotStatusBuild},
 		Target:     []string{bsSnapshotStatusActive},
 		Refresh:    blockStorageSnapshotStateRefreshFunc(blockStorageClient, d.Id()),
@@ -199,7 +199,7 @@ func resourceBlockStorageSnapshotUpdate(ctx context.Context, d *schema.ResourceD
 		if err != nil {
 			return diag.Errorf("error updating vkcs_blockstorage_snapshot metadata")
 		}
-		stateConf := &resource.StateChangeConf{
+		stateConf := &retry.StateChangeConf{
 			Pending:    []string{bsSnapshotStatusBuild},
 			Target:     []string{bsSnapshotStatusActive},
 			Refresh:    blockStorageSnapshotStateRefreshFunc(blockStorageClient, d.Id()),
@@ -227,7 +227,7 @@ func resourceBlockStorageSnapshotDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_blockstorage_snapshot"))
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{bsSnapshotStatusActive, bsSnapshotStatusShutdown},
 		Target:     []string{bsSnapshotStatusDeleted},
 		Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),

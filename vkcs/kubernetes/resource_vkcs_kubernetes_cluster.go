@@ -8,7 +8,7 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
@@ -319,7 +319,7 @@ func resourceKubernetesClusterCreate(ctx context.Context, d *schema.ResourceData
 	// Store the cluster ID.
 	d.SetId(s)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:      []string{string(clusterStatusProvisioning)},
 		Target:       []string{string(clusterStatusRunning)},
 		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, s),
@@ -412,7 +412,7 @@ func resourceKubernetesClusterUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("error creating container infra client: %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, d.Id()),
 		Timeout:      d.Timeout(schema.TimeoutUpdate),
 		Delay:        createUpdateDelay * time.Minute,
@@ -464,7 +464,7 @@ func resourceKubernetesClusterUpdate(ctx context.Context, d *schema.ResourceData
 	return resourceKubernetesClusterRead(ctx, d, meta)
 }
 
-func checkForClusterTemplateID(ctx context.Context, d *schema.ResourceData, containerInfraClient *gophercloud.ServiceClient, stateConf *resource.StateChangeConf) error {
+func checkForClusterTemplateID(ctx context.Context, d *schema.ResourceData, containerInfraClient *gophercloud.ServiceClient, stateConf *retry.StateChangeConf) error {
 	if d.HasChange("cluster_template_id") {
 		upgradeOpts := clusters.UpgradeOpts{
 			ClusterTemplateID: d.Get("cluster_template_id").(string),
@@ -485,7 +485,7 @@ func checkForClusterTemplateID(ctx context.Context, d *schema.ResourceData, cont
 	return nil
 }
 
-func checkForMasterFlavor(ctx context.Context, d *schema.ResourceData, containerInfraClient *gophercloud.ServiceClient, stateConf *resource.StateChangeConf) error {
+func checkForMasterFlavor(ctx context.Context, d *schema.ResourceData, containerInfraClient *gophercloud.ServiceClient, stateConf *retry.StateChangeConf) error {
 	if d.HasChange("master_flavor") {
 		upgradeOpts := clusters.ActionsBaseOpts{
 			Action: "resize_masters",
@@ -510,7 +510,7 @@ func checkForMasterFlavor(ctx context.Context, d *schema.ResourceData, container
 
 func checkForStatus(ctx context.Context, d *schema.ResourceData, containerInfraClient *gophercloud.ServiceClient, cluster *clusters.Cluster) (bool, error) {
 
-	turnOffConf := &resource.StateChangeConf{
+	turnOffConf := &retry.StateChangeConf{
 		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, d.Id()),
 		Timeout:      d.Timeout(schema.TimeoutUpdate),
 		Delay:        createUpdateDelay * time.Minute,
@@ -519,7 +519,7 @@ func checkForStatus(ctx context.Context, d *schema.ResourceData, containerInfraC
 		Target:       []string{string(clusterStatusShutoff)},
 	}
 
-	turnOnConf := &resource.StateChangeConf{
+	turnOnConf := &retry.StateChangeConf{
 		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, d.Id()),
 		Timeout:      d.Timeout(schema.TimeoutUpdate),
 		Delay:        createUpdateDelay * time.Minute,
@@ -541,7 +541,7 @@ func checkForStatus(ctx context.Context, d *schema.ResourceData, containerInfraC
 			return false, fmt.Errorf("error during switching state: %s", err)
 		}
 
-		var switchStateConf *resource.StateChangeConf
+		var switchStateConf *retry.StateChangeConf
 		switch currentStatus {
 		case clusterStatusRunning:
 			switchStateConf = turnOnConf
@@ -573,7 +573,7 @@ func resourceKubernetesClusterDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(util.CheckDeleted(d, err, "failed to delete vkcs_kubernetes_cluster"))
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:      []string{string(clusterStatusDeleting), string(clusterStatusDeleted)},
 		Target:       []string{string(clusterStatusNotFound)},
 		Refresh:      kubernetesStateRefreshFunc(client, d.Id()),

@@ -1,13 +1,16 @@
 package util
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/mapstructure"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
@@ -81,6 +84,19 @@ func CheckDeleted(d *schema.ResourceData, err error, msg string) error {
 	return fmt.Errorf("%s %s: %s", msg, d.Id(), err)
 }
 
+// checkDeletedDatasource checks the error to see if it's a 404 (Not Found) and, if so,
+// sets the resource ID to the empty string instead of throwing an error.
+func CheckDeletedDatasource(ctx context.Context, r *datasource.ReadResponse, err error) error {
+	if _, ok := err.(gophercloud.ErrDefault404); ok {
+		r.State.SetAttribute(ctx, path.Root("id"), "")
+		return nil
+	}
+	var id string
+	r.State.GetAttribute(ctx, path.Root("id"), &id)
+
+	return fmt.Errorf("%s: %s", id, err)
+}
+
 func CheckAlreadyExists(err error, msg, resourceName, conflict string) error {
 	if _, ok := err.(gophercloud.ErrDefault409); ok {
 		return fmt.Errorf("%s: %s with %s already exists", msg, resourceName, conflict)
@@ -122,22 +138,22 @@ func MapValueSpecs(d *schema.ResourceData) map[string]string {
 	return m
 }
 
-func CheckForRetryableError(err error) *resource.RetryError {
+func CheckForRetryableError(err error) *retry.RetryError {
 	switch e := err.(type) {
 	case gophercloud.ErrDefault500:
-		return resource.RetryableError(err)
+		return retry.RetryableError(err)
 	case gophercloud.ErrDefault409:
-		return resource.RetryableError(err)
+		return retry.RetryableError(err)
 	case gophercloud.ErrDefault503:
-		return resource.RetryableError(err)
+		return retry.RetryableError(err)
 	case gophercloud.ErrUnexpectedResponseCode:
 		if e.GetStatusCode() == 504 || e.GetStatusCode() == 502 {
-			return resource.RetryableError(err)
+			return retry.RetryableError(err)
 		} else {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 	default:
-		return resource.NonRetryableError(err)
+		return retry.NonRetryableError(err)
 	}
 }
 

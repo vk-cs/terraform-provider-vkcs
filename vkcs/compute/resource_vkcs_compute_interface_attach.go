@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
@@ -118,7 +118,7 @@ func resourceComputeInterfaceAttachCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"ATTACHING"},
 		Target:     []string{"ATTACHED"},
 		Refresh:    computeInterfaceAttachAttachFunc(computeClient, instanceID, attachment.PortID),
@@ -184,7 +184,7 @@ func resourceComputeInterfaceAttachDelete(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{""},
 		Target:     []string{"DETACHED"},
 		Refresh:    computeInterfaceAttachDetachFunc(computeClient, instanceID, attachmentID),

@@ -1,21 +1,28 @@
-package providerjson
+package schema
 
 import (
 	"encoding/json"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/provider"
+	sdkschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
 	SchemaTypeSet    = "TypeSet"
 	SchemaTypeList   = "TypeList"
+	SchemaTypeMap    = "TypeMap"
 	SchemaTypeInt    = "TypeInt"
-	SchemaTypeString = "String"
-	SchemaTypeBool   = "Bool"
-	SchemaTypeFloat  = "Float"
+	SchemaTypeString = "TypeString"
+	SchemaTypeBool   = "TypeBool"
+	SchemaTypeFloat  = "TypeFloat"
+	SchemaTypeNumber = "TypeNumber"
+	SchemaTypeObject = "TypeObject"
 )
 
-type ProviderJSON schema.Provider
+type ProviderJSON struct {
+	SDKProvider *sdkschema.Provider
+	Provider    provider.Provider
+}
 
 type SchemaJSON struct {
 	Type        string      `json:"type,omitempty"`
@@ -108,7 +115,8 @@ type ProviderSchemaJSON struct {
 }
 
 type ProviderWrapper struct {
-	ProviderName   string              `json:"provider_name"`
-	SchemaVersion  string              `json:"schema_version"`
-	ProviderSchema *ProviderSchemaJSON `json:"provider_schema,omitempty"`
+	ProviderName    string              `json:"provider_name"`
+	ProviderVersion string              `json:"provider_version"`
+	SchemaVersion   string              `json:"schema_version"`
+	ProviderSchema  *ProviderSchemaJSON `json:"provider_schema,omitempty"`
 }

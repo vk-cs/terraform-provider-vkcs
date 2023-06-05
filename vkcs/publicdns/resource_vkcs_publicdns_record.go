@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/mitchellh/mapstructure"
@@ -391,7 +391,7 @@ func resourcePublicDNSRecordDelete(ctx context.Context, d *schema.ResourceData, 
 			fmt.Sprintf("Error deleting vkcs_publicdns_record: zone_id: %s, type: %s, id:", zoneID, recordType)))
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{recordStatusActive},
 		Target:     []string{recordStatusDeleted},
 		Refresh:    publicDNSRecordStateRefreshFunc(client, zoneID, d.Id(), recordType),

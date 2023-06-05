@@ -6,10 +6,10 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/snapshots"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
-func blockStorageSnapshotStateRefreshFunc(client *gophercloud.ServiceClient, volumeSnapshotID string) resource.StateRefreshFunc {
+func blockStorageSnapshotStateRefreshFunc(client *gophercloud.ServiceClient, volumeSnapshotID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		v, err := snapshots.Get(client, volumeSnapshotID).Extract()
 		if err != nil {

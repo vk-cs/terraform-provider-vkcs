@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
@@ -84,14 +84,14 @@ func resourceComputeVolumeAttachCreate(ctx context.Context, d *schema.ResourceDa
 
 	var attachment *volumeattach.VolumeAttachment
 	timeout := d.Timeout(schema.TimeoutCreate)
-	err = resource.RetryContext(ctx, timeout, func() *resource.RetryError {
+	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 		attachment, err = volumeattach.Create(computeClient, instanceID, attachOpts).Extract()
 		if err != nil {
 			if _, ok := err.(gophercloud.ErrDefault400); ok {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
 
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 
 		return nil
@@ -101,7 +101,7 @@ func resourceComputeVolumeAttachCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("Error creating vkcs_compute_volume_attach %s: %s", instanceID, err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"ATTACHING"},
 		Target:     []string{"ATTACHED"},
 		Refresh:    computeVolumeAttachAttachFunc(computeClient, blockStorageClient, instanceID, attachment.ID, volumeID),
@@ -161,7 +161,7 @@ func resourceComputeVolumeAttachDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{""},
 		Target:     []string{"DETACHED"},
 		Refresh:    computeVolumeAttachDetachFunc(computeClient, instanceID, attachmentID),

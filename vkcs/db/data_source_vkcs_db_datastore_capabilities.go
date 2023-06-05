@@ -5,131 +5,162 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
-func DataSourceDatabaseDatastoreCapabilities() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceDatabaseDatastoreCapabilitiesRead,
-		Schema: map[string]*schema.Schema{
-			"region": {
-				Type:        schema.TypeString,
+// Ensure the implementation satisfies the desired interfaces.
+var _ datasource.DataSource = &DatastoreCapabilitiesDataSource{}
+
+func NewDatastoreCapabilitiesDataSource() datasource.DataSource {
+	return &DatastoreCapabilitiesDataSource{}
+}
+
+type DatastoreCapabilitiesDataSource struct {
+	config clients.Config
+}
+
+type DatastoreCapabilitiesDataSourceModel struct {
+	ID                 types.String                   `tfsdk:"id"`
+	DatastoreName      types.String                   `tfsdk:"datastore_name"`
+	DatastoreVersionID types.String                   `tfsdk:"datastore_version_id"`
+	Capabilities       []DatastoreCapabilityItemModel `tfsdk:"capabilities"`
+	Region             types.String                   `tfsdk:"region"`
+}
+
+type DatastoreCapabilityItemModel struct {
+	Name                   types.String                     `tfsdk:"name"`
+	Description            types.String                     `tfsdk:"description"`
+	Params                 []DatastoreCapabilityParamsModel `tfsdk:"params"`
+	ShouldBeOnMaster       types.Bool                       `tfsdk:"should_be_on_master"`
+	AllowMajorUpgrade      types.Bool                       `tfsdk:"allow_major_upgrade"`
+	AllowUpgradeFromBackup types.Bool                       `tfsdk:"allow_upgrade_from_backup"`
+}
+
+type DatastoreCapabilityParamsModel struct {
+	Name         types.String  `tfsdk:"name"`
+	Required     types.Bool    `tfsdk:"required"`
+	Type         types.String  `tfsdk:"type"`
+	ElementType  types.String  `tfsdk:"element_type"`
+	EnumValues   types.List    `tfsdk:"enum_values"`
+	DefaultValue types.String  `tfsdk:"default_value"`
+	Min          types.Float64 `tfsdk:"min"`
+	Max          types.Float64 `tfsdk:"max"`
+	Regex        types.String  `tfsdk:"regex"`
+	Masked       types.Bool    `tfsdk:"masked"`
+}
+
+func (d *DatastoreCapabilitiesDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = "vkcs_db_datastore_capabilities"
+}
+
+func (d *DatastoreCapabilitiesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "ID of the resource",
+			},
+
+			"region": schema.StringAttribute{
 				Computed:    true,
 				Optional:    true,
 				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
 			},
 
-			"datastore_name": {
-				Type:        schema.TypeString,
+			"datastore_name": schema.StringAttribute{
 				Required:    true,
 				Description: "Name of the data store.",
 			},
 
-			"datastore_version_id": {
-				Type:        schema.TypeString,
+			"datastore_version_id": schema.StringAttribute{
 				Required:    true,
 				Description: "ID of the version of the data store.",
 			},
 
-			"capabilities": {
-				Type:     schema.TypeList,
+			"capabilities": schema.ListNestedAttribute{
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
 							Computed:    true,
 							Description: "Name of data store capability.",
 						},
-						"description": {
-							Type:        schema.TypeString,
+						"description": schema.StringAttribute{
 							Computed:    true,
 							Description: "Description of data store capability.",
 						},
-						"params": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem:     dataSourceDatabaseDatastoreCapabilitiesParam(),
+						"params": schema.ListNestedAttribute{
+							Computed:     true,
+							NestedObject: DatastoreCapabilitiesParamSchema(),
 						},
-						"should_be_on_master": {
-							Type:        schema.TypeBool,
+						"should_be_on_master": schema.BoolAttribute{
 							Computed:    true,
 							Description: "This attribute indicates whether a capability applies only to the master node.",
 						},
-						"allow_major_upgrade": {
-							Type:        schema.TypeBool,
+						"allow_major_upgrade": schema.BoolAttribute{
 							Computed:    true,
 							Description: "This attribute indicates whether a capability can be applied in the next major version of data store.",
 						},
-						"allow_upgrade_from_backup": {
-							Type:        schema.TypeBool,
+						"allow_upgrade_from_backup": schema.BoolAttribute{
 							Computed:    true,
 							Description: "This attribute indicates whether a capability can be applied to upgrade from backup.",
 						},
 					},
 				},
-				Description: "Versions of the datastore.",
+				Description: "Capabilities of the datastore.",
 			},
 		},
 		Description: "Use this data source to get capabilities supported for a VKCS datastore.",
 	}
 }
 
-func dataSourceDatabaseDatastoreCapabilitiesParam() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
+func DatastoreCapabilitiesParamSchema() schema.NestedAttributeObject {
+	return schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"name": schema.StringAttribute{
 				Computed:    true,
 				Description: "Name of a parameter.",
 			},
-			"required": {
-				Type:        schema.TypeBool,
+			"required": schema.BoolAttribute{
 				Computed:    true,
 				Description: "Required indicates whether a parameter value must be set.",
 			},
-			"type": {
-				Type:        schema.TypeString,
+			"type": schema.StringAttribute{
 				Computed:    true,
 				Description: "Type of value for a parameter.",
 			},
-			"element_type": {
-				Type:        schema.TypeString,
+			"element_type": schema.StringAttribute{
 				Computed:    true,
 				Description: "Type of element value for a parameter of `list` type.",
 			},
-			"enum_values": {
-				Type:        schema.TypeList,
+			"enum_values": schema.ListAttribute{
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				ElementType: types.StringType,
 				Description: "Supported values for a parameter.",
 			},
-			"default_value": {
-				Type:        schema.TypeString,
+			"default_value": schema.StringAttribute{
 				Computed:    true,
 				Description: "Default value for a parameter.",
 			},
-			"min": {
-				Type:        schema.TypeFloat,
+			"min": schema.Float64Attribute{
 				Computed:    true,
 				Description: "Minimum value for a parameter.",
 			},
-			"max": {
-				Type:        schema.TypeFloat,
+			"max": schema.Float64Attribute{
 				Computed:    true,
 				Description: "Maximum value for a parameter.",
 			},
-			"regex": {
-				Type:        schema.TypeString,
+			"regex": schema.StringAttribute{
 				Computed:    true,
 				Description: "Regular expression that a parameter value must match.",
 			},
-			"masked": {
-				Type:        schema.TypeBool,
+			"masked": schema.BoolAttribute{
 				Computed:    true,
 				Description: "Masked indicates whether a parameter value must be a boolean mask.",
 			},
@@ -137,45 +168,75 @@ func dataSourceDatabaseDatastoreCapabilitiesParam() *schema.Resource {
 	}
 }
 
-func dataSourceDatabaseDatastoreCapabilitiesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(clients.Config)
-	region := util.GetRegion(d, config)
-	dbClient, err := config.DatabaseV1Client(region)
-	if err != nil {
-		return diag.Errorf("Error creating VKCS database client: %s", err)
+func (d *DatastoreCapabilitiesDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+	d.config = req.ProviderData.(clients.Config)
+}
+
+func (d *DatastoreCapabilitiesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data DatastoreCapabilitiesDataSourceModel
+
+	// Read Terraform configuration data into the model
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	dsName := d.Get("datastore_name").(string)
-	dsVersionID := d.Get("datastore_version_id").(string)
+	dsName := data.DatastoreName.ValueString()
+	dsVersionID := data.DatastoreVersionID.ValueString()
+	region := data.Region.ValueString()
+	if region == "" {
+		region = d.config.GetRegion()
+	}
+
+	dbClient, err := d.config.DatabaseV1Client(region)
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating VKCS database client", err.Error())
+		return
+	}
 
 	capabilities, err := datastores.ListCapabilities(dbClient, dsName, dsVersionID).Extract()
 	if err != nil {
-		return diag.FromErr(util.CheckDeleted(d, err, "Error retrieving vkcs_db_backup"))
+		resp.Diagnostics.AddError("Error retrieving vkcs_db_datastore_capabilities",
+			util.CheckDeletedDatasource(ctx, resp, err).Error())
+		return
 	}
+	flattenedCapabilities, diags := flattenDatastoreCapabilities(ctx, capabilities)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	data.Capabilities = flattenedCapabilities
 
-	flattenedCapabilities := flattenDatabaseDatastoreCapabilities(capabilities)
+	data.ID = types.StringValue(fmt.Sprintf("%s/%s/capabilities", dsName, dsVersionID))
+	data.Region = types.StringValue(region)
 
-	d.SetId(fmt.Sprintf("%s/%s/capabilities", dsName, dsVersionID))
-	d.Set("capabilities", flattenedCapabilities)
-
-	return nil
+	// Save data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func flattenDatabaseDatastoreCapabilities(capabilities []datastores.Capability) (r []map[string]interface{}) {
+func flattenDatastoreCapabilities(ctx context.Context, capabilities []datastores.Capability) (r []DatastoreCapabilityItemModel, diags diag.Diagnostics) {
 	for _, c := range capabilities {
-		r = append(r, map[string]interface{}{
-			"name":                      c.Name,
-			"description":               c.Description,
-			"params":                    flattenDatabaseDatastoreCapabilityParams(c.Params),
-			"should_be_on_master":       c.ShouldBeOnMaster,
-			"allow_major_upgrade":       c.AllowMajorUpgrade,
-			"allow_upgrade_from_backup": c.AllowUpgradeFromBackup,
+		params, diags := flattenDatastoreCapabilityParams(ctx, c.Params)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		r = append(r, DatastoreCapabilityItemModel{
+			Name:                   types.StringValue(c.Name),
+			Description:            types.StringValue(c.Description),
+			Params:                 params,
+			ShouldBeOnMaster:       types.BoolValue(c.ShouldBeOnMaster),
+			AllowMajorUpgrade:      types.BoolValue(c.AllowMajorUpgrade),
+			AllowUpgradeFromBackup: types.BoolValue(c.AllowUpgradeFromBackup),
 		})
 	}
 	return
 }
 
-func flattenDatabaseDatastoreCapabilityParams(params map[string]*datastores.CapabilityParam) (r []map[string]interface{}) {
+func flattenDatastoreCapabilityParams(ctx context.Context, params map[string]*datastores.CapabilityParam) (r []DatastoreCapabilityParamsModel, diags diag.Diagnostics) {
 	for name, p := range params {
 		var defaultValue string
 		switch v := p.DefaultValue.(type) {
@@ -184,17 +245,23 @@ func flattenDatabaseDatastoreCapabilityParams(params map[string]*datastores.Capa
 		case float64:
 			defaultValue = strconv.FormatFloat(p.DefaultValue.(float64), 'f', -1, 64)
 		}
-		r = append(r, map[string]interface{}{
-			"name":          name,
-			"required":      p.Required,
-			"type":          p.Type,
-			"element_type":  p.ElementType,
-			"enum_values":   p.EnumValues,
-			"default_value": defaultValue,
-			"min":           p.MinValue,
-			"max":           p.MaxValue,
-			"regex":         p.Regex,
-			"masked":        p.Masked,
+
+		enumValues, diags := types.ListValueFrom(ctx, types.StringType, p.EnumValues)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		r = append(r, DatastoreCapabilityParamsModel{
+			Name:         types.StringValue(name),
+			Required:     types.BoolValue(p.Required),
+			Type:         types.StringValue(p.Type),
+			ElementType:  types.StringValue(p.ElementType),
+			EnumValues:   enumValues,
+			DefaultValue: types.StringValue(defaultValue),
+			Min:          types.Float64Value(p.MinValue),
+			Max:          types.Float64Value(p.MaxValue),
+			Regex:        types.StringValue(p.Regex),
+			Masked:       types.BoolValue(p.Masked),
 		})
 	}
 	return

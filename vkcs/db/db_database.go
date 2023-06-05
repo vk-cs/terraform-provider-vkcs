@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/databases"
 )
 
-func databaseDatabaseStateRefreshFunc(client *gophercloud.ServiceClient, dbmsID string, databaseName string, dbmsType string) resource.StateRefreshFunc {
+func databaseDatabaseStateRefreshFunc(client *gophercloud.ServiceClient, dbmsID string, databaseName string, dbmsType string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		pages, err := databases.List(client, dbmsID, dbmsType).AllPages()
 		if err != nil {

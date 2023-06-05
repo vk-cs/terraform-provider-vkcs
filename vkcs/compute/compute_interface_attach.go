@@ -5,14 +5,13 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/attachinterfaces"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 func computeInterfaceAttachAttachFunc(
-	computeClient *gophercloud.ServiceClient, instanceID, attachmentID string) resource.StateRefreshFunc {
+	computeClient *gophercloud.ServiceClient, instanceID, attachmentID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		va, err := attachinterfaces.Get(computeClient, instanceID, attachmentID).Extract()
 		if err != nil {
@@ -27,7 +26,7 @@ func computeInterfaceAttachAttachFunc(
 }
 
 func computeInterfaceAttachDetachFunc(
-	computeClient *gophercloud.ServiceClient, instanceID, attachmentID string) resource.StateRefreshFunc {
+	computeClient *gophercloud.ServiceClient, instanceID, attachmentID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] Attempting to detach vkcs_compute_interface_attach %s from instance %s",
 			attachmentID, instanceID)

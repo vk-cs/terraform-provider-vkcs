@@ -8,7 +8,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/volumeactions"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
@@ -155,7 +155,7 @@ func resourceBlockStorageVolumeCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("error creating vkcs_blockstorage_volume: %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{bsVolumeStatusBuild, bsVolumeStatusDownloading},
 		Target:     []string{bsVolumeStatusActive},
 		Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, v.ID),
@@ -236,7 +236,7 @@ func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceDat
 			return diag.Errorf("error extending vkcs_blockstorage_volume %s size: %s", d.Id(), err)
 		}
 
-		stateConf := &resource.StateChangeConf{
+		stateConf := &retry.StateChangeConf{
 			Pending:    []string{bsVolumeStatusBuild, bsVolumeStatusDownloading},
 			Target:     []string{bsVolumeStatusActive, bsVolumeStatusInUse},
 			Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
@@ -265,7 +265,7 @@ func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.Errorf("error changing type of vkcs_blockstorage_volume %s", d.Id())
 		}
-		stateConf := &resource.StateChangeConf{
+		stateConf := &retry.StateChangeConf{
 			Pending:    []string{bsVolumeStatusBuild, bsVolumeStatusRetype},
 			Target:     []string{bsVolumeStatusActive, bsVolumeStatusInUse},
 			Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
@@ -294,7 +294,7 @@ func resourceBlockStorageVolumeDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_blockstorage_volume"))
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{bsVolumeStatusActive, bsVolumeStatusShutdown, bsVolumeStatusInUse},
 		Target:     []string{bsVolumeStatusDeleted},
 		Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),

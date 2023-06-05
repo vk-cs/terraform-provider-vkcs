@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	sdk_acctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	fm_acctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/publicdns/v2/records"
@@ -18,7 +18,7 @@ import (
 func TestAccPublicDNSRecord_basic(t *testing.T) {
 	var z zones.Zone
 	var r map[string]interface{}
-	zoneName := fmt.Sprintf("vkcs-tf-acctest-%s.com", sdk_acctest.RandString(5))
+	zoneName := fmt.Sprintf("vkcs-tf-acctest-%s.com", fm_acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: acctest.AccTestProviders,
@@ -40,7 +40,7 @@ func TestAccPublicDNSRecord_basic(t *testing.T) {
 }
 
 func TestAccPublicDNSRecord_update(t *testing.T) {
-	zoneName := fmt.Sprintf("vkcs-tf-acctest-%s.com", sdk_acctest.RandString(5))
+	zoneName := fmt.Sprintf("vkcs-tf-acctest-%s.com", fm_acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: acctest.AccTestProviders,

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
@@ -248,7 +248,7 @@ func resourceKubernetesNodeGroupCreate(ctx context.Context, d *schema.ResourceDa
 	// Store the node Group ID.
 	d.SetId(s.UUID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:      []string{string(clusterStatusReconciling)},
 		Target:       []string{string(clusterStatusRunning)},
 		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, s.ClusterID),
@@ -330,7 +330,7 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("error creating container infra client: %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, d.Get("cluster_id").(string)),
 		Timeout:      d.Timeout(schema.TimeoutUpdate),
 		Delay:        createUpdateDelay * time.Minute,
@@ -450,7 +450,7 @@ func resourceKubernetesNodeGroupDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(util.CheckDeleted(d, err, "error deleting vkcs_kubernetes_node_group"))
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:      []string{string(clusterStatusReconciling)},
 		Target:       []string{string(clusterStatusRunning)},
 		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, d.Get("cluster_id").(string)),

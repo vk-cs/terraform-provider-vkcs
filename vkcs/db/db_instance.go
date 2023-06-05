@@ -10,7 +10,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -166,7 +166,7 @@ func flattenDatabaseBackupSchedule(b instances.BackupSchedule) []map[string]inte
 	return backupschedule
 }
 
-func databaseInstanceStateRefreshFunc(client *gophercloud.ServiceClient, instanceID string, capabilitiesOpts *[]instances.CapabilityOpts) resource.StateRefreshFunc {
+func databaseInstanceStateRefreshFunc(client *gophercloud.ServiceClient, instanceID string, capabilitiesOpts *[]instances.CapabilityOpts) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		i, err := instances.Get(client, instanceID).Extract()
 		if err != nil {

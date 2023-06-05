@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/gophercloud/gophercloud"
-	sdk_acctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	fm_acctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
@@ -72,7 +72,7 @@ func TestMockAccKubernetesCluster_basic(t *testing.T) {
 	dummyConfig.On("util.GetRegion").Return("")
 
 	// Create cluster fixtures
-	clusterName := "testcluster" + sdk_acctest.RandStringFromCharSet(8, sdk_acctest.CharSetAlphaNum)
+	clusterName := "testcluster" + fm_acctest.RandStringFromCharSet(8, fm_acctest.CharSetAlphaNum)
 	resourceName := "vkcs_kubernetes_cluster." + clusterName
 
 	createClusterFixture := clusterFixture(clusterName, acctest.ClusterTemplateID, acctest.OsFlavorID,

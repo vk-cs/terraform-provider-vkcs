@@ -3,14 +3,13 @@ package firewall
 import (
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
-// networkingSecgroupStateRefreshFuncDelete returns a special case resource.StateRefreshFunc to try to delete a secgroup.
-func networkingSecgroupStateRefreshFuncDelete(networkingClient *gophercloud.ServiceClient, id string) resource.StateRefreshFunc {
+// networkingSecgroupStateRefreshFuncDelete returns a special case retry.StateRefreshFunc to try to delete a secgroup.
+func networkingSecgroupStateRefreshFuncDelete(networkingClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] Attempting to delete vkcs_networking_secgroup %s", id)
 
