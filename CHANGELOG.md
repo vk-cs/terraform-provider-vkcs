@@ -9,6 +9,7 @@ description: |-
 
 #### v0.2.3 (unreleased)
 - Fix duplicate entry error on recreating Kubernetes cluster
+- Fix error when creating DB instance with specified configuration_id
 
 #### v0.2.2
 - Remove "optional" property from ip attribute of DB instance
