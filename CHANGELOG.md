@@ -8,7 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 ### v0.3.1
-- Add vkcs_backup_plan resource
+- Add vkcs_backup_plan resource and datasource
 
 #### v0.3.0
 - Provide support for Kubernetes cluster addons
