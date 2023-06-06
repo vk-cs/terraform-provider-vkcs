@@ -16,19 +16,32 @@ Manages a compute VM instance resource.
 ### Basic Instance
 ```terraform
 resource "vkcs_compute_instance" "basic" {
-  name            = "basic"
-  image_id        = "ad091b52-742f-469e-8f3c-fd81cadf0743"
-  flavor_id       = "3"
-  key_pair        = "my_key_pair_name"
-  security_groups = ["default"]
-
-  metadata = {
-    this = "that"
+  name              = "basic-tf-example"
+  # AZ and flavor are mandatory
+  availability_zone = "GZ1"
+  flavor_name       = "Basic-1-2-20"
+  # Use block_device to specify instance disk to get full control
+  # of it in the future
+  block_device {
+    source_type           = "image"
+    uuid                  = data.vkcs_images_image.debian.id
+    destination_type      = "volume"
+    volume_size           = 10
+    delete_on_termination = true
   }
-
+  # Specify at least one network to do not depend on project assets
   network {
-    name = "my_network"
+    uuid = vkcs_networking_network.app.id
   }
+  # Specify required security groups if yoo do not want `default` one
+  security_groups = [
+    vkcs_networking_secgroup.admin.id
+  ]
+  # If your configuration also defines a network for the instance,
+  # ensure it is attachec to a router before creating of the instance
+  depends_on = [
+    vkcs_networking_router_interface.app
+  ]
 }
 ```
 
@@ -191,30 +204,30 @@ resource "vkcs_compute_instance" "instance_1" {
 
 ### Instance With Multiple Networks
 ```terraform
-resource "vkcs_networking_floatingip" "myip" {
-  pool = "my_pool"
-}
-
-resource "vkcs_compute_instance" "multi-net" {
-  name            = "multi-net"
-  image_id        = "ad091b52-742f-469e-8f3c-fd81cadf0743"
-  flavor_id       = "3"
-  key_pair        = "my_key_pair_name"
-  security_groups = ["default"]
-
-  network {
-    name = "my_first_network"
+resource "vkcs_compute_instance" "multiple_networks" {
+  name              = "multiple-networks-tf-example"
+  availability_zone = "GZ1"
+  flavor_name       = "Basic-1-2-20"
+  block_device {
+    source_type           = "image"
+    uuid                  = data.vkcs_images_image.debian.id
+    destination_type      = "volume"
+    volume_size           = 10
+    delete_on_termination = true
   }
-
   network {
-    name = "my_second_network"
+    uuid = vkcs_networking_network.app.id
   }
-}
-
-resource "vkcs_compute_floatingip_associate" "myip" {
-  floating_ip = "${vkcs_networking_floatingip.myip.address}"
-  instance_id = "${vkcs_compute_instance.multi-net.id}"
-  fixed_ip    = "${vkcs_compute_instance.multi-net.network.1.fixed_ip_v4}"
+  network {
+    uuid = vkcs_networking_network.db.id
+  }
+  security_groups = [
+    vkcs_networking_secgroup.admin.id
+  ]
+  depends_on = [
+    vkcs_networking_router_interface.app,
+    vkcs_networking_router_interface.db
+  ]
 }
 ```
 
