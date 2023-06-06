@@ -1,6 +1,9 @@
 package plans
 
-import "github.com/gophercloud/gophercloud"
+import (
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/pagination"
+)
 
 type PlanResp struct {
 	Plan PlanResponse `json:"plan"`
@@ -55,4 +58,25 @@ type UpdateResult struct {
 
 type DeleteResult struct {
 	gophercloud.ErrResult
+}
+
+// Page represents a page of backup plans
+type Page struct {
+	pagination.SinglePageBase
+}
+
+// IsEmpty indicates whether a backup plan collection is empty.
+func (r Page) IsEmpty() (bool, error) {
+	tr, err := ExtractPlans(r)
+	return len(tr) == 0, err
+}
+
+// ExtractPlans retrieves a slice of backup PlanResponse structs from a paginated
+// collection.
+func ExtractPlans(r pagination.Page) ([]PlanResponse, error) {
+	var s struct {
+		Plans []PlanResponse `json:"plans"`
+	}
+	err := (r.(Page)).ExtractInto(&s)
+	return s.Plans, err
 }

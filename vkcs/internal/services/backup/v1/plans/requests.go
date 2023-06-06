@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/pagination"
 )
 
 type OptsBuilder interface {
@@ -68,6 +69,14 @@ func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
 	resp, err := client.Get(planURL(client, id), &r.Body, nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
+}
+
+// List will list all backup plans
+func List(client *gophercloud.ServiceClient) pagination.Pager {
+	return pagination.NewPager(client, plansURL(client),
+		func(r pagination.PageResult) pagination.Page {
+			return Page{pagination.SinglePageBase(r)}
+		})
 }
 
 // Update performs request to update backup plan
