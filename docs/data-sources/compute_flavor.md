@@ -13,9 +13,9 @@ Use this data source to get the ID of an available VKCS flavor.
 ## Example Usage
 
 ```terraform
-data "vkcs_compute_flavor" "small" {
+data "vkcs_compute_flavor" "basic" {
   vcpus = 1
-  ram   = 512
+  ram   = 1024
 }
 ```
 
