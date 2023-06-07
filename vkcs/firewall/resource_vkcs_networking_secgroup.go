@@ -105,6 +105,8 @@ func resourceNetworkingSecGroupCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("Error creating vkcs_networking_secgroup: %s", err)
 	}
 
+	d.SetId(sg.ID)
+
 	// Delete the default security group rules if it has been requested.
 	deleteDefaultRules := d.Get("delete_default_rules").(bool)
 	if deleteDefaultRules {
@@ -120,8 +122,6 @@ func resourceNetworkingSecGroupCreate(ctx context.Context, d *schema.ResourceDat
 			}
 		}
 	}
-
-	d.SetId(sg.ID)
 
 	tags := networking.NetworkingAttributesTags(d)
 	if len(tags) > 0 {

@@ -239,6 +239,7 @@ func resourceKeyManagerSecretCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	uuid := KeyManagerSecretGetUUIDfromSecretRef(secret.SecretRef)
+	d.SetId(uuid)
 
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"PENDING"},
@@ -253,8 +254,6 @@ func resourceKeyManagerSecretCreate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.Errorf("Error waiting for vkcs_keymanager_secret: %s", err)
 	}
-
-	d.SetId(uuid)
 
 	d.Partial(true)
 

@@ -117,6 +117,8 @@ func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
+	d.SetId(service.ID)
+
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"NOT_CREATED"},
 		Target:     []string{"PENDING_CREATE"},
@@ -132,8 +134,6 @@ func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	log.Printf("[DEBUG] Service created: %#v", service)
-
-	d.SetId(service.ID)
 
 	return resourceServiceRead(ctx, d, meta)
 }

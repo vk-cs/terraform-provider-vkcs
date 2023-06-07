@@ -528,6 +528,9 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 		return diag.Errorf("error creating vkcs_db_cluster_with_shards: %s", err)
 	}
 
+	// Store the ID now
+	d.SetId(cluster.ID)
+
 	// Wait for the cluster to become available.
 	log.Printf("[DEBUG] Waiting for vkcs_db_cluster_with_shards %s to become available", cluster.ID)
 
@@ -556,8 +559,6 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 		}
 	}
 
-	// Store the ID now
-	d.SetId(cluster.ID)
 	return resourceDatabaseClusterWithShardsRead(ctx, d, meta)
 }
 

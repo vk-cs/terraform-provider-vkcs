@@ -113,6 +113,9 @@ func resourceBlockStorageSnapshotCreate(ctx context.Context, d *schema.ResourceD
 		return diag.Errorf("error creating vkcs_blockstorage_snapshot: %s", err)
 	}
 
+	// Store the ID now
+	d.SetId(snapshot.ID)
+
 	// Wait for the volume snapshot to become available.
 	log.Printf("[DEBUG] Waiting for vkcs_blockstorage_volume_snapshot %s to become available", snapshot.ID)
 
@@ -129,9 +132,6 @@ func resourceBlockStorageSnapshotCreate(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.Errorf("error waiting for vkcs_blockstorage_volume_snapshot %s to become ready: %s", snapshot.ID, err)
 	}
-
-	// Store the ID now
-	d.SetId(snapshot.ID)
 
 	return resourceBlockStorageSnapshotRead(ctx, d, meta)
 }

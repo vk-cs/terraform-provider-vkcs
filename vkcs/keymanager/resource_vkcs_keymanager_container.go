@@ -177,6 +177,7 @@ func resourceKeyManagerContainerCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	uuid := keyManagerContainerGetUUIDfromContainerRef(container.ContainerRef)
+	d.SetId(uuid)
 
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"PENDING"},
@@ -191,8 +192,6 @@ func resourceKeyManagerContainerCreate(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.Errorf("Error waiting for vkcs_keymanager_container: %s", err)
 	}
-
-	d.SetId(uuid)
 
 	d.Partial(true)
 

@@ -563,6 +563,9 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("error creating vkcs_db_cluster: %s", err)
 	}
 
+	// Store the ID now
+	d.SetId(cluster.ID)
+
 	// Wait for the cluster to become available.
 	log.Printf("[DEBUG] Waiting for vkcs_db_cluster %s to become available", cluster.ID)
 
@@ -591,8 +594,6 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	// Store the ID now
-	d.SetId(cluster.ID)
 	return resourceDatabaseClusterRead(ctx, d, meta)
 }
 

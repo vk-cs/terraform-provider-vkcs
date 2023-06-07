@@ -150,10 +150,12 @@ func resourceBlockStorageVolumeCreate(ctx context.Context, d *schema.ResourceDat
 	log.Printf("[DEBUG] vkcs_blockstorage_volume create options: %#v", createOpts)
 
 	v, err := volumes.Create(blockStorageClient, createOpts).Extract()
-
 	if err != nil {
 		return diag.Errorf("error creating vkcs_blockstorage_volume: %s", err)
 	}
+
+	// Store the ID now
+	d.SetId(v.ID)
 
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{bsVolumeStatusBuild, bsVolumeStatusDownloading},
@@ -168,9 +170,6 @@ func resourceBlockStorageVolumeCreate(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.Errorf("error waiting for vkcs_blockstorage_volume %s to become ready: %s", v.ID, err)
 	}
-
-	// Store the ID now
-	d.SetId(v.ID)
 
 	return resourceBlockStorageVolumeRead(ctx, d, meta)
 }

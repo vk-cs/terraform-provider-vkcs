@@ -127,6 +127,8 @@ func resourceSharedFilesystemShareAccessCreate(ctx context.Context, d *schema.Re
 		}
 	}
 
+	d.SetId(access.ID)
+
 	log.Printf("[DEBUG] Waiting for vkcs_sharedfilesystem_share_access %s to become available.", access.ID)
 	stateConf := &retry.StateChangeConf{
 		Target:     []string{"active"},
@@ -141,8 +143,6 @@ func resourceSharedFilesystemShareAccessCreate(ctx context.Context, d *schema.Re
 	if err != nil {
 		return diag.Errorf("Error waiting for vkcs_sharedfilesystem_share_access %s to become available: %s", access.ID, err)
 	}
-
-	d.SetId(access.ID)
 
 	return resourceSharedFilesystemShareAccessRead(ctx, d, meta)
 }

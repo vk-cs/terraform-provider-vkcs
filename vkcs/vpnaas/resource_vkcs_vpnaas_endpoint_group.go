@@ -99,6 +99,8 @@ func resourceEndpointGroupCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
+	d.SetId(group.ID)
+
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"PENDING_CREATE"},
 		Target:     []string{"ACTIVE"},
@@ -114,8 +116,6 @@ func resourceEndpointGroupCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	log.Printf("[DEBUG] EndpointGroup created: %#v", group)
-
-	d.SetId(group.ID)
 
 	return resourceEndpointGroupRead(ctx, d, meta)
 }

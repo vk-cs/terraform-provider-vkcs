@@ -153,13 +153,13 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.Errorf("Error creating member: %s", err)
 	}
 
+	d.SetId(member.ID)
+
 	// Wait for member to become active before continuing
 	err = waitForLBMember(ctx, lbClient, parentPool, member, "ACTIVE", getLbPendingStatuses(), timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(member.ID)
 
 	return resourceMemberRead(ctx, d, meta)
 }

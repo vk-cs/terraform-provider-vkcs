@@ -174,13 +174,13 @@ func resourceMonitorCreate(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.Errorf("Unable to create vkcs_lb_monitor: %s", err)
 	}
 
+	d.SetId(monitor.ID)
+
 	// Wait for monitor to become active before continuing
 	err = waitForLBMonitor(ctx, lbClient, parentPool, monitor, "ACTIVE", getLbPendingStatuses(), timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(monitor.ID)
 
 	return resourceMonitorRead(ctx, d, meta)
 }

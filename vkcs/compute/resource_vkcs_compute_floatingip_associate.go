@@ -94,6 +94,12 @@ func resourceComputeFloatingIPAssociateCreate(ctx context.Context, d *schema.Res
 		return diag.Errorf("Error creating vkcs_compute_floatingip_associate: %s", err)
 	}
 
+	// There's an API call to get this information, but it has been
+	// deprecated. The Neutron API could be used, but I'm trying not
+	// to mix service APIs. Therefore, a faux ID will be used.
+	id := fmt.Sprintf("%s/%s/%s", floatingIP, instanceID, fixedIP)
+	d.SetId(id)
+
 	// This API call should be synchronous, but we've had reports where it isn't.
 	// If the user opted in to wait for association, then poll here.
 	var waitUntilAssociated bool
@@ -118,12 +124,6 @@ func resourceComputeFloatingIPAssociateCreate(ctx context.Context, d *schema.Res
 			return diag.FromErr(err)
 		}
 	}
-
-	// There's an API call to get this information, but it has been
-	// deprecated. The Neutron API could be used, but I'm trying not
-	// to mix service APIs. Therefore, a faux ID will be used.
-	id := fmt.Sprintf("%s/%s/%s", floatingIP, instanceID, fixedIP)
-	d.SetId(id)
 
 	return resourceComputeFloatingIPAssociateRead(ctx, d, meta)
 }

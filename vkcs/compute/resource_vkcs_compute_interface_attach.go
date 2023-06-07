@@ -118,6 +118,10 @@ func resourceComputeInterfaceAttachCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	// Use the instance ID and attachment ID as the resource ID.
+	id := fmt.Sprintf("%s/%s", instanceID, attachment.PortID)
+	d.SetId(id)
+
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"ATTACHING"},
 		Target:     []string{"ATTACHED"},
@@ -131,12 +135,7 @@ func resourceComputeInterfaceAttachCreate(ctx context.Context, d *schema.Resourc
 		return diag.Errorf("Error creating vkcs_compute_interface_attach %s: %s", instanceID, err)
 	}
 
-	// Use the instance ID and attachment ID as the resource ID.
-	id := fmt.Sprintf("%s/%s", instanceID, attachment.PortID)
-
 	log.Printf("[DEBUG] Created vkcs_compute_interface_attach %s: %#v", id, attachment)
-
-	d.SetId(id)
 
 	return resourceComputeInterfaceAttachRead(ctx, d, meta)
 }

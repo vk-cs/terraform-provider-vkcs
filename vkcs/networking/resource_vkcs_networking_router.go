@@ -176,6 +176,8 @@ func resourceNetworkingRouterCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error creating vkcs_networking_router: %s", err)
 	}
 
+	d.SetId(r.ID)
+
 	log.Printf("[DEBUG] Waiting for vkcs_networking_router %s to become available.", r.ID)
 
 	stateConf := &retry.StateChangeConf{
@@ -191,8 +193,6 @@ func resourceNetworkingRouterCreate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.Errorf("Error waiting for vkcs_networking_router %s to become available: %s", r.ID, err)
 	}
-
-	d.SetId(r.ID)
 
 	// If the vendorUpdateGateway flag was specified and if an external network
 	// was specified, then set the gateway information after router creation.

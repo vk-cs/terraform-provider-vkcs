@@ -196,6 +196,9 @@ func resourceDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("error creating vkcs_db_backup: %s", err)
 	}
 
+	// Store the ID now
+	d.SetId(backup.ID)
+
 	// Wait for the backup to become available.
 	log.Printf("[DEBUG] Waiting for vkcs_db_backup %s to become available", backup.ID)
 
@@ -212,9 +215,6 @@ func resourceDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.Errorf("error waiting for vkcs_db_backup %s to become ready: %s", backup.ID, err)
 	}
-
-	// Store the ID now
-	d.SetId(backup.ID)
 
 	return resourceDatabaseBackupRead(ctx, d, meta)
 }

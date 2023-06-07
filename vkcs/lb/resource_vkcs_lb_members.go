@@ -149,13 +149,13 @@ func resourceMembersCreate(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.Errorf("Error creating members: %s", err)
 	}
 
+	d.SetId(poolID)
+
 	// Wait for parent pool to become active before continuing
 	err = waitForLBPool(ctx, lbClient, parentPool, "ACTIVE", getLbPendingStatuses(), timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(poolID)
 
 	return resourceMembersRead(ctx, d, meta)
 }
