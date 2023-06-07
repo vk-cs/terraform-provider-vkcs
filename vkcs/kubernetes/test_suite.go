@@ -44,6 +44,15 @@ func (d *DummyConfig) ContainerInfraV1Client(region string) (*gophercloud.Servic
 	return nil, args.Error(0)
 }
 
+// ContainerInfraAddonsV1Client is a mock client for infra addons requests.
+func (d *DummyConfig) ContainerInfraAddonsV1Client(region string) (*gophercloud.ServiceClient, error) {
+	args := d.Called(region)
+	if r, ok := args.Get(0).(*gophercloud.ServiceClient); ok {
+		return r, args.Error(1)
+	}
+	return nil, args.Error(0)
+}
+
 // DatabaseV1Client returns dummy DatabaseV1Client
 func (d *DummyConfig) DatabaseV1Client(region string) (*gophercloud.ServiceClient, error) {
 	// args := d.Called(region)

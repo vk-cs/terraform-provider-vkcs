@@ -11,6 +11,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	wrapper "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/providerwrapper/framework"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes"
 )
 
 // Ensure the implementation satisfies the expected interfaces
@@ -91,10 +92,14 @@ func (p *vkcsProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		db.NewDatastoreCapabilitiesDataSource,
+		kubernetes.NewAddonDatasource,
+		kubernetes.NewAddonsDatasource,
 	}
 }
 
 // Resources defines the resources implemented in the provider.
 func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
-	return nil
+	return []func() resource.Resource{
+		kubernetes.NewAddonResource,
+	}
 }

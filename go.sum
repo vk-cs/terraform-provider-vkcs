@@ -91,6 +91,8 @@ github.com/hashicorp/terraform-json v0.16.0 h1:UKkeWRWb23do5LNAFlh/K3N0ymn1qTOO8
 github.com/hashicorp/terraform-json v0.16.0/go.mod h1:v0Ufk9jJnk6tcIZvScHvetlKfiNTC+WS21mnXIlc0B0=
 github.com/hashicorp/terraform-plugin-framework v1.2.0 h1:MZjFFfULnFq8fh04FqrKPcJ/nGpHOvX4buIygT3MSNY=
 github.com/hashicorp/terraform-plugin-framework v1.2.0/go.mod h1:nToI62JylqXDq84weLJ/U3umUsBhZAaTmU0HXIVUOcw=
+github.com/hashicorp/terraform-plugin-framework-timeouts v0.3.1 h1:5GhozvHUsrqxqku+yd0UIRTkmDLp2QPX5paL1Kq5uUA=
+github.com/hashicorp/terraform-plugin-framework-timeouts v0.3.1/go.mod h1:ThtYDU8p6sJ9+SI+TYxXrw28vXxgBwYOpoPv1EojSJI=
 github.com/hashicorp/terraform-plugin-go v0.15.0 h1:1BJNSUFs09DS8h/XNyJNJaeusQuWc/T9V99ylU9Zwp0=
 github.com/hashicorp/terraform-plugin-go v0.15.0/go.mod h1:tk9E3/Zx4RlF/9FdGAhwxHExqIHHldqiQGt20G6g+nQ=
 github.com/hashicorp/terraform-plugin-log v0.8.0 h1:pX2VQ/TGKu+UU1rCay0OlzosNKe4Nz1pepLXj95oyy0=
