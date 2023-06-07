@@ -208,7 +208,13 @@ func (r commonRootUserResult) Extract() (*RootUserResp, error) {
 
 // Extract is used to extract result into response struct
 func (r IsRootUserEnabledResult) Extract() (bool, error) {
-	return r.Body.(map[string]interface{})["rootEnabled"].(bool), r.Err
+	var s struct {
+		RootEnabled bool `json:"rootEnabled"`
+	}
+	if err := r.ExtractInto(&s); err != nil {
+		return false, err
+	}
+	return s.RootEnabled, nil
 }
 
 func (r commonCapabilitiesResult) Extract() ([]DatabaseCapability, error) {
