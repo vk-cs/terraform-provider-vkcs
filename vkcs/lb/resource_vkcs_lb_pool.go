@@ -212,14 +212,14 @@ func resourcePoolCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		return diag.Errorf("Error creating pool: %s", err)
 	}
 
+	d.SetId(pool.ID)
+
 	// Pool was successfully created
 	// Wait for pool to become active before continuing
 	err = waitForLBPool(ctx, lbClient, pool, "ACTIVE", getLbPendingStatuses(), timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(pool.ID)
 
 	return resourcePoolRead(ctx, d, meta)
 }

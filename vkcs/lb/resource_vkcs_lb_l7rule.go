@@ -186,14 +186,14 @@ func resourceL7RuleCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.Errorf("Error creating L7 Rule: %s", err)
 	}
 
+	d.SetId(l7Rule.ID)
+	d.Set("listener_id", listenerID)
+
 	// Wait for L7 Rule to become active before continuing
 	err = waitForLBL7Rule(ctx, lbClient, parentListener, parentL7Policy, l7Rule, "ACTIVE", getLbPendingStatuses(), timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(l7Rule.ID)
-	d.Set("listener_id", listenerID)
 
 	return resourceL7RuleRead(ctx, d, meta)
 }

@@ -599,6 +599,9 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("error creating vkcs_db_instance: %s", err)
 	}
 
+	// Store the ID now
+	d.SetId(instance.ID)
+
 	// Wait for the instance to become available.
 	log.Printf("[DEBUG] Waiting for vkcs_db_instance %s to become available", instance.ID)
 
@@ -641,9 +644,6 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 			d.Set("root_password", rootUser.Password)
 		}
 	}
-
-	// Store the ID now
-	d.SetId(instance.ID)
 
 	return resourceDatabaseInstanceRead(ctx, d, meta)
 }

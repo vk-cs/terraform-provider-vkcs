@@ -189,13 +189,13 @@ func resourceL7PolicyCreate(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.Errorf("Error creating L7 Policy: %s", err)
 	}
 
+	d.SetId(l7Policy.ID)
+
 	// Wait for L7 Policy to become active before continuing
 	err = waitForLBL7Policy(ctx, lbClient, parentListener, l7Policy, "ACTIVE", getLbPendingStatuses(), timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(l7Policy.ID)
 
 	return resourceL7PolicyRead(ctx, d, meta)
 }

@@ -132,6 +132,11 @@ func resourceDatabaseUserCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.Errorf("error creating vkcs_db_user: %s", err)
 	}
 
+	// Store the ID now
+	d.SetId(fmt.Sprintf("%s/%s", dbmsID, userName))
+	// Store dbms type
+	d.Set("dbms_type", dbmsType)
+
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"BUILD"},
 		Target:     []string{"ACTIVE"},
@@ -145,11 +150,6 @@ func resourceDatabaseUserCreate(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return diag.Errorf("error waiting for vkcs_db_user %s to be created: %s", userName, err)
 	}
-
-	// Store the ID now
-	d.SetId(fmt.Sprintf("%s/%s", dbmsID, userName))
-	// Store dbms type
-	d.Set("dbms_type", dbmsType)
 
 	return resourceDatabaseUserRead(ctx, d, meta)
 }

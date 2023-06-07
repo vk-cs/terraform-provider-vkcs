@@ -159,14 +159,14 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 	lbID = lb.ID
 
+	d.SetId(lbID)
+
 	// Wait for load-balancer to become active before continuing.
 	timeout := d.Timeout(schema.TimeoutCreate)
 	err = waitForLBLoadBalancer(ctx, lbClient, lbID, "ACTIVE", getLbPendingStatuses(), timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(lbID)
 
 	return resourceLoadBalancerRead(ctx, d, meta)
 }

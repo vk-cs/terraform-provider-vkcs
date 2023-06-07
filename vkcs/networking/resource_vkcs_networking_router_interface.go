@@ -93,6 +93,8 @@ func resourceNetworkingRouterInterfaceCreate(ctx context.Context, d *schema.Reso
 		return diag.Errorf("Error creating vkcs_networking_router_interface: %s", err)
 	}
 
+	d.SetId(r.PortID)
+
 	log.Printf("[DEBUG] Waiting for vkcs_networking_router_interface %s to become available", r.PortID)
 
 	stateConf := &retry.StateChangeConf{
@@ -108,8 +110,6 @@ func resourceNetworkingRouterInterfaceCreate(ctx context.Context, d *schema.Reso
 	if err != nil {
 		return diag.Errorf("Error waiting for vkcs_networking_router_interface %s to become available: %s", r.ID, err)
 	}
-
-	d.SetId(r.PortID)
 
 	log.Printf("[DEBUG] Created vkcs_networking_router_interface %s: %#v", r.ID, r)
 	return resourceNetworkingRouterInterfaceRead(ctx, d, meta)

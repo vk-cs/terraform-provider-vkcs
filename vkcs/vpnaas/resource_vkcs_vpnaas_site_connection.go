@@ -204,6 +204,8 @@ func resourceSiteConnectionCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	d.SetId(conn.ID)
+
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"NOT_CREATED"},
 		Target:     []string{"PENDING_CREATE"},
@@ -219,8 +221,6 @@ func resourceSiteConnectionCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	log.Printf("[DEBUG] SiteConnection created: %#v", conn)
-
-	d.SetId(conn.ID)
 
 	return resourceSiteConnectionRead(ctx, d, meta)
 }

@@ -183,6 +183,8 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
+	d.SetId(fip.ID)
+
 	log.Printf("[DEBUG] Waiting for vkcs_networking_floatingip %s to become available.", fip.ID)
 
 	stateConf := &retry.StateChangeConf{
@@ -197,8 +199,6 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.Errorf("Error waiting for vkcs_networking_floatingip %s to become available: %s", fip.ID, err)
 	}
-
-	d.SetId(fip.ID)
 
 	if createOpts.SubnetID != "" {
 		// resourceNetworkFloatingIPRead doesn't handle this, since FIP GET request doesn't provide this info.

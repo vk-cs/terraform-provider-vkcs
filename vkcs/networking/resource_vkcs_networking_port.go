@@ -334,6 +334,8 @@ func resourceNetworkingPortCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("Error creating vkcs_networking_port: %s", err)
 	}
 
+	d.SetId(port.ID)
+
 	log.Printf("[DEBUG] Waiting for vkcs_networking_port %s to become available.", port.ID)
 
 	stateConf := &retry.StateChangeConf{
@@ -348,8 +350,6 @@ func resourceNetworkingPortCreate(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.Errorf("Error waiting for vkcs_networking_port %s to become available: %s", port.ID, err)
 	}
-
-	d.SetId(port.ID)
 
 	tags := NetworkingAttributesTags(d)
 	if len(tags) > 0 {

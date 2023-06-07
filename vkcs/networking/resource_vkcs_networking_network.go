@@ -154,6 +154,8 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("Error creating vkcs_networking_network: %s", err)
 	}
 
+	d.SetId(n.ID)
+
 	log.Printf("[DEBUG] Waiting for vkcs_networking_network %s to become available.", n.ID)
 
 	stateConf := &retry.StateChangeConf{
@@ -169,8 +171,6 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.Errorf("Error waiting for vkcs_networking_network %s to become available: %s", n.ID, err)
 	}
-
-	d.SetId(n.ID)
 
 	tags := NetworkingAttributesTags(d)
 	if len(tags) > 0 {

@@ -101,6 +101,12 @@ func resourceComputeVolumeAttachCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("Error creating vkcs_compute_volume_attach %s: %s", instanceID, err)
 	}
 
+	// Use the instance ID and attachment ID as the resource ID.
+	// This is because an attachment cannot be retrieved just by its ID alone.
+	id := fmt.Sprintf("%s/%s", instanceID, attachment.ID)
+
+	d.SetId(id)
+
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"ATTACHING"},
 		Target:     []string{"ATTACHED"},
@@ -113,12 +119,6 @@ func resourceComputeVolumeAttachCreate(ctx context.Context, d *schema.ResourceDa
 	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
 		return diag.Errorf("Error attaching vkcs_compute_volume_attach %s: %s", instanceID, err)
 	}
-
-	// Use the instance ID and attachment ID as the resource ID.
-	// This is because an attachment cannot be retrieved just by its ID alone.
-	id := fmt.Sprintf("%s/%s", instanceID, attachment.ID)
-
-	d.SetId(id)
 
 	return resourceComputeVolumeAttachRead(ctx, d, meta)
 }

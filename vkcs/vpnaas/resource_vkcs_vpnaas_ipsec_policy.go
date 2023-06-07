@@ -139,6 +139,8 @@ func resourceIPSecPolicyCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
+	d.SetId(policy.ID)
+
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"PENDING_CREATE"},
 		Target:     []string{"ACTIVE"},
@@ -154,8 +156,6 @@ func resourceIPSecPolicyCreate(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	log.Printf("[DEBUG] IPSec policy created: %#v", policy)
-
-	d.SetId(policy.ID)
 
 	return resourceIPSecPolicyRead(ctx, d, meta)
 }

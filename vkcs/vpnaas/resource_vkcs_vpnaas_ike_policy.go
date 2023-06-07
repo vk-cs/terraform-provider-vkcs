@@ -138,6 +138,8 @@ func resourceIKEPolicyCreate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
+	d.SetId(policy.ID)
+
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"PENDING_CREATE"},
 		Target:     []string{"ACTIVE"},
@@ -153,8 +155,6 @@ func resourceIKEPolicyCreate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	log.Printf("[DEBUG] IKE policy created: %#v", policy)
-
-	d.SetId(policy.ID)
 
 	return resourceIKEPolicyRead(ctx, d, meta)
 }

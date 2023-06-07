@@ -252,13 +252,13 @@ func resourceListenerCreate(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.Errorf("Error creating vkcs_lb_listener: %s", err)
 	}
 
+	d.SetId(listener.ID)
+
 	// Wait for the listener to become ACTIVE.
 	err = waitForLBListener(ctx, lbClient, listener, "ACTIVE", getLbPendingStatuses(), timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(listener.ID)
 
 	return resourceListenerRead(ctx, d, meta)
 }

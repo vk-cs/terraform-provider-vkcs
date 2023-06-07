@@ -250,6 +250,8 @@ func resourceNetworkingSubnetCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error creating vkcs_networking_subnet: %s", err)
 	}
 
+	d.SetId(s.ID)
+
 	log.Printf("[DEBUG] Waiting for vkcs_networking_subnet %s to become available", s.ID)
 	stateConf := &retry.StateChangeConf{
 		Target:     []string{"ACTIVE"},
@@ -263,8 +265,6 @@ func resourceNetworkingSubnetCreate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.Errorf("Error waiting for vkcs_networking_subnet %s to become available: %s", s.ID, err)
 	}
-
-	d.SetId(s.ID)
 
 	tags := NetworkingAttributesTags(d)
 	if len(tags) > 0 {
