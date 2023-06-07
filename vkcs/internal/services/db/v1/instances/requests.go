@@ -396,10 +396,10 @@ func RootUserEnable(client *gophercloud.ServiceClient, id string, opts OptsBuild
 // RootUserGet performs request to get root user of database instance
 func RootUserGet(client *gophercloud.ServiceClient, id string) (r IsRootUserEnabledResult) {
 	var result *http.Response
-	result, err := client.Get(rootUserURL(client, id), &r.Body, &gophercloud.RequestOpts{
+	result, r.Err = client.Get(rootUserURL(client, id), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if err == nil {
+	if r.Err == nil {
 		r.Header = result.Header
 	}
 	return
