@@ -24,3 +24,9 @@ func newPublicDNSV2(client *gophercloud.ProviderClient, eo gophercloud.EndpointO
 	sc.ResourceBase = sc.Endpoint + "v2/"
 	return sc, err
 }
+
+func newContainerInfraAddonsV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
+	sc, err := initClientOpts(client, eo, "manage-cluster-addons")
+	sc.ResourceBase = sc.Endpoint + "v1/"
+	return sc, err
+}

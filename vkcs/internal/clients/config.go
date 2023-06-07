@@ -36,6 +36,7 @@ type Config interface {
 	BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error)
 	KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error)
 	ContainerInfraV1Client(region string) (*gophercloud.ServiceClient, error)
+	ContainerInfraAddonsV1Client(region string) (*gophercloud.ServiceClient, error)
 	IdentityV3Client(region string) (*gophercloud.ServiceClient, error)
 	DatabaseV1Client(region string) (*gophercloud.ServiceClient, error)
 	SharedfilesystemV2Client(region string) (*gophercloud.ServiceClient, error)
@@ -170,6 +171,11 @@ func (c *configer) ContainerInfraV1Client(region string) (*gophercloud.ServiceCl
 		"MCS-API-Version": fmt.Sprintf("container-infra %s", c.ContainerInfraV1MicroVersion),
 	}
 	return client, err
+}
+
+// ContainerInfraV1Client is implementation of ContainerInfraV1Client method
+func (c *configer) ContainerInfraAddonsV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.CommonServiceClientInit(newContainerInfraAddonsV1, region, "magnum-addons")
 }
 
 // IdentityV3Client is implementation of ContainerInfraV1Client method

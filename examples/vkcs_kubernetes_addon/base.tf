@@ -1,0 +1,1 @@
+../vkcs_kubernetes_node_group/base.tf

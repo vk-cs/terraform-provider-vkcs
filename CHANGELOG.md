@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.2.3 (unreleased)
+- Provide support for VKCS Kubernetes cluster addons
 - Fix duplicate entry error on recreating Kubernetes cluster
 - Fix error when creating DB instance with specified configuration_id
 
