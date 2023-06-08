@@ -101,8 +101,7 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			},
 
 			"namespace": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				Default:     stringdefault.StaticString("default"),
 				Description: "The namespace name where the addon will be installed.",
 				PlanModifiers: []planmodifier.String{
