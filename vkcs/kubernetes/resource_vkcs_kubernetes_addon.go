@@ -86,7 +86,7 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 
 			"cluster_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the kubernetes cluster.",
+				Description: "The ID of the kubernetes cluster. Changing this creates a new addon.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -94,7 +94,7 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 
 			"addon_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The id of the add-on.",
+				Description: "The id of the addon. Changing this creates a new addon.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -113,7 +113,7 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			"name": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The name of the application.",
+				Description: "The name of the application. Changing this creates a new addon.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -122,7 +122,7 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			"configuration_values": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "Configuration code for the addon.",
+				Description: "Configuration code for the addon. Changing this creates a new addon.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
