@@ -124,6 +124,7 @@ data "vkcs_kubernetes_addon" "ingress-nginx" {
 resource "vkcs_kubernetes_addon" "basic" {
   cluster_id           = vkcs_kubernetes_cluster.cluster.id
   addon_id             = data.vkcs_kubernetes_addon.ingress-nginx.id
+  namespace            = "ingress-nginx"
   configuration_values = data.vkcs_kubernetes_addon.ingress-nginx.configuration_values
   depends_on           = [vkcs_kubernetes_node_group.default-ng]
 }

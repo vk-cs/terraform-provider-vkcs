@@ -101,8 +101,7 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			},
 
 			"namespace": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				Default:     stringdefault.StaticString("default"),
 				Description: "The namespace name where the addon will be installed.",
 				PlanModifiers: []planmodifier.String{
@@ -230,7 +229,8 @@ func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, 
 	data.ID = types.StringValue(id)
 	data.Region = types.StringValue(region)
 	data.AddonID = types.StringValue(clusterAddon.Addon.ID)
-	data.Name = types.StringValue(name)
+	data.Namespace = types.StringValue(clusterAddon.Payload.Namespace)
+	data.Name = types.StringValue(clusterAddon.Payload.Name)
 	data.ConfigurationValues = types.StringValue(clusterAddon.UserChartValues)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
