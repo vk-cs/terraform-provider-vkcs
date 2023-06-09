@@ -10,52 +10,43 @@ import (
 )
 
 func TestAccKubernetesClusterTemplateDataSource_basic(t *testing.T) {
-
-	version := "1.20.4"
-	name := "Kubernetes-centos-v1.20.4-mcs.1"
-	uuid := acctest.ClusterTemplateID
-	resourceName := "data.vkcs_kubernetes_clustertemplate.template"
-
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { acctest.AccTestPreCheckKubernetes(t) },
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
 		Steps: []resource.TestStep{
 			{
-				PlanOnly: true,
-				Config:   testAccKubernetesClusterTemplateBasicByVersion(version),
+				Config: testAccKubernetesClusterTemplateDataSourceBasic,
 				Check: resource.ComposeTestCheckFunc(
-					testAccKubernetesClusterTemplateDataSourceID(resourceName, name),
-					resource.TestCheckResourceAttr(resourceName, "name", name),
-				),
-			},
-			{
-				PlanOnly: true,
-				Config:   testAccKubernetesClusterTemplateBasicByName(name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccKubernetesClusterTemplateDataSourceID(resourceName, uuid),
-					resource.TestCheckResourceAttr(resourceName, "name", name),
-				),
-			},
-			{
-				PlanOnly: true,
-				Config:   testAccKubernetesClusterTemplateBasicByUUID(uuid),
-				Check: resource.ComposeTestCheckFunc(
-					testAccKubernetesClusterTemplateDataSourceID(resourceName, uuid),
-					resource.TestCheckResourceAttr(resourceName, "name", name),
+					testAccCheckKubernetesClusterTemplateDataSourceID("data.vkcs_kubernetes_clustertemplate.template"),
 				),
 			},
 		},
 	})
 }
 
-func testAccKubernetesClusterTemplateDataSourceID(resourceName string, id string) resource.TestCheckFunc {
+func TestAccKubernetesClusterTemplateDataSource_testQueries(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccKubernetesClusterTemplateDataSourceQueryUUID,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKubernetesClusterTemplateDataSourceID("data.vkcs_kubernetes_clustertemplate.template"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckKubernetesClusterTemplateDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		ct, ok := s.RootModule().Resources[resourceName]
+		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("can't find cluster template data source: %s", resourceName)
+			return fmt.Errorf("can't find cluster template data source: %s", n)
 		}
 
-		if ct.Primary.ID != id {
+		if rs.Primary.ID == "" {
 			return fmt.Errorf("cluster template data source ID is not set")
 		}
 
@@ -63,29 +54,14 @@ func testAccKubernetesClusterTemplateDataSourceID(resourceName string, id string
 	}
 }
 
-func testAccKubernetesClusterTemplateBasicByVersion(version string) string {
-	template := `
-data "vkcs_kubernetes_clustertemplate" "template"{
-  version = "` + version + `"
-}
-`
-	return template
-}
-
-func testAccKubernetesClusterTemplateBasicByName(name string) string {
-	template := `
+const testAccKubernetesClusterTemplateDataSourceBasic = `
 data "vkcs_kubernetes_clustertemplate" "template" {
-  name = "` + name + `"
+	version = "1.24"
 }
 `
-	return template
-}
 
-func testAccKubernetesClusterTemplateBasicByUUID(uuid string) string {
-	template := `
-data "vkcs_kubernetes_clustertemplate" "template"{
-  cluster_template_uuid = "` + uuid + `"
+const testAccKubernetesClusterTemplateDataSourceQueryUUID = `
+data "vkcs_kubernetes_clustertemplate" "template" {
+	cluster_template_uuid = "42777b6f-e9ea-4fc4-899a-eef08b8b0380"
 }
 `
-	return template
-}

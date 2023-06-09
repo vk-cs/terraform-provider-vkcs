@@ -27,13 +27,6 @@ var (
 	OsExtNetName       = os.Getenv("OS_EXT_NET_NAME")
 	OsAvailabilityZone = os.Getenv("OS_AVAILABILITY_ZONE")
 	OsVolumeType       = os.Getenv("OS_VOLUME_TYPE")
-	// Kubernetes-related environment variables
-	OsFlavorID        = os.Getenv("OS_FLAVOR_ID")
-	OsNewFlavorID     = os.Getenv("OS_NEW_FLAVOR_ID")
-	OsNetworkID       = os.Getenv("OS_NETWORK_ID")
-	OsSubnetworkID    = os.Getenv("OS_SUBNETWORK_ID")
-	OsKeypairName     = os.Getenv("OS_KEYPAIR_NAME")
-	ClusterTemplateID = os.Getenv("CLUSTER_TEMPLATE_ID")
 )
 
 var AccTestValues map[string]string = map[string]string{
@@ -95,21 +88,6 @@ func AccTestPreCheck(t *testing.T) {
 		"OS_IMAGE_NAME":        OsImageName,
 		"OS_EXT_NET_NAME":      OsExtNetName,
 		"OS_PROJECT_ID":        OsProjectID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func AccTestPreCheckKubernetes(t *testing.T) {
-	vars := map[string]interface{}{
-		"CLUSTER_TEMPLATE_ID": ClusterTemplateID,
-		"OS_FLAVOR_ID":        OsFlavorID,
-		"OS_NETWORK_ID":       OsNetworkID,
-		"OS_SUBNETWORK_ID":    OsSubnetworkID,
-		"OS_KEYPAIR_NAME":     OsKeypairName,
 	}
 	for k, v := range vars {
 		if v == "" {
@@ -208,4 +186,12 @@ func AccTestGetStepsWithMigrationCases(steps []resource.TestStep) (migrationStep
 		})
 	}
 	return append(migrationSteps, steps...)
+}
+
+func ImportStep(resourceName string) resource.TestStep {
+	return resource.TestStep{
+		ResourceName:      resourceName,
+		ImportState:       true,
+		ImportStateVerify: true,
+	}
 }

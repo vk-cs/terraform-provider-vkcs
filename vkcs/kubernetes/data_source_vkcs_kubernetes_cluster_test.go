@@ -4,38 +4,33 @@ import (
 	"fmt"
 	"testing"
 
-	fm_acctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	acctest_helper "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
 )
 
-func TestAccKubernetesClusterDataSourceBasic(t *testing.T) {
-
-	var clusterName = "testcluster" + fm_acctest.RandStringFromCharSet(8, fm_acctest.CharSetAlphaNum)
-	datasourceName := "data.vkcs_kubernetes_cluster." + clusterName
-
-	createClusterFixture := clusterFixture(clusterName, acctest.ClusterTemplateID, acctest.OsFlavorID,
-		acctest.OsKeypairName, acctest.OsNetworkID, acctest.OsSubnetworkID, "MS1", 1)
+func TestAccKubernetesClusterDataSource_basic_big(t *testing.T) {
+	var cluster clusters.Cluster
+	clusterName := "tfacc-basic-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesClusterBasic, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesClusterBase": testAccKubernetesClusterBase, "ClusterName": clusterName})
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                  func() { acctest.AccTestPreCheckKubernetes(t) },
-		ProviderFactories:         acctest.AccTestProviders,
-		CheckDestroy:              testAccCheckKubernetesClusterDestroy,
-		PreventPostDestroyRefresh: true,
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccKubernetesClusterBasic(createClusterFixture),
+				Config: clusterConfig,
+				Check:  testAccCheckKubernetesClusterExists("vkcs_kubernetes_cluster.basic", &cluster),
 			},
 			{
-				Config: testAccKubernetesClusterDataSourceBasic(
-					testAccKubernetesClusterBasic(createClusterFixture), clusterName,
-				),
+				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterDataSourceBasic, map[string]string{"TestAccKubernetesClusterBasic": clusterConfig, "ClusterName": clusterName}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckKubernetesClusterDataSourceID(datasourceName),
-					resource.TestCheckResourceAttr(datasourceName, "name", clusterName),
-					resource.TestCheckResourceAttr(datasourceName, "master_count", "1"),
-					resource.TestCheckResourceAttr(datasourceName, "cluster_template_id", acctest.ClusterTemplateID),
+					testAccCheckKubernetesClusterDataSourceID("data.vkcs_kubernetes_cluster.cluster"),
+					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_cluster.cluster", "name", "vkcs_kubernetes_cluster.basic", "name"),
+					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_cluster.cluster", "master_count", "vkcs_kubernetes_cluster.basic", "master_count"),
+					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_cluster.cluster", "cluster_template_id", "vkcs_kubernetes_cluster.basic", "cluster_template_id"),
 				),
 			},
 		},
@@ -57,12 +52,10 @@ func testAccCheckKubernetesClusterDataSourceID(n string) resource.TestCheckFunc 
 	}
 }
 
-func testAccKubernetesClusterDataSourceBasic(clusterResource, clusterName string) string {
-	return fmt.Sprintf(`
-%s
+const testAccKubernetesClusterDataSourceBasic = `
+{{ .TestAccKubernetesClusterBasic }}
 
-data "vkcs_kubernetes_cluster" "`+clusterName+`" {
-  name = "${vkcs_kubernetes_cluster.`+clusterName+`.name}"
+data "vkcs_kubernetes_cluster" "cluster" {
+  name = "{{ .ClusterName }}"
 }
-`, clusterResource)
-}
+`
