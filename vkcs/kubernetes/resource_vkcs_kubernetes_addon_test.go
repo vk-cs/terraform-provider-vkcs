@@ -15,12 +15,9 @@ func TestAccKubernetesAddon_basic_big(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccKubernetesAddonBasic, map[string]string{
-					"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase,
-					"TestAccKubernetesAddonClusterBase":    testAccKubernetesAddonClusterBase,
-				}),
+				Config: acctest.AccTestRenderConfig(testAccKubernetesAddonBasic, map[string]string{"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase, "TestAccKubernetesAddonClusterBase": testAccKubernetesAddonClusterBase}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("vkcs_kubernetes_addon.basic", "namespace", "default"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_addon.basic", "namespace", "ingress-nginx"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_addon.basic", "name", "ingress-nginx"),
 					resource.TestCheckResourceAttrPair("vkcs_kubernetes_addon.basic", "cluster_id", "vkcs_kubernetes_cluster.cluster", "id"),
 				),
@@ -30,8 +27,8 @@ func TestAccKubernetesAddon_basic_big(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					for _, rs := range s.RootModule().Resources {
-						if rs.Type != "vkcs_kubernetes_addon" {
+					for name, rs := range s.RootModule().Resources {
+						if name != "vkcs_kubernetes_addon.basic" {
 							continue
 						}
 
@@ -86,10 +83,6 @@ data "vkcs_kubernetes_clustertemplate" "ct" {
 }
 
 resource "vkcs_kubernetes_cluster" "cluster" {
-  depends_on = [
-    vkcs_networking_router_interface.base,
-  ]
-
   name                = "tfacc-cluster"
   cluster_template_id = data.vkcs_kubernetes_clustertemplate.ct.id
   master_flavor       = data.vkcs_compute_flavor.base.id
@@ -100,6 +93,10 @@ resource "vkcs_kubernetes_cluster" "cluster" {
   floating_ip_enabled = true
   availability_zone   = "MS1"
   insecure_registries = ["1.2.3.4"]
+
+  depends_on = [
+    vkcs_networking_router_interface.base,
+  ]
 }
 
 resource "vkcs_kubernetes_node_group" "default-ng" {
@@ -124,6 +121,7 @@ data "vkcs_kubernetes_addon" "ingress-nginx" {
 resource "vkcs_kubernetes_addon" "basic" {
   cluster_id           = vkcs_kubernetes_cluster.cluster.id
   addon_id             = data.vkcs_kubernetes_addon.ingress-nginx.id
+  namespace            = "ingress-nginx"
   configuration_values = data.vkcs_kubernetes_addon.ingress-nginx.configuration_values
   depends_on           = [vkcs_kubernetes_node_group.default-ng]
 }

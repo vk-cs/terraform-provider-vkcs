@@ -10,42 +10,22 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
-func TestAccKubernetesDataSourceClusterTemplates(t *testing.T) {
-	tests := map[string]struct {
-		name     string
-		testCase resource.TestCase
-	}{
-		"no filter": {
-			name: "data.vkcs_kubernetes_clustertemplates.empty",
-			testCase: resource.TestCase{
-				ProviderFactories: acctest.AccTestProviders,
-				Steps: []resource.TestStep{
-					{
-						Config: testAccdataSourceVkcsKubernetesClusterTemplatesConfig(),
-						Check: resource.ComposeTestCheckFunc(
-							testAccdataSourceVkcsKubernetesClusterTemplatesCheck("data.vkcs_kubernetes_clustertemplates.empty"),
-						),
-					},
-				},
+func TestAccKubernetesClusterTemplatesDataSource_basic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccKubernetesClusterTemplatesDataSourceBasic,
+				Check: resource.ComposeTestCheckFunc(
+					testAccKubernetesClusterTemplatesCheckNotEmpty("data.vkcs_kubernetes_clustertemplates.templates"),
+				),
 			},
 		},
-	}
-
-	for name := range tests {
-		tt := tests[name]
-		t.Run(name, func(t *testing.T) {
-			resource.ParallelTest(t, tt.testCase)
-		})
-	}
+	})
 }
 
-func testAccdataSourceVkcsKubernetesClusterTemplatesConfig() string {
-	return `
-data "vkcs_kubernetes_clustertemplates" "empty" {}
-`
-}
-
-func testAccdataSourceVkcsKubernetesClusterTemplatesCheck(resourceName string) resource.TestCheckFunc {
+func testAccKubernetesClusterTemplatesCheckNotEmpty(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 
@@ -70,3 +50,7 @@ func testAccdataSourceVkcsKubernetesClusterTemplatesCheck(resourceName string) r
 		return nil
 	}
 }
+
+const testAccKubernetesClusterTemplatesDataSourceBasic = `
+data "vkcs_kubernetes_clustertemplates" "templates" {}
+`
