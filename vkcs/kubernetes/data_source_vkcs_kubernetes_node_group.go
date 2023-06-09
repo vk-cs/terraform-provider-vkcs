@@ -158,12 +158,5 @@ func dataSourceKubernetesNodeGroupRead(ctx context.Context, d *schema.ResourceDa
 	d.Set("availability_zones", nodeGroup.AvailabilityZones)
 	d.Set("max_node_unavailable", nodeGroup.MaxNodeUnavailable)
 
-	if err := d.Set("created_at", util.GetTimestamp(&nodeGroup.CreatedAt)); err != nil {
-		log.Printf("[DEBUG] Unable to set vkcs_kubernetes_node_group created_at: %s", err)
-	}
-	if err := d.Set("updated_at", util.GetTimestamp(&nodeGroup.UpdatedAt)); err != nil {
-		log.Printf("[DEBUG] Unable to set vkcs_kubernetes_node_group updated_at: %s", err)
-	}
-
 	return nil
 }
