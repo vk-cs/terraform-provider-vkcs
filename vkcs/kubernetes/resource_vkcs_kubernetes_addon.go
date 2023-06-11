@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -102,7 +101,6 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 
 			"namespace": schema.StringAttribute{
 				Required:    true,
-				Default:     stringdefault.StaticString("default"),
 				Description: "The namespace name where the addon will be installed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
