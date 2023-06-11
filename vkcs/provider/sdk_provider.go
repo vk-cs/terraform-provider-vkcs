@@ -103,7 +103,6 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_db_database":                   db.DataSourceDatabaseDatabase(),
 			"vkcs_db_datastore":                  db.DataSourceDatabaseDatastore(),
 			"vkcs_db_datastore_parameters":       db.DataSourceDatabaseDatastoreParameters(),
-			"vkcs_db_datastores":                 db.DataSourceDatabaseDatastores(),
 			"vkcs_db_instance":                   db.DataSourceDatabaseInstance(),
 			"vkcs_db_user":                       db.DataSourceDatabaseUser(),
 			"vkcs_db_backup":                     db.DataSourceDatabaseBackup(),
