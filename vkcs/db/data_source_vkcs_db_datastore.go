@@ -2,79 +2,99 @@ package db
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"sort"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
-func DataSourceDatabaseDatastore() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceDatabaseDatastoreRead,
-		Schema: map[string]*schema.Schema{
-			"region": {
-				Type:        schema.TypeString,
-				Computed:    true,
+var (
+	_ datasource.DataSource              = &DatastoreDataSource{}
+	_ datasource.DataSourceWithConfigure = &DatastoreDataSource{}
+)
+
+func NewDatastoreDataSource() datasource.DataSource {
+	return &DatastoreDataSource{}
+}
+
+type DatastoreDataSource struct {
+	config clients.Config
+}
+
+type DatastoreDataSourceModel struct {
+	Region types.String `tfsdk:"region"`
+
+	ClusterVolumeTypes types.List              `tfsdk:"cluster_volume_types"`
+	ID                 types.String            `tfsdk:"id"`
+	MinimumCPU         types.Int64             `tfsdk:"minimum_cpu"`
+	MinimumRAM         types.Int64             `tfsdk:"minimum_ram"`
+	Name               types.String            `tfsdk:"name"`
+	Versions           []DatastoreVersionModel `tfsdk:"versions"`
+	VolumeTypes        types.List              `tfsdk:"volume_types"`
+}
+
+type DatastoreVersionModel struct {
+	ID   types.String `tfsdk:"id"`
+	Name types.String `tfsdk:"name"`
+}
+
+func (d *DatastoreDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = "vkcs_db_datastore"
+}
+
+func (d *DatastoreDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"region": schema.StringAttribute{
 				Optional:    true,
-				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`",
+				Computed:    true,
+				Description: "The region to obtain the service client. If omitted, the `region` argument of the provider is used.",
 			},
 
-			"id": {
-				Type:        schema.TypeString,
+			"cluster_volume_types": schema.ListAttribute{
+				ElementType: types.StringType,
+				Computed:    true,
+				Description: "Supported volume types for the datastore when used in a cluster.",
+			},
+
+			"id": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "The id of the datastore.",
 			},
 
-			"name": {
-				Type:        schema.TypeString,
+			"minimum_cpu": schema.Int64Attribute{
+				Computed:    true,
+				Description: "Minimum CPU required for instance of the datastore.",
+			},
+
+			"minimum_ram": schema.Int64Attribute{
+				Computed:    true,
+				Description: "Minimum RAM required for instance of the datastore.",
+			},
+
+			"name": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "The name of the datastore.",
 			},
 
-			"minimum_cpu": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Minimum CPU required for instance of the datastore.",
-			},
-
-			"minimum_ram": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Minimum RAM required for instance of the datastore.",
-			},
-
-			"volume_types": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Supported volume types for the datastore.",
-			},
-
-			"cluster_volume_types": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Supported volume types for the datastore when used in a cluster.",
-			},
-
-			"versions": {
-				Type:     schema.TypeList,
+			"versions": schema.ListNestedAttribute{
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
 							Computed:    true,
 							Description: "ID of a version of the datastore.",
 						},
-						"name": {
-							Type:        schema.TypeString,
+
+						"name": schema.StringAttribute{
 							Computed:    true,
 							Description: "Name of a version of the datastore.",
 						},
@@ -82,66 +102,114 @@ func DataSourceDatabaseDatastore() *schema.Resource {
 				},
 				Description: "Versions of the datastore.",
 			},
+
+			"volume_types": schema.ListAttribute{
+				ElementType: types.StringType,
+				Computed:    true,
+				Description: "Supported volume types for the datastore.",
+			},
 		},
 		Description: "Use this data source to get information on a VKCS db datastore.",
 	}
 }
 
-func dataSourceDatabaseDatastoreRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(clients.Config)
-	region := util.GetRegion(d, config)
-	dbClient, err := config.DatabaseV1Client(region)
-	if err != nil {
-		return diag.Errorf("Error creating VKCS database client: %s", err)
+func (d *DatastoreDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
 	}
-
-	allPages, err := datastores.List(dbClient).AllPages()
-	if err != nil {
-		return diag.Errorf("Error retrieving datastores: %s", err)
-	}
-
-	datastoresInfo, err := datastores.ExtractDatastores(allPages)
-	if err != nil {
-		return diag.Errorf("Error extracting datastores from response: %s", err)
-	}
-
-	id, name := d.Get("id").(string), d.Get("name").(string)
-	allDatastores := filterDatabaseDatastores(datastoresInfo, id, name)
-
-	if len(allDatastores) < 1 {
-		return diag.Errorf("Your query returned no results. " +
-			"Please change your search criteria and try again.")
-	}
-
-	if len(allDatastores) > 1 {
-		log.Printf("[DEBUG] Multiple results found: %#v", allDatastores)
-		return diag.Errorf("Your query returned more than one result. " +
-			"Please try a more specific search criteria")
-	}
-
-	dsID := allDatastores[0].ID
-	ds, err := datastores.Get(dbClient, dsID).Extract()
-	if err != nil {
-		return diag.Errorf("Error retrieving vkcs_db_datastore: %s", err)
-	}
-
-	flattenedVersions := flattenDatabaseDatastoreVersions(ds.Versions)
-	sort.SliceStable(flattenedVersions, func(i, j int) bool {
-		return flattenedVersions[i]["name"].(string) > flattenedVersions[j]["name"].(string)
-	})
-
-	d.SetId(ds.ID)
-	d.Set("name", ds.Name)
-	d.Set("minimum_cpu", ds.MinimumCPU)
-	d.Set("minimum_ram", ds.MinimumRAM)
-	d.Set("volume_types", ds.VolumeTypes)
-	d.Set("cluster_volume_types", ds.ClusterVolumeTypes)
-	d.Set("versions", flattenedVersions)
-
-	return nil
+	d.config = req.ProviderData.(clients.Config)
 }
 
-func filterDatabaseDatastores(dsSlice []datastores.Datastore, id, name string) []datastores.Datastore {
+func (d *DatastoreDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data DatastoreDataSourceModel
+	var diags diag.Diagnostics
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region := data.Region.ValueString()
+	if region == "" {
+		region = d.config.GetRegion()
+	}
+
+	client, err := d.config.DatabaseV1Client(region)
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating VKCS Databases API client", err.Error())
+		return
+	}
+
+	tflog.Debug(ctx, "Calling Databases API to list all datastores")
+
+	allPages, err := datastores.List(client).AllPages()
+	if err != nil {
+		resp.Diagnostics.AddError("Error calling VKCS Databases API", err.Error())
+		return
+	}
+
+	allDatastores, err := datastores.ExtractDatastores(allPages)
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading VKCS Databases API response", err.Error())
+		return
+	}
+
+	tflog.Debug(ctx, "Called Databases API to list all datastores")
+
+	id, name := data.ID.ValueString(), data.Name.ValueString()
+	ctx = tflog.SetField(ctx, "id", id)
+	ctx = tflog.SetField(ctx, "name", name)
+
+	tflog.Debug(ctx, "Filtering retrieved datastores")
+	filteredDatastores := filterDatastores(allDatastores, id, name)
+	tflog.Debug(ctx, "Filtered retrieved datastores", map[string]interface{}{"filtered_datastores": fmt.Sprintf("%#v", filteredDatastores)})
+
+	if len(filteredDatastores) < 1 {
+		resp.Diagnostics.AddError("Your query returned no results", "Please change your search criteria and try again.")
+		return
+	}
+
+	if len(filteredDatastores) > 1 {
+		resp.Diagnostics.AddError("Your query returned more than one result", "Please try a more specific search criteria")
+		return
+	}
+
+	id = filteredDatastores[0].ID
+	ctx = tflog.SetField(ctx, "id", id)
+
+	tflog.Debug(ctx, "Calling Databases API to get the datastore by id")
+
+	dStore, err := datastores.Get(client, id).Extract()
+	if err != nil {
+		resp.Diagnostics.AddError("Error calling VKCS Databases API", err.Error())
+		return
+	}
+
+	tflog.Debug(ctx, "Called Databases API to get the datastore by its id", map[string]interface{}{"datastore": fmt.Sprintf("%#v", dStore)})
+
+	versions := flattenDatastoreVersions(dStore.Versions)
+	sort.SliceStable(versions, func(i, j int) bool {
+		return versions[i].Name.ValueString() > versions[j].Name.ValueString()
+	})
+
+	data.Region = types.StringValue(region)
+	data.ClusterVolumeTypes, diags = types.ListValueFrom(ctx, types.StringType, dStore.ClusterVolumeTypes)
+	resp.Diagnostics.Append(diags...)
+	data.ID = types.StringValue(dStore.ID)
+	data.MinimumCPU = types.Int64Value(int64(dStore.MinimumCPU))
+	data.MinimumRAM = types.Int64Value(int64(dStore.MinimumRAM))
+	data.Name = types.StringValue(dStore.Name)
+	data.Versions = versions
+	data.VolumeTypes, diags = types.ListValueFrom(ctx, types.StringType, dStore.VolumeTypes)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func filterDatastores(dsSlice []datastores.Datastore, id, name string) []datastores.Datastore {
 	var res []datastores.Datastore
 	for _, ds := range dsSlice {
 		if (name == "" || ds.Name == name) && (id == "" || ds.ID == id) {
@@ -151,11 +219,11 @@ func filterDatabaseDatastores(dsSlice []datastores.Datastore, id, name string) [
 	return res
 }
 
-func flattenDatabaseDatastoreVersions(versions []datastores.Version) (r []map[string]interface{}) {
+func flattenDatastoreVersions(versions []datastores.Version) (r []DatastoreVersionModel) {
 	for _, v := range versions {
-		r = append(r, map[string]interface{}{
-			"id":   v.ID,
-			"name": v.Name,
+		r = append(r, DatastoreVersionModel{
+			ID:   types.StringValue(v.ID),
+			Name: types.StringValue(v.Name),
 		})
 	}
 	return
