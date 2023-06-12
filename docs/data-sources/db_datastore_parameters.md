@@ -29,13 +29,23 @@ output "mysql_parameters" {
 
 - `datastore_version_id` **required** *string* &rarr;  ID of the version of the data store.
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The region to obtain the service client. If omitted, the `region` argument of the provider is used.
 
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  ID of the resource.
 
-- `parameters` *object* &rarr;  Versions of the datastore.
+- `parameters`  *list* &rarr;  Configuration parameters supported for the datastore.
+  - `max` *number* &rarr;  Maximum value of a configuration parameter.
+
+  - `min` *number* &rarr;  Minimum value of a configuration parameter.
+
+  - `name` *string* &rarr;  Name of a configuration parameter.
+
+  - `restart_required` *boolean* &rarr;  This attribute indicates whether a restart required when a parameter is set.
+
+  - `type` *string* &rarr;  Type of a configuration parameter.
+
 
 
