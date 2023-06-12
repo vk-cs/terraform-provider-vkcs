@@ -94,6 +94,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		db.NewDatastoreDataSource,
 		db.NewDatastoresDataSource,
 		db.NewDatastoreCapabilitiesDataSource,
+		db.NewDatastoreParametersDataSource,
 		kubernetes.NewAddonDatasource,
 		kubernetes.NewAddonsDatasource,
 	}
