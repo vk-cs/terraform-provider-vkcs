@@ -106,7 +106,6 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_db_backup":                     db.DataSourceDatabaseBackup(),
 			"vkcs_db_config_group":               db.DataSourceDatabaseConfigGroup(),
 			"vkcs_kubernetes_clustertemplate":    kubernetes.DataSourceKubernetesClusterTemplate(),
-			"vkcs_kubernetes_clustertemplates":   kubernetes.DataSourceKubernetesClusterTemplates(),
 			"vkcs_kubernetes_cluster":            kubernetes.DataSourceKubernetesCluster(),
 			"vkcs_kubernetes_node_group":         kubernetes.DataSourceKubernetesNodeGroup(),
 			"vkcs_region":                        regions.DataSourceVkcsRegion(),
