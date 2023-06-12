@@ -2,102 +2,139 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clustertemplates"
 )
 
-func DataSourceKubernetesClusterTemplates() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceVkcsClusterTemplatesRead,
-		Schema: map[string]*schema.Schema{
-			"cluster_templates": {
-				Type:     schema.TypeList,
+var (
+	_ datasource.DataSource              = &ClusterTemplatesDataSource{}
+	_ datasource.DataSourceWithConfigure = &ClusterTemplatesDataSource{}
+)
+
+func NewClusterTemplatesDataSource() datasource.DataSource {
+	return &ClusterTemplatesDataSource{}
+}
+
+type ClusterTemplatesDataSource struct {
+	config clients.Config
+}
+
+type ClusterTemplatesDataSourceModel struct {
+	Region types.String `tfsdk:"region"`
+
+	ClusterTemplates []ClusterTemplateModel `tfsdk:"cluster_templates"`
+	ID               types.String           `tfsdk:"id"`
+}
+
+type ClusterTemplateModel struct {
+	ClusterTemplateUUID types.String `tfsdk:"cluster_template_uuid"`
+	Name                types.String `tfsdk:"name"`
+	Version             types.String `tfsdk:"version"`
+}
+
+func (d *ClusterTemplatesDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = "vkcs_kubernetes_clustertemplates"
+}
+
+func (d *ClusterTemplatesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"region": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The region to obtain the service client. If omitted, the `region` argument of the provider is used.",
+			},
+
+			"cluster_templates": schema.ListNestedAttribute{
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"cluster_template_uuid": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The UUID of the cluster template.",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"cluster_template_uuid": schema.StringAttribute{
+							Computed:    true,
+							Description: "UUID of a cluster template.",
 						},
-						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name of the cluster template.",
+
+						"name": schema.StringAttribute{
+							Computed:    true,
+							Description: "Name of a cluster template.",
 						},
-						"version": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The version of the cluster template.",
+
+						"version": schema.StringAttribute{
+							Computed:    true,
+							Description: "Version of a cluster template.",
 						},
 					},
 				},
-				// Currently, Computed composite fields are treated by terraform-schema as "Objects". Thus, subfields and their descriptions are not available to documentation generator. We have to put these descriptions into parent field description as workaround.
-				Description: "A list of available kubernetes cluster templates.\n" +
-					"  - `cluster_template_uuid` **String** The UUID of the cluster template.\n\n" +
-					"  - `name` **String** The name of the cluster template.\n\n" +
-					"  - `version` **String** The version of the cluster template.",
+				Description: "Available kubernetes cluster templates.",
 			},
-			"id": {
-				Type:        schema.TypeString,
+
+			"id": schema.StringAttribute{
 				Computed:    true,
 				Description: "Random identifier of the data source.",
 			},
 		},
-		Description: "`vkcs_kubernetes_cluster_templates` returns list of available VKCS Kubernetes Cluster Templates. To get details of each cluster template the data source can be combined with the `vkcs_kubernetes_clustertemplate` data source.",
+		Description: "Use this data source to get a list of available VKCS Kubernetes Cluster Templates. To get details about each cluster template the data source can be combined with the `vkcs_kubernetes_clustertemplate` data source.",
 	}
 }
 
-type clusterTemplateResponse struct {
-	Version string
-	UUID    string
-	Name    string
-}
-
-type clusterTemplateFlatSchema []map[string]interface{}
-
-func flattenClusterTemplates(templates []clusterTemplateResponse) clusterTemplateFlatSchema {
-	flatSchema := clusterTemplateFlatSchema{}
-	for _, template := range templates {
-		flatSchema = append(flatSchema, map[string]interface{}{
-			"name":                  template.Name,
-			"cluster_template_uuid": template.UUID,
-			"version":               template.Version,
-		})
+func (d *ClusterTemplatesDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
 	}
-	return flatSchema
+	d.config = req.ProviderData.(clients.Config)
 }
 
-func dataSourceVkcsClusterTemplatesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(clients.Config)
-	client, err := config.ContainerInfraV1Client(config.GetRegion())
+func (d *ClusterTemplatesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data ClusterTemplatesDataSourceModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region := data.Region.ValueString()
+	if region == "" {
+		region = d.config.GetRegion()
+	}
+
+	client, err := d.config.ContainerInfraV1Client(region)
 	if err != nil {
-		return diag.Errorf("failed to init identity v3 client: %s", err)
+		resp.Diagnostics.AddError("Error creating VKCS Kubernetes API client", err.Error())
+		return
 	}
+
+	tflog.Debug(ctx, "Calling Kubernetes API to get list of cluster templates")
 
 	templates, err := clustertemplates.List(client).Extract()
 	if err != nil {
-		return diag.Errorf("failed to list cluster templates: %s", err)
+		resp.Diagnostics.AddError("Error calling VKCS Kubernetes API", err.Error())
+		return
 	}
 
-	clusterTemplates := make([]clusterTemplateResponse, 0, len(templates))
+	tflog.Debug(ctx, "Called Kubernetes API to get list of cluster templates", map[string]interface{}{"templates": fmt.Sprintf("%#v", templates)})
+
+	data.Region = types.StringValue(region)
+	data.ClusterTemplates = flattenClusterTemplates(templates)
+	data.ID = types.StringValue(strconv.FormatInt(time.Now().Unix(), 10))
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func flattenClusterTemplates(templates []clustertemplates.ClusterTemplate) (r []ClusterTemplateModel) {
 	for _, t := range templates {
-		clusterTemplates = append(clusterTemplates, clusterTemplateResponse{
-			UUID:    t.UUID,
-			Name:    t.Name,
-			Version: t.Version,
+		r = append(r, ClusterTemplateModel{
+			ClusterTemplateUUID: types.StringValue(t.UUID),
+			Name:                types.StringValue(t.Name),
+			Version:             types.StringValue(t.Version),
 		})
 	}
-
-	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
-	if err := d.Set("cluster_templates", flattenClusterTemplates(clusterTemplates)); err != nil {
-		return diag.Errorf("failed to set cluster templates: %s", err)
-	}
-
-	return nil
+	return
 }
