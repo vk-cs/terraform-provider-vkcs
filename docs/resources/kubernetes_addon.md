@@ -25,15 +25,15 @@ resource "vkcs_kubernetes_addon" "kube-prometheus-stack" {
 ```
 
 ## Argument Reference
-- `addon_id` **required** *string* &rarr;  The id of the add-on.
+- `addon_id` **required** *string* &rarr;  The id of the addon. Changing this creates a new addon.
 
-- `cluster_id` **required** *string* &rarr;  The ID of the kubernetes cluster.
+- `cluster_id` **required** *string* &rarr;  The ID of the kubernetes cluster. Changing this creates a new addon.
 
-- `configuration_values` optional *string* &rarr;  Configuration code for the addon.
+- `namespace` **required** *string* &rarr;  The namespace name where the addon will be installed.
 
-- `name` optional *string* &rarr;  The name of the application.
+- `configuration_values` optional *string* &rarr;  Configuration code for the addon. Changing this creates a new addon.
 
-- `namespace` optional *string* &rarr;  The namespace name where the addon will be installed.
+- `name` optional *string* &rarr;  The name of the application. Changing this creates a new addon.
 
 - `region` optional *string* &rarr;  The region in which to obtain the Container Infra Addons client. If omitted, the `region` argument of the provider is used. Changing this creates a new addon.
 
