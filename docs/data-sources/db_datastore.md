@@ -28,7 +28,7 @@ output "mysql_versions" {
 
 - `name` optional *string* &rarr;  The name of the datastore.
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`
+- `region` optional *string* &rarr;  The region to obtain the service client. If omitted, the `region` argument of the provider is used.
 
 
 ## Attributes Reference
@@ -39,7 +39,11 @@ In addition to all arguments above, the following attributes are exported:
 
 - `minimum_ram` *number* &rarr;  Minimum RAM required for instance of the datastore.
 
-- `versions` *object* &rarr;  Versions of the datastore.
+- `versions`  *list* &rarr;  Versions of the datastore.
+  - `id` *string* &rarr;  ID of a version of the datastore.
+
+  - `name` *string* &rarr;  Name of a version of the datastore.
+
 
 - `volume_types` *string* &rarr;  Supported volume types for the datastore.
 
