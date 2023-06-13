@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_kubernetes_addons
 
-Provides a kubernetes cluster addons datasource. This can be used to get information about an VKCS cluster addons.
+Provides a kubernetes cluster addons datasource. This can be used to get information about an VKCS cluster addons. **New since v0.3.0**.
 
 ## Example Usage
 

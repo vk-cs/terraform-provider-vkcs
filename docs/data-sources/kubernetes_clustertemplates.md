@@ -17,7 +17,7 @@ Enabled VKCS Kubernetes Cluster Templates:
 data "vkcs_kubernetes_clustertemplates" "templates" {}
 ```
 ## Argument Reference
-- `region` optional *string* &rarr;  The region to obtain the service client. If omitted, the `region` argument of the provider is used.
+- `region` optional *string* &rarr;  The region to obtain the service client. If omitted, the `region` argument of the provider is used. **New since v0.3.0**.
 
 
 ## Attributes Reference
