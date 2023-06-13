@@ -1,5 +1,5 @@
 resource "vkcs_compute_instance" "basic" {
-  name              = "basic-tf-example"
+  name = "basic-tf-example"
   # AZ and flavor are mandatory
   availability_zone = "GZ1"
   flavor_name       = "Basic-1-2-20"
@@ -12,16 +12,16 @@ resource "vkcs_compute_instance" "basic" {
     volume_size           = 10
     delete_on_termination = true
   }
-  # Specify at least one network to do not depend on project assets
+  # Specify at least one network to not depend on project assets
   network {
     uuid = vkcs_networking_network.app.id
   }
-  # Specify required security groups if yoo do not want `default` one
+  # Specify required security groups if you do not want `default` one
   security_groups = [
     vkcs_networking_secgroup.admin.id
   ]
   # If your configuration also defines a network for the instance,
-  # ensure it is attachec to a router before creating of the instance
+  # ensure it is attached to a router before creating of the instance
   depends_on = [
     vkcs_networking_router_interface.app
   ]
