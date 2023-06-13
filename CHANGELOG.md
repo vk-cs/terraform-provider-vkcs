@@ -7,9 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.2.3 (unreleased)
-- Provide support for VKCS Kubernetes cluster addons
-- Mark resources as "tainted" when an error occurs during creation after a remote object has been created
+#### v0.3.0 (unreleased)
+- Provide support for Kubernetes cluster addons
+- Mark resources created with error as "tainted" which allows their deleting via terraform
 - Fix duplicate entry error on recreating Kubernetes cluster
 - Fix error when creating DB instance with specified configuration_id
 - Prevent panic when reading whether root user is enabled for DB instance
