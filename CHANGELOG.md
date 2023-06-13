@@ -7,7 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.3.0 (unreleased)
+#### v0.3.0
 - Provide support for Kubernetes cluster addons
 - Mark resources created with error as "tainted" which allows their deleting via terraform
 - Fix duplicate entry error on recreating Kubernetes cluster

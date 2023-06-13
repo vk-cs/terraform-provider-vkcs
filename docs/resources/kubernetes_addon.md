@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_kubernetes_addon
 
-Provides a kubernetes cluster addon resource. This can be used to create, modify and delete kubernetes cluster addons.
+Provides a kubernetes cluster addon resource. This can be used to create, modify and delete kubernetes cluster addons. **New since v0.3.0**.
 
 ## Example Usage
 ```terraform

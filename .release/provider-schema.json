@@ -1,5 +1,6 @@
 {
   "provider_name": "vkcs",
+  "provider_version": "v0.3.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -11,17 +12,16 @@
       "cloud_containers_api_version": {
         "type": "TypeString",
         "optional": true,
-        "default": "1.28",
-        "description": "Cloud Containers API version to use.\n_NOTE_ Only for custom VKCS deployments."
+        "description": "Cloud Containers API version to use. _note_ Only for custom VKCS deployments."
       },
       "password": {
         "type": "TypeString",
-        "required": true,
+        "optional": true,
         "description": "Password to login with."
       },
       "project_id": {
         "type": "TypeString",
-        "required": true,
+        "optional": true,
         "description": "The ID of Project to login with."
       },
       "region": {
@@ -41,7 +41,7 @@
       },
       "username": {
         "type": "TypeString",
-        "required": true,
+        "optional": true,
         "description": "User name to login with."
       }
     },
@@ -433,7 +433,7 @@
             "type": "TypeString",
             "optional": true,
             "default": "active",
-            "description": "Provide the VM state. Only 'active' and 'shutoff' are supported values. *Note*: If the initial power_state is the shutoff the VM will be stopped immediately after build and the provisioners like remote-exec or files are not supported."
+            "description": "Provide the VM state. Only 'active' and 'shutoff' are supported values. _note_ If the initial power_state is the shutoff the VM will be stopped immediately after build and the provisioners like remote-exec or files are not supported."
           },
           "region": {
             "type": "TypeString",
@@ -460,7 +460,7 @@
           "security_groups": {
             "type": "TypeSet",
             "optional": true,
-            "description": "An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. *Note*: When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. *Note*: Names should be used and not ids, as ids trigger unnecessary updates.",
+            "description": "An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. _note_ When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. _note_ Names should be used and not ids, as ids trigger unnecessary updates.",
             "computed": true,
             "elem": {
               "type": "TypeString"
@@ -522,7 +522,7 @@
           "fixed_ip": {
             "type": "TypeString",
             "optional": true,
-            "description": "An IP address to assosciate with the port.\n_NOTE_: This option cannot be used with port_id. You must specify a network_id. The IP address must lie in a range on the supplied network.",
+            "description": "An IP address to assosciate with the port. _note_ This option cannot be used with port_id. You must specify a network_id. The IP address must lie in a range on the supplied network.",
             "computed": true,
             "force_new": true
           },
@@ -535,14 +535,14 @@
           "network_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The ID of the Network to attach to an Instance. A port will be created automatically.\n_NOTE_: This option and `port_id` are mutually exclusive.",
+            "description": "The ID of the Network to attach to an Instance. A port will be created automatically. _note_ This option and `port_id` are mutually exclusive.",
             "computed": true,
             "force_new": true
           },
           "port_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The ID of the Port to attach to an Instance.\n_NOTE_: This option and `network_id` are mutually exclusive.",
+            "description": "The ID of the Port to attach to an Instance. _note_ This option and `network_id` are mutually exclusive.",
             "computed": true,
             "force_new": true
           },
@@ -973,7 +973,7 @@
                 "uuid": {
                   "type": "TypeString",
                   "optional": true,
-                  "description": "The id of the network. Changing this creates a new cluster.**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.",
+                  "description": "The id of the network. Changing this creates a new cluster. _note_ Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.",
                   "force_new": true
                 }
               }
@@ -1290,7 +1290,7 @@
                       "uuid": {
                         "type": "TypeString",
                         "optional": true,
-                        "description": "The id of the network. Changing this creates a new cluster.**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.",
+                        "description": "The id of the network. Changing this creates a new cluster. _note_ Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.",
                         "force_new": true
                       }
                     },
@@ -1632,7 +1632,7 @@
                 "fixed_ip_v4": {
                   "type": "TypeString",
                   "optional": true,
-                  "description": "The IPv4 address. Changing this creates a new instance. **Note** This argument conflicts with \"replica_of\". Setting both at the same time causes \"fixed_ip_v4\" to be ignored.",
+                  "description": "The IPv4 address. Changing this creates a new instance. _note_ This argument conflicts with \"replica_of\". Setting both at the same time causes \"fixed_ip_v4\" to be ignored.",
                   "force_new": true
                 },
                 "port": {
@@ -1662,7 +1662,7 @@
                 "uuid": {
                   "type": "TypeString",
                   "optional": true,
-                  "description": "The id of the network. Changing this creates a new instance.**Note** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.",
+                  "description": "The id of the network. Changing this creates a new instance. _note_ Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.",
                   "force_new": true
                 }
               }
@@ -2279,6 +2279,53 @@
           "update": 30
         },
         "description": "Manages a key secret resource within VKCS.\n\n~\u003e **Important Security Notice** The payload of this resource will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html)."
+      },
+      "vkcs_kubernetes_addon": {
+        "schema": {
+          "addon_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The id of the addon. Changing this creates a new addon."
+          },
+          "cluster_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the kubernetes cluster. Changing this creates a new addon."
+          },
+          "configuration_values": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Configuration code for the addon. Changing this creates a new addon.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The name of the application. Changing this creates a new addon.",
+            "computed": true
+          },
+          "namespace": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The namespace name where the addon will be installed."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the Container Infra Addons client. If omitted, the `region` argument of the provider is used. Changing this creates a new addon.",
+            "computed": true
+          },
+          "timeouts": {
+            "optional": true
+          }
+        },
+        "description": "Provides a kubernetes cluster addon resource. This can be used to create, modify and delete kubernetes cluster addons.",
+        "new_since": "v0.3.0"
       },
       "vkcs_kubernetes_cluster": {
         "schema": {
@@ -3159,13 +3206,13 @@
           "listener_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The Listener on which the members of the pool will be associated with. Changing this creates a new pool. Note:  One of LoadbalancerID or ListenerID must be provided.",
+            "description": "The Listener on which the members of the pool will be associated with. Changing this creates a new pool. _note_ One of LoadbalancerID or ListenerID must be provided.",
             "force_new": true
           },
           "loadbalancer_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The load balancer on which to provision this pool. Changing this creates a new pool. Note: One of LoadbalancerID or ListenerID must be provided.",
+            "description": "The load balancer on which to provision this pool. Changing this creates a new pool. _note_ One of LoadbalancerID or ListenerID must be provided.",
             "force_new": true
           },
           "name": {
@@ -3923,14 +3970,14 @@
           "remote_group_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The remote group id, the value needs to be an ID of a security group in the same tenant. Changing this creates a new security group rule. **Note**: Only one of `remote_group_id` or `remote_ip_prefix` may be set.",
+            "description": "The remote group id, the value needs to be an ID of a security group in the same tenant. Changing this creates a new security group rule. _note_ Only one of `remote_group_id` or `remote_ip_prefix` may be set.",
             "computed": true,
             "force_new": true
           },
           "remote_ip_prefix": {
             "type": "TypeString",
             "optional": true,
-            "description": "The remote CIDR, the value needs to be a valid CIDR (i.e. 192.168.0.0/16). Changing this creates a new security group rule. **Note**: Only one of `remote_group_id` or `remote_ip_prefix` may be set.",
+            "description": "The remote CIDR, the value needs to be a valid CIDR (i.e. 192.168.0.0/16). Changing this creates a new security group rule. _note_ Only one of `remote_group_id` or `remote_ip_prefix` may be set.",
             "computed": true,
             "force_new": true
           },
@@ -5547,7 +5594,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`",
+            "description": "The region to obtain the service client. If omitted, the `region` argument of the provider is used.",
             "computed": true
           },
           "versions": {
@@ -5585,7 +5632,7 @@
         "schema": {
           "capabilities": {
             "type": "TypeList",
-            "description": "Versions of the datastore.",
+            "description": "Capabilities of the datastore.",
             "computed": true,
             "elem": {
               "schema": {
@@ -5688,6 +5735,11 @@
             "required": true,
             "description": "ID of the version of the data store."
           },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
           "region": {
             "type": "TypeString",
             "optional": true,
@@ -5710,9 +5762,15 @@
             "required": true,
             "description": "ID of the version of the data store."
           },
+          "id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "ID of the resource.",
+            "computed": true
+          },
           "parameters": {
             "type": "TypeList",
-            "description": "Versions of the datastore.",
+            "description": "Configuration parameters supported for the datastore.",
             "computed": true,
             "elem": {
               "schema": {
@@ -5747,7 +5805,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The region to obtain the service client. If omitted, the `region` argument of the provider is used.",
             "computed": true
           }
         },
@@ -5758,26 +5816,33 @@
         "schema": {
           "datastores": {
             "type": "TypeList",
+            "description": "List of datastores within VKCS.",
             "computed": true,
             "elem": {
               "schema": {
                 "id": {
                   "type": "TypeString",
-                  "description": "The id of the datastore.",
+                  "description": "ID of a datastore.",
                   "computed": true
                 },
                 "name": {
                   "type": "TypeString",
-                  "description": "Name of the datastore.",
+                  "description": "Name of a datastore.",
                   "computed": true
                 }
               }
             }
           },
+          "id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "ID of the resource.",
+            "computed": true
+          },
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`",
+            "description": "The region to obtain the service client. If omitted, the `region` argument of the provider is used.",
             "computed": true
           }
         },
@@ -6364,6 +6429,98 @@
         },
         "description": "Use this data source to get the ID and the payload of an available Key secret\n\n~\u003e **Important Security Notice** The payload of this data source will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html)."
       },
+      "vkcs_kubernetes_addon": {
+        "schema": {
+          "cluster_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the kubernetes cluster."
+          },
+          "configuration_values": {
+            "type": "TypeString",
+            "description": "Configuration code for the addon. If the addon was installed in the cluster, this value is the user-provided configuration code, otherwise it is a template for this cluster.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource.",
+            "computed": true
+          },
+          "installed": {
+            "type": "TypeBool",
+            "description": "Whether the addon was installed in the cluster.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "An addon name to filter by."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          },
+          "version": {
+            "type": "TypeString",
+            "required": true,
+            "description": "An addon version to filter by."
+          }
+        },
+        "description": "Provides a kubernetes cluster addon datasource. This can be used to get information about an VKCS cluster addon.",
+        "new_since": "v0.3.0"
+      },
+      "vkcs_kubernetes_addons": {
+        "schema": {
+          "addons": {
+            "type": "TypeList",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "id": {
+                  "type": "TypeString",
+                  "description": "ID of an addon.",
+                  "computed": true
+                },
+                "installed": {
+                  "type": "TypeBool",
+                  "description": "Whether an addon was installed in the cluster.",
+                  "computed": true
+                },
+                "name": {
+                  "type": "TypeString",
+                  "description": "Name of an addon.",
+                  "computed": true
+                },
+                "version": {
+                  "type": "TypeString",
+                  "description": "Version of an addon.",
+                  "computed": true
+                }
+              }
+            }
+          },
+          "cluster_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the kubernetes cluster."
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource.",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          }
+        },
+        "description": "Provides a kubernetes cluster addons datasource. This can be used to get information about an VKCS cluster addons.",
+        "new_since": "v0.3.0"
+      },
       "vkcs_kubernetes_cluster": {
         "schema": {
           "api_address": {
@@ -6389,7 +6546,7 @@
           "cluster_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The UUID of the Kubernetes cluster template. **Note**: Only one of `name` or `cluster_id` must be specified.",
+            "description": "The UUID of the Kubernetes cluster template. _note_ Only one of `name` or `cluster_id` must be specified.",
             "computed": true
           },
           "cluster_template_id": {
@@ -6472,7 +6629,7 @@
           "name": {
             "type": "TypeString",
             "optional": true,
-            "description": "The name of the cluster. **Note**: Only one of `name` or `cluster_id` must be specified.",
+            "description": "The name of the cluster. _note_ Only one of `name` or `cluster_id` must be specified.",
             "computed": true
           },
           "network_id": {
@@ -6544,7 +6701,7 @@
           "cluster_template_uuid": {
             "type": "TypeString",
             "optional": true,
-            "description": "The UUID of the cluster template. **Note**: Only one of `name` or `version` or `cluster_template_uuid` must be specified.",
+            "description": "The UUID of the cluster template. _note_ Only one of `name` or `version` or `cluster_template_uuid` must be specified.",
             "computed": true
           },
           "created_at": {
@@ -6620,7 +6777,7 @@
           "name": {
             "type": "TypeString",
             "optional": true,
-            "description": "The name of the cluster template. **Note**: Only one of `name` or `version` or `cluster_template_uuid` must be specified.",
+            "description": "The name of the cluster template. _note_ Only one of `name` or `version` or `cluster_template_uuid` must be specified.",
             "computed": true
           },
           "network_driver": {
@@ -6692,24 +6849,24 @@
         "schema": {
           "cluster_templates": {
             "type": "TypeList",
-            "description": "A list of available kubernetes cluster templates.\n  - `cluster_template_uuid` **String** The UUID of the cluster template.\n\n  - `name` **String** The name of the cluster template.\n\n  - `version` **String** The version of the cluster template.",
+            "description": "Available kubernetes cluster templates.",
             "computed": true,
             "elem": {
               "schema": {
                 "cluster_template_uuid": {
                   "type": "TypeString",
-                  "required": true,
-                  "description": "The UUID of the cluster template."
+                  "description": "UUID of a cluster template.",
+                  "computed": true
                 },
                 "name": {
                   "type": "TypeString",
-                  "required": true,
-                  "description": "The name of the cluster template."
+                  "description": "Name of a cluster template.",
+                  "computed": true
                 },
                 "version": {
                   "type": "TypeString",
-                  "required": true,
-                  "description": "The version of the cluster template."
+                  "description": "Version of a cluster template.",
+                  "computed": true
                 }
               }
             }
@@ -6718,9 +6875,16 @@
             "type": "TypeString",
             "description": "Random identifier of the data source.",
             "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "computed": true,
+            "new_since": "v0.3.0"
           }
         },
-        "description": "`vkcs_kubernetes_cluster_templates` returns list of available VKCS Kubernetes Cluster Templates. To get details of each cluster template the data source can be combined with the `vkcs_kubernetes_clustertemplate` data source."
+        "description": "Use this data source to get a list of available VKCS Kubernetes Cluster Templates. To get details about each cluster template the data source can be combined with the `vkcs_kubernetes_clustertemplate` data source."
       },
       "vkcs_kubernetes_node_group": {
         "schema": {
