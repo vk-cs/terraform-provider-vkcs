@@ -49,14 +49,16 @@ type InstanceCreateOpts struct {
 // AttachConfigurationGroupOpts represents parameters of configuration group to be attached to database cluster
 type AttachConfigurationGroupOpts struct {
 	ConfigurationAttach struct {
-		ConfigurationID string `json:"configuration_id"`
+		ConfigurationID  string `json:"configuration_id"`
+		RestartConfirmed *bool  `json:"restart_confirmed"`
 	} `json:"configuration_attach"`
 }
 
 // DetachConfigurationGroupOpts represents parameters of configuration group to be detached from database cluster
 type DetachConfigurationGroupOpts struct {
 	ConfigurationDetach struct {
-		ConfigurationID string `json:"configuration_id"`
+		ConfigurationID  string `json:"configuration_id"`
+		RestartConfirmed *bool  `json:"restart_confirmed"`
 	} `json:"configuration_detach"`
 }
 

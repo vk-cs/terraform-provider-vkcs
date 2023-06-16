@@ -410,6 +410,23 @@ func ResourceDatabaseCluster() *schema.Resource {
 				Description: "Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance.",
 			},
 
+			"vendor_options": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				MinItems: 1,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"restart_confirmed": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Boolean to confirm autorestart of the cluster's instances if it is required to apply configuration group changes.",
+						},
+					},
+				},
+				Description: "Map of additional vendor-specific options. Supported options are described below.",
+			},
+
 			// Computed values
 			"instances": {
 				Type:     schema.TypeList,
@@ -585,7 +602,16 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 
 	if configuration, ok := d.GetOk("configuration_id"); ok {
 		log.Printf("[DEBUG] Attaching configuration %s to vkcs_db_cluster %s", configuration, cluster.ID)
+
 		var attachConfigurationOpts clusters.AttachConfigurationGroupOpts
+		vendorOptionsRaw := d.Get("vendor_options").(*schema.Set)
+		if vendorOptionsRaw.Len() > 0 {
+			vendorOptions := util.ExpandVendorOptions(vendorOptionsRaw.List())
+			if v, ok := vendorOptions["restart_confirmed"]; ok && v.(bool) {
+				restartConfirmed := true
+				attachConfigurationOpts.ConfigurationAttach.RestartConfirmed = &restartConfirmed
+			}
+		}
 		attachConfigurationOpts.ConfigurationAttach.ConfigurationID = configuration.(string)
 
 		err := clusters.ClusterAction(DatabaseV1Client, cluster.ID, &attachConfigurationOpts).ExtractErr()

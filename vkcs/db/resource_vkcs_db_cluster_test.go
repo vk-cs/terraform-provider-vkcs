@@ -254,6 +254,10 @@ resource "vkcs_db_cluster" "basic" {
 
   availability_zone = "{{.AvailabilityZone}}"
 
+  vendor_options {
+	restart_confirmed = true
+  }
+
   depends_on = [vkcs_networking_router_interface.base]
 }
 `

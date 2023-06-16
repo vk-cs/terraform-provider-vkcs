@@ -280,6 +280,10 @@ resource "vkcs_db_cluster_with_shards" "update" {
     availability_zone = "{{.AvailabilityZone}}"
   }
 
+  vendor_options {
+	restart_confirmed = true
+  }
+
   depends_on = [vkcs_networking_router_interface.base]
 }
 `

@@ -188,6 +188,11 @@ resource "vkcs_db_instance" "basic" {
     autoexpand = true
     max_disk_size = 1000
   }
+
+  vendor_options {
+	restart_confirmed = true
+  }
+  
   depends_on = [vkcs_networking_router_interface.base]
 }
 `

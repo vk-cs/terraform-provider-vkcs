@@ -66,14 +66,18 @@ type DetachReplicaOpts struct {
 
 // AttachConfigurationGroupOpts represents parameters of configuration group to be attached to database instance
 type AttachConfigurationGroupOpts struct {
-	Instance struct {
+	RestartConfirmed *bool `json:"restart_confirmed"`
+	Instance         struct {
 		Configuration string `json:"configuration"`
 	} `json:"instance"`
 }
 
 // DetachConfigurationGroupOpts represents parameters of configuration group to be detached from database instance
 type DetachConfigurationGroupOpts struct {
-	Instance map[string]interface{} `json:"instance"`
+	RestartConfirmed *bool `json:"restart_confirmed"`
+	Instance         struct {
+		Configuration string `json:"configuration"`
+	} `json:"instance"`
 }
 
 // UpdateAutoExpandOpts represents parameters of request to update autoresize properties of volume of database instance
@@ -324,10 +328,7 @@ func UpdateAutoExpand(client *gophercloud.ServiceClient, id string, opts OptsBui
 }
 
 // DetachConfigurationGroup performs request to detach configuration group from database instance
-func DetachConfigurationGroup(client *gophercloud.ServiceClient, id string) (r ConfigurationResult) {
-	opts := DetachConfigurationGroupOpts{
-		Instance: map[string]interface{}{},
-	}
+func DetachConfigurationGroup(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r ConfigurationResult) {
 	b, err := opts.Map()
 	if err != nil {
 		r.Err = err
