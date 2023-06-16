@@ -11,6 +11,7 @@ description: |-
 - Add vkcs_backup_providers datasource
 - Add vkcs_backup_provider datasource
 - Add vkcs_backup_plan resource and datasource
+- Add restart_confirmed vendor option to DB clusters and instance
 - Fix creating/updating DB clusters with specified configuration_id
 - Fix error of unexpected "restart_required" status for DB instance
 

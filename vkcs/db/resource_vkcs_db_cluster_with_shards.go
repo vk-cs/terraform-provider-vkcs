@@ -406,6 +406,23 @@ func ResourceDatabaseClusterWithShards() *schema.Resource {
 				},
 				Description: "Object that represents cluster shard. There can be several instances of this object.",
 			},
+
+			"vendor_options": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				MinItems: 1,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"restart_confirmed": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Boolean to confirm autorestart of the cluster's instances if it is required to apply configuration group changes.",
+						},
+					},
+				},
+				Description: "Map of additional vendor-specific options. Supported options are described below.",
+			},
 		},
 		Description: "Provides a db cluster with shards resource. This can be used to create, modify and delete db cluster with shards for clickhouse datastore.",
 	}
@@ -551,8 +568,15 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 	if configuration, ok := d.GetOk("configuration_id"); ok {
 		log.Printf("[DEBUG] Attaching configuration %s to vkcs_db_cluster_with_shards %s", configuration, cluster.ID)
 		var attachConfigurationOpts clusters.AttachConfigurationGroupOpts
+		vendorOptionsRaw := d.Get("vendor_options").(*schema.Set)
+		if vendorOptionsRaw.Len() > 0 {
+			vendorOptions := util.ExpandVendorOptions(vendorOptionsRaw.List())
+			if v, ok := vendorOptions["restart_confirmed"]; ok && v.(bool) {
+				restartConfirmed := true
+				attachConfigurationOpts.ConfigurationAttach.RestartConfirmed = &restartConfirmed
+			}
+		}
 		attachConfigurationOpts.ConfigurationAttach.ConfigurationID = configuration.(string)
-
 		err := clusters.ClusterAction(DatabaseV1Client, cluster.ID, &attachConfigurationOpts).ExtractErr()
 		if err != nil {
 			return diag.Errorf("error attaching configuration group %s to vkcs_db_cluster_with_shards %s: %s",

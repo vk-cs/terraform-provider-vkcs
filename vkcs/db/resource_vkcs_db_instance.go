@@ -444,6 +444,23 @@ func ResourceDatabaseInstance() *schema.Resource {
 				Description: "Enable cloud monitoring for the instance. Changing this for Redis or MongoDB creates a new instance.",
 			},
 
+			"vendor_options": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				MinItems: 1,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"restart_confirmed": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Boolean to confirm autorestart of the instance if it is required to apply configuration group changes.",
+						},
+					},
+				},
+				Description: "Map of additional vendor-specific options. Supported options are described below.",
+			},
+
 			// Computed values
 			"ip": {
 				Type:     schema.TypeList,
@@ -622,8 +639,18 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 
 	if configuration != "" && createOpts.ReplicaOf == "" {
 		log.Printf("[DEBUG] Attaching configuration %s to vkcs_db_instance %s", configuration, instance.ID)
+
 		var attachConfigurationOpts instances.AttachConfigurationGroupOpts
+		vendorOptionsRaw := d.Get("vendor_options").(*schema.Set)
+		if vendorOptionsRaw.Len() > 0 {
+			vendorOptions := util.ExpandVendorOptions(vendorOptionsRaw.List())
+			if v, ok := vendorOptions["restart_confirmed"]; ok || v.(bool) {
+				restartConfirmed := true
+				attachConfigurationOpts.RestartConfirmed = &restartConfirmed
+			}
+		}
 		attachConfigurationOpts.Instance.Configuration = configuration
+
 		err := instances.AttachConfigurationGroup(DatabaseV1Client, instance.ID, &attachConfigurationOpts).ExtractErr()
 		if err != nil {
 			return diag.Errorf("error attaching configuration group %s to vkcs_db_instance %s: %s",
@@ -764,7 +791,20 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 	if d.HasChange("configuration_id") {
 		old, new := d.GetChange("configuration_id")
 
-		err := instances.DetachConfigurationGroup(DatabaseV1Client, d.Id()).ExtractErr()
+		var restartConfirmed *bool
+		vendorOptionsRaw := d.Get("vendor_options").(*schema.Set)
+		if vendorOptionsRaw.Len() > 0 {
+			vendorOptions := util.ExpandVendorOptions(vendorOptionsRaw.List())
+			if v, ok := vendorOptions["restart_confirmed"]; ok || v.(bool) {
+				rC := true
+				restartConfirmed = &rC
+			}
+		}
+
+		var detachConfigurationOpts instances.DetachConfigurationGroupOpts
+		detachConfigurationOpts.Instance.Configuration = old.(string)
+
+		err := instances.DetachConfigurationGroup(DatabaseV1Client, d.Id(), &detachConfigurationOpts).ExtractErr()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -777,6 +817,7 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 
 		if new != "" {
 			var attachConfigurationOpts instances.AttachConfigurationGroupOpts
+			attachConfigurationOpts.RestartConfirmed = restartConfirmed
 			attachConfigurationOpts.Instance.Configuration = new.(string)
 			err := instances.AttachConfigurationGroup(DatabaseV1Client, d.Id(), &attachConfigurationOpts).ExtractErr()
 			if err != nil {

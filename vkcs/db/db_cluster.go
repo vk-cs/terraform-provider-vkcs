@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
 func flattenDatabaseClusterWalVolume(w instances.WalVolume) []map[string]interface{} {
@@ -228,13 +229,25 @@ var (
 func databaseClusterActionUpdateConfiguration(updateCtx *dbResourceUpdateContext) error {
 	old, new := updateCtx.D.GetChange("configuration_id")
 
+	var restartConfirmed *bool
+	vendorOptionsRaw := updateCtx.D.Get("vendor_options").(*schema.Set)
+	if vendorOptionsRaw.Len() > 0 {
+		vendorOptions := util.ExpandVendorOptions(vendorOptionsRaw.List())
+		if v, ok := vendorOptions["restart_confirmed"]; ok || v.(bool) {
+			rC := true
+			restartConfirmed = &rC
+		}
+	}
+
 	var detachOpts clusters.DetachConfigurationGroupOpts
 	detachOpts.ConfigurationDetach.ConfigurationID = old.(string)
+	detachOpts.ConfigurationDetach.RestartConfirmed = restartConfirmed
 
 	var attachOpts *clusters.AttachConfigurationGroupOpts
 	if new != "" {
 		attachOpts = &clusters.AttachConfigurationGroupOpts{}
 		attachOpts.ConfigurationAttach.ConfigurationID = new.(string)
+		attachOpts.ConfigurationAttach.RestartConfirmed = restartConfirmed
 	}
 
 	return databaseClusterActionUpdateConfigurationBase(updateCtx, &detachOpts, attachOpts)
