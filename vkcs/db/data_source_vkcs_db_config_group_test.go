@@ -14,9 +14,8 @@ func TestAccDatabaseDataSourceConfigGroup_basic(t *testing.T) {
 	datasourceName := "data.vkcs_db_config_group.basic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { acctest.AccTestPreCheck(t) },
-		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccCheckDatabaseConfigGroupDestroy,
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.AccTestRenderConfig(testAccDataSourceDatabaseConfigGroupBasic, map[string]string{"TestAccDatabaseConfigGroupResource": testAccDatabaseConfigGroupResource}),
@@ -25,6 +24,36 @@ func TestAccDatabaseDataSourceConfigGroup_basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(resourceName, "name", datasourceName, "name"),
 					resource.TestCheckResourceAttr("vkcs_db_config_group.basic", "values.max_connections", "100"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccDatabaseConfigGroupDataSource_migrateToFramework(t *testing.T) {
+	resourceName := "vkcs_db_config_group.basic"
+	datasourceName := "data.vkcs_db_config_group.basic"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.AccTestPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"vkcs": {
+						VersionConstraint: "0.3.0",
+						Source:            "vk-cs/vkcs",
+					},
+				},
+				Config: acctest.AccTestRenderConfig(testAccDataSourceDatabaseConfigGroupBasic, map[string]string{"TestAccDatabaseConfigGroupResource": testAccDatabaseConfigGroupResource}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccDataSourceDatabaseConfigGroupID(datasourceName),
+					resource.TestCheckResourceAttrPair(resourceName, "name", datasourceName, "name"),
+					resource.TestCheckResourceAttr("vkcs_db_config_group.basic", "values.max_connections", "100"),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+				Config:                   acctest.AccTestRenderConfig(testAccDataSourceDatabaseConfigGroupBasic, map[string]string{"TestAccDatabaseConfigGroupResource": testAccDatabaseConfigGroupResource}),
+				PlanOnly:                 true,
 			},
 		},
 	})

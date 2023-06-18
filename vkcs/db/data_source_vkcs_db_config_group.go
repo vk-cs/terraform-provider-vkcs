@@ -2,102 +2,191 @@ package db
 
 import (
 	"context"
-	"log"
+	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	configgroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/config_groups"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
-func DataSourceDatabaseConfigGroup() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceDatabaseConfigGroupRead,
+var (
+	_ datasource.DataSource              = &ConfigGroupDataSource{}
+	_ datasource.DataSourceWithConfigure = &ConfigGroupDataSource{}
+)
 
-		Schema: map[string]*schema.Schema{
-			"config_group_id": {
-				Type:        schema.TypeString,
+func NewConfigGroupDataSource() datasource.DataSource {
+	return &ConfigGroupDataSource{}
+}
+
+type ConfigGroupDataSource struct {
+	config clients.Config
+}
+
+type ConfigGroupDataSourceModel struct {
+	ID     types.String `tfsdk:"id"`
+	Region types.String `tfsdk:"region"`
+
+	ConfigGroupID types.String                `tfsdk:"config_group_id"`
+	Created       types.String                `tfsdk:"created"`
+	Datastore     []ConfigGroupDatastoreModel `tfsdk:"datastore"`
+	Description   types.String                `tfsdk:"description"`
+	Name          types.String                `tfsdk:"name"`
+	Updated       types.String                `tfsdk:"updated"`
+	Values        types.Map                   `tfsdk:"values"`
+}
+
+type ConfigGroupDatastoreModel struct {
+	Type    types.String `tfsdk:"type"`
+	Version types.String `tfsdk:"version"`
+}
+
+func (d *ConfigGroupDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = "vkcs_db_config_group"
+}
+
+func (d *ConfigGroupDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "ID of the resource.",
+			},
+
+			"region": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+			},
+
+			"config_group_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The UUID of the config_group.",
 			},
-			"datastore": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"version": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Version of the datastore.",
-						},
-						"type": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Type of the datastore.",
-						},
-					},
-				},
-				Description: "Object that represents datastore of backup",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name of the config group.",
-			},
-			"values": {
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Map of configuration parameters in format \"key\": \"value\".",
-			},
-			"updated": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Timestamp of config group's last update.",
-			},
-			"created": {
-				Type:        schema.TypeString,
+
+			"created": schema.StringAttribute{
 				Computed:    true,
 				Description: "Timestamp of config group's creation.",
 			},
-			"description": {
-				Type:        schema.TypeString,
+
+			"datastore": schema.ListNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"type": schema.StringAttribute{
+							Required:    true,
+							Description: "Type of the datastore.",
+						},
+
+						"version": schema.StringAttribute{
+							Required:    true,
+							Description: "Version of the datastore.",
+						},
+					},
+				},
+				Computed:    true,
+				Description: "Object that represents datastore of backup",
+			},
+
+			"description": schema.StringAttribute{
 				Computed:    true,
 				Description: "The description of the config group.",
 			},
+
+			"name": schema.StringAttribute{
+				Computed:    true,
+				Description: "The name of the config group.",
+			},
+
+			"updated": schema.StringAttribute{
+				Computed:    true,
+				Description: "Timestamp of config group's last update.",
+			},
+
+			"values": schema.MapAttribute{
+				ElementType: types.StringType,
+				Computed:    true,
+				Description: "Map of configuration parameters in format \"key\": \"value\".",
+			},
 		},
-		Description: "Use this data source to get the information on a db config group resource.",
+		Description: "Use this data source to get the information on a db config group resource. **New since v0.1.7**.",
 	}
 }
 
-func dataSourceDatabaseConfigGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(clients.Config)
-	DatabaseV1Client, err := config.DatabaseV1Client(util.GetRegion(d, config))
+func (d *ConfigGroupDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+	d.config = req.ProviderData.(clients.Config)
+}
+
+func (d *ConfigGroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data ConfigGroupDataSourceModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region := data.Region.ValueString()
+	if region == "" {
+		region = d.config.GetRegion()
+	}
+
+	client, err := d.config.DatabaseV1Client(region)
 	if err != nil {
-		return diag.Errorf("Error creating VKCS database client: %s", err)
+		resp.Diagnostics.AddError("Error creating VKCS Databases API client", err.Error())
+		return
 	}
-	configGroupID := d.Get("config_group_id").(string)
-	configGroup, err := configgroups.Get(DatabaseV1Client, configGroupID).Extract()
+
+	configGroupID := data.ConfigGroupID.ValueString()
+	ctx = tflog.SetField(ctx, "config_group_id", configGroupID)
+
+	tflog.Debug(ctx, "Calling Databases API to read the config group")
+
+	configGroup, err := configgroups.Get(client, configGroupID).Extract()
 	if err != nil {
-		return diag.FromErr(util.CheckDeleted(d, err, "Error retrieving vkcs_db_config_group"))
+		resp.Diagnostics.AddError("Error calling VKCS Databases API", err.Error())
+		return
 	}
 
-	log.Printf("[DEBUG] Retrieved vkcs_db_config_group %s: %#v", configGroupID, configGroup)
+	tflog.Debug(ctx, "Called Databases API to read the config group", map[string]interface{}{"config_group": fmt.Sprintf("%#v", configGroup)})
 
-	d.Set("name", configGroup.Name)
-	ds := datastores.DatastoreShort{
-		Type:    configGroup.DatastoreName,
-		Version: configGroup.DatastoreVersionName,
+	data.ID = types.StringValue(configGroupID)
+	data.Region = types.StringValue(region)
+	data.Created = types.StringValue(configGroup.Created)
+	data.Datastore = flattenConfigGroupDatastore(configGroup)
+	data.Description = types.StringValue(configGroup.Description)
+	data.Name = types.StringValue(configGroup.Name)
+	data.Updated = types.StringValue(configGroup.Updated)
+	data.Values = flattenConfigGroupValues(ctx, configGroup.Values, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	d.Set("datastore", flattenDatabaseInstanceDatastore(ds))
-	d.Set("values", flattenDatabaseConfigGroupValues(configGroup.Values))
 
-	d.Set("updated", configGroup.Updated)
-	d.Set("created", configGroup.Created)
-	d.Set("description", configGroup.Description)
-	d.SetId(configGroupID)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
 
-	return nil
+func flattenConfigGroupDatastore(cg *configgroups.ConfigGroupResp) []ConfigGroupDatastoreModel {
+	if cg == nil {
+		return nil
+	}
+	return []ConfigGroupDatastoreModel{
+		{
+			Type:    types.StringValue(cg.DatastoreName),
+			Version: types.StringValue(cg.DatastoreVersionName),
+		},
+	}
+}
+
+func flattenConfigGroupValues(ctx context.Context, v map[string]interface{}, respDiags *diag.Diagnostics) types.Map {
+	rawValues := make(map[string]string, len(v))
+	for name, value := range v {
+		rawValues[name] = fmt.Sprintf("%v", value)
+	}
+	values, diags := types.MapValueFrom(ctx, types.StringType, rawValues)
+	respDiags.Append(diags...)
+	return values
 }

@@ -92,6 +92,7 @@ func (p *vkcsProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 // DataSources defines the data sources implemented in the provider.
 func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		db.NewConfigGroupDataSource,
 		db.NewDatastoreDataSource,
 		db.NewDatastoresDataSource,
 		db.NewDatastoreCapabilitiesDataSource,
