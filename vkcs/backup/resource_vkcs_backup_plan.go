@@ -106,7 +106,7 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 					},
 					"time": schema.StringAttribute{
 						Optional:    true,
-						Description: "Time of backup in format hh:mm (for UTC timezone) or hh:mm+tz (for other timezones)",
+						Description: "Time of backup in format hh:mm (for UTC timezone) or hh:mm+tz (for other timezones, e.g. 10:00+03 for MSK, 10:00-04 for ET)",
 						Validators: []validator.String{
 							stringvalidator.ConflictsWith(path.Expressions{
 								path.MatchRoot("schedule").AtName("every_hours"),
