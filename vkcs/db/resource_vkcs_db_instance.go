@@ -43,6 +43,7 @@ var (
 	dbInstanceStatusDetach             dbInstanceStatus = "DETACH"
 	dbInstanceStatusCapabilityApplying dbInstanceStatus = "CAPABILITY_APPLYING"
 	dbInstanceStatusBackup             dbInstanceStatus = "BACKUP"
+	dbInstanceStatusRestartRequired    dbInstanceStatus = "RESTART_REQUIRED"
 )
 
 type dbCapabilityStatus string
@@ -783,6 +784,8 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 			}
 			log.Printf("Attaching configuration %s to vkcs_db_instance %s", new, d.Id())
 
+			stateConf.Target = append(stateConf.Target, string(dbInstanceStatusRestartRequired))
+
 			_, err = stateConf.WaitForStateContext(ctx)
 			if err != nil {
 				return diag.Errorf("error waiting for vkcs_db_instance %s to become ready: %s", d.Id(), err)
@@ -1037,7 +1040,7 @@ func resourceDatabaseInstanceDelete(ctx context.Context, d *schema.ResourceData,
 
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{string(dbInstanceStatusActive), string(dbInstanceStatusBackup),
-			string(dbInstanceStatusShutdown)},
+			string(dbInstanceStatusRestartRequired), string(dbInstanceStatusShutdown)},
 		Target:     []string{string(dbInstanceStatusDeleted)},
 		Refresh:    databaseInstanceStateRefreshFunc(DatabaseV1Client, d.Id(), nil),
 		Timeout:    d.Timeout(schema.TimeoutDelete),

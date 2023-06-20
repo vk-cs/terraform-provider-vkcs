@@ -7,10 +7,11 @@ description: |-
 
 # VKCS Provider's changelog
 
-### v0.3.1
+#### v0.3.1 (unreleased)
 - Add vkcs_backup_providers datasource
 - Add vkcs_backup_provider datasource
 - Add vkcs_backup_plan resource and datasource
+- Fix error of unexpected "restart_required" status for DB instance
 
 #### v0.3.0
 - Provide support for Kubernetes cluster addons
