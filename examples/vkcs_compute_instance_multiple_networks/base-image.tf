@@ -1,1 +1,0 @@
-../vkcs_images_image_datasource/main.tf
