@@ -12,6 +12,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	wrapper "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/providerwrapper/framework"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/keymanager"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes"
 )
 
@@ -96,6 +97,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		db.NewDatastoresDataSource,
 		db.NewDatastoreCapabilitiesDataSource,
 		db.NewDatastoreParametersDataSource,
+		keymanager.NewSecretDataSource,
 		kubernetes.NewAddonDatasource,
 		kubernetes.NewAddonsDatasource,
 		kubernetes.NewClusterTemplatesDataSource,

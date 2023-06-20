@@ -67,7 +67,7 @@ func keyManagerSecretWaitForSecretCreation(kmClient *gophercloud.ServiceClient, 
 	}
 }
 
-func KeyManagerSecretGetUUIDfromSecretRef(ref string) string {
+func GetUUIDFromSecretRef(ref string) string {
 	// secret ref has form https://{barbican_host}/v1/secrets/{secret_uuid}
 	// so we are only interested in the last part
 	refSplit := strings.Split(ref, "/")
