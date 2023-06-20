@@ -238,7 +238,7 @@ func resourceKeyManagerSecretCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error creating vkcs_keymanager_secret: %s", err)
 	}
 
-	uuid := KeyManagerSecretGetUUIDfromSecretRef(secret.SecretRef)
+	uuid := GetUUIDFromSecretRef(secret.SecretRef)
 	d.SetId(uuid)
 
 	stateConf := &retry.StateChangeConf{

@@ -267,7 +267,7 @@ func testAccCheckPayloadEquals(payload string, secret *secrets.Secret) resource.
 			PayloadContentType: "text/plain",
 		}
 
-		uuid := keymanager.KeyManagerSecretGetUUIDfromSecretRef(secret.SecretRef)
+		uuid := keymanager.GetUUIDFromSecretRef(secret.SecretRef)
 		secretPayload, _ := secrets.GetPayload(kmClient, uuid, opts).Extract()
 		if string(secretPayload) != payload {
 			return fmt.Errorf("Payloads do not match. Expected %v but got %v", payload, secretPayload)
@@ -284,7 +284,7 @@ func testAccCheckMetadataEquals(key string, value string, secret *secrets.Secret
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}
 
-		uuid := keymanager.KeyManagerSecretGetUUIDfromSecretRef(secret.SecretRef)
+		uuid := keymanager.GetUUIDFromSecretRef(secret.SecretRef)
 		metadatum, err := secrets.GetMetadatum(kmClient, uuid, key).Extract()
 		if err != nil {
 			return err
