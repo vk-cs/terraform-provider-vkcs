@@ -12,14 +12,14 @@ description: |-
 
 ## Example Usage
 ### Single record
-{{tffile "examples/vkcs_publicdns/record_srv.tf"}}
+{{tffile "examples/publicdns/record_srv.tf"}}
 
 ### Multiple A records
-{{tffile "examples/vkcs_publicdns/multirecord.tf"}}
+{{tffile "examples/publicdns/multirecord.tf"}}
 
 {{ .SchemaMarkdown }}
 ## Import
 
 Public DNS records can be imported using the `id` in the form `<zone-id>/<record-type>/<record-id>`, e.g.
 
-{{codefile "shell" "examples/vkcs_publicdns/import_record.sh"}}
+{{codefile "shell" "examples/publicdns/import_record.sh"}}
