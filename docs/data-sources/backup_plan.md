@@ -28,11 +28,11 @@ data "vkcs_backup_plan" "plan-datasource" {
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
-- `full_retention` , read-only &rarr;  Parameters for full retention policy
+- `full_retention`  &rarr;  Parameters for full retention policy
   - `max_full_backup` *number* &rarr;  Maximum number of backups
 
 
-- `gfs_retention` , read-only &rarr;  Parameters for gfs retention policy
+- `gfs_retention`  &rarr;  Parameters for gfs retention policy
   - `gfs_monthly` *number* &rarr;  Number of months to store backups
 
   - `gfs_weekly` *number* &rarr;  Number of weeks to store backups
@@ -48,7 +48,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `provider_id` *string* &rarr;  ID of backup provider
 
-- `schedule` , read-only
+- `schedule` 
   - `date` *string* &rarr;  List of days when to perform backups. If incremental_backups is enabled, this field contains day of full backup
 
   - `every_hours` *number* &rarr;  Hour period of backups
