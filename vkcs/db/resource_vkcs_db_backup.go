@@ -2,282 +2,458 @@ package db
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/backups"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 const (
-	dbBackupDelay         = 10 * time.Second
-	dbBackupMinTimeout    = 3 * time.Second
-	dbBackupCreateTimeout = 30 * time.Minute
-	dbBackupDeleteTimeout = 30 * time.Minute
+	backupCreateTimeout = 30 * time.Minute
+	backupDeleteTimeout = 30 * time.Minute
 )
 
-type dbBackupStatus string
+const (
+	dbBackupStatusBuild    = "BUILDING"
+	dbBackupStatusNew      = "NEW"
+	dbBackupStatusActive   = "COMPLETED"
+	dbBackupStatusError    = "ERROR"
+	dbBackupStatusToDelete = "TO_DELETE"
+	dbBackupStatusDeleted  = "DELETED"
+)
 
 var (
-	dbBackupStatusBuild    dbBackupStatus = "BUILDING"
-	dbBackupStatusNew      dbBackupStatus = "NEW"
-	dbBackupStatusActive   dbBackupStatus = "COMPLETED"
-	dbBackupStatusError    dbBackupStatus = "ERROR"
-	dbBackupStatusToDelete dbBackupStatus = "TO_DELETE"
-	dbBackupStatusDeleted  dbBackupStatus = "DELETED"
+	_ resource.Resource                = &BackupResource{}
+	_ resource.ResourceWithConfigure   = &BackupResource{}
+	_ resource.ResourceWithImportState = &BackupResource{}
 )
 
-func ResourceDatabaseBackup() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: resourceDatabaseBackupCreate,
-		ReadContext:   resourceDatabaseBackupRead,
-		DeleteContext: resourceDatabaseBackupDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+func NewBackupResource() resource.Resource {
+	return &BackupResource{}
+}
 
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(dbBackupCreateTimeout),
-			Delete: schema.DefaultTimeout(dbBackupDeleteTimeout),
-		},
+type BackupResource struct {
+	config clients.Config
+}
 
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The name of the backup. Changing this creates a new backup",
+type BackupResourceModel struct {
+	ID     types.String `tfsdk:"id"`
+	Region types.String `tfsdk:"region"`
+
+	ContainerPrefix types.String  `tfsdk:"container_prefix"`
+	Created         types.String  `tfsdk:"created"`
+	Datastore       types.List    `tfsdk:"datastore"`
+	DbmsID          types.String  `tfsdk:"dbms_id"`
+	DbmsType        types.String  `tfsdk:"dbms_type"`
+	Description     types.String  `tfsdk:"description"`
+	LocationRef     types.String  `tfsdk:"location_ref"`
+	Meta            types.String  `tfsdk:"meta"`
+	Name            types.String  `tfsdk:"name"`
+	Size            types.Float64 `tfsdk:"size"`
+	Updated         types.String  `tfsdk:"updated"`
+	WalSize         types.Float64 `tfsdk:"wal_size"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
+}
+
+func (r *BackupResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = "vkcs_db_backup"
+}
+
+func (r *BackupResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	s := schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "ID of the resource.",
 			},
 
-			"dbms_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "ID of the instance or cluster, to create backup of.",
-			},
-
-			"description": {
-				Type:        schema.TypeString,
+			"region": schema.StringAttribute{
 				Optional:    true,
-				ForceNew:    true,
-				Description: "The description of the backup",
+				Computed:    true,
+				Description: "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
 			},
 
-			"container_prefix": {
-				Type:        schema.TypeString,
+			"container_prefix": schema.StringAttribute{
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Prefix of S3 bucket ([prefix] - [project_id]) to store backup data. Default: databasebackups",
-			},
-			// Computed fields
-			"dbms_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Type of dbms for the backup, can be \"instance\" or \"cluster\".",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 
-			"location_ref": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Location of backup data on backup storage",
-			},
-
-			"created": {
-				Type:        schema.TypeString,
+			"created": schema.StringAttribute{
 				Computed:    true,
 				Description: "Backup creation timestamp",
 			},
 
-			"updated": {
-				Type:        schema.TypeString,
+			"datastore": schema.ListNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"type": schema.StringAttribute{
+							Computed:    true,
+							Description: "Version of the datastore. Changing this creates a new instance.",
+						},
+
+						"version": schema.StringAttribute{
+							Computed:    true,
+							Description: "Type of the datastore. Changing this creates a new instance.",
+						},
+					},
+				},
 				Computed:    true,
-				Description: "Timestamp of backup's last update",
+				Description: "Object that represents datastore of backup",
 			},
 
-			"size": {
-				Type:        schema.TypeFloat,
+			"dbms_id": schema.StringAttribute{
+				Required:    true,
+				Description: "ID of the instance or cluster, to create backup of.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+
+			"dbms_type": schema.StringAttribute{
+				Computed:    true,
+				Description: "Type of dbms for the backup, can be \"instance\" or \"cluster\".",
+			},
+
+			"description": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The description of the backup",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+
+			"location_ref": schema.StringAttribute{
+				Computed:    true,
+				Description: "Location of backup data on backup storage",
+			},
+
+			"meta": schema.StringAttribute{
+				Computed:    true,
+				Description: "Metadata of the backup",
+			},
+
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the backup. Changing this creates a new backup",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+
+			"size": schema.Float64Attribute{
 				Computed:    true,
 				Description: "Backup's volume size",
 			},
 
-			"wal_size": {
-				Type:        schema.TypeFloat,
+			"updated": schema.StringAttribute{
+				Computed:    true,
+				Description: "Timestamp of backup's last update",
+			},
+
+			"wal_size": schema.Float64Attribute{
 				Computed:    true,
 				Description: "Backup's WAL volume size",
-			},
-
-			"datastore": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"version": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of the datastore. Changing this creates a new instance.",
-						},
-						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Version of the datastore. Changing this creates a new instance.",
-						},
-					},
-				},
-				Description: "Object that represents datastore of backup",
-			},
-
-			"meta": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Metadata of the backup",
 			},
 		},
 		Description: "Provides a db backup resource. This can be used to create and delete db backup.",
 	}
+
+	if s.Blocks == nil {
+		s.Blocks = make(map[string]schema.Block)
+	}
+	s.Blocks["timeouts"] = timeouts.Block(ctx, timeouts.Opts{
+		Create: true,
+		Delete: true,
+	})
+
+	resp.Schema = s
 }
 
-func resourceDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(clients.Config)
-	DatabaseV1Client, err := config.DatabaseV1Client(util.GetRegion(d, config))
-	if err != nil {
-		return diag.Errorf("Error creating VKCS database client: %s", err)
+func (r *BackupResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+	r.config = req.ProviderData.(clients.Config)
+}
+
+func (r *BackupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data BackupResourceModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	dbmsID := d.Get("dbms_id").(string)
-
-	dbmsResp, err := getDBMSResource(DatabaseV1Client, dbmsID)
-	if err != nil {
-		return diag.Errorf("error while getting resource: %s", err)
+	timeout, diags := data.Timeouts.Create(ctx, backupCreateTimeout)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	// Consider adding "region" attribute if it is not present.
+	region := data.Region.ValueString()
+	if region == "" {
+		region = r.config.GetRegion()
+	}
+
+	client, err := r.config.DatabaseV1Client(region)
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating VKCS Databases API client", err.Error())
+		return
+	}
+
+	dbmsID := data.DbmsID.ValueString()
+	ctx = tflog.SetField(ctx, "dbms_id", dbmsID)
+
+	tflog.Debug(ctx, "Calling Databases API to get DBMS resource")
+
+	dbmsResource, err := getDBMSResource(client, dbmsID)
+	if err != nil {
+		resp.Diagnostics.AddError("Error calling VKCS Databases API", err.Error())
+		return
+	}
+
+	tflog.Debug(ctx, "Called Databases API to get DBMS resource", map[string]interface{}{"dbms_resource": fmt.Sprintf("%#v", dbmsResource)})
 
 	var dbmsType string
-	if instanceResource, ok := dbmsResp.(*instances.InstanceResp); ok {
+	if instanceResource, ok := dbmsResource.(*instances.InstanceResp); ok {
 		if util.IsOperationNotSupported(instanceResource.DataStore.Type, Redis, Tarantool) {
-			return diag.Errorf("operation not supported for this datastore")
+			resp.Diagnostics.AddError("Unable to create a backup of the resource",
+				"Operation is not supported for this datastore")
+			return
 		}
 		if instanceResource.ReplicaOf != nil {
-			return diag.Errorf("operation not supported for replica")
+			resp.Diagnostics.AddError("Unable to create a backup of the resource",
+				"Operation is not supported for a replica")
+			return
 		}
 		dbmsType = db.DBMSTypeInstance
-	}
-	if clusterResource, ok := dbmsResp.(*clusters.ClusterResp); ok {
+	} else if clusterResource, ok := dbmsResource.(*clusters.ClusterResp); ok {
 		if util.IsOperationNotSupported(clusterResource.DataStore.Type, Redis, Tarantool) {
-			return diag.Errorf("operation not supported for this datastore")
+			resp.Diagnostics.AddError("Unable to create a backup of the resource",
+				"Operation is not supported for this datastore")
+			return
 		}
 		dbmsType = db.DBMSTypeCluster
 	}
 
-	b := backups.BackupCreateOpts{
-		Name:            d.Get("name").(string),
-		Description:     d.Get("description").(string),
-		ContainerPrefix: d.Get("container_prefix").(string),
-	}
+	ctx = tflog.SetField(ctx, "dbms_type", dbmsType)
 
+	opts := backups.Backup{
+		Backup: &backups.BackupCreateOpts{
+			Name:            data.Name.ValueString(),
+			Description:     data.Description.ValueString(),
+			ContainerPrefix: data.ContainerPrefix.ValueString(),
+		},
+	}
 	if dbmsType == db.DBMSTypeInstance {
-		b.Instance = d.Get("dbms_id").(string)
+		opts.Backup.Instance = dbmsID
 	} else {
-		b.Cluster = d.Get("dbms_id").(string)
+		opts.Backup.Cluster = dbmsID
 	}
 
-	log.Printf("[DEBUG] vkcs_db_backup create options: %#v", b)
+	tflog.Debug(ctx, "Calling Databases API to create the backup", map[string]interface{}{"opts": fmt.Sprintf("%#v", opts)})
 
-	back := backups.Backup{
-		Backup: &b,
-	}
-	backup, err := backups.Create(DatabaseV1Client, &back).Extract()
+	backup, err := backups.Create(client, &opts).Extract()
 	if err != nil {
-		return diag.Errorf("error creating vkcs_db_backup: %s", err)
+		resp.Diagnostics.AddError("Error calling VKCS Databases API to create a backup", err.Error())
+		return
 	}
 
-	// Store the ID now
-	d.SetId(backup.ID)
+	tflog.Debug(ctx, "Called Databases API to create the backup", map[string]interface{}{"backup": fmt.Sprintf("%#v", backup)})
 
-	// Wait for the backup to become available.
-	log.Printf("[DEBUG] Waiting for vkcs_db_backup %s to become available", backup.ID)
+	id := backup.ID
+	resp.State.SetAttribute(ctx, path.Root("id"), id)
+	ctx = tflog.SetField(ctx, "id", backup.ID)
+
+	tflog.Debug(ctx, "Waiting for backup to become active")
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(dbBackupStatusNew), string(dbBackupStatusBuild)},
-		Target:     []string{string(dbBackupStatusActive)},
-		Refresh:    databaseBackupStateRefreshFunc(DatabaseV1Client, backup.ID),
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      dbBackupDelay,
-		MinTimeout: dbBackupMinTimeout,
+		Pending:    []string{dbBackupStatusNew, dbBackupStatusBuild},
+		Target:     []string{dbBackupStatusActive},
+		Refresh:    backupStateRefreshFunc(client, backup.ID),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
+		resp.Diagnostics.AddError("Error waiting for the backup to become ready", err.Error())
+		return
 	}
 
-	_, err = stateConf.WaitForStateContext(ctx)
-	if err != nil {
-		return diag.Errorf("error waiting for vkcs_db_backup %s to become ready: %s", backup.ID, err)
+	data.ID = types.StringValue(id)
+	data.Region = types.StringValue(region)
+	data.Created = types.StringValue(backup.Created)
+	data.Datastore = flattenBackupDatastore(ctx, *backup.Datastore, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-
-	return resourceDatabaseBackupRead(ctx, d, meta)
-}
-
-func resourceDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(clients.Config)
-	DatabaseV1Client, err := config.DatabaseV1Client(util.GetRegion(d, config))
-	if err != nil {
-		return diag.Errorf("Error creating VKCS database client: %s", err)
-	}
-
-	backup, err := backups.Get(DatabaseV1Client, d.Id()).Extract()
-	if err != nil {
-		return diag.FromErr(util.CheckDeleted(d, err, "Error retrieving vkcs_db_backup"))
-	}
-
-	log.Printf("[DEBUG] Retrieved vkcs_db_backup %s: %#v", d.Id(), backup)
-
-	d.Set("name", backup.Name)
 	if backup.InstanceID != "" {
-		d.Set("dbms_id", backup.InstanceID)
-		d.Set("dbms_type", db.DBMSTypeInstance)
+		data.DbmsID = types.StringValue(backup.InstanceID)
+		data.DbmsType = types.StringValue(db.DBMSTypeInstance)
 	} else {
-		d.Set("dbms_id", backup.ClusterID)
-		d.Set("dbms_type", db.DBMSTypeCluster)
+		data.DbmsID = types.StringValue(backup.ClusterID)
+		data.DbmsType = types.StringValue(db.DBMSTypeCluster)
 	}
-	d.Set("description", backup.Description)
-	d.Set("location_ref", backup.LocationRef)
-	d.Set("created", backup.Created)
-	d.Set("updated", backup.Updated)
-	d.Set("size", backup.Size)
-	d.Set("wal_size", backup.WalSize)
-	d.Set("datastore", flattenDatabaseInstanceDatastore(*backup.Datastore))
-	d.Set("meta", backup.Meta)
+	data.Description = types.StringValue(backup.Description)
+	data.LocationRef = types.StringValue(backup.LocationRef)
+	data.Meta = types.StringValue(backup.Meta)
+	data.Name = types.StringValue(backup.Name)
+	data.Size = types.Float64Value(backup.Size)
+	data.Updated = types.StringValue(backup.Updated)
+	data.WalSize = types.Float64Value(backup.WalSize)
 
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func resourceDatabaseBackupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(clients.Config)
-	DatabaseV1Client, err := config.DatabaseV1Client(util.GetRegion(d, config))
-	if err != nil {
-		return diag.Errorf("Error creating VKCS database client: %s", err)
+func (r *BackupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data BackupResourceModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	err = backups.Delete(DatabaseV1Client, d.Id()).ExtractErr()
-	if err != nil {
-		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_db_backup"))
+	// Consider adding "region" attribute if it is not present.
+	region := data.Region.ValueString()
+	if region == "" {
+		region = r.config.GetRegion()
 	}
+
+	client, err := r.config.DatabaseV1Client(region)
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating VKCS Databases API client", err.Error())
+		return
+	}
+
+	id := data.ID.ValueString()
+	ctx = tflog.SetField(ctx, "id", id)
+
+	tflog.Debug(ctx, "Calling Databases API to read the backup")
+
+	backup, err := backups.Get(client, id).Extract()
+	if errutil.Is(err, 404) {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+	if err != nil {
+		resp.Diagnostics.AddError("Error calling VKCS Databases API", err.Error())
+		return
+	}
+
+	tflog.Debug(ctx, "Called Databases API to read the backup", map[string]interface{}{"backup": fmt.Sprintf("%#v", backup)})
+
+	data.ID = types.StringValue(id)
+	data.Region = types.StringValue(region)
+	data.Created = types.StringValue(backup.Created)
+	data.Datastore = flattenBackupDatastore(ctx, *backup.Datastore, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if backup.InstanceID != "" {
+		data.DbmsID = types.StringValue(backup.InstanceID)
+		data.DbmsType = types.StringValue(db.DBMSTypeInstance)
+	} else {
+		data.DbmsID = types.StringValue(backup.ClusterID)
+		data.DbmsType = types.StringValue(db.DBMSTypeCluster)
+	}
+	data.LocationRef = types.StringValue(backup.LocationRef)
+	data.Meta = types.StringValue(backup.Meta)
+	data.Name = types.StringValue(backup.Name)
+	data.Size = types.Float64Value(backup.Size)
+	data.Updated = types.StringValue(backup.Updated)
+	data.WalSize = types.Float64Value(backup.WalSize)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *BackupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data BackupResourceModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.AddError("Unable to update the resource",
+		"Not implemented. Please report this issue to the provider developers.")
+}
+
+func (r *BackupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data BackupResourceModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	timeout, diags := data.Timeouts.Delete(ctx, backupDeleteTimeout)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region := data.Region.ValueString()
+	if region == "" {
+		region = r.config.GetRegion()
+	}
+
+	client, err := r.config.DatabaseV1Client(region)
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating VKCS Databases API client", err.Error())
+		return
+	}
+
+	id := data.ID.ValueString()
+	ctx = tflog.SetField(ctx, "id", id)
+
+	tflog.Debug(ctx, "Calling Databases API to delete the backup")
+
+	err = backups.Delete(client, id).ExtractErr()
+	if err != nil {
+		resp.Diagnostics.AddError("Error calling VKCS Databases API", err.Error())
+		return
+	}
+
+	tflog.Debug(ctx, "Called Databases API to delete the backup")
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(dbBackupStatusActive), string(dbBackupStatusToDelete)},
-		Target:     []string{string(dbBackupStatusDeleted)},
-		Refresh:    databaseBackupStateRefreshFunc(DatabaseV1Client, d.Id()),
-		Timeout:    d.Timeout(schema.TimeoutDelete),
-		Delay:      dbInstanceDelay,
-		MinTimeout: dbInstanceMinTimeout,
+		Pending:    []string{dbBackupStatusActive, dbBackupStatusToDelete},
+		Target:     []string{dbBackupStatusDeleted},
+		Refresh:    backupStateRefreshFunc(client, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
 	}
-
-	_, err = stateConf.WaitForStateContext(ctx)
-	if err != nil {
-		return diag.Errorf("error waiting for vkcs_db_backup %s to delete: %s", d.Id(), err)
+	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+		resp.Diagnostics.AddError("Error waiting for the backup deletion", err.Error())
+		return
 	}
+}
 
-	return nil
+func (r *BackupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
