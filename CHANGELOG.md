@@ -11,6 +11,7 @@ description: |-
 - Add vkcs_backup_providers datasource
 - Add vkcs_backup_provider datasource
 - Add vkcs_backup_plan resource and datasource
+- Fix creating/updating DB clusters with specified configuration_id
 - Fix error of unexpected "restart_required" status for DB instance
 
 #### v0.3.0

@@ -167,33 +167,44 @@ const testAccDatabaseClusterWithShardsBasic = `
 {{.BaseNetwork}}
 {{.BaseFlavor}}
 
- resource "vkcs_db_cluster_with_shards" "basic" {
-	name      = "basic"
+resource "vkcs_db_cluster_with_shards" "basic" {
+  name = "basic"
 
-	datastore {
-	  version = "20.8"
-	  type    = "clickhouse"
-	}
-  
-	shard {
-	  size = 1
-	  shard_id = "shard0"
-	  flavor_id = data.vkcs_compute_flavor.base.id
-	  volume_size      = 8
-	  volume_type = "{{.VolumeType}}"
-	  network {
-		  uuid = vkcs_networking_network.base.id
-	  }
-	  availability_zone = "{{.AvailabilityZone}}"
-	}
+  datastore {
+    version = "20.8"
+    type    = "clickhouse"
+  }
 
-	depends_on = [vkcs_networking_router_interface.base]
- }
+  shard {
+    size        = 1
+    shard_id    = "shard0"
+    flavor_id   = data.vkcs_compute_flavor.base.id
+    volume_size = 8
+    volume_type = "ceph-ssd"
+    network {
+      uuid = vkcs_networking_network.base.id
+    }
+    availability_zone = "{{.AvailabilityZone}}"
+  }
+
+  depends_on = [vkcs_networking_router_interface.base]
+}
 `
 
 const testAccDatabaseClusterWithShardsUpdateInitial = `
 {{.BaseNetwork}}
 {{.BaseFlavor}}
+
+resource "vkcs_db_config_group" "basic" {
+	name = "basic"
+	datastore {
+	  version = "20.8"
+	  type    = "clickhouse"
+	}
+	values = {
+	  "yandex.max_connections": "1024"
+	}
+  }
 
 resource "vkcs_db_cluster_with_shards" "update" {
   name      = "update"
@@ -202,6 +213,7 @@ resource "vkcs_db_cluster_with_shards" "update" {
 	version = "20.8"
 	type    = "clickhouse"
   }
+  configuration_id = vkcs_db_config_group.basic.id
 
   cloud_monitoring_enabled = false
   
@@ -226,34 +238,46 @@ const testAccDatabaseClusterWithShardsUpdateUpdated = `
 {{.BaseFlavor}}
 
 data "vkcs_compute_flavor" "new_flavor" {
-	name = "Standard-4-8-80"
+  name = "Standard-4-8-80"
+}
+
+resource "vkcs_db_config_group" "basic" {
+  name = "basic"
+  datastore {
+    version = "20.8"
+    type    = "clickhouse"
+  }
+  values = {
+    "yandex.max_connections": "2048"
+  }
 }
 
 resource "vkcs_db_cluster_with_shards" "update" {
-  name      = "update"
-  
+  name = "update"
+
   datastore {
-	version = "20.8"
-	type    = "clickhouse"
+    version = "20.8"
+    type    = "clickhouse"
   }
+  configuration_id = vkcs_db_config_group.basic.id
 
   disk_autoexpand {
-	autoexpand = true
-	max_disk_size = 1000
+    autoexpand    = true
+    max_disk_size = 1000
   }
 
   cloud_monitoring_enabled = true
-  
+
   shard {
-	size = 1
-	shard_id = "shard0"
-	flavor_id = data.vkcs_compute_flavor.new_flavor.id
-	volume_size = 10
-	volume_type = "ceph-hdd"
-	network {
-	  uuid = vkcs_networking_network.base.id
-	}
-	availability_zone = "{{.AvailabilityZone}}"
+    size        = 1
+    shard_id    = "shard0"
+    flavor_id   = data.vkcs_compute_flavor.new_flavor.id
+    volume_size = 10
+    volume_type = "ceph-hdd"
+    network {
+      uuid = vkcs_networking_network.base.id
+    }
+    availability_zone = "{{.AvailabilityZone}}"
   }
 
   depends_on = [vkcs_networking_router_interface.base]

@@ -248,6 +248,9 @@ func databaseClusterActionUpdateConfigurationBase(updateCtx *dbResourceUpdateCon
 		return fmt.Errorf("%w: %s", errDBClusterActionUpdateConfiguration, err)
 	}
 
+	updateCtx.StateConf.Pending = []string{string(dbClusterStatusUpdating)}
+	updateCtx.StateConf.Target = []string{string(dbClusterStatusActive)}
+
 	log.Printf("[DEBUG] Detaching configuration %s from cluster %s", detachOpts.ConfigurationDetach.ConfigurationID, clusterID)
 	err = updateCtx.WaitForStateContext()
 	if err != nil {

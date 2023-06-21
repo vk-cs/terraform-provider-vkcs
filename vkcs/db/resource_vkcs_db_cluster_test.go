@@ -186,58 +186,80 @@ const testAccDatabaseClusterBasic = `
 {{.BaseNetwork}}
 {{.BaseFlavor}}
 
- resource "vkcs_db_cluster" "basic" {
-   name      = "basic"
-   flavor_id = data.vkcs_compute_flavor.base.id
-   volume_size      = 8
-   volume_type = "{{.VolumeType}}"
-   cluster_size = 3
-   datastore {
-	version = "13"
-	type    = "postgresql"
+resource "vkcs_db_config_group" "basic" {
+  name = "basic"
+  datastore {
+    version = "13"
+    type    = "postgresql"
+  }
+  values = {
+    max_connections : "100"
+  }
+}
+
+resource "vkcs_db_cluster" "basic" {
+  name         = "basic"
+  flavor_id    = data.vkcs_compute_flavor.base.id
+  volume_size  = 8
+  volume_type  = "{{.VolumeType}}"
+  cluster_size = 3
+  datastore {
+    version = "13"
+    type    = "postgresql"
+  }
+  configuration_id = vkcs_db_config_group.basic.id
+  network {
+    uuid = vkcs_networking_network.base.id
   }
 
-   network {
-     uuid = vkcs_networking_network.base.id
-   }
-	
-   availability_zone = "{{.AvailabilityZone}}"
+  availability_zone = "{{.AvailabilityZone}}"
 
-   depends_on = [
+  depends_on = [
     vkcs_networking_router_interface.base
   ]
- }
+}
 `
 
 const testAccDatabaseClusterUpdate = `
 {{.BaseNetwork}}
 {{.BaseNewFlavor}}
 
-resource "vkcs_db_cluster" "basic" {
-	name      = "basic"
-	flavor_id = data.vkcs_compute_flavor.base.id
-	cloud_monitoring_enabled = true
-	volume_size      = 9
-	volume_type = "{{.VolumeType}}"
-	cluster_size = 3
-	datastore {
-	 version = "13"
-	 type    = "postgresql"
-   }
- 
-	network {
-	  uuid = vkcs_networking_network.base.id
-	}
-	 
-	availability_zone = "{{.AvailabilityZone}}"
-
-	depends_on = [vkcs_networking_router_interface.base]
+resource "vkcs_db_config_group" "basic" {
+  name = "basic"
+  datastore {
+    version = "13"
+    type    = "postgresql"
   }
+  values = {
+    max_connections : "200"
+  }
+}
+
+resource "vkcs_db_cluster" "basic" {
+  name                     = "basic"
+  flavor_id                = data.vkcs_compute_flavor.base.id
+  cloud_monitoring_enabled = true
+  volume_size              = 9
+  volume_type              = "{{.VolumeType}}"
+  cluster_size             = 3
+  datastore {
+    version = "13"
+    type    = "postgresql"
+  }
+  configuration_id = vkcs_db_config_group.basic.id
+
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+
+  availability_zone = "{{.AvailabilityZone}}"
+
+  depends_on = [vkcs_networking_router_interface.base]
+}
 `
 
 const testAccDatabaseClusterWal = `
-{{.BaseNetwork}}
-				
+{{.BaseNetwork}}	
 {{.BaseFlavor}}
 
  resource "vkcs_db_cluster" "basic" {
@@ -271,8 +293,7 @@ const testAccDatabaseClusterWal = `
 `
 
 const testAccDatabaseClusterShrinkInitial = `
-{{.BaseNetwork}}
-				
+{{.BaseNetwork}}	
 {{.BaseFlavor}}
 
  resource "vkcs_db_cluster" "basic" {
@@ -295,8 +316,7 @@ const testAccDatabaseClusterShrinkInitial = `
 `
 
 var testAccDatabaseClusterShrinkUpdated = `
-{{.BaseNetwork}}
-				
+{{.BaseNetwork}}	
 {{.BaseFlavor}}
 
  resource "vkcs_db_cluster" "basic" {
