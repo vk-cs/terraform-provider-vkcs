@@ -552,10 +552,25 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 		log.Printf("[DEBUG] Attaching configuration %s to vkcs_db_cluster_with_shards %s", configuration, cluster.ID)
 		var attachConfigurationOpts clusters.AttachConfigurationGroupOpts
 		attachConfigurationOpts.ConfigurationAttach.ConfigurationID = configuration.(string)
-		err := instances.AttachConfigurationGroup(DatabaseV1Client, cluster.ID, &attachConfigurationOpts).ExtractErr()
+
+		err := clusters.ClusterAction(DatabaseV1Client, cluster.ID, &attachConfigurationOpts).ExtractErr()
 		if err != nil {
 			return diag.Errorf("error attaching configuration group %s to vkcs_db_cluster_with_shards %s: %s",
 				configuration, cluster.ID, err)
+		}
+
+		stateConf := &retry.StateChangeConf{
+			Pending:    []string{string(dbClusterStatusUpdating)},
+			Target:     []string{string(dbClusterStatusActive)},
+			Refresh:    databaseClusterStateRefreshFunc(DatabaseV1Client, cluster.ID, checkCapabilities),
+			Timeout:    d.Timeout(schema.TimeoutCreate),
+			Delay:      dbInstanceDelay,
+			MinTimeout: dbInstanceMinTimeout,
+		}
+
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			return diag.Errorf("error waiting for vkcs_db_cluster_with_shards %s to become ready: %s", cluster.ID, err)
 		}
 	}
 
