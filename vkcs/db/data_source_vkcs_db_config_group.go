@@ -111,7 +111,7 @@ func (d *ConfigGroupDataSource) Schema(ctx context.Context, req datasource.Schem
 				Description: "Map of configuration parameters in format \"key\": \"value\".",
 			},
 		},
-		Description: "Use this data source to get the information on a db config group resource. **New since v0.1.7**.",
+		Description: "Use this data source to get the information on a db config group resource.",
 	}
 }
 
