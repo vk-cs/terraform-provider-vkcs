@@ -179,6 +179,9 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
 - `shrink_options` optional *string* &rarr;  Used only for shrinking cluster. List of IDs of instances that should remain after shrink. If no options are supplied, shrink operation will choose first non-leader instance to delete.
 
+- `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below.
+  - `restart_confirmed` optional *boolean* &rarr;  Boolean to confirm autorestart of the cluster's instances if it is required to apply configuration group changes.
+
 - `wal_disk_autoexpand` optional &rarr;  Object that represents autoresize properties of wal volume of the cluster.
   - `autoexpand` optional *boolean* &rarr;  Indicates whether wal volume autoresize is enabled.
 
