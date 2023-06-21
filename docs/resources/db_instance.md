@@ -204,6 +204,9 @@ resource "vkcs_db_instance" "db-instance" {
 
 - `root_password` optional sensitive *string* &rarr;  Password for the root user of the instance. If this field is empty and root user is enabled, then after creation of the instance this field will contain auto-generated root user password.
 
+- `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below.
+  - `restart_confirmed` optional *boolean* &rarr;  Boolean to confirm autorestart of the instance if it is required to apply configuration group changes.
+
 - `wal_disk_autoexpand` optional &rarr;  Object that represents autoresize properties of the instance wal volume.
   - `autoexpand` optional *boolean* &rarr;  Indicates whether wal volume autoresize is enabled.
 
