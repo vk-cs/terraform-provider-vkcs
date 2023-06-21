@@ -11,7 +11,6 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/backups"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 )
 
 var (
@@ -31,23 +30,18 @@ type BackupDataSourceModel struct {
 	ID     types.String `tfsdk:"id"`
 	Region types.String `tfsdk:"region"`
 
-	BackupID    types.String           `tfsdk:"backup_id"`
-	Created     types.String           `tfsdk:"created"`
-	Datastore   []BackupDataStoreModel `tfsdk:"datastore"`
-	DbmsID      types.String           `tfsdk:"dbms_id"`
-	DbmsType    types.String           `tfsdk:"dbms_type"`
-	Description types.String           `tfsdk:"description"`
-	LocationRef types.String           `tfsdk:"location_ref"`
-	Meta        types.String           `tfsdk:"meta"`
-	Name        types.String           `tfsdk:"name"`
-	Size        types.Float64          `tfsdk:"size"`
-	Updated     types.String           `tfsdk:"updated"`
-	WalSize     types.Float64          `tfsdk:"wal_size"`
-}
-
-type BackupDataStoreModel struct {
-	Type    types.String `tfsdk:"type"`
-	Version types.String `tfsdk:"version"`
+	BackupID    types.String  `tfsdk:"backup_id"`
+	Created     types.String  `tfsdk:"created"`
+	Datastore   types.List    `tfsdk:"datastore"`
+	DbmsID      types.String  `tfsdk:"dbms_id"`
+	DbmsType    types.String  `tfsdk:"dbms_type"`
+	Description types.String  `tfsdk:"description"`
+	LocationRef types.String  `tfsdk:"location_ref"`
+	Meta        types.String  `tfsdk:"meta"`
+	Name        types.String  `tfsdk:"name"`
+	Size        types.Float64 `tfsdk:"size"`
+	Updated     types.String  `tfsdk:"updated"`
+	WalSize     types.Float64 `tfsdk:"wal_size"`
 }
 
 func (d *BackupDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -185,7 +179,10 @@ func (d *BackupDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	data.ID = types.StringValue(backup.ID)
 	data.Region = types.StringValue(region)
 	data.Created = types.StringValue(backup.Created)
-	data.Datastore = flattenBackupDatastore(*backup.Datastore)
+	data.Datastore = flattenBackupDatastore(ctx, *backup.Datastore, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	if backup.InstanceID != "" {
 		data.DbmsID = types.StringValue(backup.InstanceID)
 		data.DbmsType = types.StringValue(db.DBMSTypeInstance)
@@ -202,13 +199,4 @@ func (d *BackupDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	data.WalSize = types.Float64Value(backup.WalSize)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func flattenBackupDatastore(d datastores.DatastoreShort) []BackupDataStoreModel {
-	return []BackupDataStoreModel{
-		{
-			Type:    types.StringValue(d.Type),
-			Version: types.StringValue(d.Version),
-		},
-	}
 }

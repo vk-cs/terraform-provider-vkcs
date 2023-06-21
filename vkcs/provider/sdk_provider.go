@@ -151,7 +151,6 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_sharedfilesystem_sharenetwork":      sharedfilesystem.ResourceSharedFilesystemShareNetwork(),
 			"vkcs_sharedfilesystem_share":             sharedfilesystem.ResourceSharedFilesystemShare(),
 			"vkcs_sharedfilesystem_share_access":      sharedfilesystem.ResourceSharedFilesystemShareAccess(),
-			"vkcs_db_backup":                          db.ResourceDatabaseBackup(),
 			"vkcs_db_instance":                        db.ResourceDatabaseInstance(),
 			"vkcs_db_database":                        db.ResourceDatabaseDatabase(),
 			"vkcs_db_user":                            db.ResourceDatabaseUser(),
