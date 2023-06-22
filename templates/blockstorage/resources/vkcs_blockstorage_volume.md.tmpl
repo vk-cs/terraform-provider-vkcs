@@ -12,13 +12,18 @@ description: |-
 
 ## Example Usage
 
+### Create an empty volume
 {{tffile .ExampleFile}}
+
+### Create bootable volume
+{{tffile "examples/blockstorage/volume/main-bootable.tf"}}
+
 {{ .SchemaMarkdown }}
 
 ## Import
 
 Volumes can be imported using the `id`, e.g.
 
-{{codefile "shell" .ImportFile}}
+{{codefile "shell" "templates/blockstorage/resources/vkcs_blockstorage_volume/import.sh"}}
 
 After the import you can use ```terraform show``` to view imported fields and write their values to your .tf file.

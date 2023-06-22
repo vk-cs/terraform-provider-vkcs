@@ -49,3 +49,38 @@ resource "vkcs_networking_secgroup_rule" "http_alter" {
   port_range_min    = 8080
   remote_ip_prefix  = vkcs_networking_subnet.app.cidr
 }
+
+resource "vkcs_networking_secgroup" "etcd" {
+  name        = "etcd-tf-example"
+  description = "etcd service"
+}
+
+resource "vkcs_networking_secgroup_rule" "etcd_app_clients" {
+  description       = "etcd app clients rule"
+  security_group_id = vkcs_networking_secgroup.etcd.id
+  direction         = "ingress"
+  protocol          = "tcp"
+  port_range_max    = 2379
+  port_range_min    = 2379
+  remote_ip_prefix  = vkcs_networking_subnet.app.cidr
+}
+
+resource "vkcs_networking_secgroup_rule" "etcd_db_clients" {
+  description       = "etcd db clients rule"
+  security_group_id = vkcs_networking_secgroup.etcd.id
+  direction         = "ingress"
+  protocol          = "tcp"
+  port_range_max    = 2379
+  port_range_min    = 2379
+  remote_ip_prefix  = vkcs_networking_subnet.db.cidr
+}
+
+resource "vkcs_networking_secgroup_rule" "etcd_peers" {
+  description       = "etcd peer communication rule"
+  security_group_id = vkcs_networking_secgroup.etcd.id
+  direction         = "ingress"
+  protocol          = "tcp"
+  port_range_max    = 2380
+  port_range_min    = 2380
+  remote_group_id   = vkcs_networking_secgroup.etcd.id
+}
