@@ -3,191 +3,345 @@ package keymanager
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/acls"
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/containers"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 )
 
-func DataSourceKeyManagerContainer() *schema.Resource {
-	ret := &schema.Resource{
-		ReadContext: dataSourceKeyManagerContainerRead,
+var (
+	_ datasource.DataSource              = &ContainerDataSource{}
+	_ datasource.DataSourceWithConfigure = &ContainerDataSource{}
+)
 
-		Schema: map[string]*schema.Schema{
-			"region": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The region in which to obtain the KeyManager client. A KeyManager client is needed to fetch a container. If omitted, the `region` argument of the provider is used.",
-			},
+func NewContainerDataSource() datasource.DataSource {
+	return &ContainerDataSource{}
+}
 
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The Container name.",
-			},
+type ContainerDataSource struct {
+	config clients.Config
+}
 
-			"type": {
-				Type:        schema.TypeString,
+type ContainerDataSourceModel struct {
+	ID     types.String `tfsdk:"id"`
+	Region types.String `tfsdk:"region"`
+
+	ACL          []ContainerDataSourceACLModel       `tfsdk:"acl"`
+	Consumers    []ContainerDataSourceConsumerModel  `tfsdk:"consumers"`
+	ContainerRef types.String                        `tfsdk:"container_ref"`
+	CreatedAt    types.String                        `tfsdk:"created_at"`
+	CreatorID    types.String                        `tfsdk:"creator_id"`
+	Name         types.String                        `tfsdk:"name"`
+	SecretRefs   []ContainerDataSourceSecretRefModel `tfsdk:"secret_refs"`
+	Status       types.String                        `tfsdk:"status"`
+	Type         types.String                        `tfsdk:"type"`
+	UpdatedAt    types.String                        `tfsdk:"updated_at"`
+}
+
+type ContainerDataSourceACLModel struct {
+	Read []ContainerDataSourceACLOperationModel `tfsdk:"read"`
+}
+
+type ContainerDataSourceACLOperationModel struct {
+	CreatedAt     types.String `tfsdk:"created_at"`
+	ProjectAccess types.Bool   `tfsdk:"project_access"`
+	UpdatedAt     types.String `tfsdk:"updated_at"`
+	Users         types.Set    `tfsdk:"users"`
+}
+
+type ContainerDataSourceConsumerModel struct {
+	Name types.String `tfsdk:"name"`
+	URL  types.String `tfsdk:"url"`
+}
+
+type ContainerDataSourceSecretRefModel struct {
+	Name      types.String `tfsdk:"name"`
+	SecretRef types.String `tfsdk:"secret_ref"`
+}
+
+func (d *ContainerDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = "vkcs_keymanager_container"
+}
+
+func (d *ContainerDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The container type.",
+				Description: "ID of the resource.",
 			},
 
-			"secret_refs": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"secret_ref": {
-							Type:     schema.TypeString,
-							Optional: true,
+			"region": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The region in which to obtain the VKCS Key Manager client. If omitted, the `region` argument of the provider is used.",
+			},
+
+			"acl": schema.ListNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"read": schema.ListNestedAttribute{
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"created_at": schema.StringAttribute{
+										Computed:    true,
+										Description: "The date the container ACL was created.",
+									},
+
+									"project_access": schema.BoolAttribute{
+										Computed:    true,
+										Description: "Whether the container is accessible project wide.",
+									},
+
+									"updated_at": schema.StringAttribute{
+										Computed:    true,
+										Description: "The date the container ACL was last updated.",
+									},
+
+									"users": schema.SetAttribute{
+										ElementType: types.StringType,
+										Computed:    true,
+										Description: "The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.",
+									},
+								},
+							},
+							Computed:    true,
+							Description: "Object that describes read operation.",
 						},
 					},
 				},
-				Description: "A set of dictionaries containing references to secrets.",
-			},
-
-			"container_ref": {
-				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The container reference / where to find the container.",
+				Description: "ACLs assigned to a container.",
 			},
 
-			"creator_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The creator of the container.",
-			},
-
-			"consumers": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
+			"consumers": schema.ListNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
 							Optional:    true,
 							Description: "The name of the consumer.",
 						},
-						"url": {
-							Type:        schema.TypeString,
+
+						"url": schema.StringAttribute{
 							Optional:    true,
 							Description: "The consumer URL.",
 						},
 					},
 				},
+				Computed:    true,
 				Description: "The list of the container consumers.",
 			},
 
-			"acl": {
-				Type:        schema.TypeList,
+			"container_ref": schema.StringAttribute{
 				Computed:    true,
-				Description: "The list of ACLs assigned to a container.",
+				Description: "The container reference / where to find the container.",
 			},
 
-			"created_at": {
-				Type:        schema.TypeString,
+			"created_at": schema.StringAttribute{
 				Computed:    true,
 				Description: "The date the container was created.",
 			},
 
-			"updated_at": {
-				Type:        schema.TypeString,
+			"creator_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The date the container was last updated.",
+				Description: "The creator of the container.",
 			},
 
-			"status": {
-				Type:        schema.TypeString,
+			"name": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Container name.",
+			},
+
+			"secret_refs": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Optional: true,
+						},
+
+						"secret_ref": schema.StringAttribute{
+							Optional: true,
+						},
+					},
+				},
+				Computed:    true,
+				Description: "A set of dictionaries containing references to secrets.",
+			},
+
+			"status": schema.StringAttribute{
 				Computed:    true,
 				Description: "The status of the container.",
+			},
+
+			"type": schema.StringAttribute{
+				Computed:    true,
+				Description: "The container type.",
+			},
+
+			"updated_at": schema.StringAttribute{
+				Computed:    true,
+				Description: "The date the container was last updated.",
 			},
 		},
 		Description: "Use this data source to get the ID of an available Key container.",
 	}
-
-	elem := &schema.Resource{
-		Schema: make(map[string]*schema.Schema),
-	}
-	for _, aclOp := range getSupportedACLOperations() {
-		elem.Schema[aclOp] = getACLSchema()
-		elem.Schema[aclOp].Description = fmt.Sprintf("Block that describes %s operation.", aclOp)
-	}
-	ret.Schema["acl"].Elem = elem
-
-	return ret
 }
 
-func dataSourceKeyManagerContainerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(clients.Config)
-	kmClient, err := config.KeyManagerV1Client(util.GetRegion(d, config))
+func (d *ContainerDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+	d.config = req.ProviderData.(clients.Config)
+}
+
+func (d *ContainerDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data ContainerDataSourceModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region := data.Region.ValueString()
+	if region == "" {
+		region = d.config.GetRegion()
+	}
+
+	client, err := d.config.KeyManagerV1Client(region)
 	if err != nil {
-		return diag.Errorf("Error creating VKCS keymanager client: %s", err)
+		resp.Diagnostics.AddError("Error creating VKCS Key Manager API client", err.Error())
+		return
 	}
 
 	listOpts := containers.ListOpts{
-		Name: d.Get("name").(string),
+		Name: data.Name.ValueString(),
 	}
 
-	log.Printf("[DEBUG] Containers List Options: %#v", listOpts)
+	tflog.Debug(ctx, "Calling Key Manager API to list containers", map[string]interface{}{"list_opts": fmt.Sprintf("%#v", listOpts)})
 
-	allPages, err := containers.List(kmClient, listOpts).AllPages()
+	allPages, err := containers.List(client, &listOpts).AllPages()
 	if err != nil {
-		return diag.Errorf("Unable to query vkcs_keymanager_container containers: %s", err)
+		resp.Diagnostics.AddError("Error calling VKCS Key Manager API", err.Error())
+		return
 	}
 
 	allContainers, err := containers.ExtractContainers(allPages)
 	if err != nil {
-		return diag.Errorf("Unable to retrieve vkcs_keymanager_container containers: %s", err)
+		resp.Diagnostics.AddError("Error reading VKCS Key Manager API response", err.Error())
+		return
 	}
 
+	tflog.Debug(ctx, "Called Key Manager API to list containers", map[string]interface{}{"all_containers_len": len(allContainers)})
+
 	if len(allContainers) < 1 {
-		return diag.Errorf("Your query returned no vkcs_keymanager_container results. " +
-			"Please change your search criteria and try again.")
+		resp.Diagnostics.AddError("Your query returned no results",
+			"Please change your search criteria and try again")
 	}
 
 	if len(allContainers) > 1 {
-		log.Printf("[DEBUG] Multiple vkcs_keymanager_container results found: %#v", allContainers)
-		return diag.Errorf("Your query returned more than one result. Please try a more " +
-			"specific search criteria.")
+		resp.Diagnostics.AddError("Your query returned more than one result",
+			"Please try a more specific search criteria")
 	}
 
 	container := allContainers[0]
+	tflog.Debug(ctx, "Retrieved the container", map[string]interface{}{"container": fmt.Sprintf("%#v", container)})
 
-	log.Printf("[DEBUG] Retrieved vkcs_keymanager_container %s: %#v", d.Id(), container)
+	id := GetUUIDfromContainerRef(container.ContainerRef)
+	ctx = tflog.SetField(ctx, "id", id)
 
-	uuid := keyManagerContainerGetUUIDfromContainerRef(container.ContainerRef)
-
-	d.SetId(uuid)
-	d.Set("name", container.Name)
-
-	d.Set("creator_id", container.CreatorID)
-	d.Set("container_ref", container.ContainerRef)
-	d.Set("type", container.Type)
-	d.Set("status", container.Status)
-	d.Set("created_at", container.Created.Format(time.RFC3339))
-	d.Set("updated_at", container.Updated.Format(time.RFC3339))
-	d.Set("consumers", flattenKeyManagerContainerConsumers(container.Consumers))
-
-	d.Set("secret_refs", flattenKeyManagerContainerSecretRefs(container.SecretRefs))
-
-	acl, err := acls.GetContainerACL(kmClient, d.Id()).Extract()
-	if err != nil {
-		log.Printf("[DEBUG] Unable to get %s container acls: %s", uuid, err)
+	data.ID = types.StringValue(id)
+	data.Region = types.StringValue(region)
+	data.Consumers = flattenContainerDataSourceConsumers(ctx, container.Consumers, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	d.Set("acl", flattenKeyManagerACLs(acl))
+	data.ContainerRef = types.StringValue(container.ContainerRef)
+	data.CreatedAt = types.StringValue(container.Created.Format(time.RFC3339))
+	data.CreatorID = types.StringValue(container.CreatorID)
+	data.Name = types.StringValue(container.Name)
+	data.SecretRefs = flattenContainerDataSourceSecretRefs(ctx, container.SecretRefs, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	data.Status = types.StringValue(container.Status)
+	data.Type = types.StringValue(container.Type)
+	data.UpdatedAt = types.StringValue(container.Updated.Format(time.RFC3339))
 
-	// Set the region
-	d.Set("region", util.GetRegion(d, config))
+	tflog.Debug(ctx, "Calling Key Manager API to get container's acls")
 
-	return nil
+	acl, err := acls.GetContainerACL(client, id).Extract()
+	if err != nil {
+		tflog.Debug(ctx, "Error calling Key Manager API to get container's acls", map[string]interface{}{"error": err.Error()})
+	} else {
+		tflog.Debug(ctx, "Called Key Manager API to get container's acls", map[string]interface{}{"acls": fmt.Sprintf("%#v", acl)})
+	}
+
+	data.ACL = flattenContainerDataSourceACL(ctx, acl, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func flattenContainerDataSourceACL(ctx context.Context, in *acls.ACL, respDiags *diag.Diagnostics) []ContainerDataSourceACLModel {
+	r := []ContainerDataSourceACLModel{}
+
+	if in == nil {
+		return r
+	}
+
+	acl := ContainerDataSourceACLModel{}
+	if v, ok := (*in)["read"]; ok {
+		acl.Read = flattenContainerDataSourceACLOperation(ctx, v, respDiags)
+	}
+
+	if len(acl.Read) > 0 {
+		r = append(r, acl)
+	}
+
+	return r
+}
+
+func flattenContainerDataSourceACLOperation(ctx context.Context, in acls.ACLDetails, respDiags *diag.Diagnostics) []ContainerDataSourceACLOperationModel {
+	users, diags := types.SetValueFrom(ctx, types.StringType, in.Users)
+	respDiags.Append(diags...)
+
+	return []ContainerDataSourceACLOperationModel{
+		{
+			CreatedAt:     types.StringValue(in.Created.UTC().Format(time.RFC3339)),
+			ProjectAccess: types.BoolValue(in.ProjectAccess),
+			UpdatedAt:     types.StringValue(in.Updated.UTC().Format(time.RFC3339)),
+			Users:         users,
+		},
+	}
+}
+
+func flattenContainerDataSourceConsumers(_ context.Context, in []containers.ConsumerRef, _ *diag.Diagnostics) []ContainerDataSourceConsumerModel {
+	r := make([]ContainerDataSourceConsumerModel, len(in))
+	for i, cr := range in {
+		r[i] = ContainerDataSourceConsumerModel{
+			Name: types.StringValue(cr.Name),
+			URL:  types.StringValue(cr.URL),
+		}
+	}
+	return r
+}
+
+func flattenContainerDataSourceSecretRefs(_ context.Context, in []containers.SecretRef, _ *diag.Diagnostics) []ContainerDataSourceSecretRefModel {
+	r := make([]ContainerDataSourceSecretRefModel, len(in))
+	for i, sr := range in {
+		r[i] = ContainerDataSourceSecretRefModel{
+			Name:      types.StringValue(sr.Name),
+			SecretRef: types.StringValue(sr.SecretRef),
+		}
+	}
+	return r
 }
