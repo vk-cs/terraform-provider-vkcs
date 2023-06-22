@@ -14,6 +14,7 @@ import (
 	wrapper "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/providerwrapper/framework"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/keymanager"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 )
 
 // Ensure the implementation satisfies the expected interfaces
@@ -105,6 +106,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		kubernetes.NewAddonsDatasource,
 		kubernetes.NewClusterTemplatesDataSource,
 		kubernetes.NewNodeGroupDataSource,
+		networking.NewPortDataSource,
 		backup.NewPlanDataSource,
 		backup.NewProviderDataSource,
 		backup.NewProvidersDataSource,
