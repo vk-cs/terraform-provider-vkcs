@@ -11,8 +11,8 @@ import (
 
 func TestAccNetworkingSubnetDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { acctest.AccTestPreCheck(t) },
-		ProviderFactories: acctest.AccTestProviders,
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetworkingSubnetDataSourceSubnet,
@@ -32,10 +32,40 @@ func TestAccNetworkingSubnetDataSource_basic(t *testing.T) {
 	})
 }
 
+func TestAccNetworkingSubnetDataSource_migrateToFramework(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.AccTestPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"vkcs": {
+						VersionConstraint: "0.3.0",
+						Source:            "vk-cs/vkcs",
+					},
+				},
+				Config: acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceBasic, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
+					testAccCheckNetworkingSubnetDataSourceGoodNetwork("data.vkcs_networking_subnet.subnet_1", "vkcs_networking_network.network_1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_networking_subnet.subnet_1", "name", "subnet_1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_networking_subnet.subnet_1", "all_tags.#", "2"),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+				Config:                   acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceBasic, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
+				PlanOnly:                 true,
+			},
+		},
+	})
+}
+
 func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { acctest.AccTestPreCheck(t) },
-		ProviderFactories: acctest.AccTestProviders,
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetworkingSubnetDataSourceSubnet,

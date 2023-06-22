@@ -88,7 +88,6 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_compute_quotaset":              compute.DataSourceComputeQuotaset(),
 			"vkcs_images_image":                  images.DataSourceImagesImage(),
 			"vkcs_networking_network":            networking.DataSourceNetworkingNetwork(),
-			"vkcs_networking_subnet":             networking.DataSourceNetworkingSubnet(),
 			"vkcs_networking_router":             networking.DataSourceNetworkingRouter(),
 			"vkcs_networking_secgroup":           firewall.DataSourceNetworkingSecGroup(),
 			"vkcs_networking_floatingip":         networking.DataSourceNetworkingFloatingIP(),
