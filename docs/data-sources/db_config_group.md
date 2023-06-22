@@ -21,12 +21,18 @@ data "vkcs_db_config_group" "db-config-group" {
 ## Argument Reference
 - `config_group_id` **required** *string* &rarr;  The UUID of the config_group.
 
+- `region` optional *string* &rarr;  The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.
+
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `created` *string* &rarr;  Timestamp of config group's creation.
 
-- `datastore` *object* &rarr;  Object that represents datastore of backup
+- `datastore`  *list* &rarr;  Object that represents datastore of backup
+  - `type` *string* &rarr;  Type of the datastore.
+
+  - `version` *string* &rarr;  Version of the datastore.
+
 
 - `description` *string* &rarr;  The description of the config group.
 

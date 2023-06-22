@@ -36,7 +36,7 @@ data "vkcs_keymanager_secret" "example" {
 
 - `name` optional *string* &rarr;  The Secret name.
 
-- `region` optional *string* &rarr;  The region in which to obtain the KeyManager client. A KeyManager client is needed to fetch a secret. If omitted, the `region` argument of the provider is used.
+- `region` optional *string* &rarr;  The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.
 
 - `secret_type` optional *string* &rarr;  The Secret type. For more information see [Secret types](https://docs.openstack.org/barbican/latest/api/reference/secret_types.html).
 
@@ -45,7 +45,17 @@ data "vkcs_keymanager_secret" "example" {
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
-- `acl` *object* &rarr;  The list of ACLs assigned to a secret.
+- `acl`  *list* &rarr;  The list of ACLs assigned to a secret.
+  - `read`  *list* &rarr;  Block that describes read operation.
+    - `project_access` *boolean* &rarr;  Whether the container is accessible project wide. Defaults to `true`.
+
+    - `users` *set of* *string* &rarr;  The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.
+
+    - `created_at` *string* &rarr;  The date the container ACL was created.
+
+    - `updated_at` *string* &rarr;  The date the container ACL was last updated.
+
+
 
 - `content_types` *map of* *string* &rarr;  The map of the content types, assigned on the secret.
 
