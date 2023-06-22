@@ -207,6 +207,33 @@ func (c *configer) GetMutex() *mutexkv.MutexKV {
 	return c.Config.MutexKV
 }
 
+func (c *configer) setDefaults() {
+	if c.UserDomainID != "" {
+		c.UserDomainName = ""
+	}
+	if c.TerraformVersion == "" {
+		// Terraform 0.12 introduced this field to the protocol
+		// We can therefore assume that if it's missing it's 0.10 or 0.11
+		c.TerraformVersion = "0.11+compatible"
+	}
+	if c.ContainerInfraV1MicroVersion == "" {
+		c.ContainerInfraV1MicroVersion = CloudContainersAPIVersion
+	}
+	if c.Region == "" {
+		c.Region = DefaultRegionName
+	}
+	if c.IdentityEndpoint == "" {
+		c.IdentityEndpoint = DefaultIdentityEndpoint
+	}
+	if c.UserDomainName == "" {
+		c.UserDomainName = DefaultUserDomainName
+	}
+
+	c.AllowReauth = true
+	c.MaxRetries = maxRetriesCount
+	c.MutexKV = mutexkv.NewMutexKV()
+}
+
 func (c *configer) updateWithEnv() {
 	if c.Username == "" {
 		c.Username = os.Getenv("OS_USERNAME")
@@ -244,39 +271,25 @@ func ConfigureProvider(ctx context.Context, req provider.ConfigureRequest) (Conf
 	req.Config.GetAttribute(ctx, path.Root("region"), &config.Region)
 	req.Config.GetAttribute(ctx, path.Root("cloud_containers_api_version"), &config.ContainerInfraV1MicroVersion)
 	config.updateWithEnv()
+	config.TerraformVersion = req.TerraformVersion
 
-	if config.UserDomainID != "" {
-		config.UserDomainName = ""
-	}
-
-	terraformVersion := req.TerraformVersion
-	if terraformVersion == "" {
-		// Terraform 0.12 introduced this field to the protocol
-		// We can therefore assume that if it's missing it's 0.10 or 0.11
-		terraformVersion = "0.11+compatible"
-	}
-	config.TerraformVersion = terraformVersion
-
-	if config.ContainerInfraV1MicroVersion == "" {
-		config.ContainerInfraV1MicroVersion = CloudContainersAPIVersion
-	}
-	if config.Region == "" {
-		config.Region = DefaultRegionName
-	}
-	if config.IdentityEndpoint == "" {
-		config.IdentityEndpoint = DefaultIdentityEndpoint
-	}
-	if config.UserDomainName == "" {
-		config.UserDomainName = DefaultUserDomainName
-	}
-
-	config.AllowReauth = true
-	config.MaxRetries = maxRetriesCount
-	config.MutexKV = mutexkv.NewMutexKV()
+	config.setDefaults()
 
 	if err := config.LoadAndValidate(); err != nil {
 		diags.AddError("Config validation error", err.Error())
 	}
 
 	return &config, diags
+}
+
+func ConfigureFromEnv(ctx context.Context) (Config, error) {
+	config := &configer{}
+	config.updateWithEnv()
+	config.setDefaults()
+
+	if err := config.LoadAndValidate(); err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
