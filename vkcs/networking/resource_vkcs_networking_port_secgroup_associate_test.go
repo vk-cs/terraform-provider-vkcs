@@ -1,6 +1,7 @@
 package networking_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -17,8 +18,8 @@ func TestAccNetworkingPortSecGroupAssociate_update(t *testing.T) {
 	var port ports.Port
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { acctest.AccTestPreCheck(t) },
-		ProviderFactories: acctest.AccTestProviders,
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// enforce = false
 			{ // preconfig
@@ -132,7 +133,11 @@ func testAccCheckNetworkingPortSecGroupAssociateExists(n string, port *ports.Por
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := acctest.AccTestProvider.Meta().(clients.Config)
+		config, err := clients.ConfigureFromEnv(context.Background())
+		if err != nil {
+			return fmt.Errorf("Error authenticating clients from environment: %s", err)
+		}
+
 		networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
