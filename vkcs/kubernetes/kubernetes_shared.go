@@ -102,19 +102,3 @@ func kubernetesStateRefreshFunc(client *gophercloud.ServiceClient, clusterID str
 		return c, c.NewStatus, nil
 	}
 }
-
-type nodesFlatSchema []map[string]interface{}
-
-func flattenNodes(nodes []*nodegroups.Node) nodesFlatSchema {
-	flatSchema := nodesFlatSchema{}
-	for _, node := range nodes {
-		flatSchema = append(flatSchema, map[string]interface{}{
-			"name":          node.Name,
-			"uuid":          node.UUID,
-			"node_group_id": node.NodeGroupID,
-			"created_at":    util.GetTimestamp(node.CreatedAt),
-			"updated_at":    util.GetTimestamp(node.UpdatedAt),
-		})
-	}
-	return flatSchema
-}

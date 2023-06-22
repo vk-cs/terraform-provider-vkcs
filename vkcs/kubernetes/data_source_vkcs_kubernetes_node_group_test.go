@@ -6,25 +6,22 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/nodegroups"
 
 	acctest_helper "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccKubernetesNodeGroupDataSource_basic_big(t *testing.T) {
-	var nodeGroup nodegroups.NodeGroup
 	clusterName := "tfacc-ng-basic-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesNodeGroupClusterBase, map[string]string{"ClusterName": clusterName})
 	nodeGroupConfig := acctest.AccTestRenderConfig(testAccKubernetesNodeGroupBasic, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesNodeGroupClusterBase": clusterConfig})
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { acctest.AccTestPreCheck(t) },
-		ProviderFactories: acctest.AccTestProviders,
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: nodeGroupConfig,
-				Check:  testAccCheckKubernetesNodeGroupExists("vkcs_kubernetes_node_group.basic", &nodeGroup),
 			},
 			{
 				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupDataSourceBasic, map[string]string{"TestAccKubernetesNodeGroupBasic": nodeGroupConfig}),
@@ -33,6 +30,32 @@ func TestAccKubernetesNodeGroupDataSource_basic_big(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_node_group.node-group", "name", "vkcs_kubernetes_node_group.basic", "name"),
 					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_node_group.node-group", "nodes.#", "vkcs_kubernetes_node_group.basic", "node_count"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccKubernetesNodeGroupDataSource_migrateToFramework_big(t *testing.T) {
+	clusterName := "tfacc-ng-basic-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesNodeGroupClusterBase, map[string]string{"ClusterName": clusterName})
+	nodeGroupConfig := acctest.AccTestRenderConfig(testAccKubernetesNodeGroupBasic, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesNodeGroupClusterBase": clusterConfig})
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.AccTestPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"vkcs": {
+						VersionConstraint: "0.3.0",
+						Source:            "vk-cs/vkcs",
+					},
+				},
+				Config: nodeGroupConfig,
+			},
+			{
+				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+				Config:                   acctest.AccTestRenderConfig(testAccKubernetesNodeGroupDataSourceBasic, map[string]string{"TestAccKubernetesNodeGroupBasic": nodeGroupConfig}),
+				PlanOnly:                 true,
 			},
 		},
 	})

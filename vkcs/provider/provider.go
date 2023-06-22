@@ -103,6 +103,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		kubernetes.NewAddonDatasource,
 		kubernetes.NewAddonsDatasource,
 		kubernetes.NewClusterTemplatesDataSource,
+		kubernetes.NewNodeGroupDataSource,
 		backup.NewPlanDataSource,
 		backup.NewProviderDataSource,
 		backup.NewProvidersDataSource,
