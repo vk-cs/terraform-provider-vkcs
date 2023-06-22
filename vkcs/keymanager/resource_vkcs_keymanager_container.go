@@ -176,7 +176,7 @@ func resourceKeyManagerContainerCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("Error creating vkcs_keymanager_container: %s", err)
 	}
 
-	uuid := keyManagerContainerGetUUIDfromContainerRef(container.ContainerRef)
+	uuid := GetUUIDfromContainerRef(container.ContainerRef)
 	d.SetId(uuid)
 
 	stateConf := &retry.StateChangeConf{

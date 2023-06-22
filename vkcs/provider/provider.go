@@ -98,6 +98,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		db.NewDatastoresDataSource,
 		db.NewDatastoreCapabilitiesDataSource,
 		db.NewDatastoreParametersDataSource,
+		keymanager.NewContainerDataSource,
 		keymanager.NewSecretDataSource,
 		kubernetes.NewAddonDatasource,
 		kubernetes.NewAddonsDatasource,

@@ -60,7 +60,7 @@ func keyManagerContainerWaitForContainerCreation(kmClient *gophercloud.ServiceCl
 	}
 }
 
-func keyManagerContainerGetUUIDfromContainerRef(ref string) string {
+func GetUUIDfromContainerRef(ref string) string {
 	// container ref has form https://{barbican_host}/v1/containers/{container_uuid}
 	// so we are only interested in the last part
 	refSplit := strings.Split(ref, "/")

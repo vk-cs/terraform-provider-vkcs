@@ -93,7 +93,6 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_networking_port":               networking.DataSourceNetworkingPort(),
 			"vkcs_networking_secgroup":           firewall.DataSourceNetworkingSecGroup(),
 			"vkcs_networking_floatingip":         networking.DataSourceNetworkingFloatingIP(),
-			"vkcs_keymanager_container":          keymanager.DataSourceKeyManagerContainer(),
 			"vkcs_blockstorage_volume":           blockstorage.DataSourceBlockStorageVolume(),
 			"vkcs_blockstorage_snapshot":         blockstorage.DataSourceBlockStorageSnapshot(),
 			"vkcs_lb_loadbalancer":               lb.DataSourceLoadBalancer(),
