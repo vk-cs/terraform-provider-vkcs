@@ -12,7 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 
 	"github.com/gofrs/flock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -213,13 +212,6 @@ func resourceImagesImageUpdateComputedAttributes(_ context.Context, diff *schema
 			newProperties := resourceImagesImageExpandProperties(n.(map[string]interface{}))
 
 			for oldKey, oldValue := range o.(map[string]interface{}) {
-				// os_ keys are provided by the VKCS Image service.
-				if strings.HasPrefix(oldKey, "os_") {
-					if v, ok := oldValue.(string); ok {
-						newProperties[oldKey] = v
-					}
-				}
-
 				if oldKey == "store" {
 					if v, ok := oldValue.(string); ok {
 						newProperties[oldKey] = v
@@ -234,8 +226,7 @@ func resourceImagesImageUpdateComputedAttributes(_ context.Context, diff *schema
 				}
 			}
 
-			// Set the diff to the newProperties, which includes the server-side
-			// os_ properties.
+			// Set the diff to the newProperties
 			//
 			// If the user has changed properties, they will be caught at this
 			// point, too.

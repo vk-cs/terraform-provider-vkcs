@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.3.1 (unreleased)
+- Allow updating vkcs_images_image properties with os_ prefix
 - Add vkcs_backup_providers datasource
 - Add vkcs_backup_provider datasource
 - Add vkcs_backup_plan resource and datasource

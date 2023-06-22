@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -431,13 +430,6 @@ func resourceImagesImageUpdate(ctx context.Context, d *schema.ResourceData, meta
 				changed = true
 			}
 
-			// os_ keys are provided by the VKCS Image service.
-			// These are read-only properties that cannot be modified.
-			// Ignore them here and let CustomizeDiff handle them.
-			if strings.HasPrefix(newKey, "os_") {
-				found = true
-				changed = false
-			}
 			// This is a read-only property that cannot be modified.
 			// Ignore it here and let CustomizeDiff handle it.
 			if newKey == "direct_url" {
