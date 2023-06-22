@@ -21,14 +21,28 @@ data "vkcs_keymanager_container" "example" {
 ## Argument Reference
 - `name` optional *string* &rarr;  The Container name.
 
-- `region` optional *string* &rarr;  The region in which to obtain the KeyManager client. A KeyManager client is needed to fetch a container. If omitted, the `region` argument of the provider is used.
+- `region` optional *string* &rarr;  The region in which to obtain the VKCS Key Manager client. If omitted, the `region` argument of the provider is used.
 
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
-- `acl` *object* &rarr;  The list of ACLs assigned to a container.
+- `acl`  *list* &rarr;  ACLs assigned to a container.
+  - `read`  *list* &rarr;  Object that describes read operation.
+    - `created_at` *string* &rarr;  The date the container ACL was created.
 
-- `consumers` *object* &rarr;  The list of the container consumers.
+    - `project_access` *boolean* &rarr;  Whether the container is accessible project wide.
+
+    - `updated_at` *string* &rarr;  The date the container ACL was last updated.
+
+    - `users` *set of* *string* &rarr;  The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.
+
+
+
+- `consumers`  *list* &rarr;  The list of the container consumers.
+  - `name` *string* &rarr;  The name of the consumer.
+
+  - `url` *string* &rarr;  The consumer URL.
+
 
 - `container_ref` *string* &rarr;  The container reference / where to find the container.
 
@@ -38,7 +52,11 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` *string* &rarr;  ID of the resource.
 
-- `secret_refs` *set of* *object* &rarr;  A set of dictionaries containing references to secrets.
+- `secret_refs`  *set* &rarr;  A set of dictionaries containing references to secrets.
+  - `name` *string*
+
+  - `secret_ref` *string*
+
 
 - `status` *string* &rarr;  The status of the container.
 
