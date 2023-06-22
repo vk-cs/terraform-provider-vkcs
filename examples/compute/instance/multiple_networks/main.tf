@@ -16,10 +16,20 @@ resource "vkcs_compute_instance" "multiple_networks" {
     uuid = vkcs_networking_network.db.id
   }
   security_groups = [
-    vkcs_networking_secgroup.admin.id
+    vkcs_networking_secgroup.admin.name
   ]
   depends_on = [
     vkcs_networking_router_interface.app,
     vkcs_networking_router_interface.db
   ]
+}
+
+resource "vkcs_networking_floatingip" "fip" {
+  pool = data.vkcs_networking_network.extnet.name
+}
+
+resource "vkcs_compute_floatingip_associate" "fip" {
+  floating_ip = vkcs_networking_floatingip.fip.address
+  instance_id = vkcs_compute_instance.multiple_networks.id
+  fixed_ip    = vkcs_compute_instance.multiple_networks.network.1.fixed_ip_v4
 }

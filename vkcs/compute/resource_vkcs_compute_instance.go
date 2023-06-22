@@ -164,7 +164,7 @@ func ResourceComputeInstance() *schema.Resource {
 							Optional:    true,
 							ForceNew:    true,
 							Computed:    true,
-							Description: "(Optional if `uuid` or `name` is provided) The port UUID of a network to attach to the server. Changing this creates a new server.",
+							Description: "(Optional if `uuid` or `name` is provided) The port UUID of a network to attach to the server. _note_ If port is used, only its security groups will be applied instead of security_groups instance argument. Changing this creates a new server.",
 						},
 						"fixed_ip_v4": {
 							Type:        schema.TypeString,
@@ -326,7 +326,7 @@ func ResourceComputeInstance() *schema.Resource {
 					},
 				},
 				Set:         resourceComputeInstancePersonalityHash,
-				Description: "Customize the personality of an instance by defining one or more files and their contents. The personality structure is described below.",
+				Description: "Customize the personality of an instance by defining one or more files and their contents. The personality structure is described below. _note_ 'config_drive' must be enabled.",
 			},
 			"stop_before_destroy": {
 				Type:        schema.TypeBool,

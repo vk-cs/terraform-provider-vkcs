@@ -35,7 +35,7 @@ resource "vkcs_compute_instance" "basic" {
   }
   # Specify required security groups if you do not want `default` one
   security_groups = [
-    vkcs_networking_secgroup.admin.id
+    vkcs_networking_secgroup.admin.name
   ]
   # If your configuration also defines a network for the instance,
   # ensure it is attached to a router before creating of the instance
@@ -45,115 +45,43 @@ resource "vkcs_compute_instance" "basic" {
 }
 ```
 
-### Instance With Attached Volume
+### Instance with volume, tags and external IP
+~> **Attention:** First, you should create the block storage volume and then attach it to the instance. Failing to do so will result in the virtual machine being provisioned with an ephemeral disk instead. Ephemeral disks lack certain capabilities, such as the ability to move or resize them. It's essential to adhere to the correct order of operations to avoid limitations in the management of block storage.
 ```terraform
-resource "vkcs_blockstorage_volume" "myvol" {
-  name = "myvol"
-  size = 1
-}
-
-resource "vkcs_compute_instance" "myinstance" {
-  name            = "myinstance"
-  image_id        = "ad091b52-742f-469e-8f3c-fd81cadf0743"
-  flavor_id       = "3"
-  key_pair        = "my_key_pair_name"
-  security_groups = ["default"]
-
-  network {
-    name = "my_network"
-  }
-}
-
-resource "vkcs_compute_volume_attach" "attached" {
-  instance_id = "${vkcs_compute_instance.myinstance.id}"
-  volume_id   = "${vkcs_blockstorage_volume.myvol.id}"
-}
-```
-
-### Boot From Volume
-```terraform
-resource "vkcs_compute_instance" "boot-from-volume" {
-  name            = "boot-from-volume"
-  flavor_id       = "3"
-  key_pair        = "my_key_pair_name"
-  security_groups = ["default"]
-
-  block_device {
-    uuid                  = "<image-id>"
-    source_type           = "image"
-    volume_size           = 5
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
-
-  network {
-    name = "my_network"
-  }
-}
-```
-
-### Boot From an Existing Volume
-```terraform
-resource "vkcs_blockstorage_volume" "myvol" {
-  name     = "myvol"
-  size     = 5
-  image_id = "<image-id>"
-}
-
-resource "vkcs_compute_instance" "boot-from-volume" {
-  name            = "bootfromvolume"
-  flavor_id       = "3"
-  key_pair        = "my_key_pair_name"
-  security_groups = ["default"]
-
-  block_device {
-    uuid                  = "${vkcs_blockstorage_volume.myvol.id}"
-    source_type           = "volume"
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
-
-  network {
-    name = "my_network"
-  }
-}
-```
-
-### Boot Instance, Create Volume, and Attach Volume as a Block Device
-```terraform
-resource "vkcs_compute_instance" "compute" {
-  name            = "compute-instance"
-  flavor_id       = data.vkcs_compute_flavor.compute.id
-  security_groups = ["default"]
+resource "vkcs_blockstorage_volume" "volume" {
+  name              = "volume-tf-example"
+  size              = 5
+  image_id          = data.vkcs_images_image.debian.id
   availability_zone = "GZ1"
+  volume_type       = "ceph-ssd"
+}
+
+resource "vkcs_compute_instance" "boot-from-volume" {
+  name = "bootfromvolume"
+
+  availability_zone = "GZ1"
+  flavor_name       = "Basic-1-2-20"
 
   block_device {
-    uuid                  = data.vkcs_images_image.compute.id
-    source_type           = "image"
+    source_type           = "volume"
+    uuid                  = vkcs_blockstorage_volume.volume.id
     destination_type      = "volume"
-    volume_type           = "ceph-ssd"
-    volume_size           = 8
     boot_index            = 0
     delete_on_termination = true
   }
 
-  block_device {
-    source_type           = "blank"
-    destination_type      = "volume"
-    volume_type           = "ceph-ssd"
-    volume_size           = 8
-    delete_on_termination = true
+  network {
+    uuid = vkcs_networking_network.app.id
   }
 
-  network {
-    uuid = vkcs_networking_network.compute.id
-  }
+  security_groups = [
+    vkcs_networking_secgroup.admin.name
+  ]
+
+  tags = ["tf-example"]
 
   depends_on = [
-    vkcs_networking_network.compute,
-    vkcs_networking_subnet.compute
+    vkcs_networking_router_interface.app
   ]
 }
 
@@ -163,46 +91,61 @@ resource "vkcs_networking_floatingip" "fip" {
 
 resource "vkcs_compute_floatingip_associate" "fip" {
   floating_ip = vkcs_networking_floatingip.fip.address
-  instance_id = vkcs_compute_instance.compute.id
+  instance_id = vkcs_compute_instance.boot-from-volume.id
 }
 ```
 
-### Boot Instance and Attach Existing Volume as a Block Device
+### Existing network port and security groups
+~> **Attention:** When an instance connects to a network using an existing port, the instance's security groups are not automatically applied to the port. Instead, the security groups that were initially defined when the port was created will be applied to the port. As a result, the instance's security groups will not take effect in this scenario.
 ```terraform
-resource "vkcs_blockstorage_volume" "volume_1" {
-  name = "volume_1"
-  size = 1
+resource "vkcs_networking_port" "port_1" {
+  name           = "port-tf-example"
+  network_id     = vkcs_networking_network.app.id
+  admin_state_up = "true"
 }
 
-resource "vkcs_compute_instance" "instance_1" {
-  name            = "instance_1"
-  image_id        = "<image-id>"
-  flavor_id       = "3"
-  key_pair        = "my_key_pair_name"
-  security_groups = ["default"]
+resource "vkcs_networking_secgroup" "secgroup_1" {
+  name        = "secgroup-tf-example"
+  description = "Security group example"
+}
+
+resource "vkcs_networking_port_secgroup_associate" "port_1" {
+  port_id = vkcs_networking_port.port_1.id
+  security_group_ids = [
+    vkcs_networking_secgroup.secgroup_1.id
+  ]
+}
+
+resource "vkcs_compute_instance" "basic" {
+  name = "basic-tf-example"
+
+  availability_zone = "GZ1"
+  flavor_name       = "Basic-1-2-20"
 
   block_device {
-    uuid                  = "<image-id>"
     source_type           = "image"
-    destination_type      = "local"
-    boot_index            = 0
+    uuid                  = data.vkcs_images_image.debian.id
+    destination_type      = "volume"
+    volume_size           = 10
     delete_on_termination = true
   }
 
-  block_device {
-    uuid                  = "${vkcs_blockstorage_volume.volume_1.id}"
-    source_type           = "volume"
-    destination_type      = "volume"
-    boot_index            = 1
-    delete_on_termination = true
-  }
+  # Only port's security groups (i.e. secgroup-tf-example) will be applied
   network {
-    name = "my_network"
+    port = vkcs_networking_port.port_1.id
   }
+  # If port is used, this security group will not be applied
+  security_groups = [
+    vkcs_networking_secgroup.admin.name,
+  ]
+
+  depends_on = [
+    vkcs_networking_router_interface.app
+  ]
 }
 ```
 
-### Instance With Multiple Networks
+### Instance with Multiple Networks
 ```terraform
 resource "vkcs_compute_instance" "multiple_networks" {
   name              = "multiple-networks-tf-example"
@@ -222,122 +165,106 @@ resource "vkcs_compute_instance" "multiple_networks" {
     uuid = vkcs_networking_network.db.id
   }
   security_groups = [
-    vkcs_networking_secgroup.admin.id
+    vkcs_networking_secgroup.admin.name
   ]
   depends_on = [
     vkcs_networking_router_interface.app,
     vkcs_networking_router_interface.db
   ]
 }
+
+resource "vkcs_networking_floatingip" "fip" {
+  pool = data.vkcs_networking_network.extnet.name
+}
+
+resource "vkcs_compute_floatingip_associate" "fip" {
+  floating_ip = vkcs_networking_floatingip.fip.address
+  instance_id = vkcs_compute_instance.multiple_networks.id
+  fixed_ip    = vkcs_compute_instance.multiple_networks.network.1.fixed_ip_v4
+}
 ```
 
-### Instance With Personality
+### Instance with personality
+~> **Attention:** To use this feature, you must set the config_drive argument to true.
+The Personality feature allows you to customize the files and scripts that are injected into an instance during its provisioning. When using the Personality feature, you can provide one or more files or scripts that are associated with an instance. During instance creation, these files are injected into the instance's file system.
+
+This feature is useful for tasks such as bootstrapping instances with custom configurations, deploying specific software or packages, and executing initialization scripts.
 ```terraform
-resource "vkcs_compute_instance" "personality" {
-  name            = "personality"
-  image_id        = "ad091b52-742f-469e-8f3c-fd81cadf0743"
-  flavor_id       = "3"
-  key_pair        = "my_key_pair_name"
-  security_groups = ["default"]
+resource "vkcs_compute_instance" "basic" {
+  name = "personality-tf-example"
+
+  availability_zone = "GZ1"
+  flavor_name       = "Basic-1-2-20"
+
+  block_device {
+    source_type           = "image"
+    uuid                  = data.vkcs_images_image.debian.id
+    destination_type      = "volume"
+    volume_size           = 10
+    delete_on_termination = true
+  }
+
+  network {
+    uuid = vkcs_networking_network.app.id
+  }
+
+  security_groups = [
+    vkcs_networking_secgroup.admin.name
+  ]
 
   personality {
     file    = "/path/to/file/on/instance.txt"
     content = "contents of file"
   }
 
-  network {
-    name = "my_network"
-  }
+  depends_on = [
+    vkcs_networking_router_interface.app
+  ]
 }
 ```
 
-### Instance with Multiple Ephemeral Disks
+### Instance with user data and cloud-init
+This feature is used to provide initialization scripts or configurations to instances during their launch. User data is typically used to automate the configuration and customization of instances at the time of provisioning.
 ```terraform
-resource "vkcs_compute_instance" "multi-eph" {
-  name            = "multi_eph"
-  image_id        = "ad091b52-742f-469e-8f3c-fd81cadf0743"
-  flavor_id       = "3"
-  key_pair        = "my_key_pair_name"
-  security_groups = ["default"]
+resource "vkcs_compute_instance" "basic" {
+  name = "basic-tf-example"
+
+  availability_zone = "GZ1"
+  flavor_name       = "Basic-1-2-20"
+
   block_device {
-    boot_index            = 0
-    delete_on_termination = true
-    destination_type      = "local"
     source_type           = "image"
-    uuid                  = "<image-id>"
-  }
-  block_device {
-    boot_index            = -1
+    uuid                  = data.vkcs_images_image.debian.id
+    destination_type      = "volume"
+    volume_size           = 10
     delete_on_termination = true
-    destination_type      = "local"
-    source_type           = "blank"
-    volume_size           = 1
-    guest_format          = "ext4"
   }
-  block_device {
-    boot_index            = -1
-    delete_on_termination = true
-    destination_type      = "local"
-    source_type           = "blank"
-    volume_size           = 1
-  }
-  network {
-    name = "my_network"
-  }
-}
-```
-
-### Instance with Boot Disk and Swap Disk
-```terraform
-resource "vkcs_compute_flavor" "flavor-with-swap" {
-  name  = "flavor-with-swap"
-  ram   = "8096"
-  vcpus = "2"
-  disk  = "20"
-  swap  = "4096"
-}
-resource "vkcs_compute_instance" "vm-swap" {
-  name            = "vm_swap"
-  flavor_id       = "${vkcs_compute_flavor.flavor-with-swap.id}"
-  key_pair        = "my_key_pair_name"
-  security_groups = ["default"]
-  block_device {
-    boot_index            = 0
-    delete_on_termination = true
-    destination_type      = "local"
-    source_type           = "image"
-    uuid                  = "<image-id>"
-  }
-  block_device {
-    boot_index            = -1
-    delete_on_termination = true
-    destination_type      = "local"
-    source_type           = "blank"
-    guest_format          = "swap"
-    volume_size           = 4
-  }
-  network {
-    name = "my_network"
-  }
-}
-```
-
-### Instance with User Data (cloud-init)
-```terraform
-resource "vkcs_compute_instance" "instance_1" {
-  name            = "basic"
-  image_id        = "ad091b52-742f-469e-8f3c-fd81cadf0743"
-  flavor_id       = "3"
-  key_pair        = "my_key_pair_name"
-  security_groups = ["default"]
-  user_data       = "#cloud-config\nhostname: instance_1.example.com\nfqdn: instance_1.example.com"
 
   network {
-    name = "my_network"
+    uuid = vkcs_networking_network.app.id
   }
+
+  security_groups = [
+    vkcs_networking_secgroup.admin.name
+  ]
+
+  user_data = <<EOF
+    #cloud-config
+    package_upgrade: true
+    packages:
+      - nginx
+    runcmd:
+      - systemctl start nginx
+  EOF
+
+  depends_on = [
+    vkcs_networking_router_interface.app
+  ]
 }
 ```
-`user_data` can come from a variety of sources: inline, read in from the `file` function, or the `template_cloudinit_config` resource.
+Also, the user_data option can be set to the contents of a script file using the file() function:
+  user_data = file("${path.module}/userdata.sh")
+
 ## Argument Reference
 - `name` **required** *string* &rarr;  A unique name for the resource.
 
@@ -391,7 +318,7 @@ resource "vkcs_compute_instance" "instance_1" {
 
   - `name` optional *string* &rarr;  (Optional if `uuid` or `port` is provided) The human-readable name of the network. Changing this creates a new server.
 
-  - `port` optional *string* &rarr;  (Optional if `uuid` or `name` is provided) The port UUID of a network to attach to the server. Changing this creates a new server.
+  - `port` optional *string* &rarr;  (Optional if `uuid` or `name` is provided) The port UUID of a network to attach to the server. <br>**Note:** If port is used, only its security groups will be applied instead of security_groups instance argument. Changing this creates a new server.
 
   - `uuid` optional *string* &rarr;  (Optional if `port`  or `name` is provided) The network UUID to attach to the server. Changing this creates a new server.
 
@@ -437,6 +364,10 @@ In addition to all arguments above, the following attributes are exported:
 
 
 ## Notes
+### Instances and network
+* When creating a network for the instance and connecting it to the router, please ensure that you specify the dependency of the instance on the vkcs_networking_router_interface resource. This is crucial for the proper initialization of the instance in such scenarios.
+* An instance cannot be created without a valid network configuration even if you intend to use vkcs_compute_interface_attach after the instance has been created. Please note that if the network block is not explicitly specified, it will be automatically created implicitly only if there is a single network configuration in the project. However, if there are multiple network configurations, the process will fail.
+
 ### Instances and Security Groups
 
 When referencing a security group resource in an instance resource, always use the _name_ of the security group. If you specify the ID of the security group, Terraform will remove and reapply the security group upon each call. This is because the VKCS Compute API returns the names of the associated security groups and not their IDs.
@@ -454,171 +385,51 @@ resource "vkcs_compute_instance" "foo" {
 }
 ```
 
-### Instances and Ports
-
-Neutron Ports are a great feature and provide a lot of functionality. However, there are some notes to be aware of when mixing Instances and Ports:
-
-* When attaching an Instance to one or more networks using Ports, place the security groups on the Port and not the Instance. If you place the security groups on the Instance, the security groups will not be applied upon creation, but they will be applied upon a refresh.
-
-* Network IP information is not available within an instance for networks that are attached with Ports. This is mostly due to the flexibility Neutron Ports provide when it comes to IP addresses. For example, a Neutron Port can have multiple Fixed IP addresses associated with it. It's not possible to know which single IP address the user would want returned to the Instance's state information. Therefore, in order for a Provisioner to connect to an Instance via it's network Port, customize the `connection` information:
+### Tags and metadata
+**Metadata:** The "metadata" option allows you to attach key-value pairs of metadata to an instance. Metadata provides additional contextual information about the instance. You could include metadata specifying custom settings, application-specific data, or any other parameters needed for the instance's configuration or operation. Also, metadata can be leveraged by external systems or tools to automate actions or perform integrations. For example, external systems can read instance metadata to retrieve specific details or trigger actions based on the metadata values.
 
 ```hcl
-resource "vkcs_networking_port" "port_1" {
-  name           = "port_1"
-  admin_state_up = "true"
-
-  network_id = "0a1d0a27-cffa-4de3-92c5-9d3fd3f2e74d"
-
-  security_group_ids = [
-    "2f02d20a-8dca-49b7-b26f-b6ce9fddaf4f",
-    "ca1e5ed7-dae8-4605-987b-fadaeeb30461",
-  ]
-}
-
 resource "vkcs_compute_instance" "instance_1" {
-  name = "instance_1"
 
-  network {
-    port = "${vkcs_networking_port.port_1.id}"
-  }
+  # Other instance configuration...
 
-  connection {
-    user        = "root"
-    host        = "${vkcs_networking_port.port_1.fixed_ip.0.ip_address}"
-    private_key = "~/path/to/key"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "echo terraform executed > /tmp/foo",
-    ]
+  metadata = {
+    key1 = "value1"
+    key2 = "value2"
   }
 }
 ```
 
-### Instances and Networks
+**Tags:** The "tags" option allows you to assign one or more labels (tags) to an instance. Tags are a way to categorize and organize instances based on specific attributes. Tags can be used as triggers for automation or policy enforcement. For example, you might have automation scripts or policies that automatically perform specific actions on instances based on their tags.
+```hcl
+resource "vkcs_compute_instance" "instance_1" {
 
-Instances almost always require a network. Here are some notes to be aware of with how Instances and Networks relate:
+  # Other instance configuration...
 
-* In scenarios where you only have one network available, you can create an instance without specifying a `network` block. VKCS will automatically launch the instance on this network.
-
-* If you have access to more than one network, you will need to specify a network with a `network` block. Not specifying a network will result in the following error:
-
+  tags = ["webserver", "production"]
+}
 ```
-* vkcs_compute_instance.instance: Error creating VKCS server:
-Expected HTTP response code [201 202] when accessing [POST https://example.com:8774/v2.1/servers], but got 409 instead
-{"conflictingRequest": {"message": "Multiple possible networks found, use a Network ID to be more specific.", "code": 409}}
-```
+By using the "metadata" and "tags" options, you can provide additional context, organization, and categorization to instances, making it easier to manage and identify them based on specific attributes or requirements.
 
-* If you intend to use the `vkcs_compute_interface_attach` resource, you still need to make sure one of the above points is satisfied. An instance cannot be created without a valid network configuration even if you intend to use `vkcs_compute_interface_attach` after the instance has been created.
+### User-data and personality
+**User-data:** The "user-data" option is used to provide cloud-init configuration data to an instance, while the "personality" option is used to inject files into an instance during its creation. Cloud-init is a widely used multi-distribution package that handles early initialization of a cloud instance.
+
+**Personality:** The "personality" option allows you to inject files into an instance during its creation. You can provide one or more files that will be available inside the instance's file system. This can be useful for provisioning additional configuration files, scripts, or any other required data.
+
+Both options, "user-data" and "personality," can be used in combination or individually to customize instances. The choice between them depends on your specific needs and whether you want to provide configuration data through cloud-init or inject files directly into the instance's file system.
 
 ## Importing instances
 
-Importing instances can be tricky, since the nova api does not offer all information provided at creation time for later retrieval. Network interface attachment order, and number and sizes of ephemeral disks are examples of this.
+Importing instances can be tricky, since the nova api does not offer all information provided at creation time for later retrieval. 
+Compute returns the network interfaces grouped by network, thus not in creation order. That means that if you have multiple network interfaces you must take care of the order of networks in your configuration, or read the network order in the state file after import and modify your configuration accordingly.
 
-### Importing basic instance
-Assume you want to import an instance with one ephemeral root disk, and one network interface.
+~> **Note:**
+A note on ports. If you have created a networking port independent of an instance, then the import code has no way to detect that the port is created idenpendently, and therefore on deletion of imported instances you might have port resources in your project, which you expected to be created by the instance and thus to also be deleted with the instance.
 
-Your configuration would look like the following:
+~> **Note:**
+A note on block storage volumes, the importer does not read delete_on_termination flag, and always assumes true. If you import an instance created with delete_on_termination false, you end up with "orphaned" volumes after destruction of instances.
 
-```hcl
-resource "vkcs_compute_instance" "basic_instance" {
-  name            = "basic"
-  flavor_id       = "<flavor_id>"
-  key_pair        = "<keyname>"
-  security_groups = ["default"]
-  image_id =  "<image_id>"
-
-  network {
-    name = "<network_name>"
-  }
-}
-
-```
-Then you execute
+To import instance use following command:
 ```shell
 terraform import vkcs_compute_instance.basic_instance b61e8c9a-94ca-4852-9008-a95cdae6a2d9
 ```
-
-### Importing instance with multiple network interfaces.
-
-Compute returns the network interfaces grouped by network, thus not in creation order.
-That means that if you have multiple network interfaces you must take care of the order of networks in your configuration.
-
-
-As example we want to import an instance with one ephemeral root disk, and 3 network interfaces.
-
-Examples
-
-```hcl
-resource "vkcs_compute_instance" "boot-from-volume" {
-  name            = "boot-from-volume"
-  flavor_id       = "<flavor_id"
-  key_pair        = "<keyname>"
-  image_id        = <image_id>
-  security_groups = ["default"]
-
-  network {
-    name = "<network1>"
-  }
-  network {
-    name = "<network2>"
-  }
-  network {
-    name = "<network1>"
-    fixed_ip_v4 = "<fixed_ip_v4>"
-  }
-
-}
-```
-
-In the above configuration the networks are out of order compared to what nova and thus the import code returns, which means the plan will not be empty after import.
-
-So either with care check the plan and modify configuration, or read the network order in the state file after import and modify your configuration accordingly.
-
- * A note on ports. If you have created a networking port independent of an instance, then the import code has no way to detect that the port is created idenpendently, and therefore on deletion of imported instances you might have port resources in your project, which you expected to be created by the instance and thus to also be deleted with the instance.
-
-### Importing instances with multiple block storage volumes.
-
-We have an instance with two block storage volumes, one bootable and one non-bootable.
-Note that we only configure the bootable device as block_device.
-The other volumes can be specified as `vkcs_blockstorage_volume`
-
-```hcl
-resource "vkcs_compute_instance" "instance_2" {
-  name            = "instance_2"
-  image_id        = "<image_id>"
-  flavor_id       = "<flavor_id>"
-  key_pair        = "<keyname>"
-  security_groups = ["default"]
-
-  block_device {
-    uuid                  = "<image_id>"
-    source_type           = "image"
-    destination_type      = "volume"
-    boot_index            = 0
-    delete_on_termination = true
-  }
-
-   network {
-    name = "<network_name>"
-  }
-}
-resource "vkcs_blockstorage_volume" "volume_1" {
-  size = 1
-  name = "<vol_name>"
-}
-resource "vkcs_compute_volume_attach" "va_1" {
-  volume_id   = "${vkcs_blockstorage_volume.volume_1.id}"
-  instance_id = "${vkcs_compute_instance.instance_2.id}"
-}
-```
-To import the instance outlined in the above configuration do the following:
-
-```shell
-terraform import vkcs_compute_instance.instance_2 9758f738-3ef3-4c58-aedf-9e0378855ff2
-terraform import vkcs_blockstorage_volume.volume_1 47ae2945-0d92-47a2-8bbb-bc007f161272
-terraform import vkcs_compute_volume_attach.va_1 9758f738-3ef3-4c58-aedf-9e0378855ff2/47ae2945-0d92-47a2-8bbb-bc007f161272
-```
-
-* A note on block storage volumes, the importer does not read delete_on_termination flag, and always assumes true. If you import an instance created with delete_on_termination false, you end up with "orphaned" volumes after destruction of instances.
