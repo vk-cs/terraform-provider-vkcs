@@ -62,7 +62,7 @@ resource "vkcs_db_backup" "db-backup" {
 
 - `description` optional *string* &rarr;  The description of the backup
 
-- `region` optional *string* &rarr;  The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.
+- `region` optional *string* &rarr;  The region in which to obtain the service client. If omitted, the `region` argument of the provider is used. **New since v0.4.0**.
 
 
 ## Attributes Reference

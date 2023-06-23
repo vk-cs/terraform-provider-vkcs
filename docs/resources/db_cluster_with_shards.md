@@ -180,7 +180,7 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
 
 - `root_password` optional sensitive *string* &rarr;  Password for the root user of the cluster.
 
-- `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below.
+- `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below. **New since v0.4.0**.
   - `restart_confirmed` optional *boolean* &rarr;  Boolean to confirm autorestart of the cluster's instances if it is required to apply configuration group changes.
 
 - `wal_disk_autoexpand` optional &rarr;  Object that represents autoresize properties of wal volume of the cluster.
