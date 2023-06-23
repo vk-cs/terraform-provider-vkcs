@@ -48,13 +48,21 @@ data "vkcs_networking_subnet" "subnet_1" {
 In addition to all arguments above, the following attributes are exported:
 - `all_tags` *set of* *string* &rarr;  A set of string tags applied on the subnet.
 
-- `allocation_pools` *object* &rarr;  Allocation pools of the subnet.
+- `allocation_pools`  *list* &rarr;  Allocation pools of the subnet.
+  - `end` *string* &rarr;  The ending address.
+
+  - `start` *string* &rarr;  The starting address.
+
 
 - `dns_nameservers` *set of* *string* &rarr;  DNS Nameservers of the subnet.
 
 - `enable_dhcp` *boolean* &rarr;  Whether the subnet has DHCP enabled or not.
 
-- `host_routes` *object* &rarr;  Host Routes of the subnet.
+- `host_routes`  *list* &rarr;  Host Routes of the subnet.
+  - `destination_cidr` *string*
+
+  - `next_hop` *string*
+
 
 - `id` *string* &rarr;  ID of the found subnet.
 
