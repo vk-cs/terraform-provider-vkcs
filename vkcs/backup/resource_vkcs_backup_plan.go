@@ -146,7 +146,7 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 						path.MatchRoot("gfs_retention"),
 					}...),
 				},
-				Description: "Parameters for full retention policy. If incremental_backup is enabled, policy specifies number of full backups stored. Incompatible with gfs_retention",
+				Description: "Parameters for full retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full. Incompatible with gfs_retention",
 			},
 
 			"gfs_retention": schema.SingleNestedAttribute{
@@ -170,7 +170,7 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 						path.MatchRoot("full_retention"),
 					}...),
 				},
-				Description: "Parameters for gfs retention policy. If incremental_backup is enabled, policy specifies number of full backups stored. Incompatible with full_retention",
+				Description: "Parameters for gfs retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full. Incompatible with full_retention",
 			},
 
 			"incremental_backup": schema.BoolAttribute{

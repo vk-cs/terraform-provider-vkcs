@@ -97,7 +97,7 @@ func (d *PlanDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 						Description: "Maximum number of backups",
 					},
 				},
-				Description: "Parameters for full retention policy",
+				Description: "Parameters for full retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full",
 			},
 
 			"gfs_retention": schema.SingleNestedAttribute{
@@ -116,7 +116,7 @@ func (d *PlanDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 						Description: "Number of years to store backups",
 					},
 				},
-				Description: "Parameters for gfs retention policy",
+				Description: "Parameters for gfs retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full",
 			},
 
 			"incremental_backup": schema.BoolAttribute{
