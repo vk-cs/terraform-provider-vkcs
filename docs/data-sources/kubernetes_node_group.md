@@ -33,7 +33,7 @@ data "vkcs_kubernetes_node_group" "mynodegroup" {
 
 - `node_count` optional *number* &rarr;  The count of nodes in the node group.
 
-- `region` optional *string* &rarr;  The region to obtain the service client. If omitted, the `region` argument of the provider is used.
+- `region` optional *string* &rarr;  The region to obtain the service client. If omitted, the `region` argument of the provider is used. **New since v0.4.0**.
 
 - `volume_size` optional *number* &rarr;  The amount of memory in the volume in GB
 
