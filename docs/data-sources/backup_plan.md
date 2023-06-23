@@ -28,11 +28,11 @@ data "vkcs_backup_plan" "plan-datasource" {
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
-- `full_retention`  &rarr;  Parameters for full retention policy
+- `full_retention`  &rarr;  Parameters for full retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full
   - `max_full_backup` *number* &rarr;  Maximum number of backups
 
 
-- `gfs_retention`  &rarr;  Parameters for gfs retention policy
+- `gfs_retention`  &rarr;  Parameters for gfs retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full
   - `gfs_monthly` *number* &rarr;  Number of months to store backups
 
   - `gfs_weekly` *number* &rarr;  Number of weeks to store backups

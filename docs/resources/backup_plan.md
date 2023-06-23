@@ -84,11 +84,11 @@ resource "vkcs_backup_plan" "backup_plan" {
   - `time` optional *string* &rarr;  Time of backup in format hh:mm (for UTC timezone) or hh:mm+tz (for other timezones, e.g. 10:00+03 for MSK, 10:00-04 for ET)
 
 
-- `full_retention` optional &rarr;  Parameters for full retention policy. If incremental_backup is enabled, policy specifies number of full backups stored. Incompatible with gfs_retention
+- `full_retention` optional &rarr;  Parameters for full retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full. Incompatible with gfs_retention
   - `max_full_backup` **required** *number* &rarr;  Maximum number of backups
 
 
-- `gfs_retention` optional &rarr;  Parameters for gfs retention policy. If incremental_backup is enabled, policy specifies number of full backups stored. Incompatible with full_retention
+- `gfs_retention` optional &rarr;  Parameters for gfs retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full. Incompatible with full_retention
   - `gfs_weekly` **required** *number* &rarr;  Number of weeks to store backups
 
   - `gfs_monthly` optional *number* &rarr;  Number of months to store backups
