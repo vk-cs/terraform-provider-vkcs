@@ -7,12 +7,10 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.3.1 (unreleased)
-- Allow updating vkcs_images_image properties with os_ prefix
-- Add vkcs_backup_providers datasource
-- Add vkcs_backup_provider datasource
-- Add vkcs_backup_plan resource and datasource
+#### v0.4.0
+- Add Cloud Backup resource and datasources
 - Add restart_confirmed vendor option to DB clusters and instance
+- Allow set vkcs_images_image properties with os_ prefix
 - Fix creating/updating DB clusters with specified configuration_id
 - Fix error of unexpected "restart_required" status for DB instance
 
