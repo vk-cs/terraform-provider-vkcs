@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.3.0",
+  "provider_version": "v0.4.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -46,6 +46,64 @@
       }
     },
     "resources": {
+      "vkcs_backup_plan": {
+        "schema": {
+          "full_retention": {
+            "optional": true,
+            "description": "Parameters for full retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full. Incompatible with gfs_retention"
+          },
+          "gfs_retention": {
+            "optional": true,
+            "description": "Parameters for gfs retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full. Incompatible with full_retention"
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "incremental_backup": {
+            "type": "TypeBool",
+            "required": true,
+            "description": "Whether incremental backups strategy should be used. If enabled, the schedule.date field must specify one day, on which full backup will be created. On other days, incremental backups will be created. _note_ This option may be enabled for only for 'cloud_servers' provider."
+          },
+          "instance_ids": {
+            "type": "TypeList",
+            "required": true,
+            "description": "List of ids of instances to make backup for",
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Name of the backup plan"
+          },
+          "provider_id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "ID of backup provider",
+            "computed": true
+          },
+          "provider_name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of backup provider, must be one of: cloud_servers, dbaas",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "schedule": {
+            "required": true
+          }
+        },
+        "description": "Manages a backup plan resource.",
+        "new_since": "v0.4.0"
+      },
       "vkcs_blockstorage_snapshot": {
         "schema": {
           "description": {
@@ -675,8 +733,7 @@
           "container_prefix": {
             "type": "TypeString",
             "optional": true,
-            "description": "Prefix of S3 bucket ([prefix] - [project_id]) to store backup data. Default: databasebackups",
-            "force_new": true
+            "description": "Prefix of S3 bucket ([prefix] - [project_id]) to store backup data. Default: databasebackups"
           },
           "created": {
             "type": "TypeString",
@@ -705,8 +762,7 @@
           "dbms_id": {
             "type": "TypeString",
             "required": true,
-            "description": "ID of the instance or cluster, to create backup of.",
-            "force_new": true
+            "description": "ID of the instance or cluster, to create backup of."
           },
           "dbms_type": {
             "type": "TypeString",
@@ -717,7 +773,12 @@
             "type": "TypeString",
             "optional": true,
             "description": "The description of the backup",
-            "force_new": true
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource.",
+            "computed": true
           },
           "location_ref": {
             "type": "TypeString",
@@ -732,13 +793,35 @@
           "name": {
             "type": "TypeString",
             "required": true,
-            "description": "The name of the backup. Changing this creates a new backup",
-            "force_new": true
+            "description": "The name of the backup. Changing this creates a new backup"
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "computed": true,
+            "new_since": "v0.4.0"
           },
           "size": {
             "type": "TypeFloat",
             "description": "Backup's volume size",
             "computed": true
+          },
+          "timeouts": {
+            "type": "TypeList",
+            "elem": {
+              "schema": {
+                "create": {
+                  "type": "TypeString",
+                  "optional": true
+                },
+                "delete": {
+                  "type": "TypeString",
+                  "optional": true
+                }
+              }
+            },
+            "max_items": 1
           },
           "updated": {
             "type": "TypeString",
@@ -750,10 +833,6 @@
             "description": "Backup's WAL volume size",
             "computed": true
           }
-        },
-        "timeouts": {
-          "create": 30,
-          "delete": 30
         },
         "description": "Provides a db backup resource. This can be used to create and delete db backup.",
         "new_since": "v0.1.4"
@@ -1028,6 +1107,23 @@
             "elem": {
               "type": "TypeString"
             }
+          },
+          "vendor_options": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "Map of additional vendor-specific options. Supported options are described below.",
+            "elem": {
+              "schema": {
+                "restart_confirmed": {
+                  "type": "TypeBool",
+                  "optional": true,
+                  "description": "Boolean to confirm autorestart of the cluster's instances if it is required to apply configuration group changes."
+                }
+              }
+            },
+            "max_items": 1,
+            "min_items": 1,
+            "new_since": "v0.4.0"
           },
           "volume_size": {
             "type": "TypeInt",
@@ -1347,6 +1443,23 @@
                 }
               }
             }
+          },
+          "vendor_options": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "Map of additional vendor-specific options. Supported options are described below.",
+            "elem": {
+              "schema": {
+                "restart_confirmed": {
+                  "type": "TypeBool",
+                  "optional": true,
+                  "description": "Boolean to confirm autorestart of the cluster's instances if it is required to apply configuration group changes."
+                }
+              }
+            },
+            "max_items": 1,
+            "min_items": 1,
+            "new_since": "v0.4.0"
           },
           "wal_disk_autoexpand": {
             "type": "TypeList",
@@ -1719,6 +1832,23 @@
             "type": "TypeInt",
             "required": true,
             "description": "Size of the instance volume."
+          },
+          "vendor_options": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "Map of additional vendor-specific options. Supported options are described below.",
+            "elem": {
+              "schema": {
+                "restart_confirmed": {
+                  "type": "TypeBool",
+                  "optional": true,
+                  "description": "Boolean to confirm autorestart of the instance if it is required to apply configuration group changes."
+                }
+              }
+            },
+            "max_items": 1,
+            "min_items": 1,
+            "new_since": "v0.4.0"
           },
           "volume_type": {
             "type": "TypeString",
@@ -4956,6 +5086,119 @@
       }
     },
     "data_sources": {
+      "vkcs_backup_plan": {
+        "schema": {
+          "full_retention": {
+            "description": "Parameters for full retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full",
+            "computed": true
+          },
+          "gfs_retention": {
+            "description": "Parameters for gfs retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "incremental_backup": {
+            "type": "TypeBool",
+            "description": "Whether incremental backups should be stored",
+            "computed": true
+          },
+          "instance_id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "ID of the instance that should be included in backup plan"
+          },
+          "instance_ids": {
+            "type": "TypeList",
+            "description": "List of ids of backed up instances",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the backup plan"
+          },
+          "provider_id": {
+            "type": "TypeString",
+            "description": "ID of backup provider",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "schedule": {
+            "computed": true
+          }
+        },
+        "description": "Use this data source to get backup plan info",
+        "new_since": "v0.4.0"
+      },
+      "vkcs_backup_provider": {
+        "schema": {
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Name of the backup provider"
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          }
+        },
+        "description": "Use this data source to get backup provider info",
+        "new_since": "v0.4.0"
+      },
+      "vkcs_backup_providers": {
+        "schema": {
+          "id": {
+            "type": "TypeString",
+            "computed": true
+          },
+          "providers": {
+            "type": "TypeList",
+            "description": "List of available backup providers",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "id": {
+                  "type": "TypeString",
+                  "description": "ID of the backup provider",
+                  "computed": true
+                },
+                "name": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Name of the backup provider"
+                }
+              }
+            }
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          }
+        },
+        "description": "Use this data source to get backup providers info",
+        "new_since": "v0.4.0"
+      },
       "vkcs_blockstorage_snapshot": {
         "schema": {
           "description": {
@@ -5436,6 +5679,11 @@
             "optional": true,
             "description": "The description of the backup"
           },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource.",
+            "computed": true
+          },
           "location_ref": {
             "type": "TypeString",
             "description": "Location of backup data on backup storage",
@@ -5450,6 +5698,13 @@
             "type": "TypeString",
             "description": "The name of the backup.",
             "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "computed": true,
+            "new_since": "v0.4.0"
           },
           "size": {
             "type": "TypeFloat",
@@ -5505,10 +5760,22 @@
             "description": "The description of the config group.",
             "computed": true
           },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource.",
+            "computed": true
+          },
           "name": {
             "type": "TypeString",
             "description": "The name of the config group.",
             "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "computed": true,
+            "new_since": "v0.4.0"
           },
           "updated": {
             "type": "TypeString",
@@ -6154,14 +6421,13 @@
         "schema": {
           "acl": {
             "type": "TypeList",
-            "description": "The list of ACLs assigned to a container.",
+            "description": "ACLs assigned to a container.",
             "computed": true,
             "elem": {
               "schema": {
                 "read": {
                   "type": "TypeList",
-                  "optional": true,
-                  "description": "Block that describes read operation.",
+                  "description": "Object that describes read operation.",
                   "computed": true,
                   "elem": {
                     "schema": {
@@ -6172,9 +6438,8 @@
                       },
                       "project_access": {
                         "type": "TypeBool",
-                        "optional": true,
-                        "default": true,
-                        "description": "Whether the container is accessible project wide. Defaults to `true`."
+                        "description": "Whether the container is accessible project wide.",
+                        "computed": true
                       },
                       "updated_at": {
                         "type": "TypeString",
@@ -6183,15 +6448,14 @@
                       },
                       "users": {
                         "type": "TypeSet",
-                        "optional": true,
                         "description": "The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.",
+                        "computed": true,
                         "elem": {
                           "type": "TypeString"
                         }
                       }
                     }
-                  },
-                  "max_items": 1
+                  }
                 }
               }
             }
@@ -6230,15 +6494,22 @@
             "description": "The creator of the container.",
             "computed": true
           },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource.",
+            "computed": true
+          },
           "name": {
             "type": "TypeString",
             "optional": true,
-            "description": "The Container name."
+            "description": "The Container name.",
+            "computed": true
           },
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The region in which to obtain the KeyManager client. A KeyManager client is needed to fetch a container. If omitted, the `region` argument of the provider is used."
+            "description": "The region in which to obtain the VKCS Key Manager client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
           },
           "secret_refs": {
             "type": "TypeSet",
@@ -6285,7 +6556,6 @@
               "schema": {
                 "read": {
                   "type": "TypeList",
-                  "optional": true,
                   "description": "Block that describes read operation.",
                   "computed": true,
                   "elem": {
@@ -6298,7 +6568,6 @@
                       "project_access": {
                         "type": "TypeBool",
                         "optional": true,
-                        "default": true,
                         "description": "Whether the container is accessible project wide. Defaults to `true`."
                       },
                       "updated_at": {
@@ -6315,8 +6584,7 @@
                         }
                       }
                     }
-                  },
-                  "max_items": 1
+                  }
                 }
               }
             }
@@ -6329,17 +6597,22 @@
           "algorithm": {
             "type": "TypeString",
             "optional": true,
-            "description": "The Secret algorithm."
+            "description": "The Secret algorithm.",
+            "computed": true
           },
           "bit_length": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The Secret bit length."
+            "description": "The Secret bit length.",
+            "computed": true
           },
           "content_types": {
             "type": "TypeMap",
             "description": "The map of the content types, assigned on the secret.",
-            "computed": true
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
           },
           "created_at": {
             "type": "TypeString",
@@ -6366,20 +6639,30 @@
             "optional": true,
             "description": "Date filter to select the Secret with expiration matching the specified criteria. See Date Filters below for more detail."
           },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource.",
+            "computed": true
+          },
           "metadata": {
             "type": "TypeMap",
             "description": "The map of metadata, assigned on the secret, which has been explicitly and implicitly added.",
-            "computed": true
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
           },
           "mode": {
             "type": "TypeString",
             "optional": true,
-            "description": "The Secret mode."
+            "description": "The Secret mode.",
+            "computed": true
           },
           "name": {
             "type": "TypeString",
             "optional": true,
-            "description": "The Secret name."
+            "description": "The Secret name.",
+            "computed": true
           },
           "payload": {
             "type": "TypeString",
@@ -6399,7 +6682,8 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The region in which to obtain the KeyManager client. A KeyManager client is needed to fetch a secret. If omitted, the `region` argument of the provider is used."
+            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
           },
           "secret_ref": {
             "type": "TypeString",
@@ -6409,7 +6693,8 @@
           "secret_type": {
             "type": "TypeString",
             "optional": true,
-            "description": "The Secret type. For more information see [Secret types](https://docs.openstack.org/barbican/latest/api/reference/secret_types.html)."
+            "description": "The Secret type. For more information see [Secret types](https://docs.openstack.org/barbican/latest/api/reference/secret_types.html).",
+            "computed": true
           },
           "status": {
             "type": "TypeString",
@@ -6891,7 +7176,8 @@
           "autoscaling_enabled": {
             "type": "TypeBool",
             "optional": true,
-            "description": "Determines whether the autoscaling is enabled."
+            "description": "Determines whether the autoscaling is enabled.",
+            "computed": true
           },
           "availability_zones": {
             "type": "TypeList",
@@ -6909,7 +7195,13 @@
           "flavor_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The id of flavor."
+            "description": "The id of the flavor.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource.",
+            "computed": true
           },
           "max_node_unavailable": {
             "type": "TypeInt",
@@ -6920,12 +7212,14 @@
           "max_nodes": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The maximum amount of nodes in node group."
+            "description": "The maximum amount of nodes in the node group.",
+            "computed": true
           },
           "min_nodes": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The minimum amount of nodes in node group."
+            "description": "The minimum amount of nodes in the node group.",
+            "computed": true
           },
           "name": {
             "type": "TypeString",
@@ -6936,7 +7230,8 @@
           "node_count": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The count of nodes in node group."
+            "description": "The count of nodes in the node group.",
+            "computed": true
           },
           "nodes": {
             "type": "TypeList",
@@ -6946,31 +7241,38 @@
               "schema": {
                 "created_at": {
                   "type": "TypeString",
-                  "description": "Time when node was created.",
+                  "description": "Time when a node was created.",
                   "computed": true
                 },
                 "name": {
                   "type": "TypeString",
-                  "description": "The name of the node.",
+                  "description": "Name of a node.",
                   "computed": true
                 },
                 "node_group_id": {
                   "type": "TypeString",
-                  "description": "The node group id",
+                  "description": "The node group id.",
                   "computed": true
                 },
                 "updated_at": {
                   "type": "TypeString",
-                  "description": "Time when node was updated.",
+                  "description": "Time when a node was updated.",
                   "computed": true
                 },
                 "uuid": {
                   "type": "TypeString",
-                  "description": "The UUID of node.",
+                  "description": "UUID of a node.",
                   "computed": true
                 }
               }
             }
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "computed": true,
+            "new_since": "v0.4.0"
           },
           "state": {
             "type": "TypeString",
@@ -6985,15 +7287,17 @@
           "volume_size": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The amount of memory of volume in Gb."
+            "description": "The amount of memory in the volume in GB",
+            "computed": true
           },
           "volume_type": {
             "type": "TypeString",
             "optional": true,
-            "description": "The type of volume."
+            "description": "The type of the volume.",
+            "computed": true
           }
         },
-        "description": "Use this data source to get the ID of an available VKCS kubernetes clusters node group."
+        "description": "Use this data source to get information on VKCS Kubernetes cluster's node group."
       },
       "vkcs_lb_loadbalancer": {
         "schema": {
@@ -7228,7 +7532,8 @@
           "admin_state_up": {
             "type": "TypeBool",
             "optional": true,
-            "description": "The administrative state of the port."
+            "description": "The administrative state of the port.",
+            "computed": true
           },
           "all_fixed_ips": {
             "type": "TypeList",
@@ -7276,17 +7581,20 @@
           "description": {
             "type": "TypeString",
             "optional": true,
-            "description": "Human-readable description of the port."
+            "description": "Human-readable description of the port.",
+            "computed": true
           },
           "device_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The ID of the device the port belongs to."
+            "description": "The ID of the device the port belongs to.",
+            "computed": true
           },
           "device_owner": {
             "type": "TypeString",
             "optional": true,
-            "description": "The device owner of the port."
+            "description": "The device owner of the port.",
+            "computed": true
           },
           "dns_assignment": {
             "type": "TypeList",
@@ -7299,7 +7607,8 @@
           "dns_name": {
             "type": "TypeString",
             "optional": true,
-            "description": "The port DNS name to filter."
+            "description": "The port DNS name to filter.",
+            "computed": true
           },
           "extra_dhcp_option": {
             "type": "TypeList",
@@ -7333,27 +7642,32 @@
           "mac_address": {
             "type": "TypeString",
             "optional": true,
-            "description": "The MAC address of the port."
+            "description": "The MAC address of the port.",
+            "computed": true
           },
           "name": {
             "type": "TypeString",
             "optional": true,
-            "description": "The name of the port."
+            "description": "The name of the port.",
+            "computed": true
           },
           "network_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The ID of the network the port belongs to."
+            "description": "The ID of the network the port belongs to.",
+            "computed": true
           },
           "port_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The ID of the port."
+            "description": "The ID of the port.",
+            "computed": true
           },
           "project_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The project_id of the owner of the port."
+            "description": "The project_id of the owner of the port.",
+            "computed": true
           },
           "region": {
             "type": "TypeString",
@@ -7363,7 +7677,8 @@
           "sdn": {
             "type": "TypeString",
             "optional": true,
-            "description": "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\"."
+            "description": "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+            "computed": true
           },
           "security_group_ids": {
             "type": "TypeSet",
@@ -7377,7 +7692,7 @@
             "type": "TypeString",
             "optional": true,
             "description": "The status of the port.",
-            "force_new": true
+            "computed": true
           },
           "tags": {
             "type": "TypeSet",
@@ -7390,7 +7705,8 @@
           "tenant_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The tenant_id of the owner of the port."
+            "description": "The tenant_id of the owner of the port.",
+            "computed": true
           }
         },
         "description": "Use this data source to get the ID of an available VKCS port."
@@ -7635,13 +7951,13 @@
             "type": "TypeString",
             "optional": true,
             "description": "The region in which to obtain the Network client. A Network client is needed to retrieve subnet ids. If omitted, the `region` argument of the provider is used.",
-            "computed": true,
-            "force_new": true
+            "computed": true
           },
           "sdn": {
             "type": "TypeString",
             "optional": true,
-            "description": "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\"."
+            "description": "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+            "computed": true
           },
           "subnet_id": {
             "type": "TypeString",
