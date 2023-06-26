@@ -12,6 +12,7 @@ Provides a blockstorage volume resource. This can be used to create, modify and 
 
 ## Example Usage
 
+### Create an empty volume
 ```terraform
 resource "vkcs_blockstorage_volume" "volume" {
   name = "volume"
@@ -24,6 +25,18 @@ resource "vkcs_blockstorage_volume" "volume" {
   volume_type = "ceph-ssd"
 }
 ```
+
+### Create bootable volume
+```terraform
+resource "vkcs_blockstorage_volume" "bootable" {
+  name              = "bootable-tf-example"
+  size              = 5
+  volume_type       = "ceph-ssd"
+  image_id          = data.vkcs_images_image.debian.id
+  availability_zone = "GZ1"
+}
+```
+
 ## Argument Reference
 - `availability_zone` **required** *string* &rarr;  The name of the availability zone of the volume.
 

@@ -13,8 +13,8 @@ Use this data source to get the ID of an available VKCS network.
 ## Example Usage
 
 ```terraform
-data "vkcs_networking_network" "network" {
-  name = "tf_test_network"
+data "vkcs_networking_network" "extnet" {
+  name = "ext-net"
 }
 ```
 
