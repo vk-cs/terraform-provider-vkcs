@@ -2,6 +2,7 @@ package backup
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -15,6 +16,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/triggers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
+	"golang.org/x/exp/maps"
 )
 
 const (
@@ -36,6 +38,12 @@ const (
 var providerNameMapping = map[string]string{
 	Nova:  ProviderNameNova,
 	Trove: ProviderNameTrove,
+}
+
+func getProviderNames() []string {
+	names := maps.Values(providerNameMapping)
+	sort.Strings(names)
+	return names
 }
 
 func getResourcesInfo(config clients.Config, region string, instancesID []types.String, resourceType string) ([]*plans.BackupPlanResource, error) {

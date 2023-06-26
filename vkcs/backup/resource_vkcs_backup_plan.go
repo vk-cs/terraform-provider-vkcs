@@ -192,7 +192,7 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			"provider_name": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: fmt.Sprintf("Name of backup provider, must be one of: %s", strings.Join(maps.Values(providerNameMapping), ", ")),
+				Description: fmt.Sprintf("Name of backup provider, must be one of: %s", strings.Join(getProviderNames(), ", ")),
 				Validators: []validator.String{
 					stringvalidator.OneOf(maps.Values(providerNameMapping)...),
 					stringvalidator.AtLeastOneOf(path.Expressions{
