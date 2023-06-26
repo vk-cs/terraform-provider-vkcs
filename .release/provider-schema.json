@@ -339,7 +339,7 @@
                 "uuid": {
                   "type": "TypeString",
                   "optional": true,
-                  "description": "(Optional if `source_type` is set to `\"blank\"` ) The UUID of the image, volume, or snapshot. Changing this creates a new server.",
+                  "description": "The UUID of the image, volume, or snapshot. Optional if `source_type` is set to `\"blank\"`. Changing this creates a new server.",
                   "force_new": true
                 },
                 "volume_size": {
@@ -366,13 +366,13 @@
           "flavor_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "(Required if `flavor_name` is empty) The flavor ID of the desired flavor for the server. Changing this resizes the existing server.",
+            "description": "The flavor ID of the desired flavor for the server. Required if `flavor_name` is empty. Changing this resizes the existing server.",
             "computed": true
           },
           "flavor_name": {
             "type": "TypeString",
             "optional": true,
-            "description": "(Required if `flavor_id` is empty) The name of the desired flavor for the server. Changing this resizes the existing server.",
+            "description": "The name of the desired flavor for the server. Required if `flavor_id` is empty. Changing this resizes the existing server.",
             "computed": true
           },
           "force_delete": {
@@ -384,14 +384,14 @@
           "image_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "(Required if `image_name` is empty and not booting from a volume. Do not specify if booting from a volume.) The image ID of the desired image for the server. Changing this creates a new server.",
+            "description": "The image ID of the desired image for the server. Required if `image_name` is empty and not booting from a volume. Do not specify if booting from a volume. Changing this creates a new server.",
             "computed": true,
             "force_new": true
           },
           "image_name": {
             "type": "TypeString",
             "optional": true,
-            "description": "(Required if `image_id` is empty and not booting from a volume. Do not specify if booting from a volume.) The name of the desired image for the server. Changing this creates a new server.",
+            "description": "The name of the desired image for the server. Required if `image_id` is empty and not booting from a volume. Do not specify if booting from a volume. Changing this creates a new server.",
             "computed": true,
             "force_new": true
           },
@@ -440,21 +440,21 @@
                 "name": {
                   "type": "TypeString",
                   "optional": true,
-                  "description": "(Optional if `uuid` or `port` is provided) The human-readable name of the network. Changing this creates a new server.",
+                  "description": "The human-readable name of the network. Optional if `uuid` or `port` is provided. Changing this creates a new server.",
                   "computed": true,
                   "force_new": true
                 },
                 "port": {
                   "type": "TypeString",
                   "optional": true,
-                  "description": "(Optional if `uuid` or `name` is provided) The port UUID of a network to attach to the server. Changing this creates a new server.",
+                  "description": "The port UUID of a network to attach to the server. Optional if `uuid` or `name` is provided. Changing this creates a new server. _note_ If port is used, only its security groups will be applied instead of security_groups instance argument.",
                   "computed": true,
                   "force_new": true
                 },
                 "uuid": {
                   "type": "TypeString",
                   "optional": true,
-                  "description": "(Optional if `port`  or `name` is provided) The network UUID to attach to the server. Changing this creates a new server.",
+                  "description": "The network UUID to attach to the server. Optional if `port` or `name` is provided. Changing this creates a new server.",
                   "computed": true,
                   "force_new": true
                 }
@@ -470,7 +470,7 @@
           "personality": {
             "type": "TypeSet",
             "optional": true,
-            "description": "Customize the personality of an instance by defining one or more files and their contents. The personality structure is described below.",
+            "description": "Customize the personality of an instance by defining one or more files and their contents. The personality structure is described below. _note_ 'config_drive' must be enabled.",
             "force_new": true,
             "elem": {
               "schema": {
