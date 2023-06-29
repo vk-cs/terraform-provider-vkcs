@@ -27,8 +27,10 @@ type commonResult struct {
 
 func (r commonResult) Extract() (*TriggerResponse, error) {
 	var s *TriggerResp
-	err := r.ExtractInto(&s)
-	return &s.TriggerInfo, err
+	if err := r.ExtractInto(&s); err != nil {
+		return nil, err
+	}
+	return &s.TriggerInfo, nil
 }
 
 type CreateResult struct {
@@ -52,6 +54,8 @@ func ExtractTriggers(r pagination.Page) ([]TriggerResponse, error) {
 	var s struct {
 		Triggers []TriggerResponse `json:"triggers"`
 	}
-	err := (r.(Page)).ExtractInto(&s)
-	return s.Triggers, err
+	if err := (r.(Page)).ExtractInto(&s); err != nil {
+		return nil, err
+	}
+	return s.Triggers, nil
 }
