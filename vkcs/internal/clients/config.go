@@ -208,9 +208,6 @@ func (c *configer) GetMutex() *mutexkv.MutexKV {
 }
 
 func (c *configer) setDefaults() {
-	if c.UserDomainID != "" {
-		c.UserDomainName = ""
-	}
 	if c.TerraformVersion == "" {
 		// Terraform 0.12 introduced this field to the protocol
 		// We can therefore assume that if it's missing it's 0.10 or 0.11
@@ -227,6 +224,9 @@ func (c *configer) setDefaults() {
 	}
 	if c.UserDomainName == "" {
 		c.UserDomainName = DefaultUserDomainName
+	}
+	if c.UserDomainID != "" {
+		c.UserDomainName = ""
 	}
 
 	c.AllowReauth = true
