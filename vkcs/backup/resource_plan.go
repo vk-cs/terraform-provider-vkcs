@@ -301,6 +301,7 @@ func (r *PlanResource) Create(ctx context.Context, req resource.CreateRequest, r
 	planResp, err := plans.Create(backupClient, &plans.PlanCreate{Plan: &planCreateOpts}).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating vkcs_backup_plan", err.Error())
+		return
 	}
 	planID := planResp.ID
 	resp.State.SetAttribute(ctx, path.Root("id"), planID)
@@ -310,6 +311,7 @@ func (r *PlanResource) Create(ctx context.Context, req resource.CreateRequest, r
 	_, err = triggers.Create(backupClient, &triggers.TriggerCreate{TriggerInfo: &triggerCreateOpts}).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating vkcs_backup_plan", err.Error())
+		return
 	}
 
 	plan.ID = types.StringValue(planID)
@@ -357,11 +359,13 @@ func (r *PlanResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	triggerResp, err := findTrigger(backupClient, planID)
 	if err != nil {
 		resp.Diagnostics.AddError("Error retrieving vkcs_backup_plan", err.Error())
+		return
 	}
 
 	providerInfo, err := findProvider(backupClient, plan.ProviderID.ValueString(), "")
 	if err != nil {
 		resp.Diagnostics.AddError("Error retrieving vkcs_backup_plan", err.Error())
+		return
 	}
 	plan.ProviderID = types.StringValue(providerInfo.ID)
 	plan.ProviderName = types.StringValue(providerInfo.Name)
@@ -398,6 +402,7 @@ func (r *PlanResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		oldTimeParsed, err := parseTime(plan.Schedule.Time.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Error retrieving vkcs_backup_plan", err.Error())
+			return
 		}
 		location = oldTimeParsed.Location()
 	} else {
@@ -442,6 +447,7 @@ func (r *PlanResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	triggerResp, err := findTrigger(backupClient, planID)
 	if err != nil {
 		resp.Diagnostics.AddError("Error retrieving vkcs_backup_plan", err.Error())
+		return
 	}
 	triggerID := triggerResp.ID
 
@@ -534,6 +540,7 @@ func (r *PlanResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	backupClient, err := r.config.BackupV1Client(region, r.config.GetTenantID())
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating VKCS backup client", err.Error())
+		return
 	}
 
 	planID := plan.ID.ValueString()
@@ -541,6 +548,7 @@ func (r *PlanResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	err = plans.Delete(backupClient, planID).ExtractErr()
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to delete resource vkcs_backup_plan", err.Error())
+		return
 	}
 }
 

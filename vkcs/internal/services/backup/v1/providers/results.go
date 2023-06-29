@@ -23,6 +23,8 @@ type ListResult struct {
 
 func (r ListResult) Extract() ([]*Provider, error) {
 	var s *ProvidersResp
-	err := r.ExtractInto(&s)
-	return s.Providers, err
+	if err := r.ExtractInto(&s); err != nil {
+		return nil, err
+	}
+	return s.Providers, nil
 }

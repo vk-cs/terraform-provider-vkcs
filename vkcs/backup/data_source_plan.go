@@ -212,6 +212,7 @@ func (d *PlanDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	} else if foundPlanCount > 1 {
 		resp.Diagnostics.AddError("Error retrieving vkcs_backup_plan", "More than one suitable plan found")
+		return
 	}
 	planID := planResp.ID
 	data.ID = types.StringValue(planID)

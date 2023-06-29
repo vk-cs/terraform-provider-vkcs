@@ -40,8 +40,10 @@ type commonResult struct {
 
 func (r commonResult) Extract() (*PlanResponse, error) {
 	var s *PlanResp
-	err := r.ExtractInto(&s)
-	return &s.Plan, err
+	if err := r.ExtractInto(&s); err != nil {
+		return nil, err
+	}
+	return &s.Plan, nil
 }
 
 type CreateResult struct {
