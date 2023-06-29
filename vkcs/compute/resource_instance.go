@@ -37,6 +37,8 @@ import (
 
 func ResourceComputeInstance() *schema.Resource {
 	return &schema.Resource{
+		CustomizeDiff: resourceComputeInstanceCustomizeDiff,
+
 		CreateContext: resourceComputeInstanceCreate,
 		ReadContext:   resourceComputeInstanceRead,
 		UpdateContext: resourceComputeInstanceUpdate,
@@ -223,6 +225,7 @@ func ResourceComputeInstance() *schema.Resource {
 			"block_device": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"source_type": {
@@ -252,9 +255,9 @@ func ResourceComputeInstance() *schema.Resource {
 						"boot_index": {
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Default:     -1,
+							Computed:    true,
 							ForceNew:    true,
-							Description: "The boot index of the volume. It defaults to -1. Changing this creates a new server. _note_ You must set the boot index to 0 for one of the block devices if more than one is defined.",
+							Description: "The boot index of the volume. It defaults to 0 if only one `block_device` is specified, and to -1 if more than one is configured. Changing this creates a new server. _note_ You must set the boot index to 0 for one of the block devices if more than one is defined.",
 						},
 						"delete_on_termination": {
 							Type:        schema.TypeBool,
@@ -1062,6 +1065,25 @@ func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, 
 			d.Id(), err)
 	}
 
+	return nil
+}
+
+func resourceComputeInstanceCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, v interface{}) error {
+	bdsRaw := diff.Get("block_device").([]interface{})
+	bds := make([]map[string]interface{}, len(bdsRaw))
+	for i, v := range bdsRaw {
+		defaultBootIdx := -1
+		if i == 0 && len(bds) == 1 {
+			defaultBootIdx = 0
+		}
+		bd := v.(map[string]interface{})
+		key := fmt.Sprintf("block_device.%d.boot_index", i)
+		if _, ok := diff.GetOkExists(key); !ok {
+			bd["boot_index"] = defaultBootIdx
+		}
+		bds[i] = bd
+	}
+	diff.SetNew("block_device", bds)
 	return nil
 }
 
