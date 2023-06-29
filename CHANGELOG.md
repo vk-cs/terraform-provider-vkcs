@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.4.1 (unreleased)
+- Fix overriding userDomainName with defaults on devstack environment
+
 #### v0.4.0
 - Add Cloud Backup resource and datasources
 - Add restart_confirmed vendor option to DB clusters and instance
