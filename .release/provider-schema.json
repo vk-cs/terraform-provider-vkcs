@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.4.0",
+  "provider_version": "v0.4.1",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -290,13 +290,14 @@
             "type": "TypeList",
             "optional": true,
             "description": "Configuration of block devices. The block_device structure is documented below. Changing this creates a new server. You can specify multiple block devices which will create an instance with multiple disks. This configuration is very flexible, so please see the following [reference](https://docs.openstack.org/nova/latest/user/block-device-mapping.html) for more information.",
+            "computed": true,
             "elem": {
               "schema": {
                 "boot_index": {
                   "type": "TypeInt",
                   "optional": true,
-                  "default": -1,
-                  "description": "The boot index of the volume. It defaults to -1. Changing this creates a new server. _note_ You must set the boot index to 0 for one of the block devices if more than one is defined.",
+                  "description": "The boot index of the volume. It defaults to 0 if only one `block_device` is specified, and to -1 if more than one is configured. Changing this creates a new server. _note_ You must set the boot index to 0 for one of the block devices if more than one is defined.",
+                  "computed": true,
                   "force_new": true
                 },
                 "delete_on_termination": {
