@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.4.1 (unreleased)
+#### v0.4.1
 - Fix crash on errored vkcs_backup_plan creation
 - Fix overriding userDomainName with defaults on devstack environment
 
