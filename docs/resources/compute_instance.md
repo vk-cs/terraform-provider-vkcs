@@ -199,7 +199,7 @@ Also, the user_data option can be set to the contents of a script file using the
 - `block_device` optional &rarr;  Configuration of block devices. The block_device structure is documented below. Changing this creates a new server. You can specify multiple block devices which will create an instance with multiple disks. This configuration is very flexible, so please see the following [reference](https://docs.openstack.org/nova/latest/user/block-device-mapping.html) for more information.
   - `source_type` **required** *string* &rarr;  The source type of the device. Must be one of "blank", "image", "volume", or "snapshot". Changing this creates a new server.
 
-  - `boot_index` optional *number* &rarr;  The boot index of the volume. It defaults to -1. Changing this creates a new server. <br>**Note:** You must set the boot index to 0 for one of the block devices if more than one is defined.
+  - `boot_index` optional *number* &rarr;  The boot index of the volume. It defaults to 0 if only one `block_device` is specified, and to -1 if more than one is configured. Changing this creates a new server. <br>**Note:** You must set the boot index to 0 for one of the block devices if more than one is defined.
 
   - `delete_on_termination` optional *boolean* &rarr;  Delete the volume / block device upon termination of the instance. Defaults to false. Changing this creates a new server.
 
