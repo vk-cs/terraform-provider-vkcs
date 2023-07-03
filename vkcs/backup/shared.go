@@ -270,7 +270,7 @@ func flattenSchedule(planResp *plans.PlanResponse, triggerResp *triggers.Trigger
 		everyHours, _ := strconv.Atoi(everyHoursParts[1])
 		planSchedule.EveryHours = types.Int64Value(int64(everyHours))
 	} else {
-		timeString := fmt.Sprintf("%s:%s", scheduleParts[1], scheduleParts[0])
+		timeString := fmt.Sprintf("%02s:%02s", scheduleParts[1], scheduleParts[0])
 		if location != time.UTC {
 			timeParsed, _ := time.Parse(TimeFormatWithoutZone, timeString)
 			timeWithLocation := timeParsed.In(location)
