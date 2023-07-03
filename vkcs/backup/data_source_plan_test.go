@@ -24,7 +24,7 @@ func TestAccBackupPlanDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.vkcs_backup_plan.plan", "schedule.date.#", "2"),
 					resource.TestCheckResourceAttr("data.vkcs_backup_plan.plan", "schedule.date.0", "Tu"),
 					resource.TestCheckResourceAttr("data.vkcs_backup_plan.plan", "schedule.date.1", "We"),
-					resource.TestCheckResourceAttr("data.vkcs_backup_plan.plan", "schedule.time", "8:12"),
+					resource.TestCheckResourceAttr("data.vkcs_backup_plan.plan", "schedule.time", "08:12"),
 				),
 			},
 		},
