@@ -88,70 +88,94 @@ func resourceImagesImageFileProps(filename string) (int64, string, error) {
 func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.ResourceData) (string, error) {
 	if filename := d.Get("local_file_path").(string); filename != "" {
 		return filename, nil
-	} else if furl := d.Get("image_source_url").(string); furl != "" {
-		dir := d.Get("image_cache_path").(string)
-		if err := os.MkdirAll(dir, 0700); err != nil {
-			return "", fmt.Errorf("unable to create dir %s: %s", dir, err)
-		}
-		filename := filepath.Join(dir, fmt.Sprintf("%x.img", md5.Sum([]byte(furl))))
-		lockFilename := filename + ".lock"
+	}
 
-		lock := flock.New(lockFilename)
-		err := lock.Lock()
-		if err != nil {
-			return "", fmt.Errorf("unable to create file lock %s: %s", lockFilename, err)
-		}
-		defer func() {
-			err := lock.Unlock()
-			if err != nil {
-				log.Printf("[WARN] There was an error unlocking filelock: %s", err)
-			}
-		}()
-
-		if _, err := os.Stat(filename); err != nil {
-			if !os.IsNotExist(err) {
-				return "", fmt.Errorf("error while trying to access file %q: %s", filename, err)
-			}
-			log.Printf("[DEBUG] File doens't exists %s. will download from %s", filename, furl)
-			file, err := os.Create(filename)
-			if err != nil {
-				return "", fmt.Errorf("error creating file %q: %s", filename, err)
-			}
-			defer file.Close()
-			client := &client.ProviderClient.HTTPClient
-			request, err := http.NewRequest("GET", furl, nil)
-			if err != nil {
-				return "", fmt.Errorf("error create a new request")
-			}
-
-			username := d.Get("image_source_username").(string)
-			password := d.Get("image_source_password").(string)
-			if username != "" && password != "" {
-				request.SetBasicAuth(username, password)
-			}
-
-			resp, err := client.Do(request)
-			if err != nil {
-				return "", fmt.Errorf("error downloading image from %q", furl)
-			}
-
-			// check for credential error among other errors
-			if resp.StatusCode != http.StatusOK {
-				return "", fmt.Errorf("error downloading image from %q, statusCode is %d", furl, resp.StatusCode)
-			}
-
-			defer resp.Body.Close()
-
-			if _, err = io.Copy(file, resp.Body); err != nil {
-				return "", fmt.Errorf("error downloading image %q to file %q: %s", furl, filename, err)
-			}
-			return filename, nil
-		}
-		log.Printf("[DEBUG] File exists %s", filename)
-		return filename, nil
-	} else {
+	furl := d.Get("image_source_url").(string)
+	if furl == "" {
 		return "", fmt.Errorf("error in config. no file specified")
 	}
+
+	dir := d.Get("image_cache_path").(string)
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		return "", fmt.Errorf("unable to create dir %s: %s", dir, err)
+	}
+
+	filename := filepath.Join(dir, fmt.Sprintf("%x.img", md5.Sum([]byte(furl))))
+	delFile := func() {
+		if err := os.Remove(filename); err != nil {
+			log.Printf("[DEBUG] Failed to cleanup the %q file: %s", filename, err)
+		}
+	}
+	lockFilename := filename + ".lock"
+
+	lock := flock.New(lockFilename)
+	err := lock.Lock()
+	if err != nil {
+		return "", fmt.Errorf("unable to create file lock on file %s: %s", lockFilename, err)
+	}
+	defer func() {
+		err := lock.Unlock()
+		if err != nil {
+			log.Printf("[WARN] There was an error unlocking filelock: %s", err)
+		}
+	}()
+
+	info, err := os.Stat(filename)
+	if err != nil && !os.IsNotExist(err) {
+		return "", fmt.Errorf("error while trying to access file %q: %s", filename, err)
+	}
+
+	// check if the file size is zero
+	// it could be a leftover from older provider versions
+	if info != nil {
+		if info.Size() != 0 {
+			log.Printf("[DEBUG] File exists %s", filename)
+			return filename, nil
+		}
+		// delete the zero size file
+		delFile()
+	}
+
+	log.Printf("[DEBUG] File doesn't exists %s. will download from %s", filename, furl)
+	file, err := os.Create(filename)
+	if err != nil {
+		return "", fmt.Errorf("error creating file %q: %s", filename, err)
+	}
+	defer file.Close()
+
+	httpClient := &client.ProviderClient.HTTPClient
+	request, err := http.NewRequest("GET", furl, nil)
+	if err != nil {
+		delFile()
+		return "", fmt.Errorf("error creating a new request: %s", err)
+	}
+
+	username := d.Get("image_source_username").(string)
+	password := d.Get("image_source_password").(string)
+	if username != "" && password != "" {
+		request.SetBasicAuth(username, password)
+	}
+
+	resp, err := httpClient.Do(request)
+	if err != nil {
+		delFile()
+		return "", fmt.Errorf("error downloading image from %q: %s", furl, err)
+	}
+
+	// check for credential error among other errors
+	if resp.StatusCode != http.StatusOK {
+		delFile()
+		return "", fmt.Errorf("error downloading image from %q, status code is %d", furl, resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+
+	if _, err = io.Copy(file, resp.Body); err != nil {
+		delFile()
+		return "", fmt.Errorf("error downloading image %q to file %q: %s", furl, filename, err)
+	}
+
+	return filename, nil
 }
 
 func resourceImagesImageRefreshFunc(client *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
