@@ -171,6 +171,16 @@ func ResourceImagesImage() *schema.Resource {
 				Description:  "A map of key/value pairs to set freeform information about an image. See the \"Notes\" section for further information about properties.",
 			},
 
+			"compression_format": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The format of compressed image. Use this attribute to decompress image when downloading it from source. Must be one of \"auto\", \"bzip2\", \"gzip\", \"xz\". If set to \"auto\", response Content-Type header will be used to detect compression format.",
+				ValidateFunc: validation.StringInSlice([]string{
+					compressionFormatAuto, compressionFormatBZIP2, compressionFormatGZIP, compressionFormatXZ,
+				}, false),
+			},
+
 			// Computed-only
 			"checksum": {
 				Type:        schema.TypeString,
