@@ -1,6 +1,8 @@
 package images
 
 import (
+	"compress/bzip2"
+	"compress/gzip"
 	"context"
 	"crypto/md5"
 	"encoding/hex"
@@ -15,10 +17,18 @@ import (
 
 	"github.com/gofrs/flock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/ulikunitz/xz"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+const (
+	compressionFormatAuto  = "auto"
+	compressionFormatBZIP2 = "bzip2"
+	compressionFormatGZIP  = "gzip"
+	compressionFormatXZ    = "xz"
 )
 
 var imagesDefaultStoreEndpointMasks = []string{"*.devmail.ru$", "^ams.*"}
@@ -169,13 +179,63 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 	}
 
 	defer resp.Body.Close()
+	reader := resp.Body
 
-	if _, err = io.Copy(file, resp.Body); err != nil {
+	compressionFormat := d.Get("compression_format").(string)
+	if compressionFormat == compressionFormatAuto {
+		// If we're here "Content-Encoding" in not filled, we'll read
+		// "Content-Type" to select format
+		compressionFormat, err = getCompressionFormatFromContentType(resp.Header.Get("Content-Type"))
+		if err != nil {
+			delFile()
+			return "", fmt.Errorf("error decompressing image %q: %s", furl, err)
+		}
+	}
+	if compressionFormat != "" {
+		decompressReader, err := selectDecompressReader(reader, compressionFormat)
+		if err != nil {
+			delFile()
+			return "", fmt.Errorf("error decompressing image %q: %s", furl, err)
+		}
+		defer decompressReader.Close()
+
+	}
+
+	if _, err = io.Copy(file, reader); err != nil {
 		delFile()
 		return "", fmt.Errorf("error downloading image %q to file %q: %s", furl, filename, err)
 	}
 
 	return filename, nil
+}
+
+func selectDecompressReader(src io.Reader, format string) (io.ReadCloser, error) {
+	switch format {
+	case compressionFormatBZIP2:
+		return io.NopCloser(bzip2.NewReader(src)), nil
+	case compressionFormatGZIP:
+		return gzip.NewReader(src)
+	case compressionFormatXZ:
+		xzReader, err := xz.NewReader(src)
+		if err != nil {
+			return nil, err
+		}
+		return io.NopCloser(xzReader), nil
+	}
+
+	return nil, fmt.Errorf("format %s is not supported", format)
+}
+
+func getCompressionFormatFromContentType(contentType string) (string, error) {
+	switch contentType {
+	case "gzip", "application/gzip", "application/x-gzip":
+		return compressionFormatGZIP, nil
+	case "bzip2", "application/bzip2", "application/x-bzip2":
+		return compressionFormatBZIP2, nil
+	case "xz", "application/xz", "application/x-xz":
+		return compressionFormatXZ, nil
+	}
+	return "", fmt.Errorf("content-type %s is not supported", contentType)
 }
 
 func resourceImagesImageRefreshFunc(client *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
