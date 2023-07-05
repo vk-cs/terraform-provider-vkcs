@@ -1,11 +1,13 @@
 package images
 
 import (
+	"archive/tar"
 	"compress/bzip2"
 	"compress/gzip"
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -22,13 +24,6 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-)
-
-const (
-	compressionFormatAuto  = "auto"
-	compressionFormatBZIP2 = "bzip2"
-	compressionFormatGZIP  = "gzip"
-	compressionFormatXZ    = "xz"
 )
 
 var imagesDefaultStoreEndpointMasks = []string{"*.devmail.ru$", "^ams.*"}
@@ -198,7 +193,18 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 			return "", fmt.Errorf("error decompressing image %q: %s", furl, err)
 		}
 		defer decompressReader.Close()
+		reader = decompressReader
+	}
 
+	archivingFormat := d.Get("archiving_format").(string)
+	if archivingFormat != "" {
+		unzipReader, err := selectUnzipReader(reader, archivingFormat)
+		if err != nil {
+			delFile()
+			return "", fmt.Errorf("error unzipping image %q: %s", furl, err)
+		}
+		defer unzipReader.Close()
+		reader = unzipReader
 	}
 
 	if _, err = io.Copy(file, reader); err != nil {
@@ -236,6 +242,29 @@ func getCompressionFormatFromContentType(contentType string) (string, error) {
 		return compressionFormatXZ, nil
 	}
 	return "", fmt.Errorf("content-type %s is not supported", contentType)
+}
+
+func selectUnzipReader(src io.Reader, format string) (io.ReadCloser, error) {
+	if format == archivingFormatTAR {
+		reader := tar.NewReader(src)
+		for {
+			header, err := reader.Next()
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			if err != nil {
+				return nil, err
+			}
+
+			switch header.Typeflag {
+			case tar.TypeReg:
+				return io.NopCloser(reader), nil
+			default:
+				return nil, fmt.Errorf("got unexpected type: %s in %s", string(header.Typeflag), header.Name)
+			}
+		}
+	}
+	return nil, fmt.Errorf("format %s is not supported", format)
 }
 
 func resourceImagesImageRefreshFunc(client *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
