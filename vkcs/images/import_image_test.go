@@ -28,6 +28,8 @@ func TestAccImagesImage_importBasic(t *testing.T) {
 					"image_cache_path",
 					"image_source_url",
 					"verify_checksum",
+					"compression_format",
+					"archiving_format",
 				},
 			},
 		},

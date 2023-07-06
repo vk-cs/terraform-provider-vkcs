@@ -284,106 +284,139 @@ func testAccCheckImagesImageTagCount(n string, expected int) resource.TestCheckF
 }
 
 const testAccImagesImageBasic = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "Centos TerraformAccTest"
-      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
-      container_format = "bare"
-      disk_format = "raw"
+resource "vkcs_images_image" "image_1" {
+  name               = "Centos TerraformAccTest"
+  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  container_format   = "bare"
+  disk_format        = "raw"
+  compression_format = "gzip"
+  archiving_format   = "tar"
 
-      timeouts {
-        create = "10m"
-      }
-  }`
+  timeouts {
+    create = "10m"
+  }
+}
+`
 
 const testAccImagesImageName1 = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "Centos TerraformAccTest"
-      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
-      container_format = "bare"
-      disk_format = "raw"
-  }`
+resource "vkcs_images_image" "image_1" {
+  name               = "Centos TerraformAccTest"
+  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  container_format   = "bare"
+  disk_format        = "raw"
+  compression_format = "gzip"
+  archiving_format   = "tar"
+}
+`
 
 const testAccImagesImageName2 = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "TerraformAccTest Centos"
-      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
-      container_format = "bare"
-      disk_format = "raw"
-  }`
+resource "vkcs_images_image" "image_1" {
+  name               = "TerraformAccTest Centos"
+  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  container_format   = "bare"
+  disk_format        = "raw"
+  compression_format = "gzip"
+  archiving_format   = "tar"
+}
+`
 
 const testAccImagesImageTags1 = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "Centos TerraformAccTest"
-      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
-      container_format = "bare"
-      disk_format = "raw"
-      tags = ["foo","bar"]
-  }`
+resource "vkcs_images_image" "image_1" {
+  name               = "Centos TerraformAccTest"
+  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  container_format   = "bare"
+  disk_format        = "raw"
+  compression_format = "gzip"
+  archiving_format   = "tar"
+
+  tags = ["foo", "bar"]
+}
+`
 
 const testAccImagesImageTags2 = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "Centos TerraformAccTest"
-      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
-      container_format = "bare"
-      disk_format = "raw"
-      tags = ["foo","bar","baz"]
-  }`
+resource "vkcs_images_image" "image_1" {
+  name               = "Centos TerraformAccTest"
+  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  container_format   = "bare"
+  disk_format        = "raw"
+  compression_format = "gzip"
+  archiving_format   = "tar"
+
+  tags = ["foo", "bar", "baz"]
+}
+`
 
 const testAccImagesImageTags3 = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "Centos TerraformAccTest"
-      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
-      container_format = "bare"
-      disk_format = "raw"
-      tags = ["foo","baz"]
-  }`
+resource "vkcs_images_image" "image_1" {
+  name               = "Centos TerraformAccTest"
+  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  container_format   = "bare"
+  disk_format        = "raw"
+  compression_format = "gzip"
+  archiving_format   = "tar"
+
+  tags = ["foo", "baz"]
+}
+`
 
 const testAccImagesImageProperties1 = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "Centos TerraformAccTest"
-      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
-      container_format = "bare"
-      disk_format = "raw"
+resource "vkcs_images_image" "image_1" {
+  name               = "Centos TerraformAccTest"
+  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  container_format   = "bare"
+  disk_format        = "raw"
+  compression_format = "gzip"
+  archiving_format   = "tar"
 
-      properties = {
-        foo = "bar"
-        bar = "foo"
-      }
-  }`
+  properties = {
+    foo = "bar"
+    bar = "foo"
+  }
+}
+`
 
 const testAccImagesImageProperties2 = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "Centos TerraformAccTest"
-      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
-      container_format = "bare"
-      disk_format = "raw"
+resource "vkcs_images_image" "image_1" {
+  name               = "Centos TerraformAccTest"
+  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  container_format   = "bare"
+  disk_format        = "raw"
+  compression_format = "gzip"
+  archiving_format   = "tar"
 
-      properties = {
-        foo = "bar"
-      }
-  }`
+  properties = {
+    foo = "bar"
+  }
+}
+`
 
 const testAccImagesImageProperties3 = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "Centos TerraformAccTest"
-      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
-      container_format = "bare"
-      disk_format = "raw"
+resource "vkcs_images_image" "image_1" {
+  name               = "Centos TerraformAccTest"
+  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  container_format   = "bare"
+  disk_format        = "raw"
+  compression_format = "gzip"
+  archiving_format   = "tar"
 
-      properties = {
-        foo = "baz"
-      }
-  }`
+  properties = {
+    foo = "baz"
+  }
+}
+`
 
 const testAccImagesImageProperties4 = `
-  resource "vkcs_images_image" "image_1" {
-      name   = "Centos TerraformAccTest"
-      image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
-      container_format = "bare"
-      disk_format = "raw"
+resource "vkcs_images_image" "image_1" {
+  name               = "Centos TerraformAccTest"
+  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  container_format   = "bare"
+  disk_format        = "raw"
+  compression_format = "gzip"
+  archiving_format   = "tar"
 
-      properties = {
-        foo = "baz"
-        bar = "foo"
-      }
-  }`
+  properties = {
+    foo = "baz"
+    bar = "foo"
+  }
+}
+`
