@@ -7,8 +7,8 @@ description: |-
 
 # VKCS Provider's changelog
 #### v0.4.2 (unreleased)
+- Add options to unzip and decompress downloaded image in Images image resource
 - Fix leaving a damaged file in cache when an error ocurred during downloading an image from source
-- Add option to decompress downloaded image in Images image resource
 - Fix schedule.time format of vkcs_backup_plan datasource
 
 #### v0.4.1

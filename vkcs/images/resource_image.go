@@ -22,6 +22,17 @@ const (
 	storeS3 = "s3"
 )
 
+const (
+	compressionFormatAuto  = "auto"
+	compressionFormatBZIP2 = "bzip2"
+	compressionFormatGZIP  = "gzip"
+	compressionFormatXZ    = "xz"
+)
+
+const (
+	archivingFormatTAR = "tar"
+)
+
 func ResourceImagesImage() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceImagesImageCreate,
@@ -179,6 +190,14 @@ func ResourceImagesImage() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					compressionFormatAuto, compressionFormatBZIP2, compressionFormatGZIP, compressionFormatXZ,
 				}, false),
+			},
+
+			"archiving_format": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Description:  "The format of archived image file. Use this to unzip image file when downloading an archive. Currently only \"tar\" format is supported.",
+				ValidateFunc: validation.StringInSlice([]string{archivingFormatTAR}, false),
 			},
 
 			// Computed-only
