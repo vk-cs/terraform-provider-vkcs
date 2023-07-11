@@ -33,6 +33,10 @@ resource "vkcs_images_image" "rancheros" {
 
 - `name` **required** *string* &rarr;  The name of the image.
 
+- `archiving_format` optional *string* &rarr;  The format of archived image file. Use this to unzip image file when downloading an archive. Currently only "tar" format is supported.
+
+- `compression_format` optional *string* &rarr;  The format of compressed image. Use this attribute to decompress image when downloading it from source. Must be one of "auto", "bzip2", "gzip", "xz". If set to "auto", response Content-Type header will be used to detect compression format.
+
 - `image_cache_path` optional *string* &rarr;  This is the directory where the images will be downloaded. Images will be stored with a filename corresponding to the url's md5 hash. Defaults to "$HOME/.terraform/image_cache"
 
 - `image_source_password` optional sensitive *string* &rarr;  The password of basic auth to download `image_source_url`.
