@@ -78,6 +78,25 @@ func TestAccImagesImageDataSource_testQueries(t *testing.T) {
 	})
 }
 
+func TestAccImagesImageDataSource_default(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: acctest.AccTestProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccImagesImageDataSourceDefaultBase,
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccImagesImageDataSourceDefault, map[string]string{"TestAccImagesImageDataSourceDefaultBase": testAccImagesImageDataSourceDefaultBase}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckImagesDataSourceID("data.vkcs_images_image.image_1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_images_image.image_1", "name", "CirrOS-tf_3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckImagesDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -166,5 +185,43 @@ data "vkcs_images_image" "image_1" {
     foo = "bar"
     bar = "foo"
   }
+}
+`
+
+const testAccImagesImageDataSourceDefaultBase = `
+resource "vkcs_images_image" "image_1" {
+  name = "CirrOS-tf_1"
+  container_format = "bare"
+  disk_format = "raw"
+  image_source_url = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
+  properties = {
+	sid = "hidden"
+  }
+}
+
+resource "vkcs_images_image" "image_2" {
+  name = "CirrOS-tf_2"
+  container_format = "bare"
+  disk_format = "raw"
+  image_source_url = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
+  properties = {
+    image_type = "snapshot"
+  }
+}
+
+resource "vkcs_images_image" "image_3" {
+  name = "CirrOS-tf_3"
+  container_format = "bare"
+  disk_format = "raw"
+  image_source_url = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
+}
+`
+
+const testAccImagesImageDataSourceDefault = `
+{{.TestAccImagesImageDataSourceDefaultBase}}
+
+data "vkcs_images_image" "image_1" {
+  visibility = "private"
+  default = true
 }
 `
