@@ -48,6 +48,12 @@ func DataSourceImagesImage() *schema.Resource {
 				Description: "The visibility of the image. Must be one of \"private\", \"community\", or \"shared\". Defaults to \"private\".",
 			},
 
+			"default": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Search for an image that is available for virtual machine creation.",
+			},
+
 			"member_status": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -228,6 +234,11 @@ func dataSourceImagesImageRead(ctx context.Context, d *schema.ResourceData, meta
 	allImages, err := images.ExtractImages(allPages)
 	if err != nil {
 		return diag.Errorf("Unable to retrieve images: %s", err)
+	}
+
+	if d.Get("default").(bool) {
+		allImages = filterImagesByDefault(allImages)
+		log.Printf("[DEBUG] Image list filtered by default flag")
 	}
 
 	properties := resourceImagesImageExpandProperties(
