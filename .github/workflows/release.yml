@@ -15,7 +15,51 @@ on:
     tags:
       - 'v*'
 jobs:
+  check-on-default-branch:
+    runs-on: ubuntu-latest
+    env: 
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+    steps:
+      - 
+        name: Checkout
+        uses: actions/checkout@v3
+      - 
+        name: Fetch default branch
+        run: git fetch --depth 1 origin $DEFAULT_BRANCH
+      - 
+        name: Check release is on default branch
+        run: |
+          if [[ $(git rev-list -n 1 $GITHUB_REF) != $(git rev-list -n 1 origin/$DEFAULT_BRANCH) ]]
+          then
+            echo "Release tag should be added on $DEFAULT_BRANCH. Exiting..."
+            exit 1
+          fi
+
+  check-prerelease-actions:
+    needs: [check-on-default-branch]
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Run pre-release actions
+        run: |
+          chmod +x ./scripts/prerelease.sh
+          ./scripts/prerelease.sh
+      - 
+        name: Get changes
+        id: changes
+        run: echo "changed=$(git status --porcelain | wc -l)" >> $GITHUB_OUTPUT
+      - 
+        name: Fail on changes
+        if: steps.changes.outputs.changed != 0
+        run: |
+          echo "You have to do pre-release actions before releasing. Exiting..."
+          exit 1
+
   goreleaser:
+    needs: [check-prerelease-actions]
     runs-on: ubuntu-latest
     steps:
       -
