@@ -87,4 +87,7 @@ lint:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
 	golangci-lint run ./...
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test lint
+update_release_schema:
+	go run helpers/schema-api/main.go -export .release/provider-schema.json
+
+.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test lint update_release_schema
