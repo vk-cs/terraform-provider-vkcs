@@ -10,6 +10,7 @@ import (
 
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/backup"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/db"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/images"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	wrapper "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/providerwrapper/framework"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/keymanager"
@@ -100,6 +101,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		db.NewDatastoresDataSource,
 		db.NewDatastoreCapabilitiesDataSource,
 		db.NewDatastoreParametersDataSource,
+		images.NewImagesDataSource,
 		keymanager.NewContainerDataSource,
 		keymanager.NewSecretDataSource,
 		kubernetes.NewAddonDatasource,
