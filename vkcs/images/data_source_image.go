@@ -45,7 +45,7 @@ func DataSourceImagesImage() *schema.Resource {
 					string(images.ImageVisibilityShared),
 					string(images.ImageVisibilityCommunity),
 				}, false),
-				Description: "The visibility of the image. Must be one of \"private\", \"community\", or \"shared\". Defaults to \"private\".",
+				Description: "The visibility of the image. Must be one of \"public\", \"private\", \"community\", or \"shared\".",
 			},
 
 			"default": {
