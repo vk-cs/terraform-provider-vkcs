@@ -18,7 +18,13 @@ description: |-
 ## Notes
 ### Properties
 
+See the following [reference](https://mcs.mail.ru/docs/en/base/iaas/instructions/vm-images/vm-image-metadata)
+for important supported properties.
+
 This resource supports the ability to add properties to a resource during creation as well as add, update, and delete properties during an update of this resource.
+
+VKCS Image service is adding some read-only properties (such as `direct_url`, `store`) to each image.
+This resource automatically reconciles these properties with the user-provided properties.
 
 ## Import
 
