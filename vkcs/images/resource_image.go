@@ -125,7 +125,7 @@ func ResourceImagesImage() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.IntAtLeast(0),
 				Default:      0,
-				Description:  "Amount of disk space (in GB) required to boot image. Defaults to 0.",
+				Description:  "Amount of disk space (in GB) required to boot VM. Defaults to 0.",
 			},
 
 			"min_ram_mb": {
@@ -133,7 +133,7 @@ func ResourceImagesImage() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.IntAtLeast(0),
 				Default:      0,
-				Description:  "Amount of ram (in MB) required to boot image. Defauts to 0.",
+				Description:  "Amount of ram (in MB) required to boot VM. Defauts to 0.",
 			},
 
 			"name": {

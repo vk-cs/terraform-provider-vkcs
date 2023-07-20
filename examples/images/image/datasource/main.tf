@@ -1,4 +1,10 @@
 data "vkcs_images_image" "debian" {
-  name        = "Debian11.4"
-  most_recent = true
+  # Both arguments are required to search an actual image provided by VKCS.
+  visibility = "public"
+  default    = true
+  # Use properties to distinguish between available images.
+  properties = {
+    mcs_os_distro  = "debian"
+    mcs_os_version = "10.1"
+  }
 }
