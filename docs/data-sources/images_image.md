@@ -11,15 +11,38 @@ description: |-
 Use this data source to get the ID of an available VKCS image.
 
 ## Example Usage
-
+### VKCS provided image
 ```terraform
 data "vkcs_images_image" "debian" {
-  name        = "Debian11.4"
+  # Both arguments are required to search an actual image provided by VKCS.
+  visibility = "public"
+  default    = true
+  # Use properties to distinguish between available images.
+  properties = {
+    mcs_os_distro  = "debian"
+    mcs_os_version = "10.1"
+  }
+}
+```
+### User image
+```terraform
+data "vkcs_images_image" "eurolinux9" {
+  tag         = "tf-example"
+  # Useful if you keep old versions of your images.
   most_recent = true
+  properties = {
+    mcs_os_distro  = "eurolinux"
+    mcs_os_version = "9"
+  }
+  # This is unnecessary in real life.
+  # This is required here to let the example work with image resource example.
+  depends_on = [ vkcs_images_image.eurolinux9 ]
 }
 ```
 
 ## Argument Reference
+- `default` optional *boolean* &rarr;  Search for an image that is available for virtual machine creation.
+
 - `member_status` optional *string* &rarr;  Status for adding a new member (tenant) to an image member list.
 
 - `most_recent` optional *boolean* &rarr;  If more than one result is returned, use the most recent image.
@@ -38,7 +61,7 @@ data "vkcs_images_image" "debian" {
 
 - `tag` optional *string* &rarr;  Search for images with a specific tag.
 
-- `visibility` optional *string* &rarr;  The visibility of the image. Must be one of "private", "community", or "shared". Defaults to "private".
+- `visibility` optional *string* &rarr;  The visibility of the image. Must be one of "public", "private", "community", or "shared".
 
 
 ## Attributes Reference
