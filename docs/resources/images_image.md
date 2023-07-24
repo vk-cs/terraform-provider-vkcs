@@ -15,15 +15,30 @@ Manages an Image resource within VKCS.
 ## Example Usage
 
 ```terraform
-resource "vkcs_images_image" "rancheros" {
-  name             = "RancherOS"
-  image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
-  container_format = "bare"
-  disk_format      = "qcow2"
+resource "vkcs_images_image" "eurolinux9" {
+  name               = "eurolinux9-tf-example"
+  image_source_url   = "https://fbi.cdn.euro-linux.com/images/EL-9-cloudgeneric-2023-03-19.raw.xz"
+  # compression_format should be set for compressed image source.
+  compression_format = "xz"
+  container_format   = "bare"
+  disk_format        = "raw"
+  # Minimal requirements from image vendor.
+  # Should be set to prevent VKCS to build VM on lesser resources.
+  min_ram_mb         = 1536
+  min_disk_gb        = 10
 
   properties = {
-    key = "value"
+    # Refer to https://mcs.mail.ru/docs/en/base/iaas/instructions/vm-images/vm-image-metadata
+    os_type             = "linux"
+    os_admin_user       = "root"
+    mcs_name            = "EuroLinux 9"
+    mcs_os_distro       = "eurolinux"
+    mcs_os_version      = "9"
+    hw_qemu_guest_agent = "yes"
+    os_require_quiesce  = "yes"
   }
+  # Use tags to organize your images.
+  tags = ["tf-example"]
 }
 ```
 ## Argument Reference
@@ -47,9 +62,9 @@ resource "vkcs_images_image" "rancheros" {
 
 - `local_file_path` optional *string* &rarr;  This is the filepath of the raw image file that will be uploaded to VKCS. Conflicts with `image_source_url`
 
-- `min_disk_gb` optional *number* &rarr;  Amount of disk space (in GB) required to boot image. Defaults to 0.
+- `min_disk_gb` optional *number* &rarr;  Amount of disk space (in GB) required to boot VM. Defaults to 0.
 
-- `min_ram_mb` optional *number* &rarr;  Amount of ram (in MB) required to boot image. Defauts to 0.
+- `min_ram_mb` optional *number* &rarr;  Amount of ram (in MB) required to boot VM. Defauts to 0.
 
 - `properties` optional *map of* *string* &rarr;  A map of key/value pairs to set freeform information about an image. See the "Notes" section for further information about properties.
 
@@ -91,7 +106,13 @@ In addition to all arguments above, the following attributes are exported:
 ## Notes
 ### Properties
 
+See the following [reference](https://mcs.mail.ru/docs/en/base/iaas/instructions/vm-images/vm-image-metadata)
+for important supported properties.
+
 This resource supports the ability to add properties to a resource during creation as well as add, update, and delete properties during an update of this resource.
+
+VKCS Image service is adding some read-only properties (such as `direct_url`, `store`) to each image.
+This resource automatically reconciles these properties with the user-provided properties.
 
 ## Import
 
