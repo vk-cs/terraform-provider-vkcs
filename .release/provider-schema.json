@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.4.1",
+  "provider_version": "v0.4.2",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -1964,10 +1964,24 @@
       },
       "vkcs_images_image": {
         "schema": {
+          "archiving_format": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The format of archived image file. Use this to unzip image file when downloading an archive. Currently only \"tar\" format is supported.",
+            "force_new": true,
+            "new_since": "v0.4.2"
+          },
           "checksum": {
             "type": "TypeString",
             "description": "The checksum of the data associated with the image.",
             "computed": true
+          },
+          "compression_format": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The format of compressed image. Use this attribute to decompress image when downloading it from source. Must be one of \"auto\", \"bzip2\", \"gzip\", \"xz\". If set to \"auto\", response Content-Type header will be used to detect compression format.",
+            "force_new": true,
+            "new_since": "v0.4.2"
           },
           "container_format": {
             "type": "TypeString",
@@ -1994,7 +2008,6 @@
           "image_cache_path": {
             "type": "TypeString",
             "optional": true,
-            "default": "/home/panic/.terraform/image_cache",
             "description": "This is the directory where the images will be downloaded. Images will be stored with a filename corresponding to the url's md5 hash. Defaults to \"$HOME/.terraform/image_cache\""
           },
           "image_source_password": {
@@ -2028,13 +2041,13 @@
             "type": "TypeInt",
             "optional": true,
             "default": 0,
-            "description": "Amount of disk space (in GB) required to boot image. Defaults to 0."
+            "description": "Amount of disk space (in GB) required to boot VM. Defaults to 0."
           },
           "min_ram_mb": {
             "type": "TypeInt",
             "optional": true,
             "default": 0,
-            "description": "Amount of ram (in MB) required to boot image. Defauts to 0."
+            "description": "Amount of ram (in MB) required to boot VM. Defauts to 0."
           },
           "name": {
             "type": "TypeString",
@@ -6300,6 +6313,12 @@
             "description": "The date the image was created.",
             "computed": true
           },
+          "default": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Search for an image that is available for virtual machine creation.",
+            "new_since": "v0.4.2"
+          },
           "disk_format": {
             "type": "TypeString",
             "description": "The format of the image's disk.",
@@ -6412,11 +6431,105 @@
           "visibility": {
             "type": "TypeString",
             "optional": true,
-            "description": "The visibility of the image. Must be one of \"private\", \"community\", or \"shared\". Defaults to \"private\".",
+            "description": "The visibility of the image. Must be one of \"public\", \"private\", \"community\", or \"shared\".",
             "force_new": true
           }
         },
         "description": "Use this data source to get the ID of an available VKCS image."
+      },
+      "vkcs_images_images": {
+        "schema": {
+          "created_at": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Date filter to select images with created_at matching the specified criteria. Value should be either RFC3339 formatted time or time filter in format `filter:time`, where `filter` is one of [eq, neq, gt, gte, lt, lte] and `time` is RFC3339 formatted time."
+          },
+          "default": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "The flag used to filter images based on whether they are available for virtual machine creation."
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "The ID of the data source",
+            "computed": true
+          },
+          "images": {
+            "type": "TypeList",
+            "description": "Images matching specified criteria.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "id": {
+                  "type": "TypeString",
+                  "description": "ID of an image.",
+                  "computed": true
+                },
+                "name": {
+                  "type": "TypeString",
+                  "description": "Name of an image.",
+                  "computed": true
+                },
+                "properties": {
+                  "type": "TypeMap",
+                  "description": "Properties associated with an image.",
+                  "computed": true,
+                  "elem": {
+                    "type": "TypeString"
+                  }
+                }
+              }
+            }
+          },
+          "owner": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The ID of the owner of images."
+          },
+          "properties": {
+            "type": "TypeMap",
+            "optional": true,
+            "description": "Search for images with specific properties.",
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the Images client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          },
+          "size_max": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "The maximum size (in bytes) of images to return."
+          },
+          "size_min": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "The minimum size (in bytes) of images to return."
+          },
+          "tags": {
+            "type": "TypeList",
+            "optional": true,
+            "description": "Search for images with specific tags.",
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Date filter to select images with updated_at matching the specified criteria. Value should be either RFC3339 formatted time or time filter in format `filter:time`, where `filter` is one of [eq, neq, gt, gte, lt, lte] and `time` is RFC3339 formatted time."
+          },
+          "visibility": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The visibility of images. Must be one of \"public\", \"private\", \"community\", or \"shared\"."
+          }
+        },
+        "new_since": "v0.4.2"
       },
       "vkcs_keymanager_container": {
         "schema": {
