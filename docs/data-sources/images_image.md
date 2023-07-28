@@ -41,7 +41,7 @@ data "vkcs_images_image" "eurolinux9" {
 ```
 
 ## Argument Reference
-- `default` optional *boolean* &rarr;  Search for an image that is available for virtual machine creation.
+- `default` optional *boolean* &rarr;  Search for an image that is available for virtual machine creation. **New since v0.4.2**.
 
 - `member_status` optional *string* &rarr;  Status for adding a new member (tenant) to an image member list.
 

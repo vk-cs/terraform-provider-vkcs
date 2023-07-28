@@ -7,7 +7,7 @@ description: |-
 
 # vkcs_images_images
 
-
+Use this data source to get information on VKCS images. **New since v0.4.2**.
 
 ## Example Usage
 
