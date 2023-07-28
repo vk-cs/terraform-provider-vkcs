@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.4.2 (unreleased)
+#### v0.4.2
 - Add data source for images
 - Add "default" attribute to Images data sources
 - Add options to unzip and decompress downloaded image in Images image resource
