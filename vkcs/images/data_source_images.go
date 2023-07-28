@@ -171,6 +171,7 @@ func (d *ImagesDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 				Description: "The visibility of images. Must be one of \"public\", \"private\", \"community\", or \"shared\".",
 			},
 		},
+		Description: "Use this data source to get information on VKCS images.",
 	}
 }
 
