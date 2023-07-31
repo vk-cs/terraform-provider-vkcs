@@ -6529,6 +6529,7 @@
             "description": "The visibility of images. Must be one of \"public\", \"private\", \"community\", or \"shared\"."
           }
         },
+        "description": "Use this data source to get information on VKCS images.",
         "new_since": "v0.4.2"
       },
       "vkcs_keymanager_container": {
