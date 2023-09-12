@@ -199,8 +199,11 @@ func (d *DatastoreCapabilitiesDataSource) Read(ctx context.Context, req datasour
 
 	capabilities, err := datastores.ListCapabilities(dbClient, dsName, dsVersionID).Extract()
 	if err != nil {
-		resp.Diagnostics.AddError("Error retrieving vkcs_db_datastore_capabilities",
-			util.CheckDeletedDatasource(ctx, resp, err).Error())
+		checkDeleted := util.CheckDeletedDatasource(ctx, resp, err)
+		if checkDeleted != nil {
+			resp.Diagnostics.AddError("Error retrieving vkcs_db_datastore_capabilities", checkDeleted.Error())
+		}
+
 		return
 	}
 	flattenedCapabilities, diags := flattenDatastoreCapabilities(ctx, capabilities)
