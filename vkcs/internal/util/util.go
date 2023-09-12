@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/mapstructure"
@@ -299,4 +300,11 @@ func CopyToMap(dst, src *map[string]string) {
 	for k, v := range *src {
 		(*dst)[k] = v
 	}
+}
+
+func ValueKnownBoolPointer(v basetypes.BoolValue) *bool {
+	if v.IsUnknown() {
+		return nil
+	}
+	return v.ValueBoolPointer()
 }
