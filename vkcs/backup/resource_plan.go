@@ -347,8 +347,10 @@ func (r *PlanResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	planResp, err := plans.Get(backupClient, planID).Extract()
 	if err != nil {
-		resp.Diagnostics.AddError("Error retrieving vkcs_backup_plan",
-			util.CheckDeletedResource(ctx, resp, err).Error())
+		checkDeleted := util.CheckDeletedResource(ctx, resp, err)
+		if checkDeleted != nil {
+			resp.Diagnostics.AddError("Error retrieving vkcs_backup_plan", checkDeleted.Error())
+		}
 		return
 	}
 	if planResp.Status == planStatusDeleted {
