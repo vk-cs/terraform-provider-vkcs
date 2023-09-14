@@ -142,13 +142,10 @@ func ResourceKubernetesCluster() *schema.Resource {
 					"  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16.\n" +
 					"  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False.\n" +
 					"  * `cloud_monitoring` to enable cloud monitoring feature.\n" +
-					"  * `docker_registry_enabled=true` to preinstall Docker Registry.\n" +
 					"  * `etcd_volume_size` to set etcd volume size. Default 10Gb.\n" +
-					"  * `ingress_controller=\"nginx\"` to preinstall NGINX Ingress Controller.\n" +
 					"  * `kube_log_level` to set log level for kubelet in range 0 to 8.\n" +
 					"  * `master_volume_size` to set master vm volume size. Default 50Gb.\n" +
-					"  * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.\n" +
-					"  * `prometheus_monitoring=true` to preinstall monitoring system based on Prometheus and Grafana.\n",
+					"  * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.\n",
 			},
 			"master_count": {
 				Type:        schema.TypeInt,
