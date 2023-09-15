@@ -50,11 +50,13 @@ func addonStateRefreshFunc(client *gophercloud.ServiceClient, id string) retry.S
 			if _, ok := err.(gophercloud.ErrDefault404); ok {
 				return a, addonStatusDeleted, nil
 			}
-			if a.Status == addonStatusFailed {
-				return a, a.Status, fmt.Errorf("there was an error creating the kubernetes cluster addon: %s", err)
-			}
 			return nil, "", err
 		}
+
+		if a.Status == addonStatusFailed {
+			return a, a.Status, fmt.Errorf("the addon in failed status, retry the operation or contact support")
+		}
+
 		return a, a.Status, nil
 	}
 }

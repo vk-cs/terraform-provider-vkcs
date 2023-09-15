@@ -6,6 +6,10 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+
+#### v0.4.3 (unreleased)
+- Fix Kubernetes addon state refresh panic on error
+
 #### v0.4.2
 - Add data source for images
 - Add "default" attribute to Images data sources
