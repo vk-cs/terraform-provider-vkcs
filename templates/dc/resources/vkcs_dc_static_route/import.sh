@@ -1,0 +1,1 @@
+terraform import vkcs_dc_static_route.mydcstaticroute 2ee73dd1-d52a-4c3f-9041-c60900c154a4
