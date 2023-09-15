@@ -1,4 +1,4 @@
-package api_options
+package apioptions
 
 import "github.com/gophercloud/gophercloud"
 

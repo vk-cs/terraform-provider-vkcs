@@ -114,6 +114,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		backup.NewPlanDataSource,
 		backup.NewProviderDataSource,
 		backup.NewProvidersDataSource,
+		dc.NewAPIOptionsDataSource,
 	}
 }
 
