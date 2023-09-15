@@ -1,0 +1,1 @@
+terraform import vkcs_dc_bgp_instance.mydcbgpinstance e73496b2-e476-4536-9167-af24d18e1486

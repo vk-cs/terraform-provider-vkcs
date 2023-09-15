@@ -1,0 +1,1 @@
+terraform import vkcs_dc_bgp_neighbor.mydcbgpneighbor 73096185-f200-4790-8095-962617b755f8

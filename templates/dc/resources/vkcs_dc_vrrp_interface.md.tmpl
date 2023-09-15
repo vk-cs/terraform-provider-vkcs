@@ -1,0 +1,21 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a direct connect VRRP interface resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+Direct connect vrrp interface can be imported using the `name`, e.g.
+{{codefile "shell" "templates/dc/resources/vkcs_dc_vrrp_interface/import.sh"}}

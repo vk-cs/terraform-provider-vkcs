@@ -13,3 +13,4 @@ subCategoryMapping:
   db: Databases
   keymanager: Key Manager
   backup: Backup
+  dc: Direct Connect
