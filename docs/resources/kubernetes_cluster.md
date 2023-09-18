@@ -63,13 +63,10 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
   * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16.
   * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False.
   * `cloud_monitoring` to enable cloud monitoring feature.
-  * `docker_registry_enabled=true` to preinstall Docker Registry.
   * `etcd_volume_size` to set etcd volume size. Default 10Gb.
-  * `ingress_controller="nginx"` to preinstall NGINX Ingress Controller.
   * `kube_log_level` to set log level for kubelet in range 0 to 8.
   * `master_volume_size` to set master vm volume size. Default 50Gb.
   * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.
-  * `prometheus_monitoring=true` to preinstall monitoring system based on Prometheus and Grafana.
 
 - `loadbalancer_subnet_id` optional *string* &rarr;  The UUID of the load balancer's subnet. Changing this creates new cluster.
 
