@@ -161,7 +161,7 @@ func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, 
 		region = r.config.GetRegion()
 	}
 
-	client, err := r.config.ContainerInfraAddonsV1Client(region)
+	containerInfraAddonsClient, err := r.config.ContainerInfraAddonsV1Client(region)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating Kubernetes Addons API client", err.Error())
 		return
@@ -175,7 +175,7 @@ func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, 
 	if name == "" {
 		tflog.Debug(ctx, "Calling Addons API to resolve addon name by its ID")
 
-		availableAddon, err := addons.GetAvailableAddon(client, clusterID, addonID).Extract()
+		availableAddon, err := addons.GetAvailableAddon(containerInfraAddonsClient, clusterID, addonID).Extract()
 		if err != nil {
 			resp.Diagnostics.AddError("Error calling Kubernetes Addons API", err.Error())
 			return
@@ -196,7 +196,7 @@ func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	tflog.Debug(ctx, "Calling Addons API to install the addon to the cluster")
 
-	clusterAddon, err := addons.InstallAddonToCluster(client, addonID, clusterID, &createOpts).Extract()
+	clusterAddon, err := addons.InstallAddonToCluster(containerInfraAddonsClient, addonID, clusterID, &createOpts).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error calling Kubernetes Addons API", err.Error())
 		return
@@ -210,7 +210,7 @@ func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, 
 	addonStateConf := &retry.StateChangeConf{
 		Pending:    []string{addonStatusNew, addonStatusInstalling},
 		Target:     []string{addonStatusInstalled},
-		Refresh:    addonStateRefreshFunc(client, id),
+		Refresh:    addonStateRefreshFunc(containerInfraAddonsClient, id),
 		Timeout:    timeout,
 		Delay:      addonDelay,
 		MinTimeout: addonMinTimeout,
@@ -224,10 +224,16 @@ func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	containerInfraClient, err := r.config.ContainerInfraV1Client(region)
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating Kubernetes API client", err.Error())
+		return
+	}
+
 	clusterStateConf := &retry.StateChangeConf{
 		Pending:    []string{string(clusterStatusReconciling)},
 		Target:     []string{string(clusterStatusRunning)},
-		Refresh:    kubernetesStateRefreshFunc(client, clusterID),
+		Refresh:    kubernetesStateRefreshFunc(containerInfraClient, clusterID),
 		Timeout:    timeout,
 		Delay:      addonDelay,
 		MinTimeout: addonMinTimeout,
@@ -328,7 +334,7 @@ func (r *AddonResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		region = r.config.GetRegion()
 	}
 
-	client, err := r.config.ContainerInfraAddonsV1Client(region)
+	containerInfraAddonsClient, err := r.config.ContainerInfraAddonsV1Client(region)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating Kubernetes Addons API client", err.Error())
 		return
@@ -341,7 +347,7 @@ func (r *AddonResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 
 	tflog.Debug(ctx, "Calling Addons API to check if the addon has been already deleted")
 
-	clusterAddon, err := clusteraddons.Get(client, id).Extract()
+	clusterAddon, err := clusteraddons.Get(containerInfraAddonsClient, id).Extract()
 	if errutil.IsNotFound(err) {
 		return
 	} else if err != nil {
@@ -354,7 +360,7 @@ func (r *AddonResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 
 	tflog.Debug(ctx, "The addon is still present. Calling Addons API to delete it")
 
-	err = clusteraddons.Delete(client, id).ExtractErr()
+	err = clusteraddons.Delete(containerInfraAddonsClient, id).ExtractErr()
 	if errutil.IsNotFound(err) {
 		return
 	} else if err != nil {
@@ -367,7 +373,7 @@ func (r *AddonResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	addonStateConf := &retry.StateChangeConf{
 		Pending:    []string{addonStatusDeleting},
 		Target:     []string{addonStatusDeleted},
-		Refresh:    addonStateRefreshFunc(client, id),
+		Refresh:    addonStateRefreshFunc(containerInfraAddonsClient, id),
 		Timeout:    timeout,
 		Delay:      addonDelay,
 		MinTimeout: addonMinTimeout,
@@ -381,10 +387,16 @@ func (r *AddonResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		return
 	}
 
+	containerInfraClient, err := r.config.ContainerInfraV1Client(region)
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating Kubernetes API client", err.Error())
+		return
+	}
+
 	clusterStateConf := &retry.StateChangeConf{
 		Pending:    []string{string(clusterStatusReconciling)},
 		Target:     []string{string(clusterStatusRunning)},
-		Refresh:    kubernetesStateRefreshFunc(client, clusterID),
+		Refresh:    kubernetesStateRefreshFunc(containerInfraClient, clusterID),
 		Timeout:    timeout,
 		Delay:      addonDelay,
 		MinTimeout: addonMinTimeout,
