@@ -207,7 +207,7 @@ func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, 
 	id := clusterAddon.ID
 	resp.State.SetAttribute(ctx, path.Root("id"), id)
 
-	stateConf := &retry.StateChangeConf{
+	addonStateConf := &retry.StateChangeConf{
 		Pending:    []string{addonStatusNew, addonStatusInstalling},
 		Target:     []string{addonStatusInstalled},
 		Refresh:    addonStateRefreshFunc(client, id),
@@ -218,9 +218,26 @@ func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	tflog.Debug(ctx, "Waiting for the addon to be installed", map[string]interface{}{"timeout": timeout})
 
-	_, err = stateConf.WaitForStateContext(ctx)
+	_, err = addonStateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error waiting for the addon to become ready", err.Error())
+		return
+	}
+
+	clusterStateConf := &retry.StateChangeConf{
+		Pending:    []string{string(clusterStatusReconciling)},
+		Target:     []string{string(clusterStatusRunning)},
+		Refresh:    kubernetesStateRefreshFunc(client, clusterID),
+		Timeout:    timeout,
+		Delay:      addonDelay,
+		MinTimeout: addonMinTimeout,
+	}
+
+	tflog.Debug(ctx, "Waiting for the cluster to become ready")
+
+	_, err = clusterStateConf.WaitForStateContext(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError("Error waiting for the cluster to become ready", err.Error())
 		return
 	}
 
@@ -317,8 +334,10 @@ func (r *AddonResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		return
 	}
 
-	id := data.ID.ValueString()
+	id, addonID, clusterID := data.ID.ValueString(), data.AddonID.ValueString(), data.ClusterID.ValueString()
 	ctx = tflog.SetField(ctx, "cluster_addon_id", id)
+	ctx = tflog.SetField(ctx, "addon_id", addonID)
+	ctx = tflog.SetField(ctx, "cluster_id", clusterID)
 
 	tflog.Debug(ctx, "Calling Addons API to check if the addon has been already deleted")
 
@@ -345,7 +364,7 @@ func (r *AddonResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 
 	tflog.Debug(ctx, "Called Addons API to delete the addon")
 
-	stateConf := &retry.StateChangeConf{
+	addonStateConf := &retry.StateChangeConf{
 		Pending:    []string{addonStatusDeleting},
 		Target:     []string{addonStatusDeleted},
 		Refresh:    addonStateRefreshFunc(client, id),
@@ -356,9 +375,26 @@ func (r *AddonResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 
 	tflog.Debug(ctx, "Waiting for the addon to be deleted", map[string]interface{}{"timeout": timeout})
 
-	_, err = stateConf.WaitForStateContext(ctx)
+	_, err = addonStateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error waiting for the addon to become ready", err.Error())
+		return
+	}
+
+	clusterStateConf := &retry.StateChangeConf{
+		Pending:    []string{string(clusterStatusReconciling)},
+		Target:     []string{string(clusterStatusRunning)},
+		Refresh:    kubernetesStateRefreshFunc(client, clusterID),
+		Timeout:    timeout,
+		Delay:      addonDelay,
+		MinTimeout: addonMinTimeout,
+	}
+
+	tflog.Debug(ctx, "Waiting for the cluster to become ready")
+
+	_, err = clusterStateConf.WaitForStateContext(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError("Error waiting for the cluster to become ready", err.Error())
 		return
 	}
 }
