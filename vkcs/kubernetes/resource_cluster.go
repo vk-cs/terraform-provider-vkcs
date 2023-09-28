@@ -526,7 +526,7 @@ func checkForStatus(ctx context.Context, d *schema.ResourceData, containerInfraC
 	}
 
 	if d.HasChange("status") {
-		currentStatus := d.Get("status").(clusterStatus)
+		currentStatus := clusterStatus(d.Get("status").(string))
 		if cluster.NewStatus != string(clusterStatusRunning) && cluster.NewStatus != string(clusterStatusShutoff) {
 			return false, fmt.Errorf("turning on/off is prohibited due to cluster's status %s", cluster.NewStatus)
 		}
