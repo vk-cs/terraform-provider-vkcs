@@ -109,7 +109,7 @@ func (r *StaticRouteResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
 			},
 		},
-		Description: "Manages a direct connect BGP Static Announce resource.",
+		Description: "Manages a direct connect BGP Static Announce resource.<br> ~> **Note:** This resource requires Sprut SDN to be enabled in your project.",
 	}
 }
 

@@ -60,7 +60,7 @@ func (d *APIOptionsDataSource) Schema(ctx context.Context, req datasource.Schema
 				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
 			},
 		},
-		Description: "Use this data source to get direct connect api options",
+		Description: "Use this data source to get direct connect api options.<br> ~> **Note:** This data source requires Sprut SDN to be enabled in your project.",
 	}
 }
 

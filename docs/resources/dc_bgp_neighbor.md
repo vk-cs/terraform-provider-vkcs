@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_dc_bgp_neighbor
 
-Manages a direct connect BGP neighbor resource.
+Manages a direct connect BGP neighbor resource.<br> ~> **Note:** This resource requires Sprut SDN to be enabled in your project.
 
 ## Example Usage
 ```terraform

@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_dc_interface
 
-Manages a direct connect interface resource.
+Manages a direct connect interface resource.<br> ~> **Note:** This resource requires Sprut SDN to be enabled in your project.
 
 ## Example Usage
 ```terraform
