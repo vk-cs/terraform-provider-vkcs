@@ -131,7 +131,7 @@ func (r *BGPInstanceResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
 			},
 		},
-		Description: "Manages a direct connect BGP instance resource.",
+		Description: "Manages a direct connect BGP instance resource.<br> ~> **Note:** This resource requires Sprut SDN to be enabled in your project.",
 	}
 }
 

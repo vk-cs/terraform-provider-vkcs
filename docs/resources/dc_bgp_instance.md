@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_dc_bgp_instance
 
-Manages a direct connect BGP instance resource.
+Manages a direct connect BGP instance resource.<br> ~> **Note:** This resource requires Sprut SDN to be enabled in your project.
 
 ## Example Usage
 ```terraform

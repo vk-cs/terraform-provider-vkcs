@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_dc_vrrp_address
 
-Manages a direct connect VRRP address resource.
+Manages a direct connect VRRP address resource.<br> ~> **Note:** This resource requires Sprut SDN to be enabled in your project.
 
 ## Example Usage
 ```terraform
