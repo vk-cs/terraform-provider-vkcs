@@ -10,6 +10,7 @@ description: |-
 - Add Direct Connect resources and data sources
 - Fix Kubernetes addon state refresh panic on error
 - Fix error of unexpected Kubernetes cluster status after creating/deleting an addon
+- Fix panic on Kubernetes cluster "status" attribute change 
 
 #### v0.4.2
 - Add data source for images
