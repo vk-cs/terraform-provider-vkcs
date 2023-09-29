@@ -5,5 +5,4 @@ resource "vkcs_dc_vrrp" "dc_vrrp" {
     network_id = vkcs_networking_network.app.id
     subnet_id = vkcs_networking_subnet.app.id
     advert_interval = 1
-    enabled = true
 }
