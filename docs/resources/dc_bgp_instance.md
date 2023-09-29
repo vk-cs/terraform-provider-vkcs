@@ -19,7 +19,6 @@ resource "vkcs_dc_bgp_instance" "dc_bgp_instance" {
     bgp_router_id = "192.168.1.2"
     asn = 12345
     ecmp_enabled = true
-    enabled = true
     graceful_restart = true
 }
 ```
