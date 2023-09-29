@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_dc_bgp_static_announce
 
-Manages a direct connect BGP Static Announce resource.<br> ~> **Note:** This resource requires Sprut SDN to be enabled in your project.
+Manages a direct connect BGP Static Announce resource.<br> ~> **Note:** This resource requires Sprut SDN to be enabled in your project. **New since v0.5.0**.
 
 ## Example Usage
 ```terraform

@@ -8,7 +8,7 @@ description: |-
 
 # vkcs_dc_vrrp_interface
 
-Manages a direct connect VRRP interface resource.<br> ~> **Note:** This resource requires Sprut SDN to be enabled in your project.
+Manages a direct connect VRRP interface resource.<br> ~> **Note:** This resource requires Sprut SDN to be enabled in your project. **New since v0.5.0**.
 
 ## Example Usage
 ```terraform
