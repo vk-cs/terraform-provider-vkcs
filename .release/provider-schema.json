@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.4.2",
+  "provider_version": "v0.5.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -1962,6 +1962,631 @@
         },
         "description": "Provides a db user resource. This can be used to create, modify and delete db user."
       },
+      "vkcs_dc_bgp_instance": {
+        "schema": {
+          "asn": {
+            "type": "TypeInt",
+            "required": true,
+            "description": "BGP Autonomous System Number (integer representation supports only). Changing this creates a new resource"
+          },
+          "bgp_router_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "BGP Router ID (IP address that represent BGP router in BGP network). Changing this creates a new resource"
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "dc_router_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Direct Connect Router ID to attach. Changing this creates a new resource"
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the router",
+            "computed": true
+          },
+          "ecmp_enabled": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Enable BGP ECMP behaviour on router. Default is false",
+            "computed": true
+          },
+          "enabled": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Enable or disable item. Default is true",
+            "computed": true
+          },
+          "graceful_restart": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Enable BGP Graceful Restart feature. Default is false",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "long_lived_graceful_restart": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Enable BGP Long Lived Graceful Restart feature. Default is false",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the router",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Update timestamp",
+            "computed": true
+          }
+        },
+        "description": "Manages a direct connect BGP instance resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "new_since": "v0.5.0"
+      },
+      "vkcs_dc_bgp_neighbor": {
+        "schema": {
+          "add_paths": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Activate BGP Add-Paths feature on peer. Default is off",
+            "computed": true
+          },
+          "bfd_enabled": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Control BGP session activity with BFD protocol. Default is false",
+            "computed": true
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "dc_bgp_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Direct Connect BGP ID to attach. Changing this creates a new resource"
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the BGP neighbor",
+            "computed": true
+          },
+          "enabled": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Enable or disable item. Default is true",
+            "computed": true
+          },
+          "filter_in": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Input filter that pass incoming BGP prefixes (allow any)",
+            "computed": true
+          },
+          "filter_out": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Output filter that pass incoming BGP prefixes (allow any)",
+            "computed": true
+          },
+          "force_ibgp_next_hop_self": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Force set IP address of next-hop on BGP prefix to self even in iBGP. Default is false",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the BGP neighbor",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "remote_asn": {
+            "type": "TypeInt",
+            "required": true,
+            "description": "BGP Neighbor ASN. Changing this creates a new resource"
+          },
+          "remote_ip": {
+            "type": "TypeString",
+            "required": true,
+            "description": "BGP Neighbor IP address. Changing this creates a new resource"
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Update timestamp",
+            "computed": true
+          }
+        },
+        "description": "Manages a direct connect BGP neighbor resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "new_since": "v0.5.0"
+      },
+      "vkcs_dc_bgp_static_announce": {
+        "schema": {
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "dc_bgp_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Direct Connect BGP ID to attach. Changing this creates a new resource"
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the BGP neighbor",
+            "computed": true
+          },
+          "enabled": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Enable or disable item. Default is true",
+            "computed": true
+          },
+          "gateway": {
+            "type": "TypeString",
+            "required": true,
+            "description": "IP address of gateway. Changing this creates a new resource"
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the BGP neighbor",
+            "computed": true
+          },
+          "network": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Subnet in CIDR notation. Changing this creates a new resource"
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Update timestamp",
+            "computed": true
+          }
+        },
+        "description": "Manages a direct connect BGP Static Announce resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "new_since": "v0.5.0"
+      },
+      "vkcs_dc_interface": {
+        "schema": {
+          "bgp_announce_enabled": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Enable BGP announce of subnet attached to interface. Default is true",
+            "computed": true
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "dc_router_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Direct Connect Router ID to attach. Changing this creates a new resource"
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the interface",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "ip_address": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "IP Address of the interface. Changing this creates a new resource",
+            "computed": true
+          },
+          "ip_netmask": {
+            "type": "TypeInt",
+            "description": "IP Netmask",
+            "computed": true
+          },
+          "mac_address": {
+            "type": "TypeString",
+            "description": "MAC Address of created interface",
+            "computed": true
+          },
+          "mtu": {
+            "type": "TypeInt",
+            "description": "MTU",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the interface",
+            "computed": true
+          },
+          "network_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Network ID to attach. Changing this creates a new resource"
+          },
+          "port_id": {
+            "type": "TypeString",
+            "description": "Port ID",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "sdn": {
+            "type": "TypeString",
+            "description": "SDN where interface was created",
+            "computed": true
+          },
+          "subnet_id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Subnet ID to attach. Changing this creates a new resource",
+            "computed": true
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Update timestamp",
+            "computed": true
+          }
+        },
+        "description": "Manages a direct connect interface resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "new_since": "v0.5.0"
+      },
+      "vkcs_dc_router": {
+        "schema": {
+          "availability_zone": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The availability zone in which to create the router. Changing this creates a new router",
+            "computed": true
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the router",
+            "computed": true
+          },
+          "flavor": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Flavor of the router. Possible values can be obtained with vkcs_dc_api_options data source. Changing this creates a new router. _note_ Not to be confused with compute service flavors.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the router",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Update timestamp",
+            "computed": true
+          }
+        },
+        "description": "Manages a direct connect router resource. \u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "new_since": "v0.5.0"
+      },
+      "vkcs_dc_static_route": {
+        "schema": {
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "dc_router_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Direct Connect Router ID to attach. Changing this creates a new resource"
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the static route",
+            "computed": true
+          },
+          "gateway": {
+            "type": "TypeString",
+            "required": true,
+            "description": "IP address of gateway. Changing this creates a new resource"
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "metric": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "Metric to use for route. Default is 1",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the static route",
+            "computed": true
+          },
+          "network": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Subnet in CIDR notation. Changing this creates a new resource"
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Update timestamp",
+            "computed": true
+          }
+        },
+        "description": "Manages a direct connect BGP Static Announce resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "new_since": "v0.5.0"
+      },
+      "vkcs_dc_vrrp": {
+        "schema": {
+          "advert_interval": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "VRRP Advertise interval. Default is 1",
+            "computed": true
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the VRRP",
+            "computed": true
+          },
+          "enabled": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Enable or disable item. Default is true",
+            "computed": true
+          },
+          "group_id": {
+            "type": "TypeInt",
+            "required": true,
+            "description": "VRRP Group ID"
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the VRRP",
+            "computed": true
+          },
+          "network_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Network ID to attach. Changing this creates a new resource"
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "sdn": {
+            "type": "TypeString",
+            "description": "SDN of created VRRP",
+            "computed": true
+          },
+          "subnet_id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Subnet ID to attach. Changing this creates a new resource",
+            "computed": true
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Update timestamp",
+            "computed": true
+          }
+        },
+        "description": "Manages a direct connect VRRP resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "new_since": "v0.5.0"
+      },
+      "vkcs_dc_vrrp_address": {
+        "schema": {
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "dc_vrrp_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "VRRP ID to attach. Changing this creates a new resource"
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the VRRP",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "ip_address": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "IP address to assign. Changing this creates a new resource",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the VRRP",
+            "computed": true
+          },
+          "port_id": {
+            "type": "TypeString",
+            "description": "Port ID used to assign IP address",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Update timestamp",
+            "computed": true
+          }
+        },
+        "description": "Manages a direct connect VRRP address resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "new_since": "v0.5.0"
+      },
+      "vkcs_dc_vrrp_interface": {
+        "schema": {
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "dc_interface_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "DC Interface ID to attach. Changing this creates a new resource"
+          },
+          "dc_vrrp_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "VRRP ID to attach. Changing this creates a new resource"
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the VRRP",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "master": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Start VRRP instance on interface as VRRP Master. Default is false",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the VRRP",
+            "computed": true
+          },
+          "preempt": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "VRRP interface preempt behavior. Default is true",
+            "computed": true
+          },
+          "priority": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "VRRP interface priority. Default is 100",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Update timestamp",
+            "computed": true
+          }
+        },
+        "description": "Manages a direct connect VRRP interface resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "new_since": "v0.5.0"
+      },
       "vkcs_images_image": {
         "schema": {
           "archiving_format": {
@@ -2547,7 +3172,7 @@
           "labels": {
             "type": "TypeMap",
             "optional": true,
-            "description": "The list of optional key value pairs representing additional properties of the cluster. Changing this creates a new cluster.\n\n  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16.\n  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False.\n  * `cloud_monitoring` to enable cloud monitoring feature.\n  * `docker_registry_enabled=true` to preinstall Docker Registry.\n  * `etcd_volume_size` to set etcd volume size. Default 10Gb.\n  * `ingress_controller=\"nginx\"` to preinstall NGINX Ingress Controller.\n  * `kube_log_level` to set log level for kubelet in range 0 to 8.\n  * `master_volume_size` to set master vm volume size. Default 50Gb.\n  * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.\n  * `prometheus_monitoring=true` to preinstall monitoring system based on Prometheus and Grafana.\n",
+            "description": "The list of optional key value pairs representing additional properties of the cluster. Changing this creates a new cluster.\n\n  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16.\n  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False.\n  * `cloud_monitoring` to enable cloud monitoring feature.\n  * `etcd_volume_size` to set etcd volume size. Default 10Gb.\n  * `kube_log_level` to set log level for kubelet in range 0 to 8.\n  * `master_volume_size` to set master vm volume size. Default 50Gb.\n  * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.\n",
             "computed": true,
             "force_new": true,
             "elem": {
@@ -6295,6 +6920,39 @@
           }
         },
         "description": "Use this data source to get the information on a db user resource."
+      },
+      "vkcs_dc_api_options": {
+        "schema": {
+          "availability_zones": {
+            "type": "TypeList",
+            "description": "List of avalability zone options",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "flavors": {
+            "type": "TypeList",
+            "description": "List of flavor options for vkcs_dc_router resource",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the data source",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          }
+        },
+        "description": "Use this data source to get direct connect api options.\u003cbr\u003e ~\u003e **Note:** This data source requires Sprut SDN to be enabled in your project.",
+        "new_since": "v0.5.0"
       },
       "vkcs_images_image": {
         "schema": {

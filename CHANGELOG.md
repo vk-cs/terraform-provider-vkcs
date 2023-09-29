@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.5.0 (unreleased)
+#### v0.5.0
 - Add Direct Connect resources and data sources
 - Fix Kubernetes addon state refresh panic on error
 - Fix error of unexpected Kubernetes cluster status after creating/deleting an addon
