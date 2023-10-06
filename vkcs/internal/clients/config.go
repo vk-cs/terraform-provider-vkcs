@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/version"
 )
 
 const (
@@ -112,11 +113,19 @@ func (c *configer) GetTenantID() string {
 }
 
 func (c *configer) ComputeV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.ComputeV2Client(region)
+	client, err := c.Config.ComputeV2Client(region)
+	if err == nil {
+		return clientWithProviderVersion(client), nil
+	}
+	return client, err
 }
 
 func (c *configer) ImageV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.ImageV2Client(region)
+	client, err := c.Config.ImageV2Client(region)
+	if err == nil {
+		return clientWithProviderVersion(client), nil
+	}
+	return client, err
 }
 
 func (c *configer) NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error) {
@@ -128,19 +137,31 @@ func (c *configer) NetworkingV2Client(region string, sdn string) (*gophercloud.S
 	if err != nil {
 		return nil, err
 	}
-	return client, nil
+	return clientWithProviderVersion(client), nil
 }
 
 func (c *configer) PublicDNSV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.CommonServiceClientInit(newPublicDNSV2, region, "publicdns")
+	client, err := c.CommonServiceClientInit(newPublicDNSV2, region, "publicdns")
+	if err == nil {
+		return clientWithProviderVersion(client), nil
+	}
+	return client, err
 }
 
 func (c *configer) BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.BlockStorageV3Client(region)
+	client, err := c.Config.BlockStorageV3Client(region)
+	if err == nil {
+		return clientWithProviderVersion(client), nil
+	}
+	return client, err
 }
 
 func (c *configer) KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.KeyManagerV1Client(region)
+	client, err := c.Config.KeyManagerV1Client(region)
+	if err == nil {
+		return clientWithProviderVersion(client), nil
+	}
+	return client, err
 }
 
 // DatabaseV1Client is implementation of DatabaseV1Client method
@@ -164,6 +185,9 @@ func (c *configer) DatabaseV1Client(region string) (*gophercloud.ServiceClient, 
 			return err
 		}
 	}
+	if clientErr == nil {
+		return clientWithProviderVersion(client), nil
+	}
 	return client, clientErr
 }
 
@@ -176,30 +200,52 @@ func (c *configer) ContainerInfraV1Client(region string) (*gophercloud.ServiceCl
 	client.MoreHeaders = map[string]string{
 		"MCS-API-Version": fmt.Sprintf("container-infra %s", c.ContainerInfraV1MicroVersion),
 	}
+	if err == nil {
+		return clientWithProviderVersion(client), nil
+	}
 	return client, err
 }
 
 // ContainerInfraV1Client is implementation of ContainerInfraV1Client method
 func (c *configer) ContainerInfraAddonsV1Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.CommonServiceClientInit(newContainerInfraAddonsV1, region, "magnum-addons")
+	client, err := c.CommonServiceClientInit(newContainerInfraAddonsV1, region, "magnum-addons")
+	if err == nil {
+		return clientWithProviderVersion(client), nil
+	}
+	return client, err
 }
 
 // IdentityV3Client is implementation of ContainerInfraV1Client method
 func (c *configer) IdentityV3Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.IdentityV3Client(region)
+	client, err := c.Config.IdentityV3Client(region)
+	if err == nil {
+		return clientWithProviderVersion(client), nil
+	}
+	return client, err
 }
 
 func (c *configer) SharedfilesystemV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.SharedfilesystemV2Client(region)
+	client, err := c.Config.SharedfilesystemV2Client(region)
+	if err == nil {
+		return clientWithProviderVersion(client), nil
+	}
+	return client, err
 }
 
 func (c *configer) LoadBalancerV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.LoadBalancerV2Client(region)
+	client, err := c.Config.LoadBalancerV2Client(region)
+	if err == nil {
+		return clientWithProviderVersion(client), nil
+	}
+	return client, err
 }
 
 func (c *configer) BackupV1Client(region string, tenantID string) (*gophercloud.ServiceClient, error) {
 	client, err := c.CommonServiceClientInit(newBackupV1, region, "data-protect")
 	client.Endpoint = fmt.Sprintf("%s%s/", client.Endpoint, tenantID)
+	if err == nil {
+		return clientWithProviderVersion(client), nil
+	}
 	return client, err
 }
 
@@ -292,4 +338,9 @@ func ConfigureFromEnv(ctx context.Context) (Config, error) {
 	}
 
 	return config, nil
+}
+
+func clientWithProviderVersion(client *gophercloud.ServiceClient) *gophercloud.ServiceClient {
+	client.UserAgent.Prepend(fmt.Sprintf("VKCS Terraform Provider %s", version.ProviderVersion))
+	return client
 }
