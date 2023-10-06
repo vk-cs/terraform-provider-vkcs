@@ -24,7 +24,7 @@ builds:
       - goarch: '386'
         goos: darwin
     ldflags:
-      - -s -w -X version.ProviderVersion={{.Version}}
+      - -s -w -X github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/version.ProviderVersion={{.Version}}
     mod_timestamp: '{{ .CommitTimestamp }}'
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
