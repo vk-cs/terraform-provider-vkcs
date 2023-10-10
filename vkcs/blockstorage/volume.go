@@ -19,7 +19,7 @@ func (opts volumeChangeTypeOpts) ToVolumeChangeTypeMap() (map[string]interface{}
 	return util.BuildRequest(opts, "os-retype")
 }
 
-func blockStorageVolumeStateRefreshFunc(client *gophercloud.ServiceClient, volumeID string) retry.StateRefreshFunc {
+func BlockStorageVolumeStateRefreshFunc(client *gophercloud.ServiceClient, volumeID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		v, err := volumes.Get(client, volumeID).Extract()
 		if err != nil {

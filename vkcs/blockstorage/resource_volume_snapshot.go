@@ -230,7 +230,7 @@ func resourceBlockStorageSnapshotDelete(ctx context.Context, d *schema.ResourceD
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{bsSnapshotStatusActive, bsSnapshotStatusShutdown},
 		Target:     []string{bsSnapshotStatusDeleted},
-		Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
+		Refresh:    BlockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      bsSnapshotDelay,
 		MinTimeout: bsSnapshotMinTimeout,

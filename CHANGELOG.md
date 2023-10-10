@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.5.1 (unreleased)
+- Wait for volume to finish detaching when deleting resource vkcs_compute_volume_attach
+
 #### v0.5.0
 - Add Direct Connect resources and data sources
 - Fix Kubernetes addon state refresh panic on error
