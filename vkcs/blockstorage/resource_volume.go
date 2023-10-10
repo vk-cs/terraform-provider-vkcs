@@ -22,8 +22,9 @@ const (
 
 var (
 	bsVolumeStatusBuild       = "creating"
-	bsVolumeStatusActive      = "available"
-	bsVolumeStatusInUse       = "in-use"
+	BSVolumeStatusActive      = "available"
+	BSVolumeStatusInUse       = "in-use"
+	BSVolumeStatusDetaching   = "detaching"
 	bsVolumeStatusRetype      = "retyping"
 	bsVolumeStatusShutdown    = "deleting"
 	bsVolumeStatusDeleted     = "deleted"
@@ -159,8 +160,8 @@ func resourceBlockStorageVolumeCreate(ctx context.Context, d *schema.ResourceDat
 
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{bsVolumeStatusBuild, bsVolumeStatusDownloading},
-		Target:     []string{bsVolumeStatusActive},
-		Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, v.ID),
+		Target:     []string{BSVolumeStatusActive},
+		Refresh:    BlockStorageVolumeStateRefreshFunc(blockStorageClient, v.ID),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      bsVolumeDelay,
 		MinTimeout: bsVolumeMinTimeout,
@@ -237,8 +238,8 @@ func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceDat
 
 		stateConf := &retry.StateChangeConf{
 			Pending:    []string{bsVolumeStatusBuild, bsVolumeStatusDownloading},
-			Target:     []string{bsVolumeStatusActive, bsVolumeStatusInUse},
-			Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
+			Target:     []string{BSVolumeStatusActive, BSVolumeStatusInUse},
+			Refresh:    BlockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
 			Timeout:    d.Timeout(schema.TimeoutCreate),
 			Delay:      bsVolumeDelay,
 			MinTimeout: bsVolumeMinTimeout,
@@ -266,8 +267,8 @@ func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 		stateConf := &retry.StateChangeConf{
 			Pending:    []string{bsVolumeStatusBuild, bsVolumeStatusRetype},
-			Target:     []string{bsVolumeStatusActive, bsVolumeStatusInUse},
-			Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
+			Target:     []string{BSVolumeStatusActive, BSVolumeStatusInUse},
+			Refresh:    BlockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
 			Timeout:    d.Timeout(schema.TimeoutCreate),
 			Delay:      bsVolumeDelay,
 			MinTimeout: bsVolumeMinTimeout,
@@ -294,9 +295,9 @@ func resourceBlockStorageVolumeDelete(ctx context.Context, d *schema.ResourceDat
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{bsVolumeStatusActive, bsVolumeStatusShutdown, bsVolumeStatusInUse},
+		Pending:    []string{BSVolumeStatusActive, bsVolumeStatusShutdown},
 		Target:     []string{bsVolumeStatusDeleted},
-		Refresh:    blockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
+		Refresh:    BlockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      bsVolumeDelay,
 		MinTimeout: bsVolumeMinTimeout,

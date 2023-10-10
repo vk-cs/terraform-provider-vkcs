@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/blockstorage"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
@@ -171,6 +172,27 @@ func resourceComputeVolumeAttachDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
+		return diag.FromErr(util.CheckDeleted(d, err, "Error detaching vkcs_compute_volume_attach"))
+	}
+
+	// Volume may be still in detaching status after detach resource is deleted
+	blockStorageClient, err := config.BlockStorageV3Client(util.GetRegion(d, config))
+	if err != nil {
+		return diag.Errorf("Error creating VKCS block storage client: %s", err)
+	}
+
+	volumeID := d.Get("volume_id").(string)
+
+	volumeStateConf := &retry.StateChangeConf{
+		Pending:    []string{blockstorage.BSVolumeStatusDetaching, blockstorage.BSVolumeStatusInUse},
+		Target:     []string{blockstorage.BSVolumeStatusActive},
+		Refresh:    blockstorage.BlockStorageVolumeStateRefreshFunc(blockStorageClient, volumeID),
+		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Delay:      5 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	if _, err = volumeStateConf.WaitForStateContext(ctx); err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error detaching vkcs_compute_volume_attach"))
 	}
 
