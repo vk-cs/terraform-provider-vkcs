@@ -6,10 +6,16 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 )
+
+type subnetExtended struct {
+	subnets.Subnet
+	networking.SDNExt
+}
 
 // networkingSubnetStateRefreshFunc returns a standard retry.StateRefreshFunc to wait for subnet status.
 func networkingSubnetStateRefreshFunc(client *gophercloud.ServiceClient, subnetID string) retry.StateRefreshFunc {

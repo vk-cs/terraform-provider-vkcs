@@ -9,6 +9,10 @@ const (
 	DefaultSDN      = NeutronSDN
 )
 
+type SDNExt struct {
+	SDN string `json:"sdn"`
+}
+
 func SelectSDN(c *gophercloud.ServiceClient, sdn string) error {
 	if sdn != SearchInAllSDNs {
 		c.MoreHeaders = map[string]string{

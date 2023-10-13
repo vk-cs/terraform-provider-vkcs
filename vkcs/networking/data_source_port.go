@@ -88,7 +88,7 @@ func (d *PortDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 			"sdn": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description: "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive("neutron", "sprut"),
 				},
@@ -277,7 +277,7 @@ func (d *PortDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 
 	sdn := data.SDN.ValueString()
 	if sdn == "" {
-		sdn = networking.DefaultSDN
+		sdn = networking.SearchInAllSDNs
 	}
 
 	client, err := d.config.NetworkingV2Client(region, sdn)
@@ -398,7 +398,7 @@ func (d *PortDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 
 	data.ID = types.StringValue(port.ID)
 	data.Region = types.StringValue(region)
-	data.SDN = types.StringValue(sdn)
+	data.SDN = types.StringValue(port.SDN)
 
 	data.AdminStateUp = types.BoolValue(port.AdminStateUp)
 	data.AllFixedIPs = flattenPortAllFixedIPs(ctx, port.FixedIPs, &resp.Diagnostics)

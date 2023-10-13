@@ -68,7 +68,7 @@ func ResourceNetworkingRouterInterface() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 		},
 		Description: "Manages a router interface resource within VKCS.",
@@ -122,7 +122,8 @@ func resourceNetworkingRouterInterfaceRead(ctx context.Context, d *schema.Resour
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	r, err := ports.Get(networkingClient, d.Id()).Extract()
+	var r portExtended
+	err = ports.Get(networkingClient, d.Id()).ExtractInto(&r)
 	if err != nil {
 		if _, ok := err.(gophercloud.ErrDefault404); ok {
 			d.SetId("")

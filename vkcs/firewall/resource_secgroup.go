@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
@@ -80,7 +81,7 @@ func ResourceNetworkingSecGroup() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: networking.ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 		},
 		Description: "Manages a security group resource within VKCS.",
@@ -145,15 +146,16 @@ func resourceNetworkingSecGroupRead(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	sg, err := groups.Get(networkingClient, d.Id()).Extract()
+	var sg securityGroupExtended
+
+	err = firewall.ExtractSecurityGroupInto(groups.Get(networkingClient, d.Id()), &sg)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error retrieving vkcs_networking_secgroup"))
 	}
-
 	d.Set("description", sg.Description)
 	d.Set("name", sg.Name)
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", networking.GetSDN(d))
+	d.Set("sdn", sg.SDN)
 
 	networking.NetworkingReadAttributesTags(d, sg.Tags)
 

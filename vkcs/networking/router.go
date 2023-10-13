@@ -4,7 +4,13 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 )
+
+type routerExtended struct {
+	routers.Router
+	networking.SDNExt
+}
 
 func resourceNetworkingRouterStateRefreshFunc(client *gophercloud.ServiceClient, routerID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {

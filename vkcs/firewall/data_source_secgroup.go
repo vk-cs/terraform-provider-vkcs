@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
@@ -65,7 +66,7 @@ func DataSourceNetworkingSecGroup() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: networking.ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 
 			"id": {
@@ -102,7 +103,8 @@ func dataSourceNetworkingSecGroupRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	allSecGroups, err := groups.ExtractGroups(pages)
+	var allSecGroups []securityGroupExtended
+	err = firewall.ExtractSecurityGroupsInto(pages, &allSecGroups)
 	if err != nil {
 		return diag.Errorf("Unable to retrieve security groups: %s", err)
 	}
@@ -125,7 +127,7 @@ func dataSourceNetworkingSecGroupRead(ctx context.Context, d *schema.ResourceDat
 	d.Set("tenant_id", secGroup.TenantID)
 	d.Set("all_tags", secGroup.Tags)
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", networking.GetSDN(d))
+	d.Set("sdn", secGroup.SDN)
 
 	return nil
 }

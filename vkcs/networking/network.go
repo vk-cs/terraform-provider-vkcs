@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud"
@@ -35,6 +36,7 @@ type networkExtended struct {
 	provider.NetworkProviderExt
 	PrivateDNSDomainExt
 	ServicesAccessExt
+	networking.SDNExt
 }
 
 // networkingNetworkID retrieves network ID by the provided name.

@@ -209,6 +209,26 @@ func TestAccNetworkingSubnet_clearDNSNameservers(t *testing.T) {
 	})
 }
 
+// Test should not be run on deployments without sdn proxy
+func TestAccNetworkingSubnet_sdn(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNetworkingSubnetBasic,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrWith(
+						"vkcs_networking_network.network_1", "sdn", testAccCheckSDN),
+					resource.TestCheckResourceAttrWith(
+						"vkcs_networking_subnet.subnet_1", "sdn", testAccCheckSDN),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckNetworkingSubnetDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
@@ -281,6 +301,13 @@ func testAccCheckNetworkingSubnetDNSConsistency(n string, subnet *subnets.Subnet
 
 		return nil
 	}
+}
+
+func testAccCheckSDN(value string) error {
+	if value != networking.NeutronSDN && value != networking.SprutSDN {
+		return fmt.Errorf("invalid sdn value")
+	}
+	return nil
 }
 
 const testAccNetworkingSubnetBasic = `

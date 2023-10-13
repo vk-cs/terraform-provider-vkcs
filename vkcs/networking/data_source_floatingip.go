@@ -69,7 +69,7 @@ func DataSourceNetworkingFloatingIP() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 
 			"id": {
@@ -152,7 +152,7 @@ func dataSourceNetworkingFloatingIPRead(ctx context.Context, d *schema.ResourceD
 	d.Set("tenant_id", fip.TenantID)
 	d.Set("status", fip.Status)
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", GetSDN(d))
+	d.Set("sdn", fip.SDN)
 
 	return nil
 }

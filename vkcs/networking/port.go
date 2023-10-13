@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud"
@@ -23,6 +24,7 @@ type portExtended struct {
 	portsecurity.PortSecurityExt
 	dns.PortDNSExt
 	policies.QoSPolicyExt
+	networking.SDNExt
 }
 
 func resourceNetworkingPortStateRefreshFunc(client *gophercloud.ServiceClient, portID string) retry.StateRefreshFunc {

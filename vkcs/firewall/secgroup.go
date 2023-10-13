@@ -6,7 +6,13 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 )
+
+type securityGroupExtended struct {
+	groups.SecGroup
+	networking.SDNExt
+}
 
 // networkingSecgroupStateRefreshFuncDelete returns a special case retry.StateRefreshFunc to try to delete a secgroup.
 func networkingSecgroupStateRefreshFuncDelete(networkingClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {

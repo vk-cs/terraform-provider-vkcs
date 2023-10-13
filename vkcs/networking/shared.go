@@ -87,7 +87,7 @@ func GetSDN(d *schema.ResourceData) string {
 		return v.(string)
 	}
 
-	return networking.DefaultSDN
+	return networking.SearchInAllSDNs
 }
 
 func ValidateSDN() schema.SchemaValidateDiagFunc {

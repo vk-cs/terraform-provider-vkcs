@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud"
@@ -173,7 +174,7 @@ func ResourceNetworkingSubnet() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 		},
 		Description: "Manages a subnet resource within VKCS.",
@@ -287,7 +288,8 @@ func resourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	s, err := subnets.Get(networkingClient, d.Id()).Extract()
+	var s subnetExtended
+	err = networking.ExtractSubnetInto(subnets.Get(networkingClient, d.Id()), &s)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_networking_subnet"))
 	}
@@ -321,7 +323,7 @@ func resourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", GetSDN(d))
+	d.Set("sdn", s.SDN)
 
 	return nil
 }

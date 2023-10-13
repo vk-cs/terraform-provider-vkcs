@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud"
@@ -115,7 +116,7 @@ func ResourceNetworkingRouter() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 		},
 		Description: "Manages a router resource within VKCS.",
@@ -230,7 +231,8 @@ func resourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	r, err := routers.Get(networkingClient, d.Id()).Extract()
+	var r routerExtended
+	err = networking.ExtractRouterInto(routers.Get(networkingClient, d.Id()), &r)
 	if err != nil {
 		if _, ok := err.(gophercloud.ErrDefault404); ok {
 			d.SetId("")
@@ -247,7 +249,7 @@ func resourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("description", r.Description)
 	d.Set("admin_state_up", r.AdminStateUp)
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", GetSDN(d))
+	d.Set("sdn", r.SDN)
 
 	NetworkingReadAttributesTags(d, r.Tags)
 

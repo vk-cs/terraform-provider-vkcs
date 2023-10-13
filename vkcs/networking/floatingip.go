@@ -7,11 +7,13 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/dns"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 )
 
 type floatingIPExtended struct {
 	floatingips.FloatingIP
 	dns.FloatingIPDNSExt
+	networking.SDNExt
 }
 
 // networkingFloatingIPV2ID retrieves floating IP ID by the provided IP address.
