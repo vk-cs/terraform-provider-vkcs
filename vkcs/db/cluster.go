@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
@@ -613,6 +614,27 @@ func databaseClusterActionResizeFlavorBase(updateCtx *dbResourceUpdateContext, o
 	}
 	log.Printf("[DEBUG] Resizing flavor from cluster %s", clusterID)
 	return updateCtx.WaitForStateContext()
+}
+
+func databaseClusterActionEnableRoot(updateCtx *dbResourceUpdateContext) diag.Diagnostics {
+	clusterID := updateCtx.D.Id()
+	rootPassword := updateCtx.D.Get("root_password")
+	var rootUserEnableOpts instances.RootUserEnableOpts
+	if rootPassword != "" {
+		warn := diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "root password for cluster is auto-generated, please use root_password argument as read-only attribute",
+		}
+		return []diag.Diagnostic{warn}
+	} else {
+		rootUser, err := instances.RootUserEnable(updateCtx.Client, clusterID, &rootUserEnableOpts).Extract()
+		if err != nil {
+			return diag.Errorf("error creating root user for cluster: %s: %s", clusterID, err)
+		}
+		updateCtx.D.Set("root_password", rootUser.Password)
+	}
+	updateCtx.D.Set("root_enabled", true)
+	return nil
 }
 
 func getClusterStatus(c *clusters.ClusterResp) string {

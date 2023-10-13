@@ -714,15 +714,6 @@ func resourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, m
 	}
 	if instance.ReplicaOf != nil {
 		d.Set("replica_of", instance.ReplicaOf.ID)
-	} else {
-		isRootEnabledResult := instances.RootUserGet(DatabaseV1Client, d.Id())
-		isRootEnabled, err := isRootEnabledResult.Extract()
-		if err != nil {
-			return diag.Errorf("error checking if root user is enabled for instance: %s: %s", d.Id(), err)
-		}
-		if isRootEnabled {
-			d.Set("root_enabled", true)
-		}
 	}
 
 	backupSchedule, err := instances.GetBackupSchedule(DatabaseV1Client, d.Id()).Extract()
@@ -911,6 +902,8 @@ func resourceDatabaseInstanceUpdate(ctx context.Context, d *schema.ResourceData,
 			if err != nil {
 				return diag.Errorf("error deleting root_user for instance %s: %s", d.Id(), err)
 			}
+			d.Set("root_enabled", false)
+			d.Set("root_password", "")
 		}
 	}
 

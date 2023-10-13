@@ -7,6 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 #### v0.5.1 (unreleased)
+- Fixed issue of root password not working for vkcs_db_cluster and vkcs_db_cluster_with_shards resources
 - Remove default sdn value from firewall and networking resources and data sources
 - Wait for volume to finish detaching when deleting resource vkcs_compute_volume_attach
 
