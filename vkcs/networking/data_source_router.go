@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
@@ -81,7 +82,7 @@ func DataSourceNetworkingRouter() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 
 			"id": {
@@ -138,7 +139,9 @@ func dataSourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Unable to list Routers: %s", err)
 	}
 
-	allRouters, err := routers.ExtractRouters(pages)
+	var allRouters []routerExtended
+	err = networking.ExtractRoutersInto(pages, &allRouters)
+
 	if err != nil {
 		return diag.Errorf("Unable to retrieve Routers: %s", err)
 	}
@@ -165,6 +168,6 @@ func dataSourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("enable_snat", router.GatewayInfo.EnableSNAT)
 	d.Set("all_tags", router.Tags)
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", GetSDN(d))
+	d.Set("sdn", router.SDN)
 	return nil
 }

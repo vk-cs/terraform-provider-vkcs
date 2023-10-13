@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud"
@@ -58,7 +59,7 @@ func ResourceNetworkingSubnetRoute() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 		},
 		Description: "Creates a routing entry on a VKCS subnet.",
@@ -139,7 +140,8 @@ func resourceNetworkingSubnetRouteRead(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("Error reading vkcs_networking_subnet_route ID %s: %s", d.Id(), err)
 	}
 
-	subnet, err := subnets.Get(networkingClient, subnetID).Extract()
+	var subnet subnetExtended
+	err = networking.ExtractSubnetInto(subnets.Get(networkingClient, subnetID), &subnet)
 	if err != nil {
 		if _, ok := err.(gophercloud.ErrDefault404); ok {
 			d.SetId("")
@@ -168,7 +170,7 @@ func resourceNetworkingSubnetRouteRead(ctx context.Context, d *schema.ResourceDa
 	d.Set("next_hop", nextHop)
 	d.Set("destination_cidr", destCIDR)
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", GetSDN(d))
+	d.Set("sdn", subnet.SDN)
 
 	return nil
 }

@@ -115,7 +115,7 @@ func DataSourceNetworkingNetwork() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 
 			"vkcs_services_access": {
@@ -239,7 +239,7 @@ func dataSourceNetworkingNetworkRead(ctx context.Context, d *schema.ResourceData
 	d.Set("all_tags", network.Tags)
 	d.Set("region", util.GetRegion(d, config))
 	d.Set("private_dns_domain", network.PrivateDNSDomain)
-	d.Set("sdn", GetSDN(d))
+	d.Set("sdn", network.SDN)
 	d.Set("vkcs_services_access", network.ServicesAccess)
 
 	return nil

@@ -79,7 +79,7 @@ func (d *SubnetDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 			"sdn": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description: "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive("neutron", "sprut"),
 				},
@@ -226,7 +226,7 @@ func (d *SubnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	sdn := data.SDN.ValueString()
 	if sdn == "" {
-		sdn = networking.DefaultSDN
+		sdn = networking.SearchInAllSDNs
 	}
 
 	client, err := d.config.NetworkingV2Client(region, sdn)
@@ -263,7 +263,8 @@ func (d *SubnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	allSubnets, err := subnets.ExtractSubnets(allPages)
+	var allSubnets []subnetExtended
+	err = networking.ExtractSubnetsInto(allPages, &allSubnets)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading VKCS Networking API response", err.Error())
 		return
@@ -288,7 +289,7 @@ func (d *SubnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	data.ID = types.StringValue(subnet.ID)
 	data.Region = types.StringValue(region)
-	data.SDN = types.StringValue(sdn)
+	data.SDN = types.StringValue(subnet.SDN)
 
 	data.AllTags = flattenSubnetDataSourceAllTags(ctx, subnet.Tags, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {

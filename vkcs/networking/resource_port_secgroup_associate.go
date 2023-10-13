@@ -65,7 +65,7 @@ func ResourceNetworkingPortSecGroupAssociate() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 		},
 		Description: "Manages a port's security groups within VKCS. Useful, when the port was created not by Terraform. It should not be used, when the port was created directly within Terraform.\n\n" +
@@ -123,7 +123,8 @@ func resourceNetworkingPortSecGroupAssociateRead(ctx context.Context, d *schema.
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	port, err := ports.Get(networkingClient, d.Id()).Extract()
+	var port portExtended
+	err = ports.Get(networkingClient, d.Id()).ExtractInto(&port)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error fetching port security groups"))
 	}
@@ -147,7 +148,7 @@ func resourceNetworkingPortSecGroupAssociateRead(ctx context.Context, d *schema.
 	}
 
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", GetSDN(d))
+	d.Set("sdn", port.SDN)
 
 	return nil
 }

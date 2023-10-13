@@ -7,7 +7,13 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 )
+
+type secgroupRuleExtended struct {
+	rules.SecGroupRule
+	networking.SDNExt
+}
 
 func resourceNetworkingSecGroupRuleStateRefreshFunc(client *gophercloud.ServiceClient, sgRuleID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {

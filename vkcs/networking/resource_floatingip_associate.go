@@ -57,7 +57,7 @@ func ResourceNetworkingFloatingIPAssociate() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 		},
 		Description: "Associates a floating IP to a port. This is useful for situations where you have a pre-allocated floating IP or are unable to use the `vkcs_networking_floatingip` resource to create a floating IP.",
@@ -103,7 +103,9 @@ func resourceNetworkingFloatingIPAssociateRead(ctx context.Context, d *schema.Re
 		return diag.Errorf("Error creating VKCS network client: %s", err)
 	}
 
-	fip, err := floatingips.Get(networkingClient, d.Id()).Extract()
+	var fip floatingIPExtended
+
+	err = floatingips.Get(networkingClient, d.Id()).ExtractInto(&fip)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_networking_floatingip_associate"))
 	}
@@ -114,7 +116,7 @@ func resourceNetworkingFloatingIPAssociateRead(ctx context.Context, d *schema.Re
 	d.Set("port_id", fip.PortID)
 	d.Set("fixed_ip", fip.FixedIP)
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", GetSDN(d))
+	d.Set("sdn", fip.SDN)
 
 	return nil
 }

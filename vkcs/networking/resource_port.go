@@ -246,7 +246,7 @@ func ResourceNetworkingPort() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 		},
 		Description: "Manages a port resource within VKCS.",
@@ -407,7 +407,7 @@ func resourceNetworkingPortRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("dns_assignment", port.DNSAssignment)
 
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", GetSDN(d))
+	d.Set("sdn", port.SDN)
 
 	return nil
 }

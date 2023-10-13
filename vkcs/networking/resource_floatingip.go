@@ -102,7 +102,7 @@ func ResourceNetworkingFloating() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 		},
 		Description: "Manages a floating IP resource within VKCS that can be used for load balancers.",
@@ -230,7 +230,7 @@ func resourceNetworkFloatingIPRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("port_id", fip.PortID)
 	d.Set("fixed_ip", fip.FixedIP)
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", GetSDN(d))
+	d.Set("sdn", fip.SDN)
 
 	poolName, err := networkingNetworkName(d, meta, fip.FloatingNetworkID)
 	if err != nil {

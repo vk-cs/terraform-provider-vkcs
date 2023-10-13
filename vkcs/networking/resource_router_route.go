@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
@@ -57,7 +58,7 @@ func ResourceNetworkingRouterRoute() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 		},
 		Description: "Creates a routing entry on a VKCS router.",
@@ -136,7 +137,8 @@ func resourceNetworkingRouterRouteRead(ctx context.Context, d *schema.ResourceDa
 	}
 	d.Set("router_id", routerID)
 
-	r, err := routers.Get(networkingClient, routerID).Extract()
+	var r routerExtended
+	err = networking.ExtractRouterInto(routers.Get(networkingClient, d.Id()), &r)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_networking_router"))
 	}
@@ -152,7 +154,7 @@ func resourceNetworkingRouterRouteRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", GetSDN(d))
+	d.Set("sdn", r.SDN)
 
 	return nil
 }

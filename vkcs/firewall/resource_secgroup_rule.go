@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
@@ -137,7 +138,7 @@ func ResourceNetworkingSecGroupRule() *schema.Resource {
 				ForceNew:         true,
 				Computed:         true,
 				ValidateDiagFunc: networking.ValidateSDN(),
-				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is \"neutron\".",
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 		},
 		Description: "Manages a security group rule resource within VKCS.",
@@ -219,11 +220,12 @@ func resourceNetworkingSecGroupRuleRead(ctx context.Context, d *schema.ResourceD
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	sgRule, err := rules.Get(networkingClient, d.Id()).Extract()
+	var sgRule secgroupRuleExtended
+
+	err = firewall.ExtractSecurityGroupRuleInto(rules.Get(networkingClient, d.Id()), &sgRule)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_networking_secgroup_rule"))
 	}
-
 	log.Printf("[DEBUG] Retrieved vkcs_networking_secgroup_rule %s: %#v", d.Id(), sgRule)
 
 	d.Set("description", sgRule.Description)
@@ -236,7 +238,7 @@ func resourceNetworkingSecGroupRuleRead(ctx context.Context, d *schema.ResourceD
 	d.Set("remote_ip_prefix", sgRule.RemoteIPPrefix)
 	d.Set("security_group_id", sgRule.SecGroupID)
 	d.Set("region", util.GetRegion(d, config))
-	d.Set("sdn", networking.GetSDN(d))
+	d.Set("sdn", sgRule.SDN)
 
 	return nil
 }
