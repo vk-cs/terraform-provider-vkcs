@@ -598,7 +598,26 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 		}
 	}
 
-	return resourceDatabaseClusterWithShardsRead(ctx, d, meta)
+	diags := make(diag.Diagnostics, 0)
+
+	if rootEnabled, ok := d.GetOk("root_enabled"); ok {
+		if rootEnabled.(bool) {
+			updateCtx := &dbResourceUpdateContext{
+				Ctx:       ctx,
+				Client:    DatabaseV1Client,
+				D:         d,
+				StateConf: nil,
+			}
+			err := databaseClusterActionEnableRoot(updateCtx)
+			if err.HasError() {
+				return err
+			} else {
+				diags = append(diags, err...)
+			}
+		}
+	}
+
+	return append(diags, resourceDatabaseClusterWithShardsRead(ctx, d, meta)...)
 }
 
 func resourceDatabaseClusterWithShardsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -787,7 +806,24 @@ func resourceDatabaseClusterWithShardsUpdate(ctx context.Context, d *schema.Reso
 		}
 	}
 
-	return resourceDatabaseClusterWithShardsRead(ctx, d, meta)
+	diags := make(diag.Diagnostics, 0)
+
+	if d.HasChange("root_enabled") {
+		_, new := d.GetChange("root_enabled")
+		if new == true {
+			err := databaseClusterActionEnableRoot(updateCtx)
+			if err.HasError() {
+				return err
+			} else {
+				diags = append(diags, err...)
+			}
+		} else {
+			d.Set("root_enabled", false)
+			d.Set("root_password", "")
+		}
+	}
+
+	return append(diags, resourceDatabaseClusterWithShardsRead(ctx, d, meta)...)
 }
 
 func resourceDatabaseClusterWithShardsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
