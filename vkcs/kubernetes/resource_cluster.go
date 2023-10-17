@@ -135,10 +135,10 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Type:     schema.TypeMap,
 				Optional: true,
 				Computed: true,
-				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
-				Description: "The list of optional key value pairs representing additional properties of the cluster. Changing this creates a new cluster.\n\n" +
+				Description: "The list of optional key value pairs representing additional properties of the cluster." +
+					" _note_ Updating this attribute will not immediately apply the changes; these options will be used when (re)creating or deleting cluster nodes.\n\n" +
 					"  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16.\n" +
 					"  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False.\n" +
 					"  * `cloud_monitoring` to enable cloud monitoring feature.\n" +
@@ -146,6 +146,12 @@ func ResourceKubernetesCluster() *schema.Resource {
 					"  * `kube_log_level` to set log level for kubelet in range 0 to 8.\n" +
 					"  * `master_volume_size` to set master vm volume size. Default 50Gb.\n" +
 					"  * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.\n",
+			},
+			"all_labels": {
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The read-only map of all cluster labels.",
 			},
 			"master_count": {
 				Type:        schema.TypeInt,
@@ -348,17 +354,6 @@ func resourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, 
 
 	log.Printf("[DEBUG] retrieved vkcs_kubernetes_cluster %s: %#v", d.Id(), cluster)
 
-	// Get and check labels map.
-	rawLabels := d.Get("labels").(map[string]interface{})
-	labels, err := extractKubernetesLabelsMap(rawLabels)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := d.Set("labels", labels); err != nil {
-		return diag.Errorf("unable to set vkcs_kubernetes_cluster labels: %s", err)
-	}
-
 	d.Set("name", cluster.Name)
 	d.Set("api_address", cluster.APIAddress)
 	d.Set("cluster_template_id", cluster.ClusterTemplateID)
@@ -399,6 +394,22 @@ func resourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, 
 		log.Printf("[DEBUG] Unable to set vkcs_kubernetes_cluster updated_at: %s", err)
 	}
 
+	// Get and check labels map.
+	rawLabels := d.Get("labels").(map[string]interface{})
+	labels, err := extractKubernetesLabelsMap(rawLabels)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	for k, v := range cluster.Labels {
+		if _, ok := labels[k]; ok {
+			labels[k] = v
+		}
+	}
+
+	d.Set("labels", labels)
+	d.Set("all_labels", cluster.Labels)
+
 	return nil
 }
 
@@ -438,6 +449,10 @@ func resourceKubernetesClusterUpdate(ctx context.Context, d *schema.ResourceData
 			if err != nil {
 				return diag.FromErr(err)
 			}
+			err = checkForUpdate(ctx, d, containerInfraClient, stateConf)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		} else {
 			return diag.Errorf("changing cluster attributes is prohibited when cluster has SHUTOFF status")
 		}
@@ -447,6 +462,10 @@ func resourceKubernetesClusterUpdate(ctx context.Context, d *schema.ResourceData
 			return diag.FromErr(err)
 		}
 		err = checkForMasterFlavor(ctx, d, containerInfraClient, stateConf)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		err = checkForUpdate(ctx, d, containerInfraClient, stateConf)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -557,6 +576,50 @@ func checkForStatus(ctx context.Context, d *schema.ResourceData, containerInfraC
 
 	}
 	return false, nil
+}
+
+func checkForUpdate(ctx context.Context, d *schema.ResourceData, containerInfraClient *gophercloud.ServiceClient, stateConf *retry.StateChangeConf) error {
+	updateOpts := []clusters.OptsBuilder{}
+
+	if d.HasChange("labels") {
+		rawLabels := d.Get("labels").(map[string]interface{})
+		labels, err := extractKubernetesLabelsMap(rawLabels)
+		if err != nil {
+			return err
+		}
+
+		rawAllLabels := d.Get("all_labels").(map[string]interface{})
+		allLabels, err := extractKubernetesLabelsMap(rawAllLabels)
+		if err != nil {
+			return err
+		}
+
+		for k, v := range labels {
+			allLabels[k] = v
+		}
+
+		updateOpts = append(updateOpts, &clusters.UpdateOpts{
+			Op:    clusters.ReplaceOp,
+			Path:  "/labels",
+			Value: allLabels,
+		})
+	}
+
+	if len(updateOpts) > 0 {
+		log.Printf("[DEBUG] Updating vkcs_kubernetes_cluster %s with options: %#v", d.Id(), updateOpts)
+
+		_, err := clusters.Update(containerInfraClient, d.Id(), updateOpts).Extract()
+		if err != nil {
+			return fmt.Errorf("error updating vkcs_kubernetes_cluster %s: %s", d.Id(), err)
+		}
+
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			return fmt.Errorf("error waiting for vkcs_kubernetes_cluster %s to be updated: %s", d.Id(), err)
+		}
+	}
+
+	return nil
 }
 
 func resourceKubernetesClusterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
