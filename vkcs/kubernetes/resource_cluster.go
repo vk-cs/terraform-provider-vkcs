@@ -138,9 +138,9 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 				Description: "The list of optional key value pairs representing additional properties of the cluster." +
-					" _note_ Updating this attribute will not immediately apply the changes; these options will be used when (re)creating or deleting cluster nodes.\n\n" +
-					"  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16.\n" +
-					"  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False.\n" +
+					" _note_ Updating this attribute will not immediately apply the changes; these options will be used when recreating or deleting cluster nodes, for example, during an upgrade operation.\n\n" +
+					"  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16. _note_ Updating this value while the cluster is running is dangerous because it can lead to loss of connectivity of the cluster nodes.\n" +
+					"  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False. _note_ Changes to this value will be applied immediately.\n" +
 					"  * `cloud_monitoring` to enable cloud monitoring feature.\n" +
 					"  * `etcd_volume_size` to set etcd volume size. Default 10Gb.\n" +
 					"  * `kube_log_level` to set log level for kubelet in range 0 to 8.\n" +
