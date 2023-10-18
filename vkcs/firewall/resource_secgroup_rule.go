@@ -69,7 +69,7 @@ func ResourceNetworkingSecGroupRule() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Computed:    true,
-				Description: "The lower part of the allowed port range, valid integer value needs to be between 1 and 65535. Changing this creates a new security group rule.",
+				Description: "The lower part of the allowed port range, valid integer value needs to be between 1 and 65535. To specify all ports, `port_range_min` and `port_range_max` arguments must be absent. Changing this creates a new security group rule.",
 			},
 
 			"port_range_max": {
@@ -77,7 +77,7 @@ func ResourceNetworkingSecGroupRule() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Computed:    true,
-				Description: "The higher part of the allowed port range, valid integer value needs to be between 1 and 65535. Changing this creates a new security group rule.",
+				Description: "The higher part of the allowed port range, valid integer value needs to be between 1 and 65535. To specify all ports, `port_range_min` and `port_range_max` arguments must be absent. Changing this creates a new security group rule.",
 			},
 
 			"protocol": {
