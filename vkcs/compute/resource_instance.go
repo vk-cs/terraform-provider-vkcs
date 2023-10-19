@@ -264,7 +264,7 @@ func ResourceComputeInstance() *schema.Resource {
 							Optional:    true,
 							Default:     false,
 							ForceNew:    true,
-							Description: "Delete the volume / block device upon termination of the instance. Defaults to false. Changing this creates a new server.",
+							Description: "Delete the volume / block device upon termination of the instance. Defaults to false. Changing this creates a new server. __note__ It is important to enable `delete_on_termination` for volumes created with instance. If `delete_on_termination` is disabled for such volumes, then after instance deletion such volumes will stay orphaned and uncontrolled by terraform. __note__ It is important to disable `delete_on_termination` if volume is created as separate terraform resource and is attached to instance. Enabling `delete_on_termination` for such volumes will result in mismanagement between two terraform resources in case of instance deletion",
 						},
 						"guest_format": {
 							Type:        schema.TypeString,
