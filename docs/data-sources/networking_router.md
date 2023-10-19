@@ -31,7 +31,7 @@ data "vkcs_networking_router" "router" {
 
 - `router_id` optional *string* &rarr;  The UUID of the router resource.
 
-- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
 - `status` optional *string* &rarr;  The status of the router (ACTIVE/DOWN).
 

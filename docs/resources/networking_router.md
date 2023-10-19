@@ -30,7 +30,7 @@ resource "vkcs_networking_router" "router_1" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the networking client. A networking client is needed to create a router. If omitted, the `region` argument of the provider is used. Changing this creates a new router.
 
-- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
 - `tags` optional *set of* *string* &rarr;  A set of string tags for the router.
 

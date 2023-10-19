@@ -42,7 +42,7 @@ resource "vkcs_networking_subnet_route" "subnet_route_1" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the networking client. A networking client is needed to configure a routing entry on a subnet. If omitted, the `region` argument of the provider is used. Changing this creates a new routing entry.
 
-- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
 
 ## Attributes Reference

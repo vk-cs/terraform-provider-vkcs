@@ -64,7 +64,7 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
 
 - `remote_ip_prefix` optional *string* &rarr;  The remote CIDR, the value needs to be a valid CIDR (i.e. 192.168.0.0/16). Changing this creates a new security group rule. <br>**Note:** Only one of `remote_group_id` or `remote_ip_prefix` may be set.
 
-- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
 
 ## Attributes Reference

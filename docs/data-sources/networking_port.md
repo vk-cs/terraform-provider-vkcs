@@ -43,7 +43,7 @@ data "vkcs_networking_port" "port_1" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the Network client. A Network client is needed to retrieve port ids. If omitted, the `region` argument of the provider is used.
 
-- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
 - `security_group_ids` optional *set of* *string* &rarr;  The list of port security group IDs to filter.
 

@@ -33,7 +33,7 @@ data "vkcs_networking_subnet" "subnet_1" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the Network client. A Network client is needed to retrieve subnet ids. If omitted, the `region` argument of the provider is used.
 
-- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
 - `subnet_id` optional *string* &rarr;  The ID of the subnet.
 

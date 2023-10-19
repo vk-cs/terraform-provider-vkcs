@@ -72,7 +72,7 @@ resource "vkcs_networking_port" "persistent_etcd" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the Networking client. A Networking client is needed to create a port. If omitted, the `region` argument of the provider is used. Changing this creates a new port.
 
-- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
 - `security_group_ids` optional *set of* *string* &rarr;  (Conflicts with `no_security_groups`) A list of security group IDs to apply to the port. The security groups must be specified by ID and not name (as opposed to how they are configured with the Compute Instance).
 
