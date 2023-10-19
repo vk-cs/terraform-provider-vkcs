@@ -31,7 +31,7 @@ data "vkcs_networking_network" "extnet" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the Network client. A Network client is needed to retrieve networks ids. If omitted, the `region` argument of the provider is used.
 
-- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
 - `status` optional *string* &rarr;  The status of the network.
 

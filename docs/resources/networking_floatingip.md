@@ -46,7 +46,7 @@ resource "vkcs_networking_floatingip" "floatip_1" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the Networking client. A Networking client is needed to create a floating IP that can be used with another networking resource, such as a load balancer. If omitted, the `region` argument of the provider is used. Changing this creates a new floating IP (which may or may not have a different address).
 
-- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is "neutron".
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
 - `subnet_id` optional *string* &rarr;  The subnet ID of the floating IP pool. Specify this if the floating IP network has multiple subnets.
 
