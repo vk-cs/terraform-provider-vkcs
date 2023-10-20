@@ -21,6 +21,11 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
     vkcs_networking_router_interface.k8s,
   ]
 
+  labels = {
+    cloud_monitoring = "true"
+    kube_log_level   = "2"
+  }
+
   name                = "k8s-cluster"
   cluster_template_id = data.vkcs_kubernetes_clustertemplate.ct.id
   master_flavor       = data.vkcs_compute_flavor.k8s.id
@@ -58,10 +63,10 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 
 - `keypair` optional *string* &rarr;  The name of the Compute service SSH keypair. Changing this creates a new cluster.
 
-- `labels` optional *map of* *string* &rarr;  The list of optional key value pairs representing additional properties of the cluster. Changing this creates a new cluster.
+- `labels` optional *map of* *string* &rarr;  The list of optional key value pairs representing additional properties of the cluster. <br>**Note:** Updating this attribute will not immediately apply the changes; these options will be used when recreating or deleting cluster nodes, for example, during an upgrade operation.
 
-  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16.
-  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False.
+  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16. <br>**Note:** Updating this value while the cluster is running is dangerous because it can lead to loss of connectivity of the cluster nodes.
+  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False. <br>**Note:** Changes to this value will be applied immediately.
   * `cloud_monitoring` to enable cloud monitoring feature.
   * `etcd_volume_size` to set etcd volume size. Default 10Gb.
   * `kube_log_level` to set log level for kubelet in range 0 to 8.
@@ -85,6 +90,8 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
+- `all_labels` *map of* *string* &rarr;  The read-only map of all cluster labels.
+
 - `api_address` *string* &rarr;  COE API address.
 
 - `created_at` *string* &rarr;  The time at which cluster was created.
