@@ -36,6 +36,42 @@ func TestAccKubernetesCluster_basic_big(t *testing.T) {
 	})
 }
 
+func TestAccKubernetesCluster_update_big(t *testing.T) {
+	var cluster clusters.Cluster
+	clusterName := "tfacc-update-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterUpdate, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesClusterBase": testAccKubernetesClusterBase, "ClusterName": clusterName,
+					"EtcdVolumeSize": "10", "CleanVolumes": "false", "KubeLogLevel": "0"}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKubernetesClusterExists("vkcs_kubernetes_cluster.update", &cluster),
+					testAccCheckKubernetesClusterLabels("vkcs_kubernetes_cluster.update", map[string]string{
+						"etcd_volume_size": "10",
+						"clean_volumes":    "false",
+						"kube_log_level":   "0",
+					}),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterUpdate, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesClusterBase": testAccKubernetesClusterBase, "ClusterName": clusterName,
+					"EtcdVolumeSize": "20", "CleanVolumes": "true", "KubeLogLevel": "8"}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKubernetesClusterExists("vkcs_kubernetes_cluster.update", &cluster),
+					testAccCheckKubernetesClusterLabels("vkcs_kubernetes_cluster.update", map[string]string{
+						"etcd_volume_size": "20",
+						"clean_volumes":    "true",
+						"kube_log_level":   "8",
+					}),
+				),
+			},
+		},
+	})
+}
+
 func TestAccKubernetesCluster_resize_big(t *testing.T) {
 	var cluster clusters.Cluster
 	clusterName := "tfacc-resize-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
@@ -97,6 +133,15 @@ func testAccCheckKubernetesClusterExists(n string, cluster *clusters.Cluster) re
 		*cluster = *found
 		return nil
 	}
+}
+
+func testAccCheckKubernetesClusterLabels(name string, labels map[string]string) resource.TestCheckFunc {
+	testFuncs := make([]resource.TestCheckFunc, 0)
+	for k, v := range labels {
+		testFuncs = append(testFuncs, resource.TestCheckResourceAttr(name, fmt.Sprintf("labels.%s", k), v))
+		testFuncs = append(testFuncs, resource.TestCheckResourceAttr(name, fmt.Sprintf("all_labels.%s", k), v))
+	}
+	return resource.ComposeTestCheckFunc(testFuncs...)
 }
 
 const testAccKubernetesNetworkingBase = `
@@ -170,6 +215,31 @@ resource "vkcs_kubernetes_cluster" "basic" {
   subnet_id           = vkcs_networking_subnet.base.id
   floating_ip_enabled = false
   availability_zone   = "MS1"
+
+  depends_on = [
+    vkcs_networking_router_interface.base,
+  ]
+}
+`
+
+const testAccKubernetesClusterUpdate = `
+{{ .TestAccKubernetesNetworkingBase }}
+{{ .TestAccKubernetesClusterBase }}
+
+resource "vkcs_kubernetes_cluster" "update" {
+  name                = "{{ .ClusterName }}"
+  cluster_template_id = data.vkcs_kubernetes_clustertemplate.base.id
+  master_count        = 1
+  network_id          = vkcs_networking_network.base.id
+  subnet_id           = vkcs_networking_subnet.base.id
+  floating_ip_enabled = false
+  availability_zone   = "MS1"
+
+  labels = {
+	etcd_volume_size = "{{ .EtcdVolumeSize }}"
+	clean_volumes    = "{{ .CleanVolumes }}"
+	kube_log_level   = "{{ .KubeLogLevel }}"
+  }
 
   depends_on = [
     vkcs_networking_router_interface.base,

@@ -36,6 +36,20 @@ type CreateOpts struct {
 	DNSDomain            string            `json:"dns_domain,omitempty"`
 }
 
+type UpdateOp string
+
+const (
+	AddOp     UpdateOp = "add"
+	RemoveOp  UpdateOp = "remove"
+	ReplaceOp UpdateOp = "replace"
+)
+
+type UpdateOpts struct {
+	Op    UpdateOp    `json:"op" required:"true"`
+	Path  string      `json:"path" required:"true"`
+	Value interface{} `json:"value,omitempty"`
+}
+
 type ActionsBaseOpts struct {
 	Action  string      `json:"action" required:"true"`
 	Payload interface{} `json:"payload,omitempty"`
@@ -84,6 +98,12 @@ type Cluster struct {
 func (opts *CreateOpts) Map() (map[string]interface{}, error) {
 	cluster, err := gophercloud.BuildRequestBody(*opts, "")
 	return cluster, err
+}
+
+// Map builds request params.
+func (opts *UpdateOpts) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(opts, "")
+	return body, err
 }
 
 // Map builds request params.
@@ -157,6 +177,23 @@ func KubeConfigGet(client *gophercloud.ServiceClient, id string) (string, error)
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+func Update(client *gophercloud.ServiceClient, id string, opts []OptsBuilder) (r UpdateResult) {
+	var o []map[string]interface{}
+	for _, opt := range opts {
+		b, err := opt.Map()
+		if err != nil {
+			r.Err = err
+			return r
+		}
+		o = append(o, b)
+	}
+	resp, err := client.Patch(clusterURL(client, id), o, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200, 202},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	return
 }
 
 func Upgrade(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r clusters.UpdateResult) {

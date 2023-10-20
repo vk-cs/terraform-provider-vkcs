@@ -7,6 +7,11 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
     vkcs_networking_router_interface.k8s,
   ]
 
+  labels = {
+    cloud_monitoring = "true"
+    kube_log_level   = "2"
+  }
+
   name                = "k8s-cluster"
   cluster_template_id = data.vkcs_kubernetes_clustertemplate.ct.id
   master_flavor       = data.vkcs_compute_flavor.k8s.id
