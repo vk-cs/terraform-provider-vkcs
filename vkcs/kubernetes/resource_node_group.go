@@ -129,9 +129,8 @@ func ResourceKubernetesNodeGroup() *schema.Resource {
 			"flavor_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Computed:    true,
-				Description: "The flavor UUID of this node group.",
+				Description: "The flavor UUID of this node group. _note_ Starting with v0.5.1, changing this attribute does not force the resource to be recreated, which requires an in-place update and may not be provided in custom deployments. In this case, contact support for clarification.",
 			},
 			"autoscaling_enabled": {
 				Type:        schema.TypeBool,
@@ -337,6 +336,25 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 		PollInterval: createUpdatePollInterval * time.Second,
 		Pending:      []string{string(clusterStatusReconciling)},
 		Target:       []string{string(clusterStatusRunning)},
+	}
+
+	if d.HasChange("flavor_id") {
+		resizeOpts := nodegroups.ResizeOpts{
+			FlavorID: d.Get("flavor_id").(string),
+		}
+
+		log.Printf("[DEBUG] Resizing vkcs_kubernetes_node_group with opts %#v", resizeOpts)
+
+		_, err := nodegroups.Resize(containerInfraClient, d.Id(), &resizeOpts).Extract()
+		if err != nil {
+			return diag.Errorf("error resizing vkcs_kubernetes_node_group: %s", err)
+		}
+
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			return diag.Errorf(
+				"error waiting for vkcs_kubernetes_node_group %s to become resized: %s", d.Id(), err)
+		}
 	}
 
 	if d.HasChange("node_count") {

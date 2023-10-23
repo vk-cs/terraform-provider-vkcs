@@ -18,6 +18,10 @@ type PatchResult struct {
 	gophercloud.Result
 }
 
+type ResizeResult struct {
+	commonResult
+}
+
 type ScaleResult struct {
 	commonResult
 }
@@ -37,6 +41,15 @@ func (r commonResult) Extract() (*NodeGroup, error) {
 func (r PatchResult) Extract() (string, error) {
 	var s struct {
 		UUID string
+	}
+	err := r.ExtractInto(&s)
+	return s.UUID, err
+}
+
+// Extract returns uuid.
+func (r ResizeResult) Extract() (string, error) {
+	var s struct {
+		UUID string `json:"uuid"`
 	}
 	err := r.ExtractInto(&s)
 	return s.UUID, err
