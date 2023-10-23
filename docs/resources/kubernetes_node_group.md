@@ -76,7 +76,7 @@ resource "vkcs_kubernetes_node_group" "default_ng" {
 - `availability_zones` optional *string* &rarr;  The list of availability zones of the node group. Zones `MS1` and  `GZ1` are available. By default, node group is being created at cluster's zone.
 **Important:** Receiving default AZ add it manually to your main.tf config to sync it with state to avoid node groups force recreation in the future.
 
-- `flavor_id` optional *string* &rarr;  The flavor UUID of this node group.
+- `flavor_id` optional *string* &rarr;  The flavor UUID of this node group. <br>**Note:** Starting with v0.5.1, changing this attribute does not force the resource to be recreated, which requires an in-place update and may not be provided in custom deployments. In this case, contact support for clarification.
 
 - `labels` optional &rarr;  The list of objects representing representing additional properties of the node group. Each object should have attribute "key". Object may also have optional attribute "value".
   - `key` **required** *string*
