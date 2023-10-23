@@ -160,14 +160,14 @@ func SDKProviderBase() *sdkschema.Provider {
 		},
 	}
 
-	provider.ConfigureContextFunc = func(_ context.Context, d *sdkschema.ResourceData) (interface{}, sdkdiag.Diagnostics) {
+	provider.ConfigureContextFunc = func(ctx context.Context, d *sdkschema.ResourceData) (interface{}, sdkdiag.Diagnostics) {
 		terraformVersion := provider.TerraformVersion
 		if terraformVersion == "" {
 			// Terraform 0.12 introduced this field to the protocol
 			// We can therefore assume that if it's missing it's 0.10 or 0.11
 			terraformVersion = "0.11+compatible"
 		}
-		return clients.ConfigureSdkProvider(d, terraformVersion)
+		return clients.ConfigureSdkProvider(ctx, d, terraformVersion)
 	}
 
 	return provider
