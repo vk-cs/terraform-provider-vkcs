@@ -201,7 +201,7 @@ Also, the user_data option can be set to the contents of a script file using the
 
   - `boot_index` optional *number* &rarr;  The boot index of the volume. It defaults to 0 if only one `block_device` is specified, and to -1 if more than one is configured. Changing this creates a new server. <br>**Note:** You must set the boot index to 0 for one of the block devices if more than one is defined.
 
-  - `delete_on_termination` optional *boolean* &rarr;  Delete the volume / block device upon termination of the instance. Defaults to false. Changing this creates a new server.
+  - `delete_on_termination` optional *boolean* &rarr;  Delete the volume / block device upon termination of the instance. Defaults to false. Changing this creates a new server. _<br>**Note:**_ It is important to enable `delete_on_termination` for volumes created with instance. If `delete_on_termination` is disabled for such volumes, then after instance deletion such volumes will stay orphaned and uncontrolled by terraform. _<br>**Note:**_ It is important to disable `delete_on_termination` if volume is created as separate terraform resource and is attached to instance. Enabling `delete_on_termination` for such volumes will result in mismanagement between two terraform resources in case of instance deletion
 
   - `destination_type` optional *string* &rarr;  The type that gets created. Possible values are "volume" and "local". Changing this creates a new server.
 
