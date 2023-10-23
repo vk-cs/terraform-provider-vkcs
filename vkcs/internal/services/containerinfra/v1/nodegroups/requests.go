@@ -84,6 +84,11 @@ type CreateOpts struct {
 	MaxNodeUnavailable int      `json:"max_node_unavailable,omitempty"`
 }
 
+// ResizeOpts contains options to change flavor of node group
+type ResizeOpts struct {
+	FlavorID string `json:"flavor_id" required:"true"`
+}
+
 // ScaleOpts contains options to scale node group
 type ScaleOpts struct {
 	Delta    int    `json:"delta" required:"true"`
@@ -98,6 +103,12 @@ func (opts *CreateOpts) Map() (map[string]interface{}, error) {
 
 // Map builds request params.
 func (opts *NodeGroup) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
+// Map builds request params.
+func (opts *ResizeOpts) Map() (map[string]interface{}, error) {
 	body, err := gophercloud.BuildRequestBody(*opts, "")
 	return body, err
 }
@@ -170,6 +181,22 @@ func Patch(client *gophercloud.ServiceClient, id string, opts PatchOptsBuilder) 
 		OkCodes: []int{200},
 	})
 	if r.Err == nil {
+		r.Header = result.Header
+	}
+	return
+}
+
+func Resize(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r ResizeResult) {
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	var result *http.Response
+	result, r.Err = client.Patch(resizeURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{202},
+	})
+	if r.Err != nil {
 		r.Header = result.Header
 	}
 	return

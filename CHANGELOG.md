@@ -10,6 +10,7 @@ description: |-
 - Remove default sdn value from firewall and networking resources and data sources
 - Support updating Kubernetes cluster labels without recreating it
 - Add "all_labels" attribute to Kubernetes cluster
+- Support updating Kubernetes node group's flavor
 - Wait for volume to finish detaching when deleting resource vkcs_compute_volume_attach
 
 #### v0.5.0

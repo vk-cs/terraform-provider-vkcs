@@ -37,6 +37,36 @@ func TestAccKubernetesNodeGroup_basic_big(t *testing.T) {
 	})
 }
 
+func TestAccKubernetesNodeGroup_resize_big(t *testing.T) {
+	var nodeGroup nodegroups.NodeGroup
+	clusterName := "tfacc-ng-resize-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesNodeGroupClusterBase, map[string]string{"ClusterName": clusterName})
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupResize, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesNodeGroupClusterBase": clusterConfig,
+					"FlavorName": "Standard-2-8-50"}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKubernetesNodeGroupExists("vkcs_kubernetes_node_group.resize", &nodeGroup),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.resize", "flavor_id", "data.vkcs_compute_flavor.resize", "id"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupResize, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesNodeGroupClusterBase": clusterConfig,
+					"FlavorName": "Standard-4-12"}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKubernetesNodeGroupExists("vkcs_kubernetes_node_group.resize", &nodeGroup),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.resize", "flavor_id", "data.vkcs_compute_flavor.resize", "id"),
+				),
+			},
+			acctest.ImportStep("vkcs_kubernetes_node_group.resize"),
+		},
+	})
+}
+
 func testAccCheckKubernetesNodeGroupExists(n string, nodeGroup *nodegroups.NodeGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -70,8 +100,8 @@ func testAccCheckKubernetesNodeGroupExists(n string, nodeGroup *nodegroups.NodeG
 
 const testAccKubernetesNodeGroupClusterBase = `
 data "vkcs_compute_flavor" "base" {
-	name = "Standard-2-8-50"
-  }
+  name = "Standard-2-8-50"
+}
 
 data "vkcs_kubernetes_clustertemplate" "base" {
   version = "1.24"
@@ -102,6 +132,25 @@ resource "vkcs_kubernetes_node_group" "basic" {
   cluster_id          = vkcs_kubernetes_cluster.base.id
   name                = "tfacc-basic"
   flavor_id           = data.vkcs_compute_flavor.base.id
+  node_count          = 1
+  max_nodes           = 5
+  min_nodes           = 1
+  autoscaling_enabled = false
+}
+`
+
+const testAccKubernetesNodeGroupResize = `
+{{ .TestAccKubernetesNetworkingBase }}
+{{ .TestAccKubernetesNodeGroupClusterBase }}
+
+data "vkcs_compute_flavor" "resize" {
+  name = "{{ .FlavorName }}"
+}
+
+resource "vkcs_kubernetes_node_group" "resize" {
+  cluster_id          = vkcs_kubernetes_cluster.base.id
+  name                = "tfacc-resize"
+  flavor_id           = data.vkcs_compute_flavor.resize.id
   node_count          = 1
   max_nodes           = 5
   min_nodes           = 1

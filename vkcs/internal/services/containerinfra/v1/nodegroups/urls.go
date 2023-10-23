@@ -14,6 +14,10 @@ func nodeGroupURL(c *gophercloud.ServiceClient, id string) string {
 	return c.ServiceURL(baseURL(), id)
 }
 
+func resizeURL(c *gophercloud.ServiceClient, id string) string {
+	return c.ServiceURL(baseURL(), id, "actions", "resize")
+}
+
 func scaleURL(c *gophercloud.ServiceClient, id string) string {
 	return c.ServiceURL(baseURL(), id, "actions", "scale")
 }
