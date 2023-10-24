@@ -67,7 +67,7 @@ func getConfigParam(d *schema.ResourceData, key string, envKey string, defaultVa
 	return param
 }
 
-func ConfigureSdkProvider(ctx context.Context, d *schema.ResourceData, terraformVersion string) (Config, sdkdiag.Diagnostics) {
+func ConfigureSdkProvider(d *schema.ResourceData, terraformVersion string) (Config, sdkdiag.Diagnostics) {
 	containerInfraV1MicroVersion := d.Get("cloud_containers_api_version").(string)
 	if containerInfraV1MicroVersion == "" {
 		containerInfraV1MicroVersion = CloudContainersAPIVersion
@@ -87,7 +87,6 @@ func ConfigureSdkProvider(ctx context.Context, d *schema.ResourceData, terraform
 			TerraformVersion: terraformVersion,
 			SDKVersion:       meta.SDKVersionString(),
 			MutexKV:          mutexkv.NewMutexKV(),
-			Context:          ctx,
 		},
 		containerInfraV1MicroVersion,
 	}
@@ -317,7 +316,6 @@ func ConfigureProvider(ctx context.Context, req provider.ConfigureRequest) (Conf
 	req.Config.GetAttribute(ctx, path.Root("user_domain_name"), &config.UserDomainName)
 	req.Config.GetAttribute(ctx, path.Root("region"), &config.Region)
 	req.Config.GetAttribute(ctx, path.Root("cloud_containers_api_version"), &config.ContainerInfraV1MicroVersion)
-	config.Context = ctx
 	config.updateWithEnv()
 	config.TerraformVersion = req.TerraformVersion
 
