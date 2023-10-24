@@ -90,7 +90,7 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
-- `all_labels` *map of* *string* &rarr;  The read-only map of all cluster labels.
+- `all_labels` *map of* *string* &rarr;  The read-only map of all cluster labels. **New since v0.5.1**.
 
 - `api_address` *string* &rarr;  COE API address.
 
