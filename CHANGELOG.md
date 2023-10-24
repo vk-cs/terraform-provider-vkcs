@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.5.1 (unreleased)
+#### v0.5.1
 - Fixed issue of root password not working for vkcs_db_cluster and vkcs_db_cluster_with_shards resources
 - Remove default sdn value from firewall and networking resources and data sources
 - Support updating Kubernetes cluster labels without recreating it
