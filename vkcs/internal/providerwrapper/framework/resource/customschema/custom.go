@@ -14,7 +14,7 @@ func CustomizeSchema(sJSON jsonschema.ResourceJSON, s schema.Schema) schema.Sche
 	}
 
 	if s.DeprecationMessage == "" && sJSON.NewSince != "" {
-		s.Description += fmt.Sprintf(" **New since %s**.", sJSON.NewSince)
+		s.Description += fmt.Sprintf("_new_since_%s_.", sJSON.NewSince)
 	}
 
 	for name, attr := range s.Attributes {
