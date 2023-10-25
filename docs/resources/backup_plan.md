@@ -8,7 +8,9 @@ description: |-
 
 # vkcs_backup_plan
 
-Manages a backup plan resource. **New since v0.4.0**.
+Manages a backup plan resource.
+
+**New since v0.4.0**.
 
 ## Example Usage
 ### Incremental backup for compute instance

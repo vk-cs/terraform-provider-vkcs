@@ -574,7 +574,7 @@
           "delete": 30,
           "update": 30
         },
-        "description": "Manages a compute VM instance resource.\n\n~\u003e **Note:** All arguments including the instance admin password will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html)."
+        "description": "Manages a compute VM instance resource._note_ All arguments including the instance admin password will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html)."
       },
       "vkcs_compute_interface_attach": {
         "schema": {
@@ -2037,7 +2037,7 @@
             "computed": true
           }
         },
-        "description": "Manages a direct connect BGP instance resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "description": "Manages a direct connect BGP instance resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
       },
       "vkcs_dc_bgp_neighbor": {
@@ -2127,7 +2127,7 @@
             "computed": true
           }
         },
-        "description": "Manages a direct connect BGP neighbor resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "description": "Manages a direct connect BGP neighbor resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
       },
       "vkcs_dc_bgp_static_announce": {
@@ -2187,7 +2187,7 @@
             "computed": true
           }
         },
-        "description": "Manages a direct connect BGP Static Announce resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "description": "Manages a direct connect BGP Static Announce resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
       },
       "vkcs_dc_interface": {
@@ -2279,7 +2279,7 @@
             "computed": true
           }
         },
-        "description": "Manages a direct connect interface resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "description": "Manages a direct connect interface resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
       },
       "vkcs_dc_router": {
@@ -2330,7 +2330,7 @@
             "computed": true
           }
         },
-        "description": "Manages a direct connect router resource. \u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "description": "Manages a direct connect router resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
       },
       "vkcs_dc_static_route": {
@@ -2390,7 +2390,7 @@
             "computed": true
           }
         },
-        "description": "Manages a direct connect BGP Static Announce resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "description": "Manages a direct connect BGP Static Announce resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
       },
       "vkcs_dc_vrrp": {
@@ -2462,7 +2462,7 @@
             "computed": true
           }
         },
-        "description": "Manages a direct connect VRRP resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "description": "Manages a direct connect VRRP resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
       },
       "vkcs_dc_vrrp_address": {
@@ -2517,7 +2517,7 @@
             "computed": true
           }
         },
-        "description": "Manages a direct connect VRRP address resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "description": "Manages a direct connect VRRP address resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
       },
       "vkcs_dc_vrrp_interface": {
@@ -2584,7 +2584,7 @@
             "computed": true
           }
         },
-        "description": "Manages a direct connect VRRP interface resource.\u003cbr\u003e ~\u003e **Note:** This resource requires Sprut SDN to be enabled in your project.",
+        "description": "Manages a direct connect VRRP interface resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
       },
       "vkcs_images_image": {
@@ -2746,7 +2746,7 @@
         "timeouts": {
           "create": 30
         },
-        "description": "Manages an Image resource within VKCS.\n\n~\u003e **Note:** All arguments including the source image URL password will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html)."
+        "description": "Manages an Image resource within VKCS._note_ All arguments including the source image URL password will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html)."
       },
       "vkcs_keymanager_container": {
         "schema": {
@@ -5031,7 +5031,7 @@
           "create": 10,
           "delete": 10
         },
-        "description": "Manages a public DNS zone record resource within VKCS.\u003cbr\u003e\n**Note:** Although some arguments are marked as optional, it is actually required to set values for them depending on record \\\"type\\\". Use this map to get information about which arguments you have to set:\n\n| Record type | Required arguments |\n| ----------- | ------------------ |\n| A | ip |\n| AAAA | ip |\n| CNAME | name, content |\n| MX | priority, content |\n| NS | content |\n| SRV | service, proto, priority, weight, host, port |\n| TXT | content |\n\n\n",
+        "description": "Manages a public DNS zone record resource within VKCS._note_ Although some arguments are marked as optional, it is actually required to set values for them depending on record \\\"type\\\". Use this map to get information about which arguments you have to set:\n\n| Record type | Required arguments |\n| ----------- | ------------------ |\n| A | ip |\n| AAAA | ip |\n| CNAME | name, content |\n| MX | priority, content |\n| NS | content |\n| SRV | service, proto, priority, weight, host, port |\n| TXT | content |\n\n\n",
         "new_since": "v0.2.0"
       },
       "vkcs_publicdns_zone": {
@@ -5162,7 +5162,7 @@
           "delete": 10,
           "update": 10
         },
-        "description": "Use this resource to configure a security service.\n\n~\u003e **Note:** All arguments including the security service password will be stored in the raw state as plain-text. [Read more about sensitive data in state](/docs/state/sensitive-data.html).\n\nA security service stores configuration information for clients for authentication and authorization (AuthN/AuthZ). For example, a share server will be the client for an existing service such as LDAP, Kerberos, or Microsoft Active Directory."
+        "description": "Use this resource to configure a security service._note_ All arguments including the security service password will be stored in the raw state as plain-text. [Read more about sensitive data in state](/docs/state/sensitive-data.html).\n\nA security service stores configuration information for clients for authentication and authorization (AuthN/AuthZ). For example, a share server will be the client for an existing service such as LDAP, Kerberos, or Microsoft Active Directory."
       },
       "vkcs_sharedfilesystem_share": {
         "schema": {
@@ -6958,7 +6958,7 @@
             "computed": true
           }
         },
-        "description": "Use this data source to get direct connect api options.\u003cbr\u003e ~\u003e **Note:** This data source requires Sprut SDN to be enabled in your project.",
+        "description": "Use this data source to get direct connect api options._note_ This data source requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
       },
       "vkcs_images_image": {

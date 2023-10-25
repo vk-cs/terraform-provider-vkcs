@@ -8,7 +8,9 @@ description: |-
 
 # vkcs_backup_providers
 
-Use this data source to get backup providers info **New since v0.4.0**.
+Use this data source to get backup providers info
+
+**New since v0.4.0**.
 
 ## Example Usage
 

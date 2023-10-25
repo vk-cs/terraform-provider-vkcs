@@ -48,9 +48,9 @@ resource "vkcs_images_image" "eurolinux9" {
 
 - `name` **required** *string* &rarr;  The name of the image.
 
-- `archiving_format` optional *string* &rarr;  The format of archived image file. Use this to unzip image file when downloading an archive. Currently only "tar" format is supported. **New since v0.4.2**.
+- `archiving_format` optional *string* &rarr;  The format of archived image file. Use this to unzip image file when downloading an archive. Currently only "tar" format is supported.<br>**New since v0.4.2**.
 
-- `compression_format` optional *string* &rarr;  The format of compressed image. Use this attribute to decompress image when downloading it from source. Must be one of "auto", "bzip2", "gzip", "xz". If set to "auto", response Content-Type header will be used to detect compression format. **New since v0.4.2**.
+- `compression_format` optional *string* &rarr;  The format of compressed image. Use this attribute to decompress image when downloading it from source. Must be one of "auto", "bzip2", "gzip", "xz". If set to "auto", response Content-Type header will be used to detect compression format.<br>**New since v0.4.2**.
 
 - `image_cache_path` optional *string* &rarr;  This is the directory where the images will be downloaded. Images will be stored with a filename corresponding to the url's md5 hash. Defaults to "$HOME/.terraform/image_cache"
 

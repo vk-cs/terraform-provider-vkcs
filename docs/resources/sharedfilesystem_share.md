@@ -63,7 +63,7 @@ resource "vkcs_sharedfilesystem_share" "share_1" {
 In addition to all arguments above, the following attributes are exported:
 - `all_metadata` *map of* *string* &rarr;  The map of metadata, assigned on the share, which has been explicitly and implicitly added.
 
-- `export_location_path` *string* &rarr;  The export location path of the share. **New since v0.1.15**.
+- `export_location_path` *string* &rarr;  The export location path of the share.<br>**New since v0.1.15**.
 
 - `id` *string* &rarr;  ID of the resource.
 

@@ -8,7 +8,9 @@ description: |-
 
 # vkcs_backup_plan
 
-Use this data source to get backup plan info **New since v0.4.0**.
+Use this data source to get backup plan info
+
+**New since v0.4.0**.
 
 ## Example Usage
 

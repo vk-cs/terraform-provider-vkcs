@@ -8,7 +8,9 @@ description: |-
 
 # vkcs_db_datastore
 
-Use this data source to get information on a VKCS db datastore. **New since v0.2.0**.
+Use this data source to get information on a VKCS db datastore.
+
+**New since v0.2.0**.
 
 ## Example Usage
 

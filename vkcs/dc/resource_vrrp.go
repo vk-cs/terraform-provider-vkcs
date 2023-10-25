@@ -121,7 +121,7 @@ func (r *VRRPResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
 			},
 		},
-		Description: "Manages a direct connect VRRP resource.<br> ~> **Note:** This resource requires Sprut SDN to be enabled in your project.",
+		Description: "Manages a direct connect VRRP resource._note_ This resource requires Sprut SDN to be enabled in your project.",
 	}
 }
 
