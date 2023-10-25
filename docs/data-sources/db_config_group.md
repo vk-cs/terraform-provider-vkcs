@@ -8,7 +8,9 @@ description: |-
 
 # vkcs_db_config_group
 
-Use this data source to get the information on a db config group resource. **New since v0.1.7**.
+Use this data source to get the information on a db config group resource.
+
+**New since v0.1.7**.
 
 ## Example Usage
 
@@ -21,7 +23,7 @@ data "vkcs_db_config_group" "db-config-group" {
 ## Argument Reference
 - `config_group_id` **required** *string* &rarr;  The UUID of the config_group.
 
-- `region` optional *string* &rarr;  The region in which to obtain the service client. If omitted, the `region` argument of the provider is used. **New since v0.4.0**.
+- `region` optional *string* &rarr;  The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.<br>**New since v0.4.0**.
 
 
 ## Attributes Reference

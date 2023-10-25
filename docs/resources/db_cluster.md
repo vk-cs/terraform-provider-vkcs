@@ -128,7 +128,7 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
 - `availability_zone` optional *string* &rarr;  The name of the availability zone of the cluster. Changing this creates a new cluster.
 
-- `backup_schedule` optional &rarr;  Object that represents configuration of PITR backup. This functionality is available only for postgres datastore. **New since v0.1.4**.
+- `backup_schedule` optional &rarr;  Object that represents configuration of PITR backup. This functionality is available only for postgres datastore.<br>**New since v0.1.4**.
   - `interval_hours` **required** *number* &rarr;  Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.
 
   - `keep_count` **required** *number* &rarr;  Number of backups to be stored.
@@ -144,7 +144,7 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
   - `settings` optional *map of* *string* &rarr;  Map of key-value settings of the capability.
 
-- `cloud_monitoring_enabled` optional *boolean* &rarr;  Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance. **New since v0.2.0**.
+- `cloud_monitoring_enabled` optional *boolean* &rarr;  Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance.<br>**New since v0.2.0**.
 
 - `configuration_id` optional *string* &rarr;  The id of the configuration attached to cluster.
 
@@ -160,15 +160,15 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 - `network` optional &rarr;  Object that represents network of the cluster. Changing this creates a new cluster.
   - `port` optional deprecated *string* &rarr;  The port id of the network. Changing this creates a new cluster. **Deprecated** This argument is deprecated, please do not use it.
 
-  - `security_groups` optional *set of* *string* &rarr;  An array of one or more security group IDs to associate with the cluster instances. Changing this creates a new cluster. **New since v0.2.0**.
+  - `security_groups` optional *set of* *string* &rarr;  An array of one or more security group IDs to associate with the cluster instances. Changing this creates a new cluster.<br>**New since v0.2.0**.
 
-  - `subnet_id` optional *string* &rarr;  The id of the subnet. Changing this creates a new cluster. **New since v0.1.15**.
+  - `subnet_id` optional *string* &rarr;  The id of the subnet. Changing this creates a new cluster.<br>**New since v0.1.15**.
 
   - `uuid` optional *string* &rarr;  The id of the network. Changing this creates a new cluster. <br>**Note:** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
 
 - `region` optional *string* &rarr;  Region to create resource in.
 
-- `restore_point` optional &rarr;  Object that represents backup to restore cluster from. **New since v0.1.4**.
+- `restore_point` optional &rarr;  Object that represents backup to restore cluster from.<br>**New since v0.1.4**.
   - `backup_id` **required** *string* &rarr;  ID of the backup.
 
   - `target` optional *string* &rarr;  Used only for restoring from PITR backups. Timestamp of needed backup in format "2021-10-06 01:02:00". You can specify "latest" to use most recent backup.
@@ -179,7 +179,7 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
 - `shrink_options` optional *string* &rarr;  Used only for shrinking cluster. List of IDs of instances that should remain after shrink. If no options are supplied, shrink operation will choose first non-leader instance to delete.
 
-- `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below. **New since v0.4.0**.
+- `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below.<br>**New since v0.4.0**.
   - `restart_confirmed` optional *boolean* &rarr;  Boolean to confirm autorestart of the cluster's instances if it is required to apply configuration group changes.
 
 - `wal_disk_autoexpand` optional &rarr;  Object that represents autoresize properties of wal volume of the cluster.
@@ -199,7 +199,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `instances` *object* &rarr;  Cluster instances info.
 
-- `loadbalancer_id` *string* &rarr;  The id of the loadbalancer attached to the cluster. **New since v0.1.15**.
+- `loadbalancer_id` *string* &rarr;  The id of the loadbalancer attached to the cluster.<br>**New since v0.1.15**.
 
 
 

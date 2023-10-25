@@ -8,7 +8,11 @@ description: |-
 
 # vkcs_dc_api_options
 
-Use this data source to get direct connect api options.<br> ~> **Note:** This data source requires Sprut SDN to be enabled in your project. **New since v0.5.0**.
+Use this data source to get direct connect api options.
+
+~> **Note:** This data source requires Sprut SDN to be enabled in your project.
+
+**New since v0.5.0**.
 
 ## Example Usage
 
