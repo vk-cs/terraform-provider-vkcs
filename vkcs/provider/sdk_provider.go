@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/go-version"
 	sdkdiag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	sdkschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -23,6 +24,8 @@ import (
 
 	wrapper "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/providerwrapper/sdk"
 )
+
+const minTerraformVersion = "1.1.5"
 
 // SDKProvider returns a SDKv2 schema.Provider for VKCS.
 func SDKProvider() *sdkschema.Provider {
@@ -166,6 +169,11 @@ func SDKProviderBase() *sdkschema.Provider {
 			// Terraform 0.12 introduced this field to the protocol
 			// We can therefore assume that if it's missing it's 0.10 or 0.11
 			terraformVersion = "0.11+compatible"
+		}
+		tfVersion, _ := version.NewVersion(terraformVersion)
+		minVersion, _ := version.NewVersion(minTerraformVersion)
+		if tfVersion.LessThan(minVersion) {
+			return nil, sdkdiag.Errorf("Unsupported terraform version: please use at least v%s", minTerraformVersion)
 		}
 		return clients.ConfigureSdkProvider(d, terraformVersion)
 	}
