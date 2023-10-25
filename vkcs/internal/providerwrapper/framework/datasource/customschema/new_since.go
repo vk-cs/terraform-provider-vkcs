@@ -9,14 +9,14 @@ import (
 
 func addNewSinceToAttr(attr schema.Attribute, attrJSON jsonschema.SchemaJSON) string {
 	if attr.GetDeprecationMessage() == "" && attrJSON.NewSince != "" {
-		return attr.GetDescription() + fmt.Sprintf(" **New since %s**.", attrJSON.NewSince)
+		return attr.GetDescription() + fmt.Sprintf("_new_since_%s_.", attrJSON.NewSince)
 	}
 	return attr.GetDescription()
 }
 
 func addNewSinceToBlock(block schema.Block, blockJSON jsonschema.SchemaJSON) string {
 	if block.GetDeprecationMessage() == "" && blockJSON.NewSince != "" {
-		return block.GetDescription() + fmt.Sprintf(" **New since %s**.", blockJSON.NewSince)
+		return block.GetDescription() + fmt.Sprintf("_new_since_%s_.", blockJSON.NewSince)
 	}
 	return block.GetDescription()
 }

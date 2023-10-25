@@ -27,7 +27,7 @@ func WrapProvider(p *schema.Provider) (*schema.Provider, error) {
 		}
 
 		if rs.DeprecationMessage == "" && rsJSON.NewSince != "" {
-			rs.Description += fmt.Sprintf(" **New since %s**.", rsJSON.NewSince)
+			rs.Description += fmt.Sprintf("_new_since_%s_.", rsJSON.NewSince)
 		}
 
 		for propertyName, propertySchema := range rs.Schema {
@@ -45,7 +45,7 @@ func WrapProvider(p *schema.Provider) (*schema.Provider, error) {
 		}
 
 		if ds.DeprecationMessage == "" && dsJSON.NewSince != "" {
-			ds.Description += fmt.Sprintf(" **New since %s**.", dsJSON.NewSince)
+			ds.Description += fmt.Sprintf("_new_since_%s_.", dsJSON.NewSince)
 		}
 
 		for propertyName, propertySchema := range ds.Schema {
@@ -64,7 +64,7 @@ func customizeSchema(sJSON jsonschema.SchemaJSON, s *schema.Schema, nodeName str
 	}
 
 	if s.Deprecated == "" && sJSON.NewSince != "" {
-		s.Description += fmt.Sprintf(" **New since %s**.", sJSON.NewSince)
+		s.Description += fmt.Sprintf("_new_since_%s_.", sJSON.NewSince)
 	}
 
 	if nodeIsBlock(s) {
