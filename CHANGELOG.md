@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.5.2
+- Fixed issue when vkcs_networking_router_route could not be read
+
 #### v0.5.1
 - Fixed issue of root password not working for vkcs_db_cluster and vkcs_db_cluster_with_shards resources
 - Remove default sdn value from firewall and networking resources and data sources
