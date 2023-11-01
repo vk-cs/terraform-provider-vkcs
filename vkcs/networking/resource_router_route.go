@@ -138,7 +138,7 @@ func resourceNetworkingRouterRouteRead(ctx context.Context, d *schema.ResourceDa
 	d.Set("router_id", routerID)
 
 	var r routerExtended
-	err = networking.ExtractRouterInto(routers.Get(networkingClient, d.Id()), &r)
+	err = networking.ExtractRouterInto(routers.Get(networkingClient, routerID), &r)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_networking_router"))
 	}
