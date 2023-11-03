@@ -1,5 +1,5 @@
 ---
-subcategory: "Networking"
+subcategory: "Network"
 layout: "vkcs"
 page_title: "vkcs: vkcs_networking_subnet"
 description: |-
