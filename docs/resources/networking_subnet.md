@@ -1,5 +1,5 @@
 ---
-subcategory: "Network"
+subcategory: "Networking"
 layout: "vkcs"
 page_title: "vkcs: vkcs_networking_subnet"
 description: |-
@@ -12,14 +12,25 @@ Manages a subnet resource within VKCS.
 
 ## Example Usage
 ```terraform
-resource "vkcs_networking_network" "network_1" {
-  name           = "tf_test_network"
-  admin_state_up = "true"
-}
-
-resource "vkcs_networking_subnet" "subnet_1" {
-  network_id = "${vkcs_networking_network.network_1.id}"
+resource "vkcs_networking_subnet" "app" {
+  name       = "app-tf-example"
+  network_id = vkcs_networking_network.app.id
   cidr       = "192.168.199.0/24"
+}
+```
+
+## Subnet with not default DNS servers
+```terraform
+resource "vkcs_networking_subnet" "subnet-with-dns-tf-example" {
+  name       = "subnet-with-dns-tf-example"
+  network_id = vkcs_networking_network.app.id
+  # here we set DNS'es instead of built in ones.
+  # subnet resources will not be available via their private DNS names.
+  dns_nameservers = [
+    "8.8.8.8",
+    "8.8.4.4"
+  ]
+  cidr = "192.168.200.0/24"
 }
 ```
 ## Argument Reference

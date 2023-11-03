@@ -1,5 +1,5 @@
 ---
-subcategory: "Network"
+subcategory: "Networking"
 layout: "vkcs"
 page_title: "vkcs: vkcs_networking_subnet_route"
 description: |-
@@ -12,25 +12,10 @@ Creates a routing entry on a VKCS subnet.
 
 ## Example Usage
 ```terraform
-resource "vkcs_networking_router" "router_1" {
-  name           = "router_1"
-  admin_state_up = "true"
-}
-
-resource "vkcs_networking_network" "network_1" {
-  name           = "network_1"
-  admin_state_up = "true"
-}
-
-resource "vkcs_networking_subnet" "subnet_1" {
-  network_id = "${vkcs_networking_network.network_1.id}"
-  cidr       = "192.168.199.0/24"
-}
-
-resource "vkcs_networking_subnet_route" "subnet_route_1" {
-  subnet_id        = "${vkcs_networking_subnet.subnet_1.id}"
+resource "vkcs_networking_subnet_route" "subnet-route-to-external-tf-example" {
+  subnet_id        = vkcs_networking_subnet.app.id
   destination_cidr = "10.0.1.0/24"
-  next_hop         = "192.168.199.254"
+  next_hop         = vkcs_networking_port.persistent_etcd.all_fixed_ips[0]
 }
 ```
 ## Argument Reference
