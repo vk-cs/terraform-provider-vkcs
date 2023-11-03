@@ -18,7 +18,7 @@ description: |-
 If one of the subnets in a list has an exhausted pool, terraform will try the
 next subnet ID from the list.
 
-{{tffile "templates/network/resources/vkcs_networking_floatingip/subnet_list/main.tf"}}
+{{tffile "templates/networking/resources/vkcs_networking_floatingip/subnet_list/main.tf"}}
 
 {{ .SchemaMarkdown }}
 
@@ -26,4 +26,4 @@ next subnet ID from the list.
 
 Floating IPs can be imported using the `id`, e.g.
 
-{{codefile "shell" "templates/network/resources/vkcs_networking_floatingip/import.sh"}}
+{{codefile "shell" "templates/networking/resources/vkcs_networking_floatingip/import.sh"}}
