@@ -4,7 +4,7 @@ subCategoryMapping:
   blockstorage: Disks (block storage)
   image: Images
   sharedfilesystem: File Share (NFS)
-  network: Network
+  networking: Network
   firewall: Firewall
   lb: Load Balancers
   vpnaas: VPN
