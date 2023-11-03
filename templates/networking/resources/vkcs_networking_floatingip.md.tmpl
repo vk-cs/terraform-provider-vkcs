@@ -14,11 +14,9 @@ description: |-
 ### Simple floating IP allocation
 {{tffile .ExampleFile}}
 
-### Floating IP allocation using a list of subnets
-If one of the subnets in a list has an exhausted pool, terraform will try the
-next subnet ID from the list.
+### Floating IP allocation with association to port
 
-{{tffile "templates/networking/resources/vkcs_networking_floatingip/subnet_list/main.tf"}}
+{{tffile "examples/networking/floatingip/main-with-port.tf"}}
 
 {{ .SchemaMarkdown }}
 
