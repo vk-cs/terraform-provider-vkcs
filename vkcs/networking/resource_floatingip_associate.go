@@ -60,7 +60,7 @@ func ResourceNetworkingFloatingIPAssociate() *schema.Resource {
 				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 		},
-		Description: "Associates a floating IP to a port. This is useful for situations where you have a pre-allocated floating IP or are unable to use the `vkcs_networking_floatingip` resource to create a floating IP.",
+		Description: "Associates a floating IP to a port. This can be done only if port is assigned to router connected to external network. This is useful for situations where you have a pre-allocated floating IP or are unable to use the `vkcs_networking_floatingip` resource to create a floating IP.",
 	}
 }
 
