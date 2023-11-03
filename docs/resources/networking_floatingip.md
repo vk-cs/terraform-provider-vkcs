@@ -1,5 +1,5 @@
 ---
-subcategory: "Network"
+subcategory: "Networking"
 layout: "vkcs"
 page_title: "vkcs: vkcs_networking_floatingip"
 description: |-
