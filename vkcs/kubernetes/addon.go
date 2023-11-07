@@ -10,6 +10,7 @@ import (
 	v1 "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfraaddons/v1"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfraaddons/v1/addons"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfraaddons/v1/clusteraddons"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func readAllClusterAddons(ctx context.Context, client *gophercloud.ServiceClient, clusterID string) ([]v1.Addon, []clusteraddons.ClusterAddon, error) {
@@ -47,7 +48,7 @@ func addonStateRefreshFunc(client *gophercloud.ServiceClient, id string) retry.S
 	return func() (interface{}, string, error) {
 		a, err := clusteraddons.Get(client, id).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return a, addonStatusDeleted, nil
 			}
 			return nil, "", err

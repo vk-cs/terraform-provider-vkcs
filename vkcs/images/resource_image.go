@@ -14,8 +14,9 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
-	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/imagedata"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
+	iimagedata "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/images/v2/imagedata"
+	iimages "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/images/v2/images"
 )
 
 const (
@@ -290,7 +291,7 @@ func resourceImagesImageCreate(ctx context.Context, d *schema.ResourceData, meta
 	d.Partial(true)
 
 	log.Printf("[DEBUG] Create Options: %#v", createOpts)
-	newImg, err := images.Create(imageClient, createOpts).Extract()
+	newImg, err := iimages.Create(imageClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating Image: %s", err)
 	}
@@ -322,7 +323,7 @@ func resourceImagesImageCreate(ctx context.Context, d *schema.ResourceData, meta
 	defer imgFile.Close()
 	log.Printf("[WARN] Uploading image %s (%d bytes). This can be pretty long.", d.Id(), fileSize)
 
-	res := imagedata.Upload(imageClient, d.Id(), imgFile)
+	res := iimagedata.Upload(imageClient, d.Id(), imgFile)
 	if res.Err != nil {
 		return diag.Errorf("Error while uploading file %q: %s", imgFilePath, res.Err)
 	}
@@ -341,7 +342,7 @@ func resourceImagesImageCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("Error waiting for Image: %s", err)
 	}
 
-	img, err := images.Get(imageClient, d.Id()).Extract()
+	img, err := iimages.Get(imageClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "image"))
 	}
@@ -364,7 +365,7 @@ func resourceImagesImageRead(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.Errorf("Error creating VKCS image client: %s", err)
 	}
 
-	img, err := images.Get(imageClient, d.Id()).Extract()
+	img, err := iimages.Get(imageClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "image"))
 	}
@@ -510,7 +511,7 @@ func resourceImagesImageUpdate(ctx context.Context, d *schema.ResourceData, meta
 
 	log.Printf("[DEBUG] Update Options: %#v", updateOpts)
 
-	_, err = images.Update(imageClient, d.Id(), updateOpts).Extract()
+	_, err = iimages.Update(imageClient, d.Id(), updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("error updating image: %s", err)
 	}
@@ -526,7 +527,7 @@ func resourceImagesImageDelete(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	log.Printf("[DEBUG] Deleting Image %s", d.Id())
-	if err := images.Delete(imageClient, d.Id()).Err; err != nil {
+	if err := iimages.Delete(imageClient, d.Id()).Err; err != nil {
 		return diag.Errorf("error deleting Image: %s", err)
 	}
 

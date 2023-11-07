@@ -14,9 +14,11 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/errors"
+	sfserrors "github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/errors"
 	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/messages"
 	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/shares"
+	ishares "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/sharedfilesystem/v2/shares"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 const (
@@ -165,7 +167,7 @@ func resourceSharedFilesystemShareCreate(ctx context.Context, d *schema.Resource
 	log.Printf("[DEBUG] Attempting to create share")
 	var share *shares.Share
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		share, err = shares.Create(sfsClient, createOpts).Extract()
+		share, err = ishares.Create(sfsClient, createOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -173,8 +175,8 @@ func resourceSharedFilesystemShareCreate(ctx context.Context, d *schema.Resource
 	})
 
 	if err != nil {
-		detailedErr := errors.ErrorDetails{}
-		e := errors.ExtractErrorInto(err, &detailedErr)
+		detailedErr := sfserrors.ErrorDetails{}
+		e := sfserrors.ExtractErrorInto(err, &detailedErr)
 		if e != nil {
 			return diag.Errorf("Error creating share: %s: %s", err, e)
 		}
@@ -203,7 +205,7 @@ func resourceSharedFilesystemShareRead(ctx context.Context, d *schema.ResourceDa
 
 	sfsClient.Microversion = minManilaShareMicroversion
 
-	share, err := shares.Get(sfsClient, d.Id()).Extract()
+	share, err := ishares.Get(sfsClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "share"))
 	}
@@ -264,7 +266,7 @@ func resourceSharedFilesystemShareUpdate(ctx context.Context, d *schema.Resource
 
 		log.Printf("[DEBUG] Attempting to update share")
 		err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			_, err := shares.Update(sfsClient, d.Id(), updateOpts).Extract()
+			_, err := ishares.Update(sfsClient, d.Id(), updateOpts).Extract()
 			if err != nil {
 				return util.CheckForRetryableError(err)
 			}
@@ -272,8 +274,8 @@ func resourceSharedFilesystemShareUpdate(ctx context.Context, d *schema.Resource
 		})
 
 		if err != nil {
-			detailedErr := errors.ErrorDetails{}
-			e := errors.ExtractErrorInto(err, &detailedErr)
+			detailedErr := sfserrors.ErrorDetails{}
+			e := sfserrors.ExtractErrorInto(err, &detailedErr)
 			if e != nil {
 				return diag.Errorf("Error updating %s share: %s: %s", d.Id(), err, e)
 			}
@@ -298,7 +300,7 @@ func resourceSharedFilesystemShareUpdate(ctx context.Context, d *schema.Resource
 			resizeOpts := shares.ExtendOpts{NewSize: newSize.(int)}
 			log.Printf("[DEBUG] Resizing share %s with options: %#v", d.Id(), resizeOpts)
 			err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-				err := shares.Extend(sfsClient, d.Id(), resizeOpts).Err
+				err := ishares.Extend(sfsClient, d.Id(), resizeOpts).Err
 				log.Printf("[DEBUG] Resizing share %s with options: %#v", d.Id(), resizeOpts)
 				if err != nil {
 					return util.CheckForRetryableError(err)
@@ -310,7 +312,7 @@ func resourceSharedFilesystemShareUpdate(ctx context.Context, d *schema.Resource
 			resizeOpts := shares.ShrinkOpts{NewSize: newSize.(int)}
 			log.Printf("[DEBUG] Resizing share %s with options: %#v", d.Id(), resizeOpts)
 			err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-				err := shares.Shrink(sfsClient, d.Id(), resizeOpts).Err
+				err := ishares.Shrink(sfsClient, d.Id(), resizeOpts).Err
 				log.Printf("[DEBUG] Resizing share %s with options: %#v", d.Id(), resizeOpts)
 				if err != nil {
 					return util.CheckForRetryableError(err)
@@ -320,8 +322,8 @@ func resourceSharedFilesystemShareUpdate(ctx context.Context, d *schema.Resource
 		}
 
 		if err != nil {
-			detailedErr := errors.ErrorDetails{}
-			e := errors.ExtractErrorInto(err, &detailedErr)
+			detailedErr := sfserrors.ErrorDetails{}
+			e := sfserrors.ExtractErrorInto(err, &detailedErr)
 			if e != nil {
 				return diag.Errorf("Unable to resize %s share: %s: %s", d.Id(), err, e)
 			}
@@ -350,7 +352,7 @@ func resourceSharedFilesystemShareDelete(ctx context.Context, d *schema.Resource
 
 	log.Printf("[DEBUG] Attempting to delete share %s", d.Id())
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		err = shares.Delete(sfsClient, d.Id()).ExtractErr()
+		err = ishares.Delete(sfsClient, d.Id()).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -362,8 +364,8 @@ func resourceSharedFilesystemShareDelete(ctx context.Context, d *schema.Resource
 		if e == nil {
 			return nil
 		}
-		detailedErr := errors.ErrorDetails{}
-		e = errors.ExtractErrorInto(err, &detailedErr)
+		detailedErr := sfserrors.ErrorDetails{}
+		e = sfserrors.ExtractErrorInto(err, &detailedErr)
 		if e != nil {
 			return diag.Errorf("Unable to delete %s share: %s: %s", d.Id(), err, e)
 		}
@@ -397,7 +399,7 @@ func waitForSFShare(ctx context.Context, sfsClient *gophercloud.ServiceClient, i
 
 	_, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			switch target {
 			case "deleted":
 				return nil
@@ -418,7 +420,7 @@ func waitForSFShare(ctx context.Context, sfsClient *gophercloud.ServiceClient, i
 
 func resourceSFShareRefreshFunc(sfsClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		share, err := shares.Get(sfsClient, id).Extract()
+		share, err := ishares.Get(sfsClient, id).Extract()
 		if err != nil {
 			return nil, "", err
 		}

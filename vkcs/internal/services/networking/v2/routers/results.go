@@ -1,4 +1,4 @@
-package networking
+package routers
 
 import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"

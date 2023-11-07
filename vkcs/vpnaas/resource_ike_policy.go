@@ -9,12 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/ikepolicies"
+	iikepolicies "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas/v2/ikepolicies"
 )
 
 func ResourceIKEPolicy() *schema.Resource {
@@ -142,7 +142,7 @@ func resourceIKEPolicyCreate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 	log.Printf("[DEBUG] Create IKE policy: %#v", opts)
 
-	policy, err := ikepolicies.Create(networkingClient, opts).Extract()
+	policy, err := iikepolicies.Create(networkingClient, opts).Extract()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -178,7 +178,7 @@ func resourceIKEPolicyRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	var policy ikePolicyExtended
-	err = vpnaas.ExtractIKEPolicyInto(ikepolicies.Get(networkingClient, d.Id()), &policy)
+	err = iikepolicies.ExtractIKEPolicyInto(ikepolicies.Get(networkingClient, d.Id()), &policy)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "IKE policy"))
 	}
@@ -261,7 +261,7 @@ func resourceIKEPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	log.Printf("[DEBUG] Updating IKE policy with id %s: %#v", d.Id(), opts)
 
 	if hasChange {
-		err = ikepolicies.Update(networkingClient, d.Id(), opts).Err
+		err = iikepolicies.Update(networkingClient, d.Id(), opts).Err
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -308,7 +308,7 @@ func resourceIKEPolicyDelete(ctx context.Context, d *schema.ResourceData, meta i
 
 func waitForIKEPolicyDeletion(networkingClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		err := ikepolicies.Delete(networkingClient, id).Err
+		err := iikepolicies.Delete(networkingClient, id).Err
 		if err == nil {
 			return "", "DELETED", nil
 		}
@@ -319,7 +319,7 @@ func waitForIKEPolicyDeletion(networkingClient *gophercloud.ServiceClient, id st
 
 func waitForIKEPolicyCreation(networkingClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		policy, err := ikepolicies.Get(networkingClient, id).Extract()
+		policy, err := iikepolicies.Get(networkingClient, id).Extract()
 		if err != nil {
 			return "", "PENDING_CREATE", nil
 		}
@@ -329,7 +329,7 @@ func waitForIKEPolicyCreation(networkingClient *gophercloud.ServiceClient, id st
 
 func waitForIKEPolicyUpdate(networkingClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		policy, err := ikepolicies.Get(networkingClient, id).Extract()
+		policy, err := iikepolicies.Get(networkingClient, id).Extract()
 		if err != nil {
 			return "", "PENDING_UPDATE", nil
 		}

@@ -14,6 +14,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/securityservices"
 	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/sharenetworks"
+	isharenetworks "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/sharedfilesystem/v2/sharenetworks"
 )
 
 func ResourceSharedFilesystemShareNetwork() *schema.Resource {
@@ -107,7 +108,7 @@ func resourceSharedFilesystemShareNetworkCreate(ctx context.Context, d *schema.R
 	log.Printf("[DEBUG] Create Options: %#v", createOpts)
 
 	log.Printf("[DEBUG] Attempting to create sharenetwork")
-	sharenetwork, err := sharenetworks.Create(sfsClient, createOpts).Extract()
+	sharenetwork, err := isharenetworks.Create(sfsClient, createOpts).Extract()
 
 	if err != nil {
 		return diag.Errorf("Error creating sharenetwork: %s", err)
@@ -119,7 +120,7 @@ func resourceSharedFilesystemShareNetworkCreate(ctx context.Context, d *schema.R
 	for _, securityServiceID := range securityServiceIDs {
 		log.Printf("[DEBUG] Adding %s security service to sharenetwork %s", securityServiceID, sharenetwork.ID)
 		securityServiceOpts := sharenetworks.AddSecurityServiceOpts{SecurityServiceID: securityServiceID}
-		_, err = sharenetworks.AddSecurityService(sfsClient, sharenetwork.ID, securityServiceOpts).Extract()
+		_, err = isharenetworks.AddSecurityService(sfsClient, sharenetwork.ID, securityServiceOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error adding %s security service to sharenetwork: %s", securityServiceID, err)
 		}
@@ -135,7 +136,7 @@ func resourceSharedFilesystemShareNetworkRead(ctx context.Context, d *schema.Res
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
-	sharenetwork, err := sharenetworks.Get(sfsClient, d.Id()).Extract()
+	sharenetwork, err := isharenetworks.Get(sfsClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "sharenetwork"))
 	}
@@ -185,7 +186,7 @@ func resourceSharedFilesystemShareNetworkUpdate(ctx context.Context, d *schema.R
 
 	if updateOpts != (sharenetworks.UpdateOpts{}) {
 		log.Printf("[DEBUG] Updating sharenetwork %s with options: %#v", d.Id(), updateOpts)
-		_, err = sharenetworks.Update(sfsClient, d.Id(), updateOpts).Extract()
+		_, err = isharenetworks.Update(sfsClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Unable to update sharenetwork %s: %s", d.Id(), err)
 		}
@@ -202,7 +203,7 @@ func resourceSharedFilesystemShareNetworkUpdate(ctx context.Context, d *schema.R
 			id := newSecurityServiceID.(string)
 			log.Printf("[DEBUG] Adding new %s security service to sharenetwork %s", id, d.Id())
 			securityServiceOpts := sharenetworks.AddSecurityServiceOpts{SecurityServiceID: id}
-			_, err = sharenetworks.AddSecurityService(sfsClient, d.Id(), securityServiceOpts).Extract()
+			_, err = isharenetworks.AddSecurityService(sfsClient, d.Id(), securityServiceOpts).Extract()
 			if err != nil {
 				return diag.Errorf("Error adding new %s security service to sharenetwork: %s", id, err)
 			}
@@ -211,7 +212,7 @@ func resourceSharedFilesystemShareNetworkUpdate(ctx context.Context, d *schema.R
 			id := oldSecurityServiceID.(string)
 			log.Printf("[DEBUG] Removing old %s security service from sharenetwork %s", id, d.Id())
 			securityServiceOpts := sharenetworks.RemoveSecurityServiceOpts{SecurityServiceID: id}
-			_, err = sharenetworks.RemoveSecurityService(sfsClient, d.Id(), securityServiceOpts).Extract()
+			_, err = isharenetworks.RemoveSecurityService(sfsClient, d.Id(), securityServiceOpts).Extract()
 			if err != nil {
 				return diag.Errorf("Error removing old %s security service from sharenetwork: %s", id, err)
 			}
@@ -229,7 +230,7 @@ func resourceSharedFilesystemShareNetworkDelete(ctx context.Context, d *schema.R
 	}
 
 	log.Printf("[DEBUG] Attempting to delete sharenetwork %s", d.Id())
-	err = sharenetworks.Delete(sfsClient, d.Id()).ExtractErr()
+	err = isharenetworks.Delete(sfsClient, d.Id()).ExtractErr()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting sharenetwork"))
 	}

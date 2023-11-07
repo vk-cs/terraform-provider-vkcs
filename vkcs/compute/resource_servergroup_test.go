@@ -11,6 +11,7 @@ import (
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	iservergroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servergroups"
 )
 
 func TestAccComputeServerGroup_basic(t *testing.T) {
@@ -97,7 +98,7 @@ func testAccCheckComputeServerGroupDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := servergroups.Get(computeClient, rs.Primary.ID).Extract()
+		_, err := iservergroups.Get(computeClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("ServerGroup still exists")
 		}
@@ -123,7 +124,7 @@ func testAccCheckComputeServerGroupExists(n string, kp *servergroups.ServerGroup
 			return fmt.Errorf("Error creating VKCS compute client: %s", err)
 		}
 
-		found, err := servergroups.Get(computeClient, rs.Primary.ID).Extract()
+		found, err := iservergroups.Get(computeClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

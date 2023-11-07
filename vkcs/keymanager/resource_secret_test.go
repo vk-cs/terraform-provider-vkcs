@@ -8,10 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/keymanager"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/secrets"
+	isecrets "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/keymanager/v1/secrets"
 )
 
 func TestAccKeyManagerSecret_basic(t *testing.T) {
@@ -215,11 +216,11 @@ func testAccCheckSecretDestroy(s *terraform.State) error {
 		if rs.Type != "vkcs_keymanager_secret" {
 			continue
 		}
-		_, err = secrets.Get(kmClient, rs.Primary.ID).Extract()
+		_, err = isecrets.Get(kmClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Secret (%s) still exists", rs.Primary.ID)
 		}
-		if _, ok := err.(gophercloud.ErrDefault404); !ok {
+		if !errutil.Is(err, 404) {
 			return err
 		}
 	}
@@ -245,7 +246,7 @@ func testAccCheckSecretExists(n string, secret *secrets.Secret) resource.TestChe
 
 		var found *secrets.Secret
 
-		found, err = secrets.Get(kmClient, rs.Primary.ID).Extract()
+		found, err = isecrets.Get(kmClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
@@ -268,7 +269,7 @@ func testAccCheckPayloadEquals(payload string, secret *secrets.Secret) resource.
 		}
 
 		uuid := keymanager.GetUUIDFromSecretRef(secret.SecretRef)
-		secretPayload, _ := secrets.GetPayload(kmClient, uuid, opts).Extract()
+		secretPayload, _ := isecrets.GetPayload(kmClient, uuid, opts).Extract()
 		if string(secretPayload) != payload {
 			return fmt.Errorf("Payloads do not match. Expected %v but got %v", payload, secretPayload)
 		}
@@ -285,7 +286,7 @@ func testAccCheckMetadataEquals(key string, value string, secret *secrets.Secret
 		}
 
 		uuid := keymanager.GetUUIDFromSecretRef(secret.SecretRef)
-		metadatum, err := secrets.GetMetadatum(kmClient, uuid, key).Extract()
+		metadatum, err := isecrets.GetMetadatum(kmClient, uuid, key).Extract()
 		if err != nil {
 			return err
 		}

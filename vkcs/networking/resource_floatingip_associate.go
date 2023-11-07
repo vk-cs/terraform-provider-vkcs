@@ -10,6 +10,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
+	ifloatingips "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/floatingips"
 )
 
 func ResourceNetworkingFloatingIPAssociate() *schema.Resource {
@@ -86,7 +87,7 @@ func resourceNetworkingFloatingIPAssociateCreate(ctx context.Context, d *schema.
 	}
 
 	log.Printf("[DEBUG] vkcs_networking_floatingip_associate create options: %#v", updateOpts)
-	_, err = floatingips.Update(networkingClient, fipID, updateOpts).Extract()
+	_, err = ifloatingips.Update(networkingClient, fipID, updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error associating vkcs_networking_floatingip_associate floating_ip %s with port %s: %s", fipID, portID, err)
 	}
@@ -105,7 +106,7 @@ func resourceNetworkingFloatingIPAssociateRead(ctx context.Context, d *schema.Re
 
 	var fip floatingIPExtended
 
-	err = floatingips.Get(networkingClient, d.Id()).ExtractInto(&fip)
+	err = ifloatingips.Get(networkingClient, d.Id()).ExtractInto(&fip)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_networking_floatingip_associate"))
 	}
@@ -139,7 +140,7 @@ func resourceNetworkingFloatingIPAssociateUpdate(ctx context.Context, d *schema.
 	}
 
 	log.Printf("[DEBUG] vkcs_networking_floatingip_associate %s update options: %#v", d.Id(), updateOpts)
-	_, err = floatingips.Update(networkingClient, d.Id(), updateOpts).Extract()
+	_, err = ifloatingips.Update(networkingClient, d.Id(), updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error updating vkcs_networking_floatingip_associate %s: %s", d.Id(), err)
 	}
@@ -160,7 +161,7 @@ func resourceNetworkingFloatingIPAssociateDelete(ctx context.Context, d *schema.
 	}
 
 	log.Printf("[DEBUG] vkcs_networking_floatingip_associate disassociating options: %#v", updateOpts)
-	_, err = floatingips.Update(networkingClient, d.Id(), updateOpts).Extract()
+	_, err = ifloatingips.Update(networkingClient, d.Id(), updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error disassociating vkcs_networking_floatingip_associate floating_ip %s with port %s: %s", d.Id(), portID, err)
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
+	iservergroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servergroups"
 )
 
 func ResourceComputeServerGroup() *schema.Resource {
@@ -85,7 +86,7 @@ func resourceComputeServerGroupCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	log.Printf("[DEBUG] vkcs_compute_servergroup create options: %#v", createOpts)
-	newSG, err := servergroups.Create(computeClient, createOpts).Extract()
+	newSG, err := iservergroups.Create(computeClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_compute_servergroup %s: %s", name, err)
 	}
@@ -102,7 +103,7 @@ func resourceComputeServerGroupRead(_ context.Context, d *schema.ResourceData, m
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
-	sg, err := servergroups.Get(computeClient, d.Id()).Extract()
+	sg, err := iservergroups.Get(computeClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error retrieving vkcs_compute_servergroup"))
 	}
@@ -125,7 +126,7 @@ func resourceComputeServerGroupDelete(_ context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
-	if err := servergroups.Delete(computeClient, d.Id()).ExtractErr(); err != nil {
+	if err := iservergroups.Delete(computeClient, d.Id()).ExtractErr(); err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_compute_servergroup"))
 	}
 

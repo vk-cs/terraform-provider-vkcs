@@ -17,6 +17,8 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/qos/policies"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/pagination"
+	inetworks "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/networks"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type PrivateDNSDomainExt struct {
@@ -103,12 +105,12 @@ func networkingNetworkName(d *schema.ResourceData, meta interface{}, networkID s
 
 func resourceNetworkingNetworkStateRefreshFunc(client *gophercloud.ServiceClient, networkID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		n, err := networks.Get(client, networkID).Extract()
+		n, err := inetworks.Get(client, networkID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return n, "DELETED", nil
 			}
-			if _, ok := err.(gophercloud.ErrDefault409); ok {
+			if errutil.Is(err, 409) {
 				return n, "ACTIVE", nil
 			}
 

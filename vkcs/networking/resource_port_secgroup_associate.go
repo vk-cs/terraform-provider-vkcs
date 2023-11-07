@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	iports "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/ports"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
@@ -83,7 +84,7 @@ func resourceNetworkingPortSecGroupAssociateCreate(ctx context.Context, d *schem
 	securityGroups := util.ExpandToStringSlice(d.Get("security_group_ids").(*schema.Set).List())
 	portID := d.Get("port_id").(string)
 
-	port, err := ports.Get(networkingClient, portID).Extract()
+	port, err := iports.Get(networkingClient, portID).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to get %s Port: %s", portID, err)
 	}
@@ -124,7 +125,7 @@ func resourceNetworkingPortSecGroupAssociateRead(ctx context.Context, d *schema.
 	}
 
 	var port portExtended
-	err = ports.Get(networkingClient, d.Id()).ExtractInto(&port)
+	err = iports.Get(networkingClient, d.Id()).ExtractInto(&port)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error fetching port security groups"))
 	}

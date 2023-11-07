@@ -1,9 +1,8 @@
 package backups
 
 import (
-	"net/http"
-
 	"github.com/gophercloud/gophercloud"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
 type CreateOptsBuilder interface {
@@ -35,34 +34,28 @@ func Create(client *gophercloud.ServiceClient, opts CreateOptsBuilder) (r GetRes
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Post(backupsURL(client, dbBackupsAPIPath), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(backupsURL(client, dbBackupsAPIPath), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes:      []int{202},
 		JSONResponse: &r.Body,
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
-	var result *http.Response
-	result, r.Err = client.Get(backupURL(client, id), &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Get(backupURL(client, id), &r.Body, &gophercloud.RequestOpts{
 		OkCodes:      []int{200},
 		JSONResponse: &r.Body,
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
-	var result *http.Response
-	result, r.Err = client.Delete(backupURL(client, id), &gophercloud.RequestOpts{})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	resp, err := client.Delete(backupURL(client, id), &gophercloud.RequestOpts{})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	iservers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servers"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/pagination"
@@ -770,7 +771,7 @@ func testAccCheckComputeInstanceDestroy(s *terraform.State) error {
 			continue
 		}
 
-		server, err := servers.Get(computeClient, rs.Primary.ID).Extract()
+		server, err := iservers.Get(computeClient, rs.Primary.ID).Extract()
 		if err == nil {
 			if server.Status != "SOFT_DELETED" && server.Status != "DELETED" {
 				return fmt.Errorf("Instance still exists")
@@ -798,7 +799,7 @@ func testAccCheckComputeInstanceExists(n string, instance *servers.Server) resou
 			return fmt.Errorf("Error creating VKCS compute client: %s", err)
 		}
 
-		found, err := servers.Get(computeClient, rs.Primary.ID).Extract()
+		found, err := iservers.Get(computeClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

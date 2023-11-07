@@ -13,6 +13,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/attachinterfaces"
+	iattachinterfaces "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/attachinterfaces"
 )
 
 func ResourceComputeInterfaceAttach() *schema.Resource {
@@ -113,7 +114,7 @@ func resourceComputeInterfaceAttachCreate(ctx context.Context, d *schema.Resourc
 
 	log.Printf("[DEBUG] vkcs_compute_interface_attach attach options: %#v", attachOpts)
 
-	attachment, err := attachinterfaces.Create(computeClient, instanceID, attachOpts).Extract()
+	attachment, err := iattachinterfaces.Create(computeClient, instanceID, attachOpts).Extract()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -152,7 +153,7 @@ func resourceComputeInterfaceAttachRead(_ context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	attachment, err := attachinterfaces.Get(computeClient, instanceID, attachmentID).Extract()
+	attachment, err := iattachinterfaces.Get(computeClient, instanceID, attachmentID).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error retrieving vkcs_compute_interface_attach"))
 	}

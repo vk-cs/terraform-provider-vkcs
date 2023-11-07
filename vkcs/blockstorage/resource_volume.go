@@ -11,6 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	ivolumeactions "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/blockstorage/v3/volumeactions"
+	ivolumes "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/blockstorage/v3/volumes"
+
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
@@ -150,7 +153,7 @@ func resourceBlockStorageVolumeCreate(ctx context.Context, d *schema.ResourceDat
 
 	log.Printf("[DEBUG] vkcs_blockstorage_volume create options: %#v", createOpts)
 
-	v, err := volumes.Create(blockStorageClient, createOpts).Extract()
+	v, err := ivolumes.Create(blockStorageClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("error creating vkcs_blockstorage_volume: %s", err)
 	}
@@ -182,7 +185,7 @@ func resourceBlockStorageVolumeRead(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error creating VKCS block storage client: %s", err)
 	}
 
-	v, err := volumes.Get(blockStorageClient, d.Id()).Extract()
+	v, err := ivolumes.Get(blockStorageClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "error retrieving vkcs_blockstorage_volume"))
 	}
@@ -221,7 +224,7 @@ func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceDat
 		updateOpts.Metadata = util.ExpandToMapStringString(metadata)
 	}
 
-	_, err = volumes.Update(blockStorageClient, d.Id(), updateOpts).Extract()
+	_, err = ivolumes.Update(blockStorageClient, d.Id(), updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("error updating vkcs_blockstorage_volume")
 	}
@@ -231,7 +234,7 @@ func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceDat
 			NewSize: d.Get("size").(int),
 		}
 
-		err = volumeactions.ExtendSize(blockStorageClient, d.Id(), extendOpts).ExtractErr()
+		err = ivolumeactions.ExtendSize(blockStorageClient, d.Id(), extendOpts).ExtractErr()
 		if err != nil {
 			return diag.Errorf("error extending vkcs_blockstorage_volume %s size: %s", d.Id(), err)
 		}
@@ -261,7 +264,7 @@ func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceDat
 		if d.HasChange("availability_zone") {
 			changeTypeOpts.AvailabilityZone = d.Get("availability_zone").(string)
 		}
-		err = volumeactions.ChangeType(blockStorageClient, d.Id(), changeTypeOpts).ExtractErr()
+		err = ivolumeactions.ChangeType(blockStorageClient, d.Id(), changeTypeOpts).ExtractErr()
 		if err != nil {
 			return diag.Errorf("error changing type of vkcs_blockstorage_volume %s", d.Id())
 		}
@@ -289,7 +292,7 @@ func resourceBlockStorageVolumeDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("Error creating VKCS block storage client: %s", err)
 	}
 
-	err = volumes.Delete(blockStorageClient, d.Id(), nil).ExtractErr()
+	err = ivolumes.Delete(blockStorageClient, d.Id(), nil).ExtractErr()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_blockstorage_volume"))
 	}

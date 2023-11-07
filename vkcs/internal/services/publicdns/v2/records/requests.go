@@ -1,6 +1,9 @@
 package records
 
-import "github.com/gophercloud/gophercloud"
+import (
+	"github.com/gophercloud/gophercloud"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+)
 
 // RecordA represents a public DNS zone record A.
 type RecordA struct {
@@ -180,6 +183,7 @@ func Create(client *gophercloud.ServiceClient, zoneID string, opts CreateOptsBui
 		OkCodes: []int{201},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -189,6 +193,7 @@ func Get(client *gophercloud.ServiceClient, zoneID string, id string, recordType
 	url := recordURL(client, zoneID, recordType, id)
 	resp, err := client.Get(url, &r.Body, nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -303,6 +308,7 @@ func Update(client *gophercloud.ServiceClient, zoneID string, id string, opts Up
 		OkCodes: []int{200},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -313,5 +319,6 @@ func Delete(client *gophercloud.ServiceClient, zoneID string, id string, recordT
 		JSONResponse: &r.Body,
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }

@@ -8,11 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
+	igroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall/v2/groups"
 )
 
 func DataSourceNetworkingSecGroup() *schema.Resource {
@@ -104,7 +104,7 @@ func dataSourceNetworkingSecGroupRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	var allSecGroups []securityGroupExtended
-	err = firewall.ExtractSecurityGroupsInto(pages, &allSecGroups)
+	err = igroups.ExtractSecurityGroupsInto(pages, &allSecGroups)
 	if err != nil {
 		return diag.Errorf("Unable to retrieve security groups: %s", err)
 	}

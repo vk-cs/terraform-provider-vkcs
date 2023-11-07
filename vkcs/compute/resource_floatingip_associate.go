@@ -12,10 +12,11 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	ifloatingips "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/floatingips"
+	iservers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servers"
 )
 
 func ResourceComputeFloatingIPAssociate() *schema.Resource {
@@ -89,7 +90,7 @@ func resourceComputeFloatingIPAssociateCreate(ctx context.Context, d *schema.Res
 	}
 	log.Printf("[DEBUG] vkcs_compute_floatingip_associate create options: %#v", associateOpts)
 
-	err = floatingips.AssociateInstance(computeClient, instanceID, associateOpts).ExtractErr()
+	err = ifloatingips.AssociateInstance(computeClient, instanceID, associateOpts).ExtractErr()
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_compute_floatingip_associate: %s", err)
 	}
@@ -167,7 +168,7 @@ func resourceComputeFloatingIPAssociateRead(_ context.Context, d *schema.Resourc
 	}
 
 	// Next, see if the instance still exists
-	instance, err := servers.Get(computeClient, instanceID).Extract()
+	instance, err := iservers.Get(computeClient, instanceID).Extract()
 	if err != nil {
 		if util.CheckDeleted(d, err, "instance") == nil {
 			return nil
@@ -213,9 +214,9 @@ func resourceComputeFloatingIPAssociateDelete(_ context.Context, d *schema.Resou
 	}
 	log.Printf("[DEBUG] vkcs_compute_floatingip_associate %s delete options: %#v", d.Id(), disassociateOpts)
 
-	err = floatingips.DisassociateInstance(computeClient, instanceID, disassociateOpts).ExtractErr()
+	err = ifloatingips.DisassociateInstance(computeClient, instanceID, disassociateOpts).ExtractErr()
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault409); ok {
+		if errutil.Is(err, 409) {
 			// 409 is returned when floating ip address is not associated with an instance.
 			log.Printf("[DEBUG] vkcs_compute_floatingip_associate %s is not associated with instance %s", d.Id(), instanceID)
 		} else {

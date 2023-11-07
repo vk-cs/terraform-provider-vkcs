@@ -1,4 +1,4 @@
-package vpnaas
+package services
 
 import "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/services"
 

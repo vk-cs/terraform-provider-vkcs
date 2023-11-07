@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	il7policies "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/l7policies"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies"
 )
@@ -162,7 +163,7 @@ func testAccCheckLBL7RuleDestroy(s *terraform.State) error {
 			return fmt.Errorf("Unable to find l7policy_id")
 		}
 
-		_, err := l7policies.GetRule(lbClient, l7policyID, rs.Primary.ID).Extract()
+		_, err := il7policies.GetRule(lbClient, l7policyID, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("L7 Rule still exists: %s", rs.Primary.ID)
 		}
@@ -200,7 +201,7 @@ func testAccCheckLBL7RuleExists(n string, l7rule *l7policies.Rule) resource.Test
 			return fmt.Errorf("Unable to find l7policy_id")
 		}
 
-		found, err := l7policies.GetRule(lbClient, l7policyID, rs.Primary.ID).Extract()
+		found, err := il7policies.GetRule(lbClient, l7policyID, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

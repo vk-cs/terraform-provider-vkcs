@@ -12,7 +12,8 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
-	octavialoadbalancers "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
+	iloadbalancers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/loadbalancers"
 )
 
 func ResourceLoadBalancer() *schema.Resource {
@@ -131,7 +132,7 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, met
 
 	adminStateUp := d.Get("admin_state_up").(bool)
 
-	createOpts := octavialoadbalancers.CreateOpts{
+	createOpts := loadbalancers.CreateOpts{
 		Name:         d.Get("name").(string),
 		Description:  d.Get("description").(string),
 		VipNetworkID: d.Get("vip_network_id").(string),
@@ -153,7 +154,7 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	log.Printf("[DEBUG][Octavia] vkcs_lb_loadbalancer create options: %#v", createOpts)
-	lb, err := octavialoadbalancers.Create(lbClient, createOpts).Extract()
+	lb, err := iloadbalancers.Create(lbClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_lb_loadbalancer: %s", err)
 	}
@@ -180,7 +181,7 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	var vipPortID string
 
-	lb, err := octavialoadbalancers.Get(lbClient, d.Id()).Extract()
+	lb, err := iloadbalancers.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Unable to retrieve vkcs_lb_loadbalancer"))
 	}
@@ -219,7 +220,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
-	var updateOpts octavialoadbalancers.UpdateOpts
+	var updateOpts loadbalancers.UpdateOpts
 	var hasChange bool
 	if d.HasChange("name") {
 		hasChange = true
@@ -258,7 +259,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, met
 
 		log.Printf("[DEBUG] Updating vkcs_lb_loadbalancer %s with options: %#v", d.Id(), updateOpts)
 		err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			_, err = octavialoadbalancers.Update(lbClient, d.Id(), updateOpts).Extract()
+			_, err = iloadbalancers.Update(lbClient, d.Id(), updateOpts).Extract()
 			if err != nil {
 				return util.CheckForRetryableError(err)
 			}
@@ -289,7 +290,7 @@ func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, met
 	log.Printf("[DEBUG] Deleting vkcs_lb_loadbalancer %s", d.Id())
 	timeout := d.Timeout(schema.TimeoutDelete)
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		err = octavialoadbalancers.Delete(lbClient, d.Id(), nil).ExtractErr()
+		err = iloadbalancers.Delete(lbClient, d.Id(), nil).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}

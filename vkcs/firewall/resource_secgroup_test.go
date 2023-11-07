@@ -11,6 +11,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
+	igroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall/v2/groups"
 )
 
 func TestAccFirewallSecGroup_basic(t *testing.T) {
@@ -90,7 +91,7 @@ func testAccFirewallCheckSecGroupDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := groups.Get(networkingClient, rs.Primary.ID).Extract()
+		_, err := igroups.Get(networkingClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Security group still exists")
 		}
@@ -116,7 +117,7 @@ func testAccFirewallCheckSecGroupExists(n string, sg *groups.SecGroup) resource.
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}
 
-		found, err := groups.Get(networkingClient, rs.Primary.ID).Extract()
+		found, err := igroups.Get(networkingClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

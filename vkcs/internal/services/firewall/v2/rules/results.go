@@ -1,4 +1,4 @@
-package firewall
+package rules
 
 import "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 

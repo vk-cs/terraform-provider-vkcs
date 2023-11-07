@@ -7,10 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
+	irouters "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/routers"
 )
 
 func ResourceNetworkingRouterRoute() *schema.Resource {
@@ -77,7 +77,7 @@ func resourceNetworkingRouterRouteCreate(ctx context.Context, d *schema.Resource
 	mutex.Lock(routerID)
 	defer mutex.Unlock(routerID)
 
-	r, err := routers.Get(networkingClient, routerID).Extract()
+	r, err := irouters.Get(networkingClient, routerID).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_networking_router"))
 	}
@@ -109,7 +109,7 @@ func resourceNetworkingRouterRouteCreate(ctx context.Context, d *schema.Resource
 		Routes: &routes,
 	}
 	log.Printf("[DEBUG] vkcs_networking_router %s update options: %#v", routerID, updateOpts)
-	_, err = routers.Update(networkingClient, routerID, updateOpts).Extract()
+	_, err = irouters.Update(networkingClient, routerID, updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error updating vkcs_networking_router: %s", err)
 	}
@@ -138,7 +138,7 @@ func resourceNetworkingRouterRouteRead(ctx context.Context, d *schema.ResourceDa
 	d.Set("router_id", routerID)
 
 	var r routerExtended
-	err = networking.ExtractRouterInto(routers.Get(networkingClient, routerID), &r)
+	err = irouters.ExtractRouterInto(irouters.Get(networkingClient, routerID), &r)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_networking_router"))
 	}
@@ -171,7 +171,7 @@ func resourceNetworkingRouterRouteDelete(ctx context.Context, d *schema.Resource
 	mutex.Lock(routerID)
 	defer mutex.Unlock(routerID)
 
-	r, err := routers.Get(networkingClient, routerID).Extract()
+	r, err := irouters.Get(networkingClient, routerID).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_networking_router"))
 	}
@@ -198,7 +198,7 @@ func resourceNetworkingRouterRouteDelete(ctx context.Context, d *schema.Resource
 	updateOpts := routers.UpdateOpts{
 		Routes: &newRoute,
 	}
-	_, err = routers.Update(networkingClient, routerID, updateOpts).Extract()
+	_, err = irouters.Update(networkingClient, routerID, updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error updating vkcs_networking_router: %s", err)
 	}

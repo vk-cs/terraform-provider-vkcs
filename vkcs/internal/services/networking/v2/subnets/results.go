@@ -1,4 +1,4 @@
-package networking
+package subnets
 
 import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"

@@ -11,10 +11,10 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	isubnets "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/subnets"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func DataSourceNetworkingNetwork() *schema.Resource {
@@ -198,9 +198,9 @@ func dataSourceNetworkingNetworkRead(ctx context.Context, d *schema.ResourceData
 	if cidr := d.Get("matching_subnet_cidr").(string); cidr != "" {
 		for _, n := range allNetworks {
 			for _, s := range n.Subnets {
-				subnet, err := subnets.Get(networkingClient, s).Extract()
+				subnet, err := isubnets.Get(networkingClient, s).Extract()
 				if err != nil {
-					if _, ok := err.(gophercloud.ErrDefault404); ok {
+					if errutil.IsNotFound(err) {
 						continue
 					}
 					return diag.Errorf("Unable to retrieve vkcs_networking_network subnet: %s", err)

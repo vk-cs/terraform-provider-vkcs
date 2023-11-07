@@ -12,17 +12,12 @@ import (
 	"time"
 
 	"github.com/gophercloud/gophercloud"
-	volumesV3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/shelveunshelve"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/startstop"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/tags"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/images"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	flavorsutils "github.com/gophercloud/utils/openstack/compute/v2/flavors"
 	imagesutils "github.com/gophercloud/utils/openstack/imageservice/v2/images"
@@ -32,6 +27,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	ivolumes "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/blockstorage/v3/volumes"
+	ibootfromvolume "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/bootfromvolume"
+	iflavors "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/flavors"
+	iimages "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/images"
+	isecgroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/secgroups"
+	iservers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servers"
+	ishelveunshelve "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/shelveunshelve"
+	istartstop "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/startstop"
+	itags "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/tags"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
+
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
@@ -515,9 +521,9 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	// Otherwise, use the normal servers.Create function.
 	var server *servers.Server
 	if _, ok := d.GetOk("block_device"); ok {
-		server, err = bootfromvolume.Create(computeClient, createOpts).Extract()
+		server, err = ibootfromvolume.Create(computeClient, createOpts).Extract()
 	} else {
-		server, err = servers.Create(computeClient, createOpts).Extract()
+		server, err = iservers.Create(computeClient, createOpts).Extract()
 	}
 
 	if err != nil {
@@ -560,7 +566,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 
 	vmState := d.Get("power_state").(string)
 	if strings.ToLower(vmState) == "shutoff" {
-		err = startstop.Stop(computeClient, d.Id()).ExtractErr()
+		err = istartstop.Stop(computeClient, d.Id()).ExtractErr()
 		if err != nil {
 			return diag.Errorf("Error stopping VKCS instance: %s", err)
 		}
@@ -590,7 +596,7 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
-	server, err := servers.Get(computeClient, d.Id()).Extract()
+	server, err := iservers.Get(computeClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "server"))
 	}
@@ -647,7 +653,7 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 	d.Set("flavor_id", flavorID)
 
 	d.Set("key_pair", server.KeyName)
-	flavor, err := flavors.Get(computeClient, flavorID).Extract()
+	flavor, err := iflavors.Get(computeClient, flavorID).Extract()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -665,7 +671,7 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 	}
 
 	// Do another Get so the above work is not disturbed.
-	err = servers.Get(computeClient, d.Id()).ExtractInto(&serverWithAZ)
+	err = iservers.Get(computeClient, d.Id()).ExtractInto(&serverWithAZ)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "server"))
 	}
@@ -686,7 +692,7 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 
 	// Populate tags.
 	computeClient.Microversion = computeAPIMicroVersion
-	instanceTags, err := tags.List(computeClient, server.ID).Extract()
+	instanceTags, err := itags.List(computeClient, server.ID).Extract()
 	if err != nil {
 		log.Printf("[DEBUG] Unable to get tags for vkcs_compute_instance: %s", err)
 	} else {
@@ -709,7 +715,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if updateOpts != (servers.UpdateOpts{}) {
-		_, err := servers.Update(computeClient, d.Id(), updateOpts).Extract()
+		_, err := iservers.Update(computeClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error updating VKCS server: %s", err)
 		}
@@ -720,7 +726,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		powerStateOld := powerStateOldRaw.(string)
 		powerStateNew := powerStateNewRaw.(string)
 		if strings.ToLower(powerStateNew) == "shelved_offloaded" {
-			err = shelveunshelve.Shelve(computeClient, d.Id()).ExtractErr()
+			err = ishelveunshelve.Shelve(computeClient, d.Id()).ExtractErr()
 			if err != nil {
 				return diag.Errorf("Error shelve VKCS instance: %s", err)
 			}
@@ -740,7 +746,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 			}
 		}
 		if strings.ToLower(powerStateNew) == "shutoff" {
-			err = startstop.Stop(computeClient, d.Id()).ExtractErr()
+			err = istartstop.Stop(computeClient, d.Id()).ExtractErr()
 			if err != nil {
 				return diag.Errorf("Error stopping VKCS instance: %s", err)
 			}
@@ -764,12 +770,12 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 				unshelveOpt := &shelveunshelve.UnshelveOpts{
 					AvailabilityZone: d.Get("availability_zone").(string),
 				}
-				err = shelveunshelve.Unshelve(computeClient, d.Id(), unshelveOpt).ExtractErr()
+				err = ishelveunshelve.Unshelve(computeClient, d.Id(), unshelveOpt).ExtractErr()
 				if err != nil {
 					return diag.Errorf("Error unshelving VKCS instance: %s", err)
 				}
 			} else {
-				err = startstop.Start(computeClient, d.Id()).ExtractErr()
+				err = istartstop.Start(computeClient, d.Id()).ExtractErr()
 				if err != nil {
 					return diag.Errorf("Error starting VKCS instance: %s", err)
 				}
@@ -811,7 +817,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 
 		for _, key := range metadataToDelete {
-			err := servers.DeleteMetadatum(computeClient, d.Id(), key).ExtractErr()
+			err := iservers.DeleteMetadatum(computeClient, d.Id(), key).ExtractErr()
 			if err != nil {
 				return diag.Errorf("Error deleting metadata (%s) from server (%s): %s", key, d.Id(), err)
 			}
@@ -823,7 +829,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 			metadataOpts[k] = v.(string)
 		}
 
-		_, err := servers.UpdateMetadata(computeClient, d.Id(), metadataOpts).Extract()
+		_, err := iservers.UpdateMetadata(computeClient, d.Id(), metadataOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error updating VKCS server (%s) metadata: %s", d.Id(), err)
 		}
@@ -841,9 +847,9 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		log.Printf("[DEBUG] Security groups to remove: %v", secgroupsToRemove)
 
 		for _, g := range secgroupsToRemove.List() {
-			err := secgroups.RemoveServer(computeClient, d.Id(), g.(string)).ExtractErr()
+			err := isecgroups.RemoveServer(computeClient, d.Id(), g.(string)).ExtractErr()
 			if err != nil && err.Error() != "EOF" {
-				if _, ok := err.(gophercloud.ErrDefault404); ok {
+				if errutil.IsNotFound(err) {
 					continue
 				}
 
@@ -853,7 +859,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 
 		for _, g := range secgroupsToAdd.List() {
-			err := secgroups.AddServer(computeClient, d.Id(), g.(string)).ExtractErr()
+			err := isecgroups.AddServer(computeClient, d.Id(), g.(string)).ExtractErr()
 			if err != nil && err.Error() != "EOF" {
 				return diag.Errorf("Error adding security group (%s) to VKCS server (%s): %s", g, d.Id(), err)
 			}
@@ -863,7 +869,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 
 	if d.HasChange("admin_pass") {
 		if newPwd, ok := d.Get("admin_pass").(string); ok {
-			err := servers.ChangeAdminPassword(computeClient, d.Id(), newPwd).ExtractErr()
+			err := iservers.ChangeAdminPassword(computeClient, d.Id(), newPwd).ExtractErr()
 			if err != nil {
 				return diag.Errorf("Error changing admin password of VKCS server (%s): %s", d.Id(), err)
 			}
@@ -895,7 +901,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 			FlavorRef: newFlavorID,
 		}
 		log.Printf("[DEBUG] Resize configuration: %#v", resizeOpts)
-		err = servers.Resize(computeClient, d.Id(), resizeOpts).ExtractErr()
+		err = iservers.Resize(computeClient, d.Id(), resizeOpts).ExtractErr()
 		if err != nil {
 			return diag.Errorf("Error resizing VKCS server: %s", err)
 		}
@@ -935,7 +941,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 
 			// Confirm resize.
 			log.Printf("[DEBUG] Confirming resize")
-			err = servers.ConfirmResize(computeClient, d.Id()).ExtractErr()
+			err = iservers.ConfirmResize(computeClient, d.Id()).ExtractErr()
 			if err != nil {
 				return diag.Errorf("Error confirming resize of VKCS server: %s", err)
 			}
@@ -979,7 +985,7 @@ func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.Get("stop_before_destroy").(bool) {
-		err = startstop.Stop(computeClient, d.Id()).ExtractErr()
+		err = istartstop.Stop(computeClient, d.Id()).ExtractErr()
 		if err != nil {
 			log.Printf("[WARN] Error stopping vkcs_compute_instance: %s", err)
 		} else {
@@ -1028,20 +1034,20 @@ func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, 
 	}
 	if d.Get("force_delete").(bool) {
 		log.Printf("[DEBUG] Force deleting VKCS Instance %s", d.Id())
-		err = servers.ForceDelete(computeClient, d.Id()).ExtractErr()
+		err = iservers.ForceDelete(computeClient, d.Id()).ExtractErr()
 		if err != nil {
 			return diag.FromErr(util.CheckDeleted(d, err, "Error force deleting vkcs_compute_instance"))
 		}
 	} else {
 		log.Printf("[DEBUG] Deleting VKCS Instance %s", d.Id())
-		err = servers.Delete(computeClient, d.Id()).ExtractErr()
+		err = iservers.Delete(computeClient, d.Id()).ExtractErr()
 		if err != nil {
 			return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_compute_instance"))
 		}
 	}
 
 	log.Printf("[DEBUG] Deleting VKCS Instance %s", d.Id())
-	err = servers.Delete(computeClient, d.Id()).ExtractErr()
+	err = iservers.Delete(computeClient, d.Id()).ExtractErr()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_compute_instance"))
 	}
@@ -1103,7 +1109,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 		return nil, fmt.Errorf("error reading vkcs_compute_instance %s: %v", d.Id(), diagErr)
 	}
 
-	raw := servers.Get(computeClient, d.Id())
+	raw := iservers.Get(computeClient, d.Id())
 	if raw.Err != nil {
 		return nil, util.CheckDeleted(d, raw.Err, "vkcs_compute_instance")
 	}
@@ -1128,7 +1134,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 			Bootable            string                 `json:"bootable"`
 		}{}
 		for _, b := range serverWithAttachments.VolumesAttached {
-			rawVolume := volumesV3.Get(blockStorageClient, b["id"].(string))
+			rawVolume := ivolumes.Get(blockStorageClient, b["id"].(string))
 			if err := rawVolume.ExtractInto(&volMetaData); err != nil {
 				log.Printf("[DEBUG] unable to unmarshal raw struct to volume metadata: %s", err)
 			}
@@ -1156,7 +1162,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 		d.Set("block_device", bds)
 	}
 
-	metadata, err := servers.Metadata(computeClient, d.Id()).Extract()
+	metadata, err := iservers.Metadata(computeClient, d.Id()).Extract()
 	if err != nil {
 		return nil, fmt.Errorf("unable to read metadata for vkcs_compute_instance %s: %s", d.Id(), err)
 	}
@@ -1172,9 +1178,9 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 // an VKCS instance.
 func ServerStateRefreshFunc(client *gophercloud.ServiceClient, instanceID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		s, err := servers.Get(client, instanceID).Extract()
+		s, err := iservers.Get(client, instanceID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return s, "DELETED", nil
 			}
 			return nil, "", err
@@ -1320,9 +1326,9 @@ func setImageInformation(computeClient *gophercloud.ServiceClient, server *serve
 		imageID := server.Image["id"].(string)
 		if imageID != "" {
 			d.Set("image_id", imageID)
-			image, err := images.Get(computeClient, imageID).Extract()
+			image, err := iimages.Get(computeClient, imageID).Extract()
 			if err != nil {
-				if _, ok := err.(gophercloud.ErrDefault404); ok {
+				if errutil.IsNotFound(err) {
 					// If the image name can't be found, set the value to "Image not found".
 					// The most likely scenario is that the image no longer exists in the Image Service
 					// but the instance still has a record from when it existed.

@@ -5,6 +5,8 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	irouters "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/routers"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type routerExtended struct {
@@ -14,9 +16,9 @@ type routerExtended struct {
 
 func resourceNetworkingRouterStateRefreshFunc(client *gophercloud.ServiceClient, routerID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		n, err := routers.Get(client, routerID).Extract()
+		n, err := irouters.Get(client, routerID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return n, "DELETED", nil
 			}
 

@@ -13,8 +13,9 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/listeners"
+	ipools "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/pools"
 )
 
 func ResourcePool() *schema.Resource {
@@ -201,7 +202,7 @@ func resourcePoolCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	log.Printf("[DEBUG] Attempting to create pool")
 	var pool *pools.Pool
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		pool, err = pools.Create(lbClient, createOpts).Extract()
+		pool, err = ipools.Create(lbClient, createOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -231,7 +232,7 @@ func resourcePoolRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
-	pool, err := pools.Get(lbClient, d.Id()).Extract()
+	pool, err := ipools.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "pool"))
 	}
@@ -276,7 +277,7 @@ func resourcePoolUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	timeout := d.Timeout(schema.TimeoutUpdate)
 
 	// Get a clean copy of the pool.
-	pool, err := pools.Get(lbClient, d.Id()).Extract()
+	pool, err := ipools.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve pool %s: %s", d.Id(), err)
 	}
@@ -289,7 +290,7 @@ func resourcePoolUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 
 	log.Printf("[DEBUG] Updating pool %s with options: %#v", d.Id(), updateOpts)
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, err = pools.Update(lbClient, d.Id(), updateOpts).Extract()
+		_, err = ipools.Update(lbClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -319,14 +320,14 @@ func resourcePoolDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	timeout := d.Timeout(schema.TimeoutDelete)
 
 	// Get a clean copy of the pool.
-	pool, err := pools.Get(lbClient, d.Id()).Extract()
+	pool, err := ipools.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Unable to retrieve pool"))
 	}
 
 	log.Printf("[DEBUG] Attempting to delete pool %s", d.Id())
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		err = pools.Delete(lbClient, d.Id()).ExtractErr()
+		err = ipools.Delete(lbClient, d.Id()).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -353,7 +354,7 @@ func resourcePoolImport(ctx context.Context, d *schema.ResourceData, meta interf
 		return nil, fmt.Errorf("error creating VKCS networking client: %s", err)
 	}
 
-	pool, err := pools.Get(lbClient, d.Id()).Extract()
+	pool, err := ipools.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return nil, util.CheckDeleted(d, err, "pool")
 	}

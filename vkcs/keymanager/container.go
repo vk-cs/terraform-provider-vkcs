@@ -9,16 +9,18 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/containers"
+	icontainers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/keymanager/v1/containers"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func keyManagerContainerWaitForContainerDeletion(kmClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		err := containers.Delete(kmClient, id).Err
+		err := icontainers.Delete(kmClient, id).Err
 		if err == nil {
 			return "", "DELETED", nil
 		}
 
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			return "", "DELETED", nil
 		}
 
@@ -43,9 +45,9 @@ func keyManagerContainerType(v string) containers.ContainerType {
 
 func keyManagerContainerWaitForContainerCreation(kmClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		container, err := containers.Get(kmClient, id).Extract()
+		container, err := icontainers.Get(kmClient, id).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return "", "NOT_CREATED", nil
 			}
 

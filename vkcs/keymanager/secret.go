@@ -8,6 +8,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	isecrets "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/keymanager/v1/secrets"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/secrets"
@@ -15,12 +17,12 @@ import (
 
 func keyManagerSecretWaitForSecretDeletion(kmClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		err := secrets.Delete(kmClient, id).Err
+		err := isecrets.Delete(kmClient, id).Err
 		if err == nil {
 			return "", "DELETED", nil
 		}
 
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			return "", "DELETED", nil
 		}
 
@@ -50,9 +52,9 @@ func keyManagerSecretSecretType(v string) secrets.SecretType {
 
 func keyManagerSecretWaitForSecretCreation(kmClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		secret, err := secrets.Get(kmClient, id).Extract()
+		secret, err := isecrets.Get(kmClient, id).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return "", "NOT_CREATED", nil
 			}
 
@@ -85,9 +87,9 @@ func flattenKeyManagerSecretMetadata(d *schema.ResourceData) map[string]string {
 
 func keyManagerSecretMetadataV1WaitForSecretMetadataCreation(kmClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		metadata, err := secrets.GetMetadata(kmClient, id).Extract()
+		metadata, err := isecrets.GetMetadata(kmClient, id).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return "", "NOT_CREATED", nil
 			}
 
@@ -98,7 +100,7 @@ func keyManagerSecretMetadataV1WaitForSecretMetadataCreation(kmClient *gopherclo
 }
 
 func keyManagerSecretGetPayload(kmClient *gophercloud.ServiceClient, id string) string {
-	payload, err := secrets.GetPayload(kmClient, id, nil).Extract()
+	payload, err := isecrets.GetPayload(kmClient, id, nil).Extract()
 	if err != nil {
 		log.Printf("[DEBUG] Could not retrieve payload for secret with id %s: %s", id, err)
 	}

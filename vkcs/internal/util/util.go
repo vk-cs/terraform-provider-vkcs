@@ -16,7 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/mapstructure"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
+
+const RequestIDHeader = "X-Openstack-Request-Id"
 
 var DecoderConfig = &mapstructure.DecoderConfig{
 	TagName: "json",
@@ -78,7 +81,7 @@ func BuildRequest(opts interface{}, parent string) (map[string]interface{}, erro
 // CheckDeleted checks the error to see if it's a 404 (Not Found) and, if so,
 // sets the resource ID to the empty string instead of throwing an error.
 func CheckDeleted(d *schema.ResourceData, err error, msg string) error {
-	if _, ok := err.(gophercloud.ErrDefault404); ok {
+	if errutil.IsNotFound(err) {
 		d.SetId("")
 		return nil
 	}
@@ -89,7 +92,7 @@ func CheckDeleted(d *schema.ResourceData, err error, msg string) error {
 // checkDeletedResource checks the error to see if it's a 404 (Not Found) and, if so,
 // sets the resource ID to the empty string instead of throwing an error.
 func CheckDeletedResource(ctx context.Context, r *resource.ReadResponse, err error) error {
-	if _, ok := err.(gophercloud.ErrDefault404); ok {
+	if errutil.IsNotFound(err) {
 		r.State.RemoveResource(ctx)
 		return nil
 	}
@@ -102,7 +105,7 @@ func CheckDeletedResource(ctx context.Context, r *resource.ReadResponse, err err
 // checkDeletedDatasource checks the error to see if it's a 404 (Not Found) and, if so,
 // sets the resource ID to the empty string instead of throwing an error.
 func CheckDeletedDatasource(ctx context.Context, r *datasource.ReadResponse, err error) error {
-	if _, ok := err.(gophercloud.ErrDefault404); ok {
+	if errutil.IsNotFound(err) {
 		r.State.SetAttribute(ctx, path.Root("id"), "")
 		return nil
 	}
@@ -113,7 +116,7 @@ func CheckDeletedDatasource(ctx context.Context, r *datasource.ReadResponse, err
 }
 
 func CheckAlreadyExists(err error, msg, resourceName, conflict string) error {
-	if _, ok := err.(gophercloud.ErrDefault409); ok {
+	if errutil.Is(err, 409) {
 		return fmt.Errorf("%s: %s with %s already exists", msg, resourceName, conflict)
 	}
 
@@ -154,22 +157,16 @@ func MapValueSpecs(d *schema.ResourceData) map[string]string {
 }
 
 func CheckForRetryableError(err error) *retry.RetryError {
-	switch e := err.(type) {
-	case gophercloud.ErrDefault500:
+	if errutil.Any(err, []int{500, 409, 503}) {
 		return retry.RetryableError(err)
-	case gophercloud.ErrDefault409:
-		return retry.RetryableError(err)
-	case gophercloud.ErrDefault503:
-		return retry.RetryableError(err)
-	case gophercloud.ErrUnexpectedResponseCode:
-		if e.GetStatusCode() == 504 || e.GetStatusCode() == 502 {
-			return retry.RetryableError(err)
-		} else {
-			return retry.NonRetryableError(err)
-		}
-	default:
-		return retry.NonRetryableError(err)
 	}
+
+	if errutil.Any(err, []int{504, 502}) {
+		return retry.RetryableError(err)
+	}
+
+	return retry.NonRetryableError(err)
+
 }
 
 func ExpandVendorOptions(vendOptsRaw []interface{}) map[string]interface{} {
@@ -307,4 +304,14 @@ func ValueKnownBoolPointer(v basetypes.BoolValue) *bool {
 		return nil
 	}
 	return v.ValueBoolPointer()
+}
+
+func ErrorWithRequestID(err error, requestID string) error {
+	if err == nil {
+		return nil
+	}
+	if requestID == "" {
+		return err
+	}
+	return fmt.Errorf("%w\nRequest ID: %s", err, requestID)
 }

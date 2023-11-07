@@ -7,7 +7,9 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	irules "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall/v2/rules"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type secgroupRuleExtended struct {
@@ -17,9 +19,9 @@ type secgroupRuleExtended struct {
 
 func resourceNetworkingSecGroupRuleStateRefreshFunc(client *gophercloud.ServiceClient, sgRuleID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		sgRule, err := rules.Get(client, sgRuleID).Extract()
+		sgRule, err := irules.Get(client, sgRuleID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return sgRule, "DELETED", nil
 			}
 

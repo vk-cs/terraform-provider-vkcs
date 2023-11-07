@@ -11,11 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
+	irules "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall/v2/rules"
 )
 
 func ResourceNetworkingSecGroupRule() *schema.Resource {
@@ -202,7 +202,7 @@ func resourceNetworkingSecGroupRuleCreate(ctx context.Context, d *schema.Resourc
 
 	log.Printf("[DEBUG] vkcs_networking_secgroup_rule create options: %#v", opts)
 
-	sgRule, err := rules.Create(networkingClient, opts).Extract()
+	sgRule, err := irules.Create(networkingClient, opts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_networking_secgroup_rule: %s", err)
 	}
@@ -222,7 +222,7 @@ func resourceNetworkingSecGroupRuleRead(ctx context.Context, d *schema.ResourceD
 
 	var sgRule secgroupRuleExtended
 
-	err = firewall.ExtractSecurityGroupRuleInto(rules.Get(networkingClient, d.Id()), &sgRule)
+	err = irules.ExtractSecurityGroupRuleInto(irules.Get(networkingClient, d.Id()), &sgRule)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_networking_secgroup_rule"))
 	}
@@ -255,7 +255,7 @@ func resourceNetworkingSecGroupRuleDelete(ctx context.Context, d *schema.Resourc
 	mutex.Lock(securityGroupID)
 	defer mutex.Unlock(securityGroupID)
 
-	if err := rules.Delete(networkingClient, d.Id()).ExtractErr(); err != nil {
+	if err := irules.Delete(networkingClient, d.Id()).ExtractErr(); err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_networking_secgroup_rule"))
 	}
 

@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	iloadbalancers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/loadbalancers"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 )
@@ -89,7 +90,7 @@ func testAccCheckLBLoadBalancerDestroy(s *terraform.State) error {
 			continue
 		}
 
-		lb, err := loadbalancers.Get(lbClient, rs.Primary.ID).Extract()
+		lb, err := iloadbalancers.Get(lbClient, rs.Primary.ID).Extract()
 		if err == nil && lb.ProvisioningStatus != "DELETED" {
 			return fmt.Errorf("LoadBalancer still exists: %s", rs.Primary.ID)
 		}
@@ -116,7 +117,7 @@ func testAccCheckLBLoadBalancerExists(
 			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
 
-		found, err := loadbalancers.Get(lbClient, rs.Primary.ID).Extract()
+		found, err := iloadbalancers.Get(lbClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
@@ -147,7 +148,7 @@ func testAccCheckLBLoadBalancerHasTag(n, tag string) resource.TestCheckFunc {
 			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
 
-		found, err := loadbalancers.Get(lbClient, rs.Primary.ID).Extract()
+		found, err := iloadbalancers.Get(lbClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
@@ -183,7 +184,7 @@ func testAccCheckLBLoadBalancerTagCount(n string, expected int) resource.TestChe
 			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
 
-		found, err := loadbalancers.Get(lbClient, rs.Primary.ID).Extract()
+		found, err := iloadbalancers.Get(lbClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

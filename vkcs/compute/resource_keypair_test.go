@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	ikeypairs "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/keypairs"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 )
@@ -68,7 +69,7 @@ func testAccCheckComputeKeypairDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := keypairs.Get(computeClient, rs.Primary.ID, keypairs.GetOpts{}).Extract()
+		_, err := ikeypairs.Get(computeClient, rs.Primary.ID, keypairs.GetOpts{}).Extract()
 		if err == nil {
 			return fmt.Errorf("Keypair still exists")
 		}
@@ -94,7 +95,7 @@ func testAccCheckComputeKeypairExists(n string, kp *keypairs.KeyPair) resource.T
 			return fmt.Errorf("Error creating VKCS compute client: %s", err)
 		}
 
-		found, err := keypairs.Get(computeClient, rs.Primary.ID, keypairs.GetOpts{}).Extract()
+		found, err := ikeypairs.Get(computeClient, rs.Primary.ID, keypairs.GetOpts{}).Extract()
 		if err != nil {
 			return err
 		}

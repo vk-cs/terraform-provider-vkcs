@@ -10,6 +10,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
+	imonitors "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/monitors"
 )
 
 func TestAccLBMonitor_basic(t *testing.T) {
@@ -94,7 +95,7 @@ func testAccCheckLBMonitorDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := monitors.Get(lbClient, rs.Primary.ID).Extract()
+		_, err := imonitors.Get(lbClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Monitor still exists: %s", rs.Primary.ID)
 		}
@@ -120,7 +121,7 @@ func testAccCheckLBMonitorExists(t *testing.T, n string, monitor *monitors.Monit
 			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
 
-		found, err := monitors.Get(lbClient, rs.Primary.ID).Extract()
+		found, err := imonitors.Get(lbClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

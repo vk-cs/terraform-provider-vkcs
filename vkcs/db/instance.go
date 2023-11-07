@@ -9,6 +9,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -170,7 +171,7 @@ func databaseInstanceStateRefreshFunc(client *gophercloud.ServiceClient, instanc
 	return func() (interface{}, string, error) {
 		i, err := instances.Get(client, instanceID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return i, "DELETED", nil
 			}
 			return nil, "", err

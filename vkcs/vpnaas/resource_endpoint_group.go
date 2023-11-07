@@ -10,12 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/endpointgroups"
+	iendpointgroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas/v2/endpointgroups"
 )
 
 func ResourceEndpointGroup() *schema.Resource {
@@ -103,7 +104,7 @@ func resourceEndpointGroupCreate(ctx context.Context, d *schema.ResourceData, me
 
 	log.Printf("[DEBUG] Create group: %#v", createOpts)
 
-	group, err := endpointgroups.Create(networkingClient, createOpts).Extract()
+	group, err := iendpointgroups.Create(networkingClient, createOpts).Extract()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -139,7 +140,7 @@ func resourceEndpointGroupRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	var group groupExtended
-	err = vpnaas.ExtractEndpointGroupInto(endpointgroups.Get(networkingClient, d.Id()), &group)
+	err = iendpointgroups.ExtractEndpointGroupInto(endpointgroups.Get(networkingClient, d.Id()), &group)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "group"))
 	}
@@ -184,7 +185,7 @@ func resourceEndpointGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 	log.Printf("[DEBUG] Updating endpoint group with id %s: %#v", d.Id(), updateOpts)
 
 	if hasChange {
-		group, err := endpointgroups.Update(networkingClient, d.Id(), updateOpts).Extract()
+		group, err := iendpointgroups.Update(networkingClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -217,7 +218,7 @@ func resourceEndpointGroupDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	err = endpointgroups.Delete(networkingClient, d.Id()).Err
+	err = iendpointgroups.Delete(networkingClient, d.Id()).Err
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -239,11 +240,11 @@ func resourceEndpointGroupDelete(ctx context.Context, d *schema.ResourceData, me
 
 func waitForEndpointGroupDeletion(networkingClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		group, err := endpointgroups.Get(networkingClient, id).Extract()
+		group, err := iendpointgroups.Get(networkingClient, id).Extract()
 		log.Printf("[DEBUG] Got group %s => %#v", id, group)
 
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				log.Printf("[DEBUG] EndpointGroup %s is actually deleted", id)
 				return "", "DELETED", nil
 			}
@@ -257,7 +258,7 @@ func waitForEndpointGroupDeletion(networkingClient *gophercloud.ServiceClient, i
 
 func waitForEndpointGroupCreation(networkingClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		group, err := endpointgroups.Get(networkingClient, id).Extract()
+		group, err := iendpointgroups.Get(networkingClient, id).Extract()
 		if err != nil {
 			return "", "PENDING_CREATE", nil
 		}
@@ -267,7 +268,7 @@ func waitForEndpointGroupCreation(networkingClient *gophercloud.ServiceClient, i
 
 func waitForEndpointGroupUpdate(networkingClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		group, err := endpointgroups.Get(networkingClient, id).Extract()
+		group, err := iendpointgroups.Get(networkingClient, id).Extract()
 		if err != nil {
 			return "", "PENDING_UPDATE", nil
 		}

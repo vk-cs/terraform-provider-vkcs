@@ -9,6 +9,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/nodegroups"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func extractKubernetesGroupMap(nodeGroups []interface{}) ([]nodegroups.NodeGroup, error) {
@@ -90,7 +91,7 @@ func kubernetesStateRefreshFunc(client *gophercloud.ServiceClient, clusterID str
 	return func() (interface{}, string, error) {
 		c, err := clusters.Get(client, clusterID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return c, string(clusterStatusNotFound), nil
 			}
 			return nil, "", err

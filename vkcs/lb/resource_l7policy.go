@@ -12,11 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/listeners"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	il7policies "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/l7policies"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/pools"
 )
 
 func ResourceL7Policy() *schema.Resource {
@@ -178,7 +179,7 @@ func resourceL7PolicyCreate(ctx context.Context, d *schema.ResourceData, meta in
 	log.Printf("[DEBUG] Attempting to create L7 Policy")
 	var l7Policy *l7policies.L7Policy
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		l7Policy, err = l7policies.Create(lbClient, createOpts).Extract()
+		l7Policy, err = il7policies.Create(lbClient, createOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -207,7 +208,7 @@ func resourceL7PolicyRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
-	l7Policy, err := l7policies.Get(lbClient, d.Id()).Extract()
+	l7Policy, err := il7policies.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "L7 Policy"))
 	}
@@ -296,7 +297,7 @@ func resourceL7PolicyUpdate(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	// Get a clean copy of the L7 Policy.
-	l7Policy, err := l7policies.Get(lbClient, d.Id()).Extract()
+	l7Policy, err := il7policies.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve L7 Policy: %s: %s", d.Id(), err)
 	}
@@ -315,7 +316,7 @@ func resourceL7PolicyUpdate(ctx context.Context, d *schema.ResourceData, meta in
 
 	log.Printf("[DEBUG] Updating L7 Policy %s with options: %#v", d.Id(), updateOpts)
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, err = l7policies.Update(lbClient, d.Id(), updateOpts).Extract()
+		_, err = il7policies.Update(lbClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -352,7 +353,7 @@ func resourceL7PolicyDelete(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	// Get a clean copy of the L7 Policy.
-	l7Policy, err := l7policies.Get(lbClient, d.Id()).Extract()
+	l7Policy, err := il7policies.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Unable to retrieve L7 Policy"))
 	}
@@ -365,7 +366,7 @@ func resourceL7PolicyDelete(ctx context.Context, d *schema.ResourceData, meta in
 
 	log.Printf("[DEBUG] Attempting to delete L7 Policy %s", d.Id())
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		err = l7policies.Delete(lbClient, d.Id()).ExtractErr()
+		err = il7policies.Delete(lbClient, d.Id()).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -391,7 +392,7 @@ func resourceL7PolicyImport(d *schema.ResourceData, meta interface{}) ([]*schema
 		return nil, fmt.Errorf("error creating VKCS loadbalancer client: %s", err)
 	}
 
-	l7Policy, err := l7policies.Get(lbClient, d.Id()).Extract()
+	l7Policy, err := il7policies.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return nil, util.CheckDeleted(d, err, "L7 Policy")
 	}

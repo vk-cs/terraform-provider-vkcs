@@ -10,6 +10,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
+	ikeypairs "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/keypairs"
 )
 
 func ResourceComputeKeypair() *schema.Resource {
@@ -88,7 +89,7 @@ func resourceComputeKeypairCreate(ctx context.Context, d *schema.ResourceData, m
 
 	log.Printf("[DEBUG] vkcs_compute_keypair create options: %#v", createOpts)
 
-	kp, err := keypairs.Create(computeClient, createOpts).Extract()
+	kp, err := ikeypairs.Create(computeClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to create vkcs_compute_keypair %s: %s", name, err)
 	}
@@ -108,7 +109,7 @@ func resourceComputeKeypairRead(_ context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
-	kp, err := keypairs.Get(computeClient, d.Id(), keypairs.GetOpts{}).Extract()
+	kp, err := ikeypairs.Get(computeClient, d.Id(), keypairs.GetOpts{}).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error retrieving vkcs_compute_keypair"))
 	}
@@ -130,7 +131,7 @@ func resourceComputeKeypairDelete(_ context.Context, d *schema.ResourceData, met
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
-	err = keypairs.Delete(computeClient, d.Id(), keypairs.DeleteOpts{}).ExtractErr()
+	err = ikeypairs.Delete(computeClient, d.Id(), keypairs.DeleteOpts{}).ExtractErr()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_compute_keypair"))
 	}

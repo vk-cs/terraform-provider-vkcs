@@ -1,4 +1,4 @@
-package firewall
+package groups
 
 import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"

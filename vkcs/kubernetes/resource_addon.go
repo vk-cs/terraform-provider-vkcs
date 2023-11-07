@@ -203,7 +203,7 @@ func (r *AddonResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanR
 	id := state.ID.ValueString()
 
 	clusterAddon, err := clusteraddons.Get(containerInfraAddonsClient, id).Extract()
-	if errutil.Is(err, 404) {
+	if errutil.IsNotFound(err) {
 		return
 	}
 	if err != nil {
@@ -377,7 +377,7 @@ func (r *AddonResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	tflog.Debug(ctx, "Calling Addons API to retrieve cluster addon")
 
 	clusterAddon, err := clusteraddons.Get(client, id).Extract()
-	if errutil.Is(err, 404) {
+	if errutil.IsNotFound(err) {
 		resp.State.RemoveResource(ctx)
 		return
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	ilisteners "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/listeners"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 )
@@ -156,7 +157,7 @@ func testAccCheckLBListenerDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := listeners.Get(lbClient, rs.Primary.ID).Extract()
+		_, err := ilisteners.Get(lbClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Listener still exists: %s", rs.Primary.ID)
 		}
@@ -182,7 +183,7 @@ func testAccCheckLBListenerExists(n string, listener *listeners.Listener) resour
 			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
 
-		found, err := listeners.Get(lbClient, rs.Primary.ID).Extract()
+		found, err := ilisteners.Get(lbClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

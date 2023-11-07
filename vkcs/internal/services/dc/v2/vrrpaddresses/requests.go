@@ -1,9 +1,8 @@
 package vrrpaddresses
 
 import (
-	"net/http"
-
 	"github.com/gophercloud/gophercloud"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
 type OptsBuilder interface {
@@ -36,12 +35,14 @@ func Create(client *gophercloud.ServiceClient, opts OptsBuilder) (r CreateResult
 		OkCodes: []int{201},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
 	resp, err := client.Get(vrrpAddressURL(client, id), &r.Body, nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -69,16 +70,15 @@ func Update(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r U
 		OkCodes: []int{200},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
-	var result *http.Response
-	result, r.Err = client.Delete(vrrpAddressURL(client, id), &gophercloud.RequestOpts{
+	resp, err := client.Delete(vrrpAddressURL(client, id), &gophercloud.RequestOpts{
 		OkCodes: []int{204},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }

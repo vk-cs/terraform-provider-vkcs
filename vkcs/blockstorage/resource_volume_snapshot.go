@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	isnapshots "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/blockstorage/v3/snapshots"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
@@ -108,7 +109,7 @@ func resourceBlockStorageSnapshotCreate(ctx context.Context, d *schema.ResourceD
 
 	log.Printf("[DEBUG] vkcs_blockstorage_snapshot create options: %#v", createOpts)
 
-	snapshot, err := snapshots.Create(blockStorageClient, createOpts).Extract()
+	snapshot, err := isnapshots.Create(blockStorageClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("error creating vkcs_blockstorage_snapshot: %s", err)
 	}
@@ -143,7 +144,7 @@ func resourceBlockStorageSnapshotRead(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("error creating VKCS block storage client: %s", err)
 	}
 
-	snapshot, err := snapshots.Get(blockStorageClient, d.Id()).Extract()
+	snapshot, err := isnapshots.Get(blockStorageClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "error retrieving vkcs_blockstorage_snapshot"))
 	}
@@ -172,7 +173,7 @@ func resourceBlockStorageSnapshotUpdate(ctx context.Context, d *schema.ResourceD
 		Description: &description,
 	}
 
-	_, err = snapshots.Update(blockStorageClient, d.Id(), updateOpts).Extract()
+	_, err = isnapshots.Update(blockStorageClient, d.Id(), updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("error updating vkcs_blockstorage_snapshot")
 	}
@@ -195,7 +196,7 @@ func resourceBlockStorageSnapshotUpdate(ctx context.Context, d *schema.ResourceD
 			Metadata: d.Get("metadata").(map[string]interface{}),
 		}
 
-		_, err = snapshots.UpdateMetadata(blockStorageClient, d.Id(), updateMetadataOpts).Extract()
+		_, err = isnapshots.UpdateMetadata(blockStorageClient, d.Id(), updateMetadataOpts).Extract()
 		if err != nil {
 			return diag.Errorf("error updating vkcs_blockstorage_snapshot metadata")
 		}
@@ -222,7 +223,7 @@ func resourceBlockStorageSnapshotDelete(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.Errorf("error creating VKCS block storage client: %s", err)
 	}
-	err = snapshots.Delete(blockStorageClient, d.Id()).ExtractErr()
+	err = isnapshots.Delete(blockStorageClient, d.Id()).ExtractErr()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_blockstorage_snapshot"))
 	}

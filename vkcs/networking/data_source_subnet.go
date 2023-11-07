@@ -16,6 +16,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/utils"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	isubnets "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/subnets"
 )
 
 var (
@@ -264,7 +265,7 @@ func (d *SubnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	}
 
 	var allSubnets []subnetExtended
-	err = networking.ExtractSubnetsInto(allPages, &allSubnets)
+	err = isubnets.ExtractSubnetsInto(allPages, &allSubnets)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading VKCS Networking API response", err.Error())
 		return

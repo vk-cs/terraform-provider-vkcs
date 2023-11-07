@@ -9,13 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall"
+	irules "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall/v2/rules"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/attributestags"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
+	igroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall/v2/groups"
+	iattributestags "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/attributestags"
 )
 
 func ResourceNetworkingSecGroup() *schema.Resource {
@@ -101,7 +102,7 @@ func resourceNetworkingSecGroupCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	log.Printf("[DEBUG] vkcs_networking_secgroup create options: %#v", opts)
-	sg, err := groups.Create(networkingClient, opts).Extract()
+	sg, err := igroups.Create(networkingClient, opts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_networking_secgroup: %s", err)
 	}
@@ -112,13 +113,13 @@ func resourceNetworkingSecGroupCreate(ctx context.Context, d *schema.ResourceDat
 	deleteDefaultRules := d.Get("delete_default_rules").(bool)
 	if deleteDefaultRules {
 		sgID := sg.ID
-		sg, err := groups.Get(networkingClient, sgID).Extract()
+		sg, err := igroups.Get(networkingClient, sgID).Extract()
 		if err != nil {
 			return diag.Errorf("Error retrieving the created vkcs_networking_secgroup %s: %s", sgID, err)
 		}
 
 		for _, rule := range sg.Rules {
-			if err := rules.Delete(networkingClient, rule.ID).ExtractErr(); err != nil {
+			if err := irules.Delete(networkingClient, rule.ID).ExtractErr(); err != nil {
 				return diag.Errorf("Error deleting a default rule for vkcs_networking_secgroup %s: %s", sgID, err)
 			}
 		}
@@ -127,7 +128,7 @@ func resourceNetworkingSecGroupCreate(ctx context.Context, d *schema.ResourceDat
 	tags := networking.NetworkingAttributesTags(d)
 	if len(tags) > 0 {
 		tagOpts := attributestags.ReplaceAllOpts{Tags: tags}
-		tags, err := attributestags.ReplaceAll(networkingClient, "security-groups", sg.ID, tagOpts).Extract()
+		tags, err := iattributestags.ReplaceAll(networkingClient, "security-groups", sg.ID, tagOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error setting tags on vkcs_networking_secgroup %s: %s", sg.ID, err)
 		}
@@ -148,7 +149,7 @@ func resourceNetworkingSecGroupRead(ctx context.Context, d *schema.ResourceData,
 
 	var sg securityGroupExtended
 
-	err = firewall.ExtractSecurityGroupInto(groups.Get(networkingClient, d.Id()), &sg)
+	err = igroups.ExtractSecurityGroupInto(igroups.Get(networkingClient, d.Id()), &sg)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error retrieving vkcs_networking_secgroup"))
 	}
@@ -187,7 +188,7 @@ func resourceNetworkingSecGroupUpdate(ctx context.Context, d *schema.ResourceDat
 
 	if updated {
 		log.Printf("[DEBUG] Updating vkcs_networking_secgroup %s with options: %#v", d.Id(), updateOpts)
-		_, err = groups.Update(networkingClient, d.Id(), updateOpts).Extract()
+		_, err = igroups.Update(networkingClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error updating vkcs_networking_secgroup: %s", err)
 		}
@@ -196,7 +197,7 @@ func resourceNetworkingSecGroupUpdate(ctx context.Context, d *schema.ResourceDat
 	if d.HasChange("tags") {
 		tags := networking.NetworkingV2UpdateAttributesTags(d)
 		tagOpts := attributestags.ReplaceAllOpts{Tags: tags}
-		tags, err := attributestags.ReplaceAll(networkingClient, "security-groups", d.Id(), tagOpts).Extract()
+		tags, err := iattributestags.ReplaceAll(networkingClient, "security-groups", d.Id(), tagOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error setting tags on vkcs_networking_secgroup %s: %s", d.Id(), err)
 		}

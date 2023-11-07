@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	iservers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
@@ -339,7 +340,7 @@ func flattenInstanceNetworks(d *schema.ResourceData, meta interface{}) ([]map[st
 		return nil, fmt.Errorf("error creating VKCS compute client: %s", err)
 	}
 
-	server, err := servers.Get(computeClient, d.Id()).Extract()
+	server, err := iservers.Get(computeClient, d.Id()).Extract()
 	if err != nil {
 		return nil, util.CheckDeleted(d, err, "server")
 	}

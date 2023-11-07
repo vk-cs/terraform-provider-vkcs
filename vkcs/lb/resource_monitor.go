@@ -14,8 +14,9 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
-	octaviamonitors "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
+	imonitors "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/monitors"
+	ipools "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/pools"
 )
 
 func ResourceMonitor() *schema.Resource {
@@ -132,7 +133,7 @@ func resourceMonitorCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	adminStateUp := d.Get("admin_state_up").(bool)
 
-	createOpts := octaviamonitors.CreateOpts{
+	createOpts := monitors.CreateOpts{
 		PoolID:         d.Get("pool_id").(string),
 		Type:           d.Get("type").(string),
 		Delay:          d.Get("delay").(int),
@@ -148,7 +149,7 @@ func resourceMonitorCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	// Get a clean copy of the parent pool.
 	poolID := d.Get("pool_id").(string)
-	parentPool, err := pools.Get(lbClient, poolID).Extract()
+	parentPool, err := ipools.Get(lbClient, poolID).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve parent vkcs_lb_pool %s: %s", poolID, err)
 	}
@@ -161,9 +162,9 @@ func resourceMonitorCreate(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	log.Printf("[DEBUG] vkcs_lb_monitor create options: %#v", createOpts)
-	var monitor *octaviamonitors.Monitor
+	var monitor *monitors.Monitor
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		monitor, err = octaviamonitors.Create(lbClient, createOpts).Extract()
+		monitor, err = imonitors.Create(lbClient, createOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -192,7 +193,7 @@ func resourceMonitorRead(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
-	monitor, err := octaviamonitors.Get(lbClient, d.Id()).Extract()
+	monitor, err := imonitors.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "monitor"))
 	}
@@ -228,7 +229,7 @@ func resourceMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	var hasChange bool
-	var updateOpts octaviamonitors.UpdateOpts
+	var updateOpts monitors.UpdateOpts
 	if d.HasChange("url_path") {
 		hasChange = true
 		updateOpts.URLPath = d.Get("url_path").(string)
@@ -275,13 +276,13 @@ func resourceMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	// Get a clean copy of the parent pool.
 	poolID := d.Get("pool_id").(string)
-	parentPool, err := pools.Get(lbClient, poolID).Extract()
+	parentPool, err := ipools.Get(lbClient, poolID).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve parent vkcs_lb_pool %s: %s", poolID, err)
 	}
 
 	// Get a clean copy of the monitor.
-	monitor, err := octaviamonitors.Get(lbClient, d.Id()).Extract()
+	monitor, err := imonitors.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve vkcs_lb_monitor %s: %s", d.Id(), err)
 	}
@@ -301,7 +302,7 @@ func resourceMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	log.Printf("[DEBUG] vkcs_lb_monitor %s update options: %#v", d.Id(), updateOpts)
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, err = octaviamonitors.Update(lbClient, d.Id(), updateOpts).Extract()
+		_, err = monitors.Update(lbClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -330,14 +331,14 @@ func resourceMonitorDelete(ctx context.Context, d *schema.ResourceData, meta int
 
 	// Get a clean copy of the parent pool.
 	poolID := d.Get("pool_id").(string)
-	parentPool, err := pools.Get(lbClient, poolID).Extract()
+	parentPool, err := ipools.Get(lbClient, poolID).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve parent vkcs_lb_pool (%s)"+
 			" for the vkcs_lb_monitor: %s", poolID, err)
 	}
 
 	// Get a clean copy of the monitor.
-	monitor, err := octaviamonitors.Get(lbClient, d.Id()).Extract()
+	monitor, err := imonitors.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Unable to retrieve vkcs_lb_monitor"))
 	}
@@ -351,7 +352,7 @@ func resourceMonitorDelete(ctx context.Context, d *schema.ResourceData, meta int
 
 	log.Printf("[DEBUG] Deleting vkcs_lb_monitor %s", d.Id())
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		err = octaviamonitors.Delete(lbClient, d.Id()).ExtractErr()
+		err = monitors.Delete(lbClient, d.Id()).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}

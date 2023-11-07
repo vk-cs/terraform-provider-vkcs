@@ -7,9 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	isubnets "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/subnets"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type subnetExtended struct {
@@ -20,9 +22,9 @@ type subnetExtended struct {
 // networkingSubnetStateRefreshFunc returns a standard retry.StateRefreshFunc to wait for subnet status.
 func networkingSubnetStateRefreshFunc(client *gophercloud.ServiceClient, subnetID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		subnet, err := subnets.Get(client, subnetID).Extract()
+		subnet, err := isubnets.Get(client, subnetID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return subnet, "DELETED", nil
 			}
 
@@ -38,9 +40,9 @@ func networkingSubnetStateRefreshFuncDelete(networkingClient *gophercloud.Servic
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] Attempting to delete vkcs_networking_subnet %s", subnetID)
 
-		s, err := subnets.Get(networkingClient, subnetID).Extract()
+		s, err := isubnets.Get(networkingClient, subnetID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				log.Printf("[DEBUG] Successfully deleted vkcs_networking_subnet %s", subnetID)
 				return s, "DELETED", nil
 			}
@@ -48,14 +50,14 @@ func networkingSubnetStateRefreshFuncDelete(networkingClient *gophercloud.Servic
 			return s, "ACTIVE", err
 		}
 
-		err = subnets.Delete(networkingClient, subnetID).ExtractErr()
+		err = isubnets.Delete(networkingClient, subnetID).ExtractErr()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				log.Printf("[DEBUG] Successfully deleted vkcs_networking_subnet %s", subnetID)
 				return s, "DELETED", nil
 			}
 			// Subnet is still in use - we can retry.
-			if _, ok := err.(gophercloud.ErrDefault409); ok {
+			if errutil.Is(err, 409) {
 				return s, "ACTIVE", nil
 			}
 

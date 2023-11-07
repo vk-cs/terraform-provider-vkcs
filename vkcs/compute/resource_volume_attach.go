@@ -12,9 +12,11 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/blockstorage"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
+	ivolumeattach "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/volumeattach"
 )
 
 func ResourceComputeVolumeAttach() *schema.Resource {
@@ -86,9 +88,9 @@ func resourceComputeVolumeAttachCreate(ctx context.Context, d *schema.ResourceDa
 	var attachment *volumeattach.VolumeAttachment
 	timeout := d.Timeout(schema.TimeoutCreate)
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		attachment, err = volumeattach.Create(computeClient, instanceID, attachOpts).Extract()
+		attachment, err = ivolumeattach.Create(computeClient, instanceID, attachOpts).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault400); ok {
+			if errutil.Is(err, 400) {
 				return retry.RetryableError(err)
 			}
 
@@ -136,7 +138,7 @@ func resourceComputeVolumeAttachRead(_ context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	attachment, err := volumeattach.Get(computeClient, instanceID, attachmentID).Extract()
+	attachment, err := ivolumeattach.Get(computeClient, instanceID, attachmentID).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error retrieving vkcs_compute_volume_attach"))
 	}

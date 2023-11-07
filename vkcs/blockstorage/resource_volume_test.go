@@ -10,6 +10,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
+	ivolumes "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/blockstorage/v3/volumes"
 )
 
 func TestAccBlockStorageVolume_basic(t *testing.T) {
@@ -126,7 +127,7 @@ func testAccCheckBlockStorageVolumeDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := volumes.Get(blockStorageClient, rs.Primary.ID).Extract()
+		_, err := ivolumes.Get(blockStorageClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Volume still exists")
 		}
@@ -152,7 +153,7 @@ func testAccCheckBlockStorageVolumeExists(n string, volume *volumes.Volume) reso
 			return fmt.Errorf("Error creating VKCS block storage client: %s", err)
 		}
 
-		found, err := volumes.Get(blockStorageClient, rs.Primary.ID).Extract()
+		found, err := ivolumes.Get(blockStorageClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

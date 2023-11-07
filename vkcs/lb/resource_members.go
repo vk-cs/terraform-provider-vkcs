@@ -14,6 +14,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	octaviapools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	ipools "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/pools"
 )
 
 func ResourceMembers() *schema.Resource {
@@ -124,7 +125,7 @@ func resourceMembersCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	// Get a clean copy of the parent pool.
 	poolID := d.Get("pool_id").(string)
-	parentPool, err := octaviapools.Get(lbClient, poolID).Extract()
+	parentPool, err := ipools.Get(lbClient, poolID).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve parent pool %s: %s", poolID, err)
 	}
@@ -138,7 +139,7 @@ func resourceMembersCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	log.Printf("[DEBUG] Attempting to create members")
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		err = octaviapools.BatchUpdateMembers(lbClient, poolID, createOpts).ExtractErr()
+		err = ipools.BatchUpdateMembers(lbClient, poolID, createOpts).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -197,7 +198,7 @@ func resourceMembersUpdate(ctx context.Context, d *schema.ResourceData, meta int
 		updateOpts := expandLBMembers(d.Get("member").(*schema.Set), lbClient)
 
 		// Get a clean copy of the parent pool.
-		parentPool, err := octaviapools.Get(lbClient, d.Id()).Extract()
+		parentPool, err := ipools.Get(lbClient, d.Id()).Extract()
 		if err != nil {
 			return diag.Errorf("Unable to retrieve parent pool %s: %s", d.Id(), err)
 		}
@@ -211,7 +212,7 @@ func resourceMembersUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 		log.Printf("[DEBUG] Updating %s pool members with options: %#v", d.Id(), updateOpts)
 		err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-			err = octaviapools.BatchUpdateMembers(lbClient, d.Id(), updateOpts).ExtractErr()
+			err = ipools.BatchUpdateMembers(lbClient, d.Id(), updateOpts).ExtractErr()
 			if err != nil {
 				return util.CheckForRetryableError(err)
 			}
@@ -240,7 +241,7 @@ func resourceMembersDelete(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	// Get a clean copy of the parent pool.
-	parentPool, err := octaviapools.Get(lbClient, d.Id()).Extract()
+	parentPool, err := ipools.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, fmt.Sprintf("Unable to retrieve parent pool (%s) for the member", d.Id())))
 	}
@@ -254,7 +255,7 @@ func resourceMembersDelete(ctx context.Context, d *schema.ResourceData, meta int
 
 	log.Printf("[DEBUG] Attempting to delete %s pool members", d.Id())
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		err = octaviapools.BatchUpdateMembers(lbClient, d.Id(), []octaviapools.BatchUpdateMemberOpts{}).ExtractErr()
+		err = ipools.BatchUpdateMembers(lbClient, d.Id(), []octaviapools.BatchUpdateMemberOpts{}).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
