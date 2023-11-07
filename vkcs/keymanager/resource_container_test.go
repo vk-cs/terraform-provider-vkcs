@@ -8,9 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/containers"
+	icontainers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/keymanager/v1/containers"
 )
 
 func TestAccKeyManagerContainer_basic(t *testing.T) {
@@ -119,11 +120,11 @@ func testAccCheckContainerDestroy(s *terraform.State) error {
 		if rs.Type != "vkcs_keymanager_container" {
 			continue
 		}
-		_, err = containers.Get(kmClient, rs.Primary.ID).Extract()
+		_, err = icontainers.Get(kmClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Container (%s) still exists", rs.Primary.ID)
 		}
-		if _, ok := err.(gophercloud.ErrDefault404); !ok {
+		if !errutil.Is(err, 404) {
 			return err
 		}
 	}
@@ -149,7 +150,7 @@ func testAccCheckContainerExists(n string, container *containers.Container) reso
 
 		var found *containers.Container
 
-		found, err = containers.Get(kmClient, rs.Primary.ID).Extract()
+		found, err = icontainers.Get(kmClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

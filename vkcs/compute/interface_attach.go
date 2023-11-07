@@ -6,16 +6,17 @@ import (
 	"strings"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/attachinterfaces"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	iattachinterfaces "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/attachinterfaces"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func computeInterfaceAttachAttachFunc(
 	computeClient *gophercloud.ServiceClient, instanceID, attachmentID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		va, err := attachinterfaces.Get(computeClient, instanceID, attachmentID).Extract()
+		va, err := iattachinterfaces.Get(computeClient, instanceID, attachmentID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return va, "ATTACHING", nil
 			}
 			return va, "", err
@@ -31,21 +32,21 @@ func computeInterfaceAttachDetachFunc(
 		log.Printf("[DEBUG] Attempting to detach vkcs_compute_interface_attach %s from instance %s",
 			attachmentID, instanceID)
 
-		va, err := attachinterfaces.Get(computeClient, instanceID, attachmentID).Extract()
+		va, err := iattachinterfaces.Get(computeClient, instanceID, attachmentID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return va, "DETACHED", nil
 			}
 			return va, "", err
 		}
 
-		err = attachinterfaces.Delete(computeClient, instanceID, attachmentID).ExtractErr()
+		err = iattachinterfaces.Delete(computeClient, instanceID, attachmentID).ExtractErr()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return va, "DETACHED", nil
 			}
 
-			if _, ok := err.(gophercloud.ErrDefault400); ok {
+			if errutil.Is(err, 400) {
 				return nil, "", nil
 			}
 

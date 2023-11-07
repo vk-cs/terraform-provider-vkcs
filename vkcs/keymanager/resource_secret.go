@@ -13,10 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	iacls "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/keymanager/v1/acls"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
-	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/acls"
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/secrets"
+	isecrets "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/keymanager/v1/secrets"
 )
 
 func ResourceKeyManagerSecret() *schema.Resource {
@@ -233,7 +234,7 @@ func resourceKeyManagerSecretCreate(ctx context.Context, d *schema.ResourceData,
 	log.Printf("[DEBUG] Create Options for resource_keymanager_secret_v1: %#v", createOpts)
 
 	var secret *secrets.Secret
-	secret, err = secrets.Create(kmClient, createOpts).Extract()
+	secret, err = isecrets.Create(kmClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_keymanager_secret: %s", err)
 	}
@@ -260,7 +261,7 @@ func resourceKeyManagerSecretCreate(ctx context.Context, d *schema.ResourceData,
 	// set the acl first before uploading the payload
 	if acl, ok := d.GetOk("acl"); ok {
 		setOpts := expandKeyManagerACLs(acl)
-		_, err = acls.SetSecretACL(kmClient, uuid, setOpts).Extract()
+		_, err = iacls.SetSecretACL(kmClient, uuid, setOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error settings ACLs for the vkcs_keymanager_secret: %s", err)
 		}
@@ -274,7 +275,7 @@ func resourceKeyManagerSecretCreate(ctx context.Context, d *schema.ResourceData,
 			ContentType:     d.Get("payload_content_type").(string),
 			ContentEncoding: d.Get("payload_content_encoding").(string),
 		}
-		err = secrets.Update(kmClient, uuid, updateOpts).Err
+		err = isecrets.Update(kmClient, uuid, updateOpts).Err
 		if err != nil {
 			return diag.Errorf("Error setting vkcs_keymanager_secret payload: %s", err)
 		}
@@ -291,7 +292,7 @@ func resourceKeyManagerSecretCreate(ctx context.Context, d *schema.ResourceData,
 	log.Printf("[DEBUG] Metadata Create Options for resource_keymanager_secret_metadata_v1 %s: %#v", uuid, metadataCreateOpts)
 
 	if len(metadataCreateOpts) > 0 {
-		_, err = secrets.CreateMetadata(kmClient, uuid, metadataCreateOpts).Extract()
+		_, err = isecrets.CreateMetadata(kmClient, uuid, metadataCreateOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error creating metadata for vkcs_keymanager_secret with ID %s: %s", uuid, err)
 		}
@@ -323,7 +324,7 @@ func resourceKeyManagerSecretRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("Error creating VKCS keymanager client: %s", err)
 	}
 
-	secret, err := secrets.Get(kmClient, d.Id()).Extract()
+	secret, err := isecrets.Get(kmClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error retrieving vkcs_keymanager_secret"))
 	}
@@ -348,7 +349,7 @@ func resourceKeyManagerSecretRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("payload_content_type", payloadContentType)
 
 	d.Set("payload", keyManagerSecretGetPayload(kmClient, d.Id()))
-	metadataMap, err := secrets.GetMetadata(kmClient, d.Id()).Extract()
+	metadataMap, err := isecrets.GetMetadata(kmClient, d.Id()).Extract()
 	if err != nil {
 		log.Printf("[DEBUG] Unable to get %s secret metadata: %s", d.Id(), err)
 	}
@@ -360,7 +361,7 @@ func resourceKeyManagerSecretRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("expiration", secret.Expiration.Format(time.RFC3339))
 	}
 
-	acl, err := acls.GetSecretACL(kmClient, d.Id()).Extract()
+	acl, err := iacls.GetSecretACL(kmClient, d.Id()).Extract()
 	if err != nil {
 		log.Printf("[DEBUG] Unable to get %s secret acls: %s", d.Id(), err)
 	}
@@ -381,7 +382,7 @@ func resourceKeyManagerSecretUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("acl") {
 		updateOpts := expandKeyManagerACLs(d.Get("acl"))
-		_, err := acls.UpdateSecretACL(kmClient, d.Id(), updateOpts).Extract()
+		_, err := iacls.UpdateSecretACL(kmClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error updating vkcs_keymanager_secret %s acl: %s", d.Id(), err)
 		}
@@ -408,7 +409,7 @@ func resourceKeyManagerSecretUpdate(ctx context.Context, d *schema.ResourceData,
 		log.Printf("[DEBUG] Deleting the following items from metadata for vkcs_keymanager_secret %s: %v", d.Id(), metadataToDelete)
 
 		for _, key := range metadataToDelete {
-			err := secrets.DeleteMetadatum(kmClient, d.Id(), key).ExtractErr()
+			err := isecrets.DeleteMetadatum(kmClient, d.Id(), key).ExtractErr()
 			if err != nil {
 				return diag.Errorf("Error deleting vkcs_keymanager_secret %s metadata %s: %s", d.Id(), key, err)
 			}
@@ -436,7 +437,7 @@ func resourceKeyManagerSecretUpdate(ctx context.Context, d *schema.ResourceData,
 			var metadatumOpts secrets.MetadatumOpts
 			metadatumOpts.Key = key
 			metadatumOpts.Value = newMetadata[key].(string)
-			_, err := secrets.UpdateMetadatum(kmClient, d.Id(), metadatumOpts).Extract()
+			_, err := isecrets.UpdateMetadatum(kmClient, d.Id(), metadatumOpts).Extract()
 			if err != nil {
 				return diag.Errorf("Error updating vkcs_keymanager_secret %s metadata %s: %s", d.Id(), key, err)
 			}
@@ -448,7 +449,7 @@ func resourceKeyManagerSecretUpdate(ctx context.Context, d *schema.ResourceData,
 			var metadatumOpts secrets.MetadatumOpts
 			metadatumOpts.Key = key
 			metadatumOpts.Value = newMetadata[key].(string)
-			err := secrets.CreateMetadatum(kmClient, d.Id(), metadatumOpts).Err
+			err := isecrets.CreateMetadatum(kmClient, d.Id(), metadatumOpts).Err
 			if err != nil {
 				return diag.Errorf("Error adding vkcs_keymanager_secret %s metadata %s: %s", d.Id(), key, err)
 			}

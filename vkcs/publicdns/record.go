@@ -7,6 +7,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/publicdns/v2/records"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type recordResult interface {
@@ -51,7 +52,7 @@ func publicDNSRecordStateRefreshFunc(client *gophercloud.ServiceClient, zoneID s
 		record, err := PublicDNSRecordExtract(res, recordType)
 
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return record, recordStatusDeleted, nil
 			}
 			return nil, "", err

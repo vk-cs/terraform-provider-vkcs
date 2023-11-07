@@ -16,6 +16,8 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/qos/policies"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/utils/terraform/hashcode"
+	iports "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/ports"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type portExtended struct {
@@ -29,9 +31,9 @@ type portExtended struct {
 
 func resourceNetworkingPortStateRefreshFunc(client *gophercloud.ServiceClient, portID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		n, err := ports.Get(client, portID).Extract()
+		n, err := iports.Get(client, portID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return n, "DELETED", nil
 			}
 

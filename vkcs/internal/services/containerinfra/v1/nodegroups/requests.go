@@ -1,10 +1,10 @@
 package nodegroups
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
 type OptsBuilder interface {
@@ -150,24 +150,20 @@ func Create(client *gophercloud.ServiceClient, opts OptsBuilder) (r CreateResult
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Post(nodeGroupsURL(client), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(nodeGroupsURL(client), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
-	var result *http.Response
-	result, r.Err = client.Get(nodeGroupURL(client, id), &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Get(nodeGroupURL(client, id), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -175,14 +171,13 @@ func Patch(client *gophercloud.ServiceClient, id string, opts PatchOptsBuilder) 
 	b, err := opts.PatchMap()
 	if err != nil {
 		r.Err = err
+		return
 	}
-	var result *http.Response
-	result, r.Err = client.Patch(nodeGroupURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Patch(nodeGroupURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -192,13 +187,11 @@ func Resize(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r R
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Patch(resizeURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Patch(resizeURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err != nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -208,23 +201,19 @@ func Scale(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r Sc
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Patch(scaleURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Patch(scaleURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
-	var result *http.Response
-	result, r.Err = client.Delete(nodeGroupURL(client, id), &gophercloud.RequestOpts{
+	resp, err := client.Delete(nodeGroupURL(client, id), &gophercloud.RequestOpts{
 		OkCodes: []int{204},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }

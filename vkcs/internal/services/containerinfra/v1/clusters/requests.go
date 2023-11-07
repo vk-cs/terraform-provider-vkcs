@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"io"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
 type OptsBuilder interface {
@@ -139,42 +139,37 @@ func Create(client *gophercloud.ServiceClient, opts OptsBuilder) (r clusters.Cre
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Post(clustersURL(client), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(clustersURL(client), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 // Get gets cluster data from vkcs.
 func Get(client *gophercloud.ServiceClient, id string) (r clusterConfigResult) {
 	log.Printf("GET cluster %s", id)
-	var result *http.Response
-	result, r.Err = client.Get(clusterURL(client, id), &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Get(clusterURL(client, id), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 func KubeConfigGet(client *gophercloud.ServiceClient, id string) (string, error) {
-	var result *http.Response
-	result, err := client.Get(kubeConfigURL(client, id), nil, &gophercloud.RequestOpts{
+	resp, err := client.Get(kubeConfigURL(client, id), nil, &gophercloud.RequestOpts{
 		OkCodes:          []int{200},
 		KeepResponseBody: true,
 	})
 	if err != nil {
-		return "", err
+		return "", util.ErrorWithRequestID(err, resp.Header.Get(util.RequestIDHeader))
 	}
-	buf := bytes.NewBuffer(make([]byte, 0, result.ContentLength))
-	_, err = io.Copy(buf, result.Body)
+	buf := bytes.NewBuffer(make([]byte, 0, resp.ContentLength))
+	_, err = io.Copy(buf, resp.Body)
 	if err != nil {
-		return "", err
+		return "", util.ErrorWithRequestID(err, resp.Header.Get(util.RequestIDHeader))
 	}
 	return buf.String(), nil
 }
@@ -193,6 +188,7 @@ func Update(client *gophercloud.ServiceClient, id string, opts []OptsBuilder) (r
 		OkCodes: []int{200, 202},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -202,13 +198,11 @@ func Upgrade(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r 
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Patch(upgradeURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Patch(upgradeURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200, 202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -218,13 +212,11 @@ func UpdateMasters(client *gophercloud.ServiceClient, id string, opts OptsBuilde
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Post(actionsURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(actionsURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200, 202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -234,19 +226,17 @@ func SwitchState(client *gophercloud.ServiceClient, id string, opts OptsBuilder)
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Post(actionsURL(client, id), reqBody, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(actionsURL(client, id), reqBody, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 func Delete(client *gophercloud.ServiceClient, id string) (r clusterDeleteResult) {
-	var result *http.Response
-	result, r.Err = client.Delete(clusterURL(client, id), &gophercloud.RequestOpts{})
-	r.Header = result.Header
+	resp, err := client.Delete(clusterURL(client, id), &gophercloud.RequestOpts{})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }

@@ -7,10 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	isubnets "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/subnets"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 )
 
@@ -78,9 +78,9 @@ func resourceNetworkingSubnetRouteCreate(ctx context.Context, d *schema.Resource
 	mutex.Lock(subnetID)
 	defer mutex.Unlock(subnetID)
 
-	subnet, err := subnets.Get(networkingClient, subnetID).Extract()
+	subnet, err := isubnets.Get(networkingClient, subnetID).Extract()
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			d.SetId("")
 			return nil
 		}
@@ -118,7 +118,7 @@ func resourceNetworkingSubnetRouteCreate(ctx context.Context, d *schema.Resource
 		HostRoutes: &subnet.HostRoutes,
 	}
 	log.Printf("[DEBUG] Updating vkcs_networking_subnet %s with options: %+v", subnetID, updateOpts)
-	_, err = subnets.Update(networkingClient, subnetID, updateOpts).Extract()
+	_, err = isubnets.Update(networkingClient, subnetID, updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error updating vkcs_networking_subnet: %s", err)
 	}
@@ -141,9 +141,9 @@ func resourceNetworkingSubnetRouteRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	var subnet subnetExtended
-	err = networking.ExtractSubnetInto(subnets.Get(networkingClient, subnetID), &subnet)
+	err = isubnets.ExtractSubnetInto(isubnets.Get(networkingClient, subnetID), &subnet)
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			d.SetId("")
 			return nil
 		}
@@ -188,9 +188,9 @@ func resourceNetworkingSubnetRouteDelete(ctx context.Context, d *schema.Resource
 	mutex.Lock(subnetID)
 	defer mutex.Unlock(subnetID)
 
-	subnet, err := subnets.Get(networkingClient, subnetID).Extract()
+	subnet, err := isubnets.Get(networkingClient, subnetID).Extract()
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			return nil
 		}
 
@@ -228,7 +228,7 @@ func resourceNetworkingSubnetRouteDelete(ctx context.Context, d *schema.Resource
 		HostRoutes: &newRoutes,
 	}
 	log.Printf("[DEBUG] Updating vkcs_networking_subnet %s with options: %#v", subnetID, updateOpts)
-	_, err = subnets.Update(networkingClient, subnetID, updateOpts).Extract()
+	_, err = isubnets.Update(networkingClient, subnetID, updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error updating vkcs_networking_subnet: %s", err)
 	}

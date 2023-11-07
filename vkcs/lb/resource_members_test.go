@@ -11,8 +11,8 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/lb"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func testAccCheckLBMembersComputeHash(members *[]pools.Member, weight int, address string, idx *int) resource.TestCheckFunc {
@@ -125,7 +125,7 @@ func testAccCheckLBMembersDestroy(s *terraform.State) error {
 
 		allPages, err := pools.ListMembers(lbClient, poolID, pools.ListMembersOpts{}).AllPages()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return nil
 			}
 			return fmt.Errorf("Error getting vkcs_lb_members: %s", err)

@@ -12,6 +12,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
+	ifloatingips "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/floatingips"
 )
 
 func ResourceNetworkingFloating() *schema.Resource {
@@ -146,7 +147,7 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 		SubnetID:          subnetID,
 	}
 
-	finalCreateOpts := FloatingIPCreateOpts{
+	finalCreateOpts := ifloatingips.FloatingIPCreateOpts{
 		CreateOpts: createOpts,
 		ValueSpecs: util.MapValueSpecs(d),
 	}
@@ -157,7 +158,7 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 
 	if len(subnetIDs) == 0 {
 		// floating IP allocation without a retry
-		err = floatingips.Create(networkingClient, finalCreateOpts).ExtractInto(&fip)
+		err = ifloatingips.Create(networkingClient, finalCreateOpts).ExtractInto(&fip)
 		if err != nil {
 			return diag.Errorf("Error creating vkcs_networking_floatingip: %s", err)
 		}
@@ -168,7 +169,7 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 
 			log.Printf("[DEBUG] vkcs_networking_floatingip create options (try %d): %#v", i+1, finalCreateOpts)
 
-			err = floatingips.Create(networkingClient, finalCreateOpts).ExtractInto(&fip)
+			err = ifloatingips.Create(networkingClient, finalCreateOpts).ExtractInto(&fip)
 			if err != nil {
 				if retryOn409(err) {
 					continue
@@ -218,7 +219,7 @@ func resourceNetworkFloatingIPRead(ctx context.Context, d *schema.ResourceData, 
 
 	var fip floatingIPExtended
 
-	err = floatingips.Get(networkingClient, d.Id()).ExtractInto(&fip)
+	err = ifloatingips.Get(networkingClient, d.Id()).ExtractInto(&fip)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_networking_floatingip"))
 	}
@@ -272,7 +273,7 @@ func resourceNetworkFloatingIPUpdate(ctx context.Context, d *schema.ResourceData
 
 	if hasChange {
 		log.Printf("[DEBUG] vkcs_networking_floatingip %s update options: %#v", d.Id(), updateOpts)
-		_, err = floatingips.Update(networkingClient, d.Id(), updateOpts).Extract()
+		_, err = ifloatingips.Update(networkingClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error updating vkcs_networking_floatingip %s: %s", d.Id(), err)
 		}
@@ -288,7 +289,7 @@ func resourceNetworkFloatingIPDelete(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("Error creating VKCS network client: %s", err)
 	}
 
-	if err := floatingips.Delete(networkingClient, d.Id()).ExtractErr(); err != nil {
+	if err := ifloatingips.Delete(networkingClient, d.Id()).ExtractErr(); err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_networking_floatingip"))
 	}
 

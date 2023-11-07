@@ -10,8 +10,9 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/services"
+	iservices "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas/v2/services"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func TestAccVPNaaSService_basic(t *testing.T) {
@@ -43,11 +44,11 @@ func testAccCheckServiceDestroy(s *terraform.State) error {
 		if rs.Type != "vkcs_vpnaas_service" {
 			continue
 		}
-		_, err = services.Get(networkingClient, rs.Primary.ID).Extract()
+		_, err = iservices.Get(networkingClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Service (%s) still exists", rs.Primary.ID)
 		}
-		if _, ok := err.(gophercloud.ErrDefault404); !ok {
+		if !errutil.Is(err, 404) {
 			return err
 		}
 	}
@@ -73,7 +74,7 @@ func testAccCheckServiceExists(n string, serv *services.Service) resource.TestCh
 
 		var found *services.Service
 
-		found, err = services.Get(networkingClient, rs.Primary.ID).Extract()
+		found, err = iservices.Get(networkingClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

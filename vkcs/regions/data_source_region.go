@@ -3,10 +3,10 @@ package regions
 import (
 	"context"
 
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/regions"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/regions/regions"
 )
 
 func DataSourceVkcsRegion() *schema.Resource {

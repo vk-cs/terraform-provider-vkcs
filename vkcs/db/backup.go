@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/backups"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type BackupDataStoreModel struct {
@@ -40,7 +41,7 @@ func backupStateRefreshFunc(client *gophercloud.ServiceClient, backupID string) 
 	return func() (interface{}, string, error) {
 		b, err := backups.Get(client, backupID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return b, dbBackupStatusDeleted, nil
 			}
 			return nil, "", err

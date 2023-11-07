@@ -15,6 +15,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	ipools "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/pools"
 )
 
 func ResourceMember() *schema.Resource {
@@ -127,7 +128,7 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	// Get a clean copy of the parent pool.
 	poolID := d.Get("pool_id").(string)
-	parentPool, err := pools.Get(lbClient, poolID).Extract()
+	parentPool, err := ipools.Get(lbClient, poolID).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve parent pool %s: %s", poolID, err)
 	}
@@ -142,7 +143,7 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	log.Printf("[DEBUG] Attempting to create member")
 	var member *pools.Member
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		member, err = pools.CreateMember(lbClient, poolID, createOpts).Extract()
+		member, err = ipools.CreateMember(lbClient, poolID, createOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -173,7 +174,7 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	poolID := d.Get("pool_id").(string)
 
-	member, err := pools.GetMember(lbClient, poolID, d.Id()).Extract()
+	member, err := ipools.GetMember(lbClient, poolID, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "member"))
 	}
@@ -214,13 +215,13 @@ func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	// Get a clean copy of the parent pool.
 	poolID := d.Get("pool_id").(string)
-	parentPool, err := pools.Get(lbClient, poolID).Extract()
+	parentPool, err := ipools.Get(lbClient, poolID).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve parent pool %s: %s", poolID, err)
 	}
 
 	// Get a clean copy of the member.
-	member, err := pools.GetMember(lbClient, poolID, d.Id()).Extract()
+	member, err := ipools.GetMember(lbClient, poolID, d.Id()).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve member: %s: %s", d.Id(), err)
 	}
@@ -240,7 +241,7 @@ func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	log.Printf("[DEBUG] Updating member %s with options: %#v", d.Id(), updateOpts)
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, err = pools.UpdateMember(lbClient, poolID, d.Id(), updateOpts).Extract()
+		_, err = ipools.UpdateMember(lbClient, poolID, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -269,13 +270,13 @@ func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, meta inte
 
 	// Get a clean copy of the parent pool.
 	poolID := d.Get("pool_id").(string)
-	parentPool, err := pools.Get(lbClient, poolID).Extract()
+	parentPool, err := ipools.Get(lbClient, poolID).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve parent pool (%s) for the member: %s", poolID, err)
 	}
 
 	// Get a clean copy of the member.
-	member, err := pools.GetMember(lbClient, poolID, d.Id()).Extract()
+	member, err := ipools.GetMember(lbClient, poolID, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Unable to retrieve member"))
 	}
@@ -289,7 +290,7 @@ func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, meta inte
 
 	log.Printf("[DEBUG] Attempting to delete member %s", d.Id())
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		err = pools.DeleteMember(lbClient, poolID, d.Id()).ExtractErr()
+		err = ipools.DeleteMember(lbClient, poolID, d.Id()).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}

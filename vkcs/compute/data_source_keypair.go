@@ -10,6 +10,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
+	ikeypairs "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/keypairs"
 )
 
 func DataSourceComputeKeypair() *schema.Resource {
@@ -55,7 +56,7 @@ func dataSourceComputeKeypairRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	name := d.Get("name").(string)
-	kp, err := keypairs.Get(computeClient, name, keypairs.GetOpts{}).Extract()
+	kp, err := ikeypairs.Get(computeClient, name, keypairs.GetOpts{}).Extract()
 	if err != nil {
 		return diag.Errorf("Error retrieving vkcs_compute_keypair %s: %s", name, err)
 	}

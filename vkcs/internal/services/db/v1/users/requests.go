@@ -1,11 +1,10 @@
 package users
 
 import (
-	"net/http"
-
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/databases"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
 type OptsBuilder interface {
@@ -64,13 +63,10 @@ func Create(client *gophercloud.ServiceClient, id string, opts OptsBuilder, dbms
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Post(usersURL(client, dbmsType, id), b, nil, &gophercloud.RequestOpts{
+	resp, err := client.Post(usersURL(client, dbmsType, id), b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -88,13 +84,11 @@ func Update(client *gophercloud.ServiceClient, id string, name string, opts Opts
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Put(userURL(client, dbmsType, id, name), b, nil, &gophercloud.RequestOpts{
+	resp, err := client.Put(userURL(client, dbmsType, id, name), b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -105,32 +99,26 @@ func UpdateDatabases(client *gophercloud.ServiceClient, id string, name string, 
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Put(userDatabasesURL(client, dbmsType, id, name), b, nil, &gophercloud.RequestOpts{
+	resp, err := client.Put(userDatabasesURL(client, dbmsType, id, name), b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 // DeleteDatabase performs request to delete database user
 func DeleteDatabase(client *gophercloud.ServiceClient, id string, userName string, dbName string, dbmsType string) (r DeleteDatabaseResult) {
-	var result *http.Response
-	result, r.Err = client.Delete(userDatabaseURL(client, dbmsType, id, userName, dbName), &gophercloud.RequestOpts{})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	resp, err := client.Delete(userDatabaseURL(client, dbmsType, id, userName, dbName), &gophercloud.RequestOpts{})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 // Delete performs request to delete database user
 func Delete(client *gophercloud.ServiceClient, id string, userName string, dbmsType string) (r DeleteResult) {
-	var result *http.Response
-	result, r.Err = client.Delete(userURL(client, dbmsType, id, userName), &gophercloud.RequestOpts{})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	resp, err := client.Delete(userURL(client, dbmsType, id, userName), &gophercloud.RequestOpts{})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }

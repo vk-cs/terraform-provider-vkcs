@@ -355,7 +355,7 @@ func (r *BackupResource) Read(ctx context.Context, req resource.ReadRequest, res
 	tflog.Debug(ctx, "Calling Databases API to read the backup")
 
 	backup, err := backups.Get(client, id).Extract()
-	if errutil.Is(err, 404) {
+	if errutil.IsNotFound(err) {
 		resp.State.RemoveResource(ctx)
 		return
 	}

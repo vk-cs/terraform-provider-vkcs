@@ -9,11 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	iports "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/ports"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	irouters "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/routers"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func ResourceNetworkingRouterInterface() *schema.Resource {
@@ -88,7 +89,7 @@ func resourceNetworkingRouterInterfaceCreate(ctx context.Context, d *schema.Reso
 	}
 
 	log.Printf("[DEBUG] vkcs_networking_router_interface create options: %#v", createOpts)
-	r, err := routers.AddInterface(networkingClient, d.Get("router_id").(string), createOpts).Extract()
+	r, err := irouters.AddInterface(networkingClient, d.Get("router_id").(string), createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_networking_router_interface: %s", err)
 	}
@@ -123,9 +124,9 @@ func resourceNetworkingRouterInterfaceRead(ctx context.Context, d *schema.Resour
 	}
 
 	var r portExtended
-	err = ports.Get(networkingClient, d.Id()).ExtractInto(&r)
+	err = iports.Get(networkingClient, d.Id()).ExtractInto(&r)
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			d.SetId("")
 			return nil
 		}

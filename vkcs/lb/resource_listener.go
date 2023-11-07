@@ -12,7 +12,8 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
-	octavialisteners "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
+	ilisteners "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/listeners"
 )
 
 func ResourceListener() *schema.Resource {
@@ -181,9 +182,9 @@ func resourceListenerCreate(ctx context.Context, d *schema.ResourceData, meta in
 		}
 	}
 
-	var createOpts octavialisteners.CreateOptsBuilder
-	opts := octavialisteners.CreateOpts{
-		Protocol:               octavialisteners.Protocol(d.Get("protocol").(string)),
+	var createOpts listeners.CreateOptsBuilder
+	opts := listeners.CreateOpts{
+		Protocol:               listeners.Protocol(d.Get("protocol").(string)),
 		ProtocolPort:           d.Get("protocol_port").(int),
 		LoadbalancerID:         d.Get("loadbalancer_id").(string),
 		Name:                   d.Get("name").(string),
@@ -239,9 +240,10 @@ func resourceListenerCreate(ctx context.Context, d *schema.ResourceData, meta in
 	createOpts = opts
 
 	log.Printf("[DEBUG] vkcs_lb_listener create options: %#v", createOpts)
-	var listener *octavialisteners.Listener
+	var listener *listeners.Listener
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		listener, err = octavialisteners.Create(lbClient, createOpts).Extract()
+		log.Printf("[sch] creating listener")
+		listener, err = ilisteners.Create(lbClient, createOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -270,7 +272,7 @@ func resourceListenerRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
-	listener, err := octavialisteners.Get(lbClient, d.Id()).Extract()
+	listener, err := ilisteners.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "vkcs_lb_listener"))
 	}
@@ -314,7 +316,7 @@ func resourceListenerUpdate(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	// Get a clean copy of the listener.
-	listener, err := octavialisteners.Get(lbClient, d.Id()).Extract()
+	listener, err := ilisteners.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve vkcs_lb_listener %s: %s", d.Id(), err)
 	}
@@ -326,7 +328,7 @@ func resourceListenerUpdate(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 	var hasChange bool
-	var opts octavialisteners.UpdateOpts
+	var opts listeners.UpdateOpts
 	if d.HasChange("name") {
 		hasChange = true
 		name := d.Get("name").(string)
@@ -429,7 +431,7 @@ func resourceListenerUpdate(ctx context.Context, d *schema.ResourceData, meta in
 
 	log.Printf("[DEBUG] vkcs_lb_listener %s update options: %#v", d.Id(), updateOpts)
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, err = octavialisteners.Update(lbClient, d.Id(), updateOpts).Extract()
+		_, err = ilisteners.Update(lbClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -457,7 +459,7 @@ func resourceListenerDelete(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	// Get a clean copy of the listener.
-	listener, err := octavialisteners.Get(lbClient, d.Id()).Extract()
+	listener, err := ilisteners.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Unable to retrieve vkcs_lb_listener"))
 	}
@@ -466,7 +468,7 @@ func resourceListenerDelete(ctx context.Context, d *schema.ResourceData, meta in
 
 	log.Printf("[DEBUG] Deleting vkcs_lb_listener %s", d.Id())
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		err = octavialisteners.Delete(lbClient, d.Id()).ExtractErr()
+		err = ilisteners.Delete(lbClient, d.Id()).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}

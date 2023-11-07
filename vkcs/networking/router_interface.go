@@ -5,17 +5,19 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	iports "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/ports"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	irouters "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/routers"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func resourceNetworkingRouterInterfaceStateRefreshFunc(networkingClient *gophercloud.ServiceClient, portID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		r, err := ports.Get(networkingClient, portID).Extract()
+		r, err := iports.Get(networkingClient, portID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return r, "DELETED", nil
 			}
 
@@ -44,22 +46,22 @@ func resourceNetworkingRouterInterfaceDeleteRefreshFunc(networkingClient *gopher
 			removeOpts.PortID = ""
 		}
 
-		r, err := ports.Get(networkingClient, routerInterfaceID).Extract()
+		r, err := iports.Get(networkingClient, routerInterfaceID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				log.Printf("[DEBUG] Successfully deleted vkcs_networking_router_interface %s", routerInterfaceID)
 				return r, "DELETED", nil
 			}
 			return r, "ACTIVE", err
 		}
 
-		_, err = routers.RemoveInterface(networkingClient, routerID, removeOpts).Extract()
+		_, err = irouters.RemoveInterface(networkingClient, routerID, removeOpts).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				log.Printf("[DEBUG] Successfully deleted vkcs_networking_router_interface %s", routerInterfaceID)
 				return r, "DELETED", nil
 			}
-			if _, ok := err.(gophercloud.ErrDefault409); ok {
+			if errutil.Is(err, 409) {
 				log.Printf("[DEBUG] vkcs_networking_router_interface %s is still in use", routerInterfaceID)
 				return r, "ACTIVE", nil
 			}

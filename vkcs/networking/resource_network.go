@@ -9,11 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	inetworks "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/networks"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/attributestags"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/portsecurity"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	iattributestags "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/attributestags"
 )
 
 func ResourceNetworkingNetwork() *schema.Resource {
@@ -123,7 +125,7 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	createOpts := NetworkCreateOpts{
+	createOpts := inetworks.NetworkCreateOpts{
 		CreateOpts: networks.CreateOpts{
 			Name:        d.Get("name").(string),
 			Description: d.Get("description").(string),
@@ -149,7 +151,7 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	log.Printf("[DEBUG] vkcs_networking_network create options: %#v", finalCreateOpts)
-	n, err := networks.Create(networkingClient, finalCreateOpts).Extract()
+	n, err := inetworks.Create(networkingClient, finalCreateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_networking_network: %s", err)
 	}
@@ -175,7 +177,7 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 	tags := NetworkingAttributesTags(d)
 	if len(tags) > 0 {
 		tagOpts := attributestags.ReplaceAllOpts{Tags: tags}
-		tags, err := attributestags.ReplaceAll(networkingClient, "networks", n.ID, tagOpts).Extract()
+		tags, err := iattributestags.ReplaceAll(networkingClient, "networks", n.ID, tagOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error setting tags on vkcs_networking_network %s: %s", n.ID, err)
 		}
@@ -195,7 +197,7 @@ func resourceNetworkingNetworkRead(ctx context.Context, d *schema.ResourceData, 
 
 	var network networkExtended
 
-	err = networks.Get(networkingClient, d.Id()).ExtractInto(&network)
+	err = inetworks.Get(networkingClient, d.Id()).ExtractInto(&network)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_networking_network"))
 	}
@@ -226,7 +228,7 @@ func resourceNetworkingNetworkUpdate(ctx context.Context, d *schema.ResourceData
 	// Declare finalUpdateOpts interface and basic updateOpts structure.
 	var (
 		finalUpdateOpts networks.UpdateOptsBuilder
-		updateOpts      NetworkUpdateOpts
+		updateOpts      inetworks.NetworkUpdateOpts
 	)
 
 	// Populate basic updateOpts.
@@ -247,7 +249,7 @@ func resourceNetworkingNetworkUpdate(ctx context.Context, d *schema.ResourceData
 	if d.HasChange("tags") {
 		tags := NetworkingV2UpdateAttributesTags(d)
 		tagOpts := attributestags.ReplaceAllOpts{Tags: tags}
-		tags, err := attributestags.ReplaceAll(networkingClient, "networks", d.Id(), tagOpts).Extract()
+		tags, err := iattributestags.ReplaceAll(networkingClient, "networks", d.Id(), tagOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error setting tags on vkcs_networking_network %s: %s", d.Id(), err)
 		}
@@ -275,7 +277,7 @@ func resourceNetworkingNetworkUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	log.Printf("[DEBUG] vkcs_networking_network %s update options: %#v", d.Id(), finalUpdateOpts)
-	_, err = networks.Update(networkingClient, d.Id(), finalUpdateOpts).Extract()
+	_, err = inetworks.Update(networkingClient, d.Id(), finalUpdateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error updating vkcs_networking_network %s: %s", d.Id(), err)
 	}
@@ -290,7 +292,7 @@ func resourceNetworkingNetworkDelete(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	if err := networks.Delete(networkingClient, d.Id()).ExtractErr(); err != nil {
+	if err := inetworks.Delete(networkingClient, d.Id()).ExtractErr(); err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_networking_network"))
 	}
 

@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 #### v0.5.4 (unreleased)
 - Fix error when trying to read vkcs_db_cluster without instances
+- Fix provider crash if there was a problem with authentication
 
 #### v0.5.3
 - Add 'sdn' parameter for vpnaas resources

@@ -11,9 +11,10 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/tags"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	iflavors "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/flavors"
+	iservers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servers"
+	itags "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/tags"
 )
 
 func DataSourceComputeInstance() *schema.Resource {
@@ -151,7 +152,7 @@ func dataSourceComputeInstanceRead(ctx context.Context, d *schema.ResourceData, 
 
 	id := d.Get("id").(string)
 	log.Printf("[DEBUG] Attempting to retrieve server %s", id)
-	server, err := servers.Get(computeClient, id).Extract()
+	server, err := iservers.Get(computeClient, id).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "server"))
 	}
@@ -201,7 +202,7 @@ func dataSourceComputeInstanceRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("flavor_id", flavorID)
 
 	d.Set("key_pair", server.KeyName)
-	flavor, err := flavors.Get(computeClient, flavorID).Extract()
+	flavor, err := iflavors.Get(computeClient, flavorID).Extract()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -219,7 +220,7 @@ func dataSourceComputeInstanceRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	// Do another Get so the above work is not disturbed.
-	err = servers.Get(computeClient, d.Id()).ExtractInto(&serverWithAZ)
+	err = iservers.Get(computeClient, d.Id()).ExtractInto(&serverWithAZ)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "server"))
 	}
@@ -240,7 +241,7 @@ func dataSourceComputeInstanceRead(ctx context.Context, d *schema.ResourceData, 
 
 	// Populate tags.
 	computeClient.Microversion = computeAPIMicroVersion
-	instanceTags, err := tags.List(computeClient, server.ID).Extract()
+	instanceTags, err := itags.List(computeClient, server.ID).Extract()
 	if err != nil {
 		log.Printf("[DEBUG] Unable to get tags for vkcs_compute_instance: %s", err)
 	} else {

@@ -11,12 +11,18 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud"
-	octavial7policies "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies"
-	octavialisteners "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
-	octavialoadbalancers "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	octaviamonitors "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
-	octaviapools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies"
+	listeners "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
+	loadbalancers "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	il7policies "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/l7policies"
+	ilisteners "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/listeners"
+	iloadbalancers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/loadbalancers"
+	imonitors "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/monitors"
+	ipools "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/pools"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 const (
@@ -56,7 +62,7 @@ func expandLBListenerHeadersMap(raw map[string]interface{}) (map[string]string, 
 	return m, nil
 }
 
-func waitForLBListener(ctx context.Context, lbClient *gophercloud.ServiceClient, listener *octavialisteners.Listener, target string, pending []string, timeout time.Duration) error {
+func waitForLBListener(ctx context.Context, lbClient *gophercloud.ServiceClient, listener *listeners.Listener, target string, pending []string, timeout time.Duration) error {
 	log.Printf("[DEBUG] Waiting for vkcs_lb_listener %s to become %s.", listener.ID, target)
 
 	if len(listener.Loadbalancers) == 0 {
@@ -76,7 +82,7 @@ func waitForLBListener(ctx context.Context, lbClient *gophercloud.ServiceClient,
 
 	_, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			if target == "DELETED" {
 				return nil
 			}
@@ -88,7 +94,7 @@ func waitForLBListener(ctx context.Context, lbClient *gophercloud.ServiceClient,
 	return nil
 }
 
-func resourceLBListenerRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, listener *octavialisteners.Listener) retry.StateRefreshFunc {
+func resourceLBListenerRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, listener *listeners.Listener) retry.StateRefreshFunc {
 	if listener.ProvisioningStatus != "" {
 		return func() (interface{}, string, error) {
 			lb, status, err := resourceLBLoadBalancerRefreshFunc(lbClient, lbID)()
@@ -99,7 +105,7 @@ func resourceLBListenerRefreshFunc(lbClient *gophercloud.ServiceClient, lbID str
 				return lb, status, nil
 			}
 
-			listener, err := octavialisteners.Get(lbClient, listener.ID).Extract()
+			listener, err := ilisteners.Get(lbClient, listener.ID).Extract()
 			if err != nil {
 				return nil, "", err
 			}
@@ -125,7 +131,7 @@ func waitForLBLoadBalancer(ctx context.Context, lbClient *gophercloud.ServiceCli
 
 	_, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			switch target {
 			case "DELETED":
 				return nil
@@ -141,7 +147,7 @@ func waitForLBLoadBalancer(ctx context.Context, lbClient *gophercloud.ServiceCli
 
 func resourceLBLoadBalancerRefreshFunc(lbClient *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		lb, err := octavialoadbalancers.Get(lbClient, id).Extract()
+		lb, err := iloadbalancers.Get(lbClient, id).Extract()
 		if err != nil {
 			return nil, "", err
 		}
@@ -150,7 +156,7 @@ func resourceLBLoadBalancerRefreshFunc(lbClient *gophercloud.ServiceClient, id s
 	}
 }
 
-func waitForLBMember(ctx context.Context, lbClient *gophercloud.ServiceClient, parentPool *octaviapools.Pool, member *octaviapools.Member, target string, pending []string, timeout time.Duration) error {
+func waitForLBMember(ctx context.Context, lbClient *gophercloud.ServiceClient, parentPool *pools.Pool, member *pools.Member, target string, pending []string, timeout time.Duration) error {
 	log.Printf("[DEBUG] Waiting for member %s to become %s.", member.ID, target)
 
 	lbID, err := lbFindLBIDviaPool(lbClient, parentPool)
@@ -169,7 +175,7 @@ func waitForLBMember(ctx context.Context, lbClient *gophercloud.ServiceClient, p
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			if target == "DELETED" {
 				return nil
 			}
@@ -181,7 +187,7 @@ func waitForLBMember(ctx context.Context, lbClient *gophercloud.ServiceClient, p
 	return nil
 }
 
-func resourceLBMemberRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, poolID string, member *octaviapools.Member) retry.StateRefreshFunc {
+func resourceLBMemberRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, poolID string, member *pools.Member) retry.StateRefreshFunc {
 	if member.ProvisioningStatus != "" {
 		return func() (interface{}, string, error) {
 			lb, status, err := resourceLBLoadBalancerRefreshFunc(lbClient, lbID)()
@@ -192,7 +198,7 @@ func resourceLBMemberRefreshFunc(lbClient *gophercloud.ServiceClient, lbID strin
 				return lb, status, nil
 			}
 
-			member, err := octaviapools.GetMember(lbClient, poolID, member.ID).Extract()
+			member, err := ipools.GetMember(lbClient, poolID, member.ID).Extract()
 			if err != nil {
 				return nil, "", err
 			}
@@ -204,7 +210,7 @@ func resourceLBMemberRefreshFunc(lbClient *gophercloud.ServiceClient, lbID strin
 	return resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient, lbID, "member", member.ID, poolID)
 }
 
-func waitForLBMonitor(ctx context.Context, lbClient *gophercloud.ServiceClient, parentPool *octaviapools.Pool, monitor *octaviamonitors.Monitor, target string, pending []string, timeout time.Duration) error {
+func waitForLBMonitor(ctx context.Context, lbClient *gophercloud.ServiceClient, parentPool *pools.Pool, monitor *monitors.Monitor, target string, pending []string, timeout time.Duration) error {
 	log.Printf("[DEBUG] Waiting for vkcs_lb_monitor %s to become %s.", monitor.ID, target)
 
 	lbID, err := lbFindLBIDviaPool(lbClient, parentPool)
@@ -223,7 +229,7 @@ func waitForLBMonitor(ctx context.Context, lbClient *gophercloud.ServiceClient, 
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			if target == "DELETED" {
 				return nil
 			}
@@ -234,7 +240,7 @@ func waitForLBMonitor(ctx context.Context, lbClient *gophercloud.ServiceClient, 
 	return nil
 }
 
-func resourceLBMonitorRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, monitor *octaviamonitors.Monitor) retry.StateRefreshFunc {
+func resourceLBMonitorRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, monitor *monitors.Monitor) retry.StateRefreshFunc {
 	if monitor.ProvisioningStatus != "" {
 		return func() (interface{}, string, error) {
 			lb, status, err := resourceLBLoadBalancerRefreshFunc(lbClient, lbID)()
@@ -245,7 +251,7 @@ func resourceLBMonitorRefreshFunc(lbClient *gophercloud.ServiceClient, lbID stri
 				return lb, status, nil
 			}
 
-			monitor, err := octaviamonitors.Get(lbClient, monitor.ID).Extract()
+			monitor, err := imonitors.Get(lbClient, monitor.ID).Extract()
 			if err != nil {
 				return nil, "", err
 			}
@@ -257,7 +263,7 @@ func resourceLBMonitorRefreshFunc(lbClient *gophercloud.ServiceClient, lbID stri
 	return resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient, lbID, "monitor", monitor.ID, "")
 }
 
-func waitForLBPool(ctx context.Context, lbClient *gophercloud.ServiceClient, pool *octaviapools.Pool, target string, pending []string, timeout time.Duration) error {
+func waitForLBPool(ctx context.Context, lbClient *gophercloud.ServiceClient, pool *pools.Pool, target string, pending []string, timeout time.Duration) error {
 	log.Printf("[DEBUG] Waiting for pool %s to become %s.", pool.ID, target)
 
 	lbID, err := lbFindLBIDviaPool(lbClient, pool)
@@ -276,7 +282,7 @@ func waitForLBPool(ctx context.Context, lbClient *gophercloud.ServiceClient, poo
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			if target == "DELETED" {
 				return nil
 			}
@@ -288,7 +294,7 @@ func waitForLBPool(ctx context.Context, lbClient *gophercloud.ServiceClient, poo
 	return nil
 }
 
-func resourceLBPoolRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, pool *octaviapools.Pool) retry.StateRefreshFunc {
+func resourceLBPoolRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, pool *pools.Pool) retry.StateRefreshFunc {
 	if pool.ProvisioningStatus != "" {
 		return func() (interface{}, string, error) {
 			lb, status, err := resourceLBLoadBalancerRefreshFunc(lbClient, lbID)()
@@ -299,7 +305,7 @@ func resourceLBPoolRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string,
 				return lb, status, nil
 			}
 
-			pool, err := octaviapools.Get(lbClient, pool.ID).Extract()
+			pool, err := ipools.Get(lbClient, pool.ID).Extract()
 			if err != nil {
 				return nil, "", err
 			}
@@ -311,14 +317,14 @@ func resourceLBPoolRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string,
 	return resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient, lbID, "pool", pool.ID, "")
 }
 
-func lbFindLBIDviaPool(lbClient *gophercloud.ServiceClient, pool *octaviapools.Pool) (string, error) {
+func lbFindLBIDviaPool(lbClient *gophercloud.ServiceClient, pool *pools.Pool) (string, error) {
 	if len(pool.Loadbalancers) > 0 {
 		return pool.Loadbalancers[0].ID, nil
 	}
 
 	if len(pool.Listeners) > 0 {
 		listenerID := pool.Listeners[0].ID
-		listener, err := octavialisteners.Get(lbClient, listenerID).Extract()
+		listener, err := ilisteners.Get(lbClient, listenerID).Extract()
 		if err != nil {
 			return "", err
 		}
@@ -333,9 +339,9 @@ func lbFindLBIDviaPool(lbClient *gophercloud.ServiceClient, pool *octaviapools.P
 
 func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.ServiceClient, lbID, resourceType, resourceID string, parentID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		statuses, err := octavialoadbalancers.GetStatuses(lbClient, lbID).Extract()
+		statuses, err := iloadbalancers.GetStatuses(lbClient, lbID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return nil, "", gophercloud.ErrDefault404{
 					ErrUnexpectedResponseCode: gophercloud.ErrUnexpectedResponseCode{
 						BaseError: gophercloud.BaseError{
@@ -349,8 +355,8 @@ func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.Servic
 
 		// Don't fail, when statuses returns "null"
 		if statuses == nil || statuses.Loadbalancer == nil {
-			statuses = new(octavialoadbalancers.StatusTree)
-			statuses.Loadbalancer = new(octavialoadbalancers.LoadBalancer)
+			statuses = new(loadbalancers.StatusTree)
+			statuses.Loadbalancer = new(loadbalancers.LoadBalancer)
 		} else if !util.StrSliceContains(getLbSkipStatuses(), statuses.Loadbalancer.ProvisioningStatus) {
 			return statuses.Loadbalancer, statuses.Loadbalancer.ProvisioningStatus, nil
 		}
@@ -364,7 +370,7 @@ func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.Servic
 					}
 				}
 			}
-			listener, err := octavialisteners.Get(lbClient, resourceID).Extract()
+			listener, err := ilisteners.Get(lbClient, resourceID).Extract()
 			return listener, "ACTIVE", err
 
 		case "pool":
@@ -375,7 +381,7 @@ func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.Servic
 					}
 				}
 			}
-			pool, err := octaviapools.Get(lbClient, resourceID).Extract()
+			pool, err := ipools.Get(lbClient, resourceID).Extract()
 			return pool, "ACTIVE", err
 
 		case "monitor":
@@ -386,7 +392,7 @@ func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.Servic
 					}
 				}
 			}
-			monitor, err := octaviamonitors.Get(lbClient, resourceID).Extract()
+			monitor, err := imonitors.Get(lbClient, resourceID).Extract()
 			return monitor, "ACTIVE", err
 
 		case "member":
@@ -399,7 +405,7 @@ func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.Servic
 					}
 				}
 			}
-			member, err := octaviapools.GetMember(lbClient, parentID, resourceID).Extract()
+			member, err := ipools.GetMember(lbClient, parentID, resourceID).Extract()
 			return member, "ACTIVE", err
 
 		case "l7policy":
@@ -412,7 +418,7 @@ func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.Servic
 					}
 				}
 			}
-			l7policy, err := octavial7policies.Get(lbClient, resourceID).Extract()
+			l7policy, err := il7policies.Get(lbClient, resourceID).Extract()
 			return l7policy, "ACTIVE", err
 
 		case "l7rule":
@@ -427,7 +433,7 @@ func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.Servic
 					}
 				}
 			}
-			l7Rule, err := octavial7policies.GetRule(lbClient, parentID, resourceID).Extract()
+			l7Rule, err := il7policies.GetRule(lbClient, parentID, resourceID).Extract()
 			return l7Rule, "ACTIVE", err
 		}
 
@@ -435,7 +441,7 @@ func resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient *gophercloud.Servic
 	}
 }
 
-func resourceLBL7PolicyRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, l7policy *octavial7policies.L7Policy) retry.StateRefreshFunc {
+func resourceLBL7PolicyRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, l7policy *l7policies.L7Policy) retry.StateRefreshFunc {
 	if l7policy.ProvisioningStatus != "" {
 		return func() (interface{}, string, error) {
 			lb, status, err := resourceLBLoadBalancerRefreshFunc(lbClient, lbID)()
@@ -446,7 +452,7 @@ func resourceLBL7PolicyRefreshFunc(lbClient *gophercloud.ServiceClient, lbID str
 				return lb, status, nil
 			}
 
-			l7policy, err := octavial7policies.Get(lbClient, l7policy.ID).Extract()
+			l7policy, err := il7policies.Get(lbClient, l7policy.ID).Extract()
 			if err != nil {
 				return nil, "", err
 			}
@@ -458,7 +464,7 @@ func resourceLBL7PolicyRefreshFunc(lbClient *gophercloud.ServiceClient, lbID str
 	return resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient, lbID, "l7policy", l7policy.ID, "")
 }
 
-func waitForLBL7Policy(ctx context.Context, lbClient *gophercloud.ServiceClient, parentListener *octavialisteners.Listener, l7policy *octavial7policies.L7Policy, target string, pending []string, timeout time.Duration) error {
+func waitForLBL7Policy(ctx context.Context, lbClient *gophercloud.ServiceClient, parentListener *listeners.Listener, l7policy *l7policies.L7Policy, target string, pending []string, timeout time.Duration) error {
 	log.Printf("[DEBUG] Waiting for l7policy %s to become %s.", l7policy.ID, target)
 
 	if len(parentListener.Loadbalancers) == 0 {
@@ -478,7 +484,7 @@ func waitForLBL7Policy(ctx context.Context, lbClient *gophercloud.ServiceClient,
 
 	_, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			if target == "DELETED" {
 				return nil
 			}
@@ -492,18 +498,18 @@ func waitForLBL7Policy(ctx context.Context, lbClient *gophercloud.ServiceClient,
 
 func getListenerIDForL7Policy(lbClient *gophercloud.ServiceClient, id string) (string, error) {
 	log.Printf("[DEBUG] Trying to get Listener ID associated with the %s L7 Policy ID", id)
-	lbsPages, err := octavialoadbalancers.List(lbClient, octavialoadbalancers.ListOpts{}).AllPages()
+	lbsPages, err := loadbalancers.List(lbClient, loadbalancers.ListOpts{}).AllPages()
 	if err != nil {
 		return "", fmt.Errorf("no Load Balancers were found: %s", err)
 	}
 
-	lbs, err := octavialoadbalancers.ExtractLoadBalancers(lbsPages)
+	lbs, err := loadbalancers.ExtractLoadBalancers(lbsPages)
 	if err != nil {
 		return "", fmt.Errorf("unable to extract Load Balancers list: %s", err)
 	}
 
 	for _, lb := range lbs {
-		statuses, err := octavialoadbalancers.GetStatuses(lbClient, lb.ID).Extract()
+		statuses, err := iloadbalancers.GetStatuses(lbClient, lb.ID).Extract()
 		if err != nil {
 			return "", fmt.Errorf("failed to get Load Balancer statuses: %s", err)
 		}
@@ -519,7 +525,7 @@ func getListenerIDForL7Policy(lbClient *gophercloud.ServiceClient, id string) (s
 	return "", fmt.Errorf("unable to find Listener ID associated with the %s L7 Policy ID", id)
 }
 
-func resourceLBL7RuleRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, l7policyID string, l7rule *octavial7policies.Rule) retry.StateRefreshFunc {
+func resourceLBL7RuleRefreshFunc(lbClient *gophercloud.ServiceClient, lbID string, l7policyID string, l7rule *l7policies.Rule) retry.StateRefreshFunc {
 	if l7rule.ProvisioningStatus != "" {
 		return func() (interface{}, string, error) {
 			lb, status, err := resourceLBLoadBalancerRefreshFunc(lbClient, lbID)()
@@ -530,7 +536,7 @@ func resourceLBL7RuleRefreshFunc(lbClient *gophercloud.ServiceClient, lbID strin
 				return lb, status, nil
 			}
 
-			l7rule, err := octavial7policies.GetRule(lbClient, l7policyID, l7rule.ID).Extract()
+			l7rule, err := il7policies.GetRule(lbClient, l7policyID, l7rule.ID).Extract()
 			if err != nil {
 				return nil, "", err
 			}
@@ -542,7 +548,7 @@ func resourceLBL7RuleRefreshFunc(lbClient *gophercloud.ServiceClient, lbID strin
 	return resourceLBLoadBalancerStatusRefreshFuncNeutron(lbClient, lbID, "l7rule", l7rule.ID, l7policyID)
 }
 
-func waitForLBL7Rule(ctx context.Context, lbClient *gophercloud.ServiceClient, parentListener *octavialisteners.Listener, parentL7policy *octavial7policies.L7Policy, l7rule *octavial7policies.Rule, target string, pending []string, timeout time.Duration) error {
+func waitForLBL7Rule(ctx context.Context, lbClient *gophercloud.ServiceClient, parentListener *listeners.Listener, parentL7policy *l7policies.L7Policy, l7rule *l7policies.Rule, target string, pending []string, timeout time.Duration) error {
 	log.Printf("[DEBUG] Waiting for l7rule %s to become %s.", l7rule.ID, target)
 
 	if len(parentListener.Loadbalancers) == 0 {
@@ -562,7 +568,7 @@ func waitForLBL7Rule(ctx context.Context, lbClient *gophercloud.ServiceClient, p
 
 	_, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			if target == "DELETED" {
 				return nil
 			}
@@ -574,7 +580,7 @@ func waitForLBL7Rule(ctx context.Context, lbClient *gophercloud.ServiceClient, p
 	return nil
 }
 
-func flattenLBPoolPersistence(p octaviapools.SessionPersistence) []map[string]interface{} {
+func flattenLBPoolPersistence(p pools.SessionPersistence) []map[string]interface{} {
 	return []map[string]interface{}{
 		{
 			"type":        p.Type,
@@ -583,7 +589,7 @@ func flattenLBPoolPersistence(p octaviapools.SessionPersistence) []map[string]in
 	}
 }
 
-func FlattenLBMembers(members []octaviapools.Member) []map[string]interface{} {
+func FlattenLBMembers(members []pools.Member) []map[string]interface{} {
 	m := make([]map[string]interface{}, len(members))
 
 	for i, member := range members {
@@ -602,8 +608,8 @@ func FlattenLBMembers(members []octaviapools.Member) []map[string]interface{} {
 	return m
 }
 
-func expandLBMembers(members *schema.Set, lbClient *gophercloud.ServiceClient) []octaviapools.BatchUpdateMemberOpts {
-	var m []octaviapools.BatchUpdateMemberOpts
+func expandLBMembers(members *schema.Set, lbClient *gophercloud.ServiceClient) []pools.BatchUpdateMemberOpts {
+	var m []pools.BatchUpdateMemberOpts
 
 	if members != nil {
 		for _, raw := range members.List() {
@@ -613,7 +619,7 @@ func expandLBMembers(members *schema.Set, lbClient *gophercloud.ServiceClient) [
 			weight := rawMap["weight"].(int)
 			adminStateUp := rawMap["admin_state_up"].(bool)
 
-			member := octaviapools.BatchUpdateMemberOpts{
+			member := pools.BatchUpdateMemberOpts{
 				Address:      rawMap["address"].(string),
 				ProtocolPort: rawMap["protocol_port"].(int),
 				Name:         &name,

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -12,7 +11,10 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/compute"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	iservers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	ifloatingips "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/floatingips"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func TestAccComputeFloatingIPAssociate_basic(t *testing.T) {
@@ -134,7 +136,7 @@ func testAccCheckNetworkingFloatingIPExists(n string, kp *floatingips.FloatingIP
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}
 
-		found, err := floatingips.Get(networkClient, rs.Primary.ID).Extract()
+		found, err := ifloatingips.Get(networkClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
@@ -166,11 +168,11 @@ func testAccCheckComputeFloatingIPAssociateDestroy(s *terraform.State) error {
 			return err
 		}
 
-		instance, err := servers.Get(computeClient, instanceID).Extract()
+		instance, err := iservers.Get(computeClient, instanceID).Extract()
 		if err != nil {
 			// If the error is a 404, then the instance does not exist,
 			// and therefore the floating IP cannot be associated to it.
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return nil
 			}
 			return err
@@ -200,7 +202,7 @@ func testAccCheckComputeFloatingIPAssociateAssociated(
 			return fmt.Errorf("Error creating VKCS compute client: %s", err)
 		}
 
-		newInstance, err := servers.Get(computeClient, instance.ID).Extract()
+		newInstance, err := iservers.Get(computeClient, instance.ID).Extract()
 		if err != nil {
 			return err
 		}

@@ -9,9 +9,10 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	iikepolicies "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas/v2/ikepolicies"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/ikepolicies"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func TestAccVPNaaSIKEPolicy_basic(t *testing.T) {
@@ -106,11 +107,11 @@ func testAccCheckIKEPolicyDestroy(s *terraform.State) error {
 		if rs.Type != "vkcs_vpnaas_ike_policy" {
 			continue
 		}
-		_, err = ikepolicies.Get(networkingClient, rs.Primary.ID).Extract()
+		_, err = iikepolicies.Get(networkingClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("IKE policy (%s) still exists", rs.Primary.ID)
 		}
-		if _, ok := err.(gophercloud.ErrDefault404); !ok {
+		if !errutil.Is(err, 404) {
 			return err
 		}
 	}
@@ -134,7 +135,7 @@ func testAccCheckIKEPolicyExists(n string, policy *ikepolicies.Policy) resource.
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}
 
-		found, err := ikepolicies.Get(networkingClient, rs.Primary.ID).Extract()
+		found, err := iikepolicies.Get(networkingClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

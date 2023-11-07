@@ -1,11 +1,10 @@
 package instances
 
 import (
-	"net/http"
-
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
 type OptsBuilder interface {
@@ -249,47 +248,39 @@ func Create(client *gophercloud.ServiceClient, opts OptsBuilder) (r CreateResult
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Post(instancesURL(client), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(instancesURL(client), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 // Get performs request to get database instance
 func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
-	var result *http.Response
-	result, r.Err = client.Get(instanceURL(client, id), &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Get(instanceURL(client, id), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 func GetCapabilities(client *gophercloud.ServiceClient, id string) (r GetCapabilitiesResult) {
-	var result *http.Response
-	result, r.Err = client.Get(capabilitiesURL(client, id), &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Get(capabilitiesURL(client, id), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 func GetBackupSchedule(client *gophercloud.ServiceClient, id string) (r GetBackupScheduleResult) {
-	var result *http.Response
-	result, r.Err = client.Get(backupScheduleURL(client, id), &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Get(backupScheduleURL(client, id), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -300,13 +291,11 @@ func DetachReplica(client *gophercloud.ServiceClient, id string, opts OptsBuilde
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Patch(instanceURL(client, id), b, nil, &gophercloud.RequestOpts{
+	resp, err := client.Patch(instanceURL(client, id), b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -317,13 +306,11 @@ func UpdateAutoExpand(client *gophercloud.ServiceClient, id string, opts OptsBui
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Patch(instanceURL(client, id), &b, nil, &gophercloud.RequestOpts{
+	resp, err := client.Patch(instanceURL(client, id), &b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -334,13 +321,11 @@ func DetachConfigurationGroup(client *gophercloud.ServiceClient, id string, opts
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Put(instanceURL(client, id), b, nil, &gophercloud.RequestOpts{
+	resp, err := client.Put(instanceURL(client, id), b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -351,13 +336,11 @@ func AttachConfigurationGroup(client *gophercloud.ServiceClient, id string, opts
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Put(instanceURL(client, id), b, nil, &gophercloud.RequestOpts{
+	resp, err := client.Put(instanceURL(client, id), b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -368,13 +351,11 @@ func Action(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r A
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Post(actionURL(client, id), b, nil, &gophercloud.RequestOpts{
+	resp, err := client.Post(actionURL(client, id), b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -385,37 +366,31 @@ func RootUserEnable(client *gophercloud.ServiceClient, id string, opts OptsBuild
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Post(rootUserURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(rootUserURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 // RootUserGet performs request to get root user of database instance
 func RootUserGet(client *gophercloud.ServiceClient, id string) (r IsRootUserEnabledResult) {
-	var result *http.Response
-	result, r.Err = client.Get(rootUserURL(client, id), &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Get(rootUserURL(client, id), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 // RootUserDisable performs request to disable root user on database instance
 func RootUserDisable(client *gophercloud.ServiceClient, id string) (r DeleteRootUserResult) {
-	var result *http.Response
-	result, r.Err = client.Delete(rootUserURL(client, id), &gophercloud.RequestOpts{
+	resp, err := client.Delete(rootUserURL(client, id), &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -425,23 +400,19 @@ func UpdateBackupSchedule(client *gophercloud.ServiceClient, id string, opts Opt
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Put(backupScheduleURL(client, id), b, nil, &gophercloud.RequestOpts{
+	resp, err := client.Put(backupScheduleURL(client, id), b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 // Delete performs request to delete database instance
 func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
-	var result *http.Response
-	result, r.Err = client.Delete(instanceURL(client, id), &gophercloud.RequestOpts{})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	resp, err := client.Delete(instanceURL(client, id), &gophercloud.RequestOpts{})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 

@@ -1,10 +1,9 @@
 package configgroups
 
 import (
-	"net/http"
-
 	"github.com/gophercloud/gophercloud"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/datastores"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
 type OptsBuilder interface {
@@ -48,24 +47,20 @@ func Create(client *gophercloud.ServiceClient, opts OptsBuilder) (r CreateResult
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Post(configGroupsURL(client), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(configGroupsURL(client), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
-	var result *http.Response
-	result, r.Err = client.Get(configGroupURL(client, id), &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Get(configGroupURL(client, id), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -75,21 +70,17 @@ func Update(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r U
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Put(configGroupURL(client, id), b, nil, &gophercloud.RequestOpts{
+	resp, err := client.Put(configGroupURL(client, id), b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
 func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
-	var result *http.Response
-	result, r.Err = client.Delete(configGroupURL(client, id), &gophercloud.RequestOpts{})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	resp, err := client.Delete(configGroupURL(client, id), &gophercloud.RequestOpts{})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }

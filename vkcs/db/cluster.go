@@ -13,6 +13,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func flattenDatabaseClusterWalVolume(w instances.WalVolume) []map[string]interface{} {
@@ -181,7 +182,7 @@ func shardPathPrefix(d *schema.ResourceData, shardID string) (string, error) {
 }
 
 func databaseClusterCheckDeleted(d *schema.ResourceData, err error) error {
-	if _, ok := err.(gophercloud.ErrDefault404); ok {
+	if errutil.IsNotFound(err) {
 		d.SetId("")
 		return nil
 	}
@@ -668,7 +669,7 @@ func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterI
 	return func() (interface{}, string, error) {
 		c, err := clusters.Get(client, clusterID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return c, "DELETED", nil
 			}
 			return nil, "", err

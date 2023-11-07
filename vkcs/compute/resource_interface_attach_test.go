@@ -10,6 +10,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/compute"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	iattachinterfaces "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/attachinterfaces"
 )
 
 func TestAccComputeInterfaceAttach_basic(t *testing.T) {
@@ -66,7 +67,7 @@ func testAccCheckComputeInterfaceAttachDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = attachinterfaces.Get(computeClient, instanceID, portID).Extract()
+		_, err = iattachinterfaces.Get(computeClient, instanceID, portID).Extract()
 		if err == nil {
 			return fmt.Errorf("Volume attachment still exists")
 		}
@@ -97,7 +98,7 @@ func testAccCheckComputeInterfaceAttachExists(n string, ai *attachinterfaces.Int
 			return err
 		}
 
-		found, err := attachinterfaces.Get(computeClient, instanceID, portID).Extract()
+		found, err := iattachinterfaces.Get(computeClient, instanceID, portID).Extract()
 		if err != nil {
 			return err
 		}

@@ -15,7 +15,8 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
+	il7policies "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/l7policies"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/listeners"
 )
 
 func ResourceL7Rule() *schema.Resource {
@@ -145,7 +146,7 @@ func resourceL7RuleCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	timeout := d.Timeout(schema.TimeoutCreate)
 
 	// Get a clean copy of the parent L7 Policy.
-	parentL7Policy, err := l7policies.Get(lbClient, l7policyID).Extract()
+	parentL7Policy, err := il7policies.Get(lbClient, l7policyID).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to get parent L7 Policy: %s", err)
 	}
@@ -175,7 +176,7 @@ func resourceL7RuleCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	log.Printf("[DEBUG] Attempting to create L7 Rule")
 	var l7Rule *l7policies.Rule
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		l7Rule, err = l7policies.CreateRule(lbClient, l7policyID, createOpts).Extract()
+		l7Rule, err = il7policies.CreateRule(lbClient, l7policyID, createOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -207,7 +208,7 @@ func resourceL7RuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	l7policyID := d.Get("l7policy_id").(string)
 
-	l7Rule, err := l7policies.GetRule(lbClient, l7policyID, d.Id()).Extract()
+	l7Rule, err := il7policies.GetRule(lbClient, l7policyID, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "L7 Rule"))
 	}
@@ -272,13 +273,13 @@ func resourceL7RuleUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	// Get a clean copy of the parent L7 Policy.
-	parentL7Policy, err := l7policies.Get(lbClient, l7policyID).Extract()
+	parentL7Policy, err := il7policies.Get(lbClient, l7policyID).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to get parent L7 Policy: %s", err)
 	}
 
 	// Get a clean copy of the L7 Rule.
-	l7Rule, err := l7policies.GetRule(lbClient, l7policyID, d.Id()).Extract()
+	l7Rule, err := il7policies.GetRule(lbClient, l7policyID, d.Id()).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to get L7 Rule: %s", err)
 	}
@@ -297,7 +298,7 @@ func resourceL7RuleUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	log.Printf("[DEBUG] Updating L7 Rule %s with options: %#v", d.Id(), updateOpts)
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		_, err := l7policies.UpdateRule(lbClient, l7policyID, d.Id(), updateOpts).Extract()
+		_, err := il7policies.UpdateRule(lbClient, l7policyID, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -336,13 +337,13 @@ func resourceL7RuleDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	// Get a clean copy of the parent L7 Policy.
-	parentL7Policy, err := l7policies.Get(lbClient, l7policyID).Extract()
+	parentL7Policy, err := il7policies.Get(lbClient, l7policyID).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve parent L7 Policy (%s) for the L7 Rule: %s", l7policyID, err)
 	}
 
 	// Get a clean copy of the L7 Rule.
-	l7Rule, err := l7policies.GetRule(lbClient, l7policyID, d.Id()).Extract()
+	l7Rule, err := il7policies.GetRule(lbClient, l7policyID, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Unable to retrieve L7 Rule"))
 	}
@@ -355,7 +356,7 @@ func resourceL7RuleDelete(ctx context.Context, d *schema.ResourceData, meta inte
 
 	log.Printf("[DEBUG] Attempting to delete L7 Rule %s", d.Id())
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		err = l7policies.DeleteRule(lbClient, l7policyID, d.Id()).ExtractErr()
+		err = il7policies.DeleteRule(lbClient, l7policyID, d.Id()).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -392,7 +393,7 @@ func resourceL7RuleImport(ctx context.Context, d *schema.ResourceData, meta inte
 	l7ruleID := parts[1]
 
 	// Get a clean copy of the parent L7 Policy.
-	parentL7Policy, err := l7policies.Get(lbClient, l7policyID).Extract()
+	parentL7Policy, err := il7policies.Get(lbClient, l7policyID).Extract()
 	if err != nil {
 		return nil, fmt.Errorf("unable to get parent L7 Policy: %s", err)
 	}

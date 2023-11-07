@@ -10,8 +10,8 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func TestAccNetworkingFloatingIPAssociate_basic(t *testing.T) {
@@ -89,7 +89,7 @@ func testAccCheckNetworkingFloatingIPAssociateDestroy(s *terraform.State) error 
 
 		fip, err := floatingips.Get(networkClient, rs.Primary.ID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return nil
 			}
 

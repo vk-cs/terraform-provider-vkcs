@@ -1,10 +1,9 @@
 package databases
 
 import (
-	"net/http"
-
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
 type CreateOptsBuilder interface {
@@ -36,14 +35,11 @@ func Create(client *gophercloud.ServiceClient, id string, opts CreateOptsBuilder
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Post(databasesURL(client, dbmsType, id), b, nil, &gophercloud.RequestOpts{
+	resp, err := client.Post(databasesURL(client, dbmsType, id), b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -56,10 +52,8 @@ func List(client *gophercloud.ServiceClient, id string, dbmsType string) paginat
 
 // Delete performs request to delete database
 func Delete(client *gophercloud.ServiceClient, id string, dbName string, dbmsType string) (r DeleteResult) {
-	var result *http.Response
-	result, r.Err = client.Delete(databaseURL(client, dbmsType, id, dbName), &gophercloud.RequestOpts{})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	resp, err := client.Delete(databaseURL(client, dbmsType, id, dbName), &gophercloud.RequestOpts{})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }

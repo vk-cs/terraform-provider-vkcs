@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	ipools "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/pools"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 )
@@ -51,7 +52,7 @@ func testAccCheckLBMemberDestroy(s *terraform.State) error {
 		}
 
 		poolID := rs.Primary.Attributes["pool_id"]
-		_, err := pools.GetMember(lbClient, poolID, rs.Primary.ID).Extract()
+		_, err := ipools.GetMember(lbClient, poolID, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Member still exists: %s", rs.Primary.ID)
 		}
@@ -78,7 +79,7 @@ func testAccCheckLBMemberExists(n string, member *pools.Member) resource.TestChe
 		}
 
 		poolID := rs.Primary.Attributes["pool_id"]
-		found, err := pools.GetMember(lbClient, poolID, rs.Primary.ID).Extract()
+		found, err := ipools.GetMember(lbClient, poolID, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

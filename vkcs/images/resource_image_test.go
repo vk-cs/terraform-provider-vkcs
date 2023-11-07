@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	iimages "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/images/v2/images"
 
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 )
@@ -172,7 +173,7 @@ func testAccCheckImagesImageDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := images.Get(imageClient, rs.Primary.ID).Extract()
+		_, err := iimages.Get(imageClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Image still exists")
 		}
@@ -198,7 +199,7 @@ func testAccCheckImagesImageExists(n string, image *images.Image) resource.TestC
 			return fmt.Errorf("Error creating VKCS Image: %s", err)
 		}
 
-		found, err := images.Get(imageClient, rs.Primary.ID).Extract()
+		found, err := iimages.Get(imageClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
@@ -230,7 +231,7 @@ func testAccCheckImagesImageHasTag(n, tag string) resource.TestCheckFunc {
 			return fmt.Errorf("Error creating VKCS Image: %s", err)
 		}
 
-		found, err := images.Get(imageClient, rs.Primary.ID).Extract()
+		found, err := iimages.Get(imageClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
@@ -266,7 +267,7 @@ func testAccCheckImagesImageTagCount(n string, expected int) resource.TestCheckF
 			return fmt.Errorf("Error creating VKCS Image: %s", err)
 		}
 
-		found, err := images.Get(imageClient, rs.Primary.ID).Extract()
+		found, err := iimages.Get(imageClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

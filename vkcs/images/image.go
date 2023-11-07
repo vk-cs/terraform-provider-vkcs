@@ -25,6 +25,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	iimages "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/images/v2/images"
 )
 
 var imagesDefaultStoreEndpointMasks = []string{"*.devmail.ru$", "^ams.*"}
@@ -384,7 +385,7 @@ func selectUnzipReader(src io.Reader, format string) (io.ReadCloser, error) {
 
 func resourceImagesImageRefreshFunc(client *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		img, err := images.Get(client, id).Extract()
+		img, err := iimages.Get(client, id).Extract()
 		if err != nil {
 			return nil, "", err
 		}

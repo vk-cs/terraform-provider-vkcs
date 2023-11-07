@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	isnapshots "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/blockstorage/v3/snapshots"
 )
 
 func TestAccBlockStorageSnapshot_basic(t *testing.T) {
@@ -88,7 +89,7 @@ func testAccCheckBlockStorageSnapshotDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := snapshots.Get(blockStorageClient, rs.Primary.ID).Extract()
+		_, err := isnapshots.Get(blockStorageClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("snapshot still exists")
 		}

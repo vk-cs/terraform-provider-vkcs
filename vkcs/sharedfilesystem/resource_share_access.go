@@ -14,9 +14,10 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/errors"
+	sfserrors "github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/errors"
 	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/shares"
+	ishares "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/sharedfilesystem/v2/shares"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func ResourceSharedFilesystemShareAccess() *schema.Resource {
@@ -109,7 +110,7 @@ func resourceSharedFilesystemShareAccessCreate(ctx context.Context, d *schema.Re
 
 	var access *shares.AccessRight
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		access, err = shares.GrantAccess(sfsClient, shareID, grantOpts).Extract()
+		access, err = ishares.GrantAccess(sfsClient, shareID, grantOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -117,8 +118,8 @@ func resourceSharedFilesystemShareAccessCreate(ctx context.Context, d *schema.Re
 	})
 
 	if err != nil {
-		detailedErr := errors.ErrorDetails{}
-		e := errors.ExtractErrorInto(err, &detailedErr)
+		detailedErr := sfserrors.ErrorDetails{}
+		e := sfserrors.ExtractErrorInto(err, &detailedErr)
 		if e != nil {
 			return diag.Errorf("Error creating vkcs_sharedfilesystem_share_access: %s: %s", err, e)
 		}
@@ -158,7 +159,7 @@ func resourceSharedFilesystemShareAccessRead(ctx context.Context, d *schema.Reso
 	sfsClient.Microversion = SharedFilesystemMinMicroversion
 
 	shareID := d.Get("share_id").(string)
-	access, err := shares.ListAccessRights(sfsClient, shareID).Extract()
+	access, err := ishares.ListAccessRights(sfsClient, shareID).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error retrieving vkcs_sharedfilesystem_share_access"))
 	}
@@ -197,7 +198,7 @@ func resourceSharedFilesystemShareAccessDelete(ctx context.Context, d *schema.Re
 
 	log.Printf("[DEBUG] Attempting to delete vkcs_sharedfilesystem_share_access %s", d.Id())
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		err = shares.RevokeAccess(sfsClient, shareID, revokeOpts).ExtractErr()
+		err = ishares.RevokeAccess(sfsClient, shareID, revokeOpts).ExtractErr()
 		if err != nil {
 			return util.CheckForRetryableError(err)
 		}
@@ -209,8 +210,8 @@ func resourceSharedFilesystemShareAccessDelete(ctx context.Context, d *schema.Re
 		if e == nil {
 			return nil
 		}
-		detailedErr := errors.ErrorDetails{}
-		e = errors.ExtractErrorInto(err, &detailedErr)
+		detailedErr := sfserrors.ErrorDetails{}
+		e = sfserrors.ExtractErrorInto(err, &detailedErr)
 		if e != nil {
 			return diag.Errorf("Error waiting for vkcs_sharedfilesystem_share_access on %s to be removed: %s: %s", shareID, err, e)
 		}
@@ -231,7 +232,7 @@ func resourceSharedFilesystemShareAccessDelete(ctx context.Context, d *schema.Re
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
+		if errutil.IsNotFound(err) {
 			return nil
 		}
 		return diag.Errorf("error waiting for vkcs_sharedfilesystem_share_access %s to become denied: %s", d.Id(), err)
@@ -258,7 +259,7 @@ func resourceSharedFilesystemShareAccessImport(ctx context.Context, d *schema.Re
 	shareID := parts[0]
 	accessID := parts[1]
 
-	access, err := shares.ListAccessRights(sfsClient, shareID).Extract()
+	access, err := ishares.ListAccessRights(sfsClient, shareID).Extract()
 	if err != nil {
 		return nil, fmt.Errorf("unable to get %s vkcs_sharedfilesystem_share: %s", shareID, err)
 	}

@@ -2,8 +2,8 @@ package sharedfilesystem
 
 import (
 	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/shares"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/sharedfilesystem/v2/shares"
 )
 
 func sharedFilesystemShareAccessStateRefreshFunc(client *gophercloud.ServiceClient, shareID string, accessID string) retry.StateRefreshFunc {

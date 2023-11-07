@@ -3,6 +3,7 @@ package datastores
 import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
 // List will list all available datastores that instances can use.
@@ -17,6 +18,7 @@ func List(client *gophercloud.ServiceClient) pagination.Pager {
 func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
 	resp, err := client.Get(datastoreURL(client, id), &r.Body, nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -24,6 +26,7 @@ func ListCapabilities(client *gophercloud.ServiceClient, dsType string, versionI
 	url := datastoreCapabilitiesURL(client, dsType, versionID)
 	resp, err := client.Get(url, &r.Body, nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }
 
@@ -33,5 +36,6 @@ func ListParameters(client *gophercloud.ServiceClient, dsType string, versionID 
 	url := datastoreParametersURL(client, dsType, versionID)
 	resp, err := client.Get(url, &r.Body, nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return
 }

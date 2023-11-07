@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
+	irouters "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/routers"
 )
 
 func DataSourceNetworkingRouter() *schema.Resource {
@@ -140,7 +140,7 @@ func dataSourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	var allRouters []routerExtended
-	err = networking.ExtractRoutersInto(pages, &allRouters)
+	err = irouters.ExtractRoutersInto(pages, &allRouters)
 
 	if err != nil {
 		return diag.Errorf("Unable to retrieve Routers: %s", err)

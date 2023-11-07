@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	iacls "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/keymanager/v1/acls"
 )
 
 var (
@@ -276,7 +277,7 @@ func (d *ContainerDataSource) Read(ctx context.Context, req datasource.ReadReque
 
 	tflog.Debug(ctx, "Calling Key Manager API to get container's acls")
 
-	acl, err := acls.GetContainerACL(client, id).Extract()
+	acl, err := iacls.GetContainerACL(client, id).Extract()
 	if err != nil {
 		tflog.Debug(ctx, "Error calling Key Manager API to get container's acls", map[string]interface{}{"error": err.Error()})
 	} else {

@@ -13,8 +13,9 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
-	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/acls"
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/containers"
+	iacls "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/keymanager/v1/acls"
+	icontainers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/keymanager/v1/containers"
 )
 
 func ResourceKeyManagerContainer() *schema.Resource {
@@ -171,7 +172,7 @@ func resourceKeyManagerContainerCreate(ctx context.Context, d *schema.ResourceDa
 
 	log.Printf("[DEBUG] Create Options for vkcs_keymanager_container: %#v", createOpts)
 
-	container, err := containers.Create(kmClient, createOpts).Extract()
+	container, err := icontainers.Create(kmClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_keymanager_container: %s", err)
 	}
@@ -198,7 +199,7 @@ func resourceKeyManagerContainerCreate(ctx context.Context, d *schema.ResourceDa
 	// set the acl first before setting the secret refs
 	if _, ok := d.GetOk("acl"); ok {
 		setOpts := expandKeyManagerACLs(d.Get("acl"))
-		_, err = acls.SetContainerACL(kmClient, uuid, setOpts).Extract()
+		_, err = iacls.SetContainerACL(kmClient, uuid, setOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error settings ACLs for the vkcs_keymanager_container: %s", err)
 		}
@@ -221,7 +222,7 @@ func resourceKeyManagerContainerRead(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("Error creating VKCS keymanager client: %s", err)
 	}
 
-	container, err := containers.Get(kmClient, d.Id()).Extract()
+	container, err := icontainers.Get(kmClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error retrieving vkcs_keymanager_container"))
 	}
@@ -240,7 +241,7 @@ func resourceKeyManagerContainerRead(ctx context.Context, d *schema.ResourceData
 
 	d.Set("secret_refs", flattenKeyManagerContainerSecretRefs(container.SecretRefs))
 
-	acl, err := acls.GetContainerACL(kmClient, d.Id()).Extract()
+	acl, err := iacls.GetContainerACL(kmClient, d.Id()).Extract()
 	if err != nil {
 		log.Printf("[DEBUG] Unable to get %s container acls: %s", d.Id(), err)
 	}
@@ -261,7 +262,7 @@ func resourceKeyManagerContainerUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if d.HasChange("acl") {
 		updateOpts := expandKeyManagerACLs(d.Get("acl"))
-		_, err := acls.UpdateContainerACL(kmClient, d.Id(), updateOpts).Extract()
+		_, err := iacls.UpdateContainerACL(kmClient, d.Id(), updateOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error updating vkcs_keymanager_container %s acl: %s", d.Id(), err)
 		}

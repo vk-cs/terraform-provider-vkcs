@@ -12,6 +12,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/securityservices"
+	isecurityservices "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/sharedfilesystem/v2/securityservices"
 )
 
 func ResourceSharedFilesystemSecurityService() *schema.Resource {
@@ -124,7 +125,7 @@ func resourceSharedFilesystemSecurityServiceCreate(ctx context.Context, d *schem
 
 	log.Printf("[DEBUG] vkcs_sharedfilesystem_securityservice create options: %#v", createOpts)
 	createOpts.Password = d.Get("password").(string)
-	securityservice, err := securityservices.Create(sfsClient, createOpts).Extract()
+	securityservice, err := isecurityservices.Create(sfsClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_sharedfilesystem_securityservice: %s", err)
 	}
@@ -144,7 +145,7 @@ func resourceSharedFilesystemSecurityServiceRead(ctx context.Context, d *schema.
 	// Select microversion to use.
 	sfsClient.Microversion = SharedFilesystemMinMicroversion
 
-	securityservice, err := securityservices.Get(sfsClient, d.Id()).Extract()
+	securityservice, err := isecurityservices.Get(sfsClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error getting vkcs_sharedfilesystem_securityservice"))
 	}
@@ -219,7 +220,7 @@ func resourceSharedFilesystemSecurityServiceUpdate(ctx context.Context, d *schem
 		updateOpts.Password = &password
 	}
 
-	_, err = securityservices.Update(sfsClient, d.Id(), updateOpts).Extract()
+	_, err = isecurityservices.Update(sfsClient, d.Id(), updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error updating vkcs_sharedfilesystem_securityservice %s: %s", d.Id(), err)
 	}
@@ -234,7 +235,7 @@ func resourceSharedFilesystemSecurityServiceDelete(ctx context.Context, d *schem
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
 
-	if err := securityservices.Delete(sfsClient, d.Id()).ExtractErr(); err != nil {
+	if err := isecurityservices.Delete(sfsClient, d.Id()).ExtractErr(); err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_sharedfilesystem_securityservice"))
 	}
 

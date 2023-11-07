@@ -7,13 +7,15 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/snapshots"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	isnapshots "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/blockstorage/v3/snapshots"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func blockStorageSnapshotStateRefreshFunc(client *gophercloud.ServiceClient, volumeSnapshotID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		v, err := snapshots.Get(client, volumeSnapshotID).Extract()
+		v, err := isnapshots.Get(client, volumeSnapshotID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return v, bsSnapshotStatusDeleted, nil
 			}
 			return nil, "", err

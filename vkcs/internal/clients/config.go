@@ -264,6 +264,7 @@ func ConfigureProvider(ctx context.Context, req provider.ConfigureRequest) (Conf
 
 	if err := config.LoadAndValidate(); err != nil {
 		diags.AddError("Config validation error", err.Error())
+		return nil, diags
 	}
 
 	config.OsClient.UserAgent.Prepend(fmt.Sprintf("VKCS Terraform Provider %s", version.ProviderVersion))

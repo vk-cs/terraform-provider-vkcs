@@ -19,6 +19,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/validators"
+	iacls "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/keymanager/v1/acls"
+	isecrets "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/keymanager/v1/secrets"
 )
 
 func dateFilters() []string {
@@ -342,7 +344,7 @@ func (d *SecretDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	tflog.Debug(ctx, "Retrieved the secret", map[string]interface{}{"secret": fmt.Sprintf("%#v", secret)})
 	tflog.Debug(ctx, "Calling Key Manager API to get the payload")
 
-	payload, err := secrets.GetPayload(client, id, nil).Extract()
+	payload, err := isecrets.GetPayload(client, id, nil).Extract()
 	if err != nil {
 		tflog.Debug(ctx, "Error calling Key Manager API to get the payload", map[string]interface{}{"error": err.Error()})
 	} else {
@@ -351,7 +353,7 @@ func (d *SecretDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	tflog.Debug(ctx, "Calling Key Manager API to get the metadata")
 
-	metadata, err := secrets.GetMetadata(client, id).Extract()
+	metadata, err := isecrets.GetMetadata(client, id).Extract()
 	if err != nil {
 		tflog.Debug(ctx, "Error calling Key Manager API to get the metadata", map[string]interface{}{"error": err.Error()})
 	} else {
@@ -360,7 +362,7 @@ func (d *SecretDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	tflog.Debug(ctx, "Calling Key Manager API to get the ACL")
 
-	acl, err := acls.GetSecretACL(client, id).Extract()
+	acl, err := iacls.GetSecretACL(client, id).Extract()
 	if err != nil {
 		tflog.Debug(ctx, "Error calling Key Manager API to get the ACL", map[string]interface{}{"error": err.Error()})
 	} else {

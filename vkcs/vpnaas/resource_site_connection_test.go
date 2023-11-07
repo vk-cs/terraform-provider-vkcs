@@ -10,8 +10,9 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/siteconnections"
+	isiteconnections "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas/v2/siteconnections"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func TestAccVPNaaSSiteConnection_basic(t *testing.T) {
@@ -52,11 +53,11 @@ func testAccCheckSiteConnectionDestroy(s *terraform.State) error {
 		if rs.Type != "vkcs_vpnaas_site_connection" {
 			continue
 		}
-		_, err = siteconnections.Get(networkingClient, rs.Primary.ID).Extract()
+		_, err = isiteconnections.Get(networkingClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Site connection (%s) still exists", rs.Primary.ID)
 		}
-		if _, ok := err.(gophercloud.ErrDefault404); !ok {
+		if !errutil.Is(err, 404) {
 			return err
 		}
 	}
@@ -82,7 +83,7 @@ func testAccCheckSiteConnectionExists(n string, conn *siteconnections.Connection
 
 		var found *siteconnections.Connection
 
-		found, err = siteconnections.Get(networkingClient, rs.Primary.ID).Extract()
+		found, err = isiteconnections.Get(networkingClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

@@ -6,7 +6,9 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	igroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall/v2/groups"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type securityGroupExtended struct {
@@ -19,9 +21,9 @@ func networkingSecgroupStateRefreshFuncDelete(networkingClient *gophercloud.Serv
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] Attempting to delete vkcs_networking_secgroup %s", id)
 
-		r, err := groups.Get(networkingClient, id).Extract()
+		r, err := igroups.Get(networkingClient, id).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				log.Printf("[DEBUG] Successfully deleted vkcs_networking_secgroup %s", id)
 				return r, "DELETED", nil
 			}
@@ -29,13 +31,14 @@ func networkingSecgroupStateRefreshFuncDelete(networkingClient *gophercloud.Serv
 			return r, "ACTIVE", err
 		}
 
-		err = groups.Delete(networkingClient, id).ExtractErr()
+		err = igroups.Delete(networkingClient, id).ExtractErr()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				log.Printf("[DEBUG] Successfully deleted vkcs_networking_secgroup %s", id)
 				return r, "DELETED", nil
 			}
-			if _, ok := err.(gophercloud.ErrDefault409); ok {
+
+			if errutil.Is(err, 409) {
 				return r, "ACTIVE", nil
 			}
 

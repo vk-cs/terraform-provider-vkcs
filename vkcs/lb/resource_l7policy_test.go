@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	il7policies "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/l7policies"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies"
 )
@@ -109,7 +110,7 @@ func testAccCheckLBL7PolicyDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := l7policies.Get(lbClient, rs.Primary.ID).Extract()
+		_, err := il7policies.Get(lbClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("L7 Policy still exists: %s", rs.Primary.ID)
 		}
@@ -135,7 +136,7 @@ func testAccCheckLBL7PolicyExists(n string, l7Policy *l7policies.L7Policy) resou
 			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
 
-		found, err := l7policies.Get(lbClient, rs.Primary.ID).Extract()
+		found, err := il7policies.Get(lbClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

@@ -10,6 +10,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/compute"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	ivolumeattach "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/volumeattach"
 )
 
 func TestAccComputeVolumeAttach_basic(t *testing.T) {
@@ -47,7 +48,7 @@ func testAccCheckComputeVolumeAttachDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = volumeattach.Get(computeClient, instanceID, volumeID).Extract()
+		_, err = ivolumeattach.Get(computeClient, instanceID, volumeID).Extract()
 		if err == nil {
 			return fmt.Errorf("Volume attachment still exists")
 		}
@@ -78,7 +79,7 @@ func testAccCheckComputeVolumeAttachExists(n string, va *volumeattach.VolumeAtta
 			return err
 		}
 
-		found, err := volumeattach.Get(computeClient, instanceID, volumeID).Extract()
+		found, err := ivolumeattach.Get(computeClient, instanceID, volumeID).Extract()
 		if err != nil {
 			return err
 		}

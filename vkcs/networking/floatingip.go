@@ -8,6 +8,8 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	ifloatingips "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/floatingips"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type floatingIPExtended struct {
@@ -44,9 +46,9 @@ func networkingFloatingIPV2ID(client *gophercloud.ServiceClient, floatingIP stri
 
 func networkingFloatingIPV2StateRefreshFunc(client *gophercloud.ServiceClient, fipID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		fip, err := floatingips.Get(client, fipID).Extract()
+		fip, err := ifloatingips.Get(client, fipID).Extract()
 		if err != nil {
-			if _, ok := err.(gophercloud.ErrDefault404); ok {
+			if errutil.IsNotFound(err) {
 				return fip, "DELETED", nil
 			}
 
