@@ -12,11 +12,11 @@ description: |-
 
 ## Example Usage
 ### Append a security group to an existing port
-{{tffile "templates/networking/resources/vkcs_networking_port_secgroup_associate/append/main.tf"}}
+{{tffile .ExampleFile}}
 
 ### Enforce a security group to an existing port
-{{tffile "templates/networking/resources/vkcs_networking_port_secgroup_associate/enforce/main.tf"}}
+{{tffile "examples/networking/port_secgroup_associate/main-replace.tf"}}
 
 ### Remove all security groups from an existing port
-{{tffile "templates/networking/resources/vkcs_networking_port_secgroup_associate/remove/main.tf"}}
+{{tffile "examples/networking/port_secgroup_associate/main-remove.tf"}}
 {{ .SchemaMarkdown }}
