@@ -29,6 +29,7 @@ resource "vkcs_networking_port" "persistent_etcd" {
   }
   # Specify required security groups instead of getting 'default' one
   security_group_ids = [vkcs_networking_secgroup.etcd.id]
+  tags               = ["tf-example", "etcd"]
 }
 ```
 
