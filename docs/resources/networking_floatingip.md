@@ -13,23 +13,18 @@ Manages a floating IP resource within VKCS that can be used for load balancers.
 ## Example Usage
 ### Simple floating IP allocation
 ```terraform
-resource "vkcs_networking_floatingip" "floatip_1" {
-  pool = "public"
+resource "vkcs_networking_floatingip" "base_fip" {
+  pool        = "ext-net"
+  description = "floating ip in external net tf example"
 }
 ```
 
-### Floating IP allocation using a list of subnets
-If one of the subnets in a list has an exhausted pool, terraform will try the
-next subnet ID from the list.
+### Floating IP allocation with association to port
 
 ```terraform
-data "vkcs_networking_network" "ext_network" {
-  name = "public"
-}
-
-resource "vkcs_networking_floatingip" "floatip_1" {
-  pool       = data.vkcs_networking_network.ext_network.name
-  subnet_ids = [<subnet1_id>, <subnet2_id>, <subnet3_id>]
+resource "vkcs_networking_floatingip" "associated_fip" {
+  pool    = "ext-net"
+  port_id = vkcs_networking_port.persistent_etcd.id
 }
 ```
 

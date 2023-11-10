@@ -8,17 +8,15 @@ description: |-
 
 # vkcs_networking_floatingip_associate
 
-Associates a floating IP to a port. This is useful for situations where you have a pre-allocated floating IP or are unable to use the `vkcs_networking_floatingip` resource to create a floating IP.
+Associates a floating IP to a port. This can be done only if port is assigned to router connected to external network. This is useful for situations where you have a pre-allocated floating IP or are unable to use the `vkcs_networking_floatingip` resource to create a floating IP.
 
 ## Example Usage
 ```terraform
-resource "vkcs_networking_port" "port_1" {
-  network_id = "a5bbd213-e1d3-49b6-aed1-9df60ea94b9a"
-}
-
-resource "vkcs_networking_floatingip_associate" "fip_1" {
-  floating_ip = "1.2.3.4"
-  port_id     = "${vkcs_networking_port.port_1.id}"
+resource "vkcs_networking_floatingip_associate" "floatingip-associate" {
+  floating_ip = vkcs_networking_floatingip.base_fip.address
+  port_id     = vkcs_networking_port.persistent_etcd.id
+  # Ensure the router interface is up
+  depends_on  = [vkcs_networking_router_interface.db]
 }
 ```
 ## Argument Reference

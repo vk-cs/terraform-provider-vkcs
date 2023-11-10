@@ -13,8 +13,9 @@ Use this data source to get the ID of an available VKCS floating IP.
 ## Example Usage
 
 ```terraform
-data "vkcs_networking_floatingip" "floatingip_1" {
-  address = "192.168.0.4"
+resource "vkcs_networking_floatingip" "base_fip" {
+  pool        = "ext-net"
+  description = "floating ip in external net tf example"
 }
 ```
 

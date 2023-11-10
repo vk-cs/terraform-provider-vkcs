@@ -13,8 +13,10 @@ Use this data source to get the ID of an available VKCS subnet.
 ## Example Usage
 
 ```terraform
-data "vkcs_networking_subnet" "subnet_1" {
-  name = "subnet_1"
+resource "vkcs_networking_subnet" "app" {
+  name       = "app-tf-example"
+  network_id = vkcs_networking_network.app.id
+  cidr       = "192.168.199.0/24"
 }
 ```
 
