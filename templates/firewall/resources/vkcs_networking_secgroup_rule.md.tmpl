@@ -11,7 +11,14 @@ description: |-
 {{ .Description }}
 
 ## Example Usage
+### Basic-rule one protocol one port
 {{tffile .ExampleFile}}
+
+### Rule for all ports for particular protocol (udp)
+{{tffile "examples/firewall/networking_secgroup_rule/main-all-ports-protocol.tf"}}
+
+### Rule for all protocols
+{{tffile "examples/firewall/networking_secgroup_rule/main-all-ports-all-protocol.tf"}}
 
 {{ .SchemaMarkdown }}
 
