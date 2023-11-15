@@ -1,6 +1,6 @@
 resource "vkcs_kubernetes_cluster" "k8s-cluster" {
   name                = "k8s-cluster"
-  cluster_template_id = data.vkcs_kubernetes_clustertemplate.ct.id
+  cluster_template_id = data.vkcs_kubernetes_clustertemplate.k8s_24.id
   master_flavor       = data.vkcs_compute_flavor.k8s.id
   master_count        = 1
 
