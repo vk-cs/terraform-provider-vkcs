@@ -141,10 +141,10 @@ func ResourceKubernetesCluster() *schema.Resource {
 					" _note_ Updating this attribute will not immediately apply the changes; these options will be used when recreating or deleting cluster nodes, for example, during an upgrade operation.\n\n" +
 					"  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16. _note_ Updating this value while the cluster is running is dangerous because it can lead to loss of connectivity of the cluster nodes.\n" +
 					"  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False. _note_ Changes to this value will be applied immediately.\n" +
-					"  * `cloud_monitoring` to enable cloud monitoring feature.\n" +
-					"  * `etcd_volume_size` to set etcd volume size. Default 10Gb.\n" +
-					"  * `kube_log_level` to set log level for kubelet in range 0 to 8.\n" +
-					"  * `master_volume_size` to set master vm volume size. Default 50Gb.\n" +
+					"  * `cloud_monitoring` to enable cloud monitoring feature. Default False.\n" +
+					"  * `etcd_volume_size` to set etcd volume size in GB. Default 10.\n" +
+					"  * `kube_log_level` to set log level for kubelet in range 0 to 8. Default 0.\n" +
+					"  * `master_volume_size` to set master vm volume size in GB. Default 50.\n" +
 					"  * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.\n",
 			},
 			"all_labels": {
