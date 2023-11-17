@@ -1,6 +1,7 @@
 package kubernetes_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -115,7 +116,11 @@ func testAccCheckKubernetesClusterExists(n string, cluster *clusters.Cluster) re
 			return fmt.Errorf("id is not set")
 		}
 
-		config := acctest.AccTestProvider.Meta().(clients.Config)
+		config, err := clients.ConfigureFromEnv(context.Background())
+		if err != nil {
+			return fmt.Errorf("Error authenticating clients from environment: %s", err)
+		}
+
 		client, err := config.ContainerInfraV1Client(acctest.OsRegionName)
 		if err != nil {
 			return fmt.Errorf("error creating Kubernetes API client: %s", err)

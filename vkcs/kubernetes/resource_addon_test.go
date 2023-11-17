@@ -7,41 +7,92 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
 )
 
 func TestAccKubernetesAddon_basic_big(t *testing.T) {
+	var cluster clusters.Cluster
+
+	baseConfig := acctest.AccTestRenderConfig(testAccKubernetesAddonClusterBase,
+		map[string]string{"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase})
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccKubernetesAddonBasic, map[string]string{"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase, "TestAccKubernetesAddonClusterBase": testAccKubernetesAddonClusterBase}),
+				Config: baseConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("vkcs_kubernetes_addon.basic", "namespace", "ingress-nginx"),
-					resource.TestCheckResourceAttr("vkcs_kubernetes_addon.basic", "name", "ingress-nginx"),
-					resource.TestCheckResourceAttrPair("vkcs_kubernetes_addon.basic", "cluster_id", "vkcs_kubernetes_cluster.cluster", "id"),
+					testAccCheckKubernetesClusterExists("vkcs_kubernetes_cluster.cluster", &cluster),
 				),
 			},
 			{
-				ResourceName:      "vkcs_kubernetes_addon.basic",
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					for name, rs := range s.RootModule().Resources {
-						if name != "vkcs_kubernetes_addon.basic" {
-							continue
-						}
-
-						id := rs.Primary.Attributes["id"]
-						clusterID := rs.Primary.Attributes["cluster_id"]
-
-						return fmt.Sprintf("%s/%s", clusterID, id), nil
-					}
-					return "", fmt.Errorf("Addon not found")
-				},
+				Config: acctest.AccTestRenderConfig(testAccKubernetesAddonBasic, map[string]string{"TestAccKubernetesAddonClusterBase": baseConfig}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_addon.addon", "addon_id", "data.vkcs_kubernetes_addon.ingress-nginx", "id"),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_addon.addon", "cluster_id", "vkcs_kubernetes_cluster.cluster", "id"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_addon.addon", "namespace", "ingress-nginx"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_addon.addon", "name", "ingress-nginx"),
+				),
+			},
+			{
+				ResourceName:            "vkcs_kubernetes_addon.addon",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       testAccKubernetesAddonImportStateID,
+				ImportStateVerifyIgnore: []string{"configuration_values"},
 			},
 		},
 	})
+}
+
+func TestAccKubernetesAddon_full_big(t *testing.T) {
+	var cluster clusters.Cluster
+
+	baseConfig := acctest.AccTestRenderConfig(testAccKubernetesAddonClusterBase, map[string]string{"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase})
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: baseConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKubernetesClusterExists("vkcs_kubernetes_cluster.cluster", &cluster),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccKubernetesAddonFull, map[string]string{"TestAccKubernetesAddonClusterBase": baseConfig}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_addon.addon", "addon_id", "data.vkcs_kubernetes_addon.ingress-nginx", "id"),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_addon.addon", "cluster_id", "vkcs_kubernetes_cluster.cluster", "id"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_addon.addon", "name", "ingress-nginx"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_addon.addon", "namespace", "ingress-nginx"),
+				),
+			},
+			{
+				ResourceName:            "vkcs_kubernetes_addon.addon",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       testAccKubernetesAddonImportStateID,
+				ImportStateVerifyIgnore: []string{"configuration_values"},
+			},
+		},
+	})
+}
+
+func testAccKubernetesAddonImportStateID(s *terraform.State) (string, error) {
+	for name, rs := range s.RootModule().Resources {
+		if name != "vkcs_kubernetes_addon.addon" {
+			continue
+		}
+
+		id := rs.Primary.Attributes["id"]
+		clusterID := rs.Primary.Attributes["cluster_id"]
+
+		return fmt.Sprintf("%s/%s", clusterID, id), nil
+	}
+	return "", fmt.Errorf("addon not found")
 }
 
 const testAccKubernetesAddonNetworkingBase = `
@@ -74,6 +125,8 @@ resource "vkcs_networking_router_interface" "base" {
 `
 
 const testAccKubernetesAddonClusterBase = `
+{{ .TestAccKubernetesAddonNetworkingBase }}
+
 data "vkcs_compute_flavor" "base" {
   name = "Standard-4-12"
 }
@@ -109,7 +162,6 @@ resource "vkcs_kubernetes_node_group" "default-ng" {
 `
 
 const testAccKubernetesAddonBasic = `
-{{ .TestAccKubernetesAddonNetworkingBase }}
 {{ .TestAccKubernetesAddonClusterBase }}
 
 data "vkcs_kubernetes_addon" "ingress-nginx" {
@@ -118,11 +170,27 @@ data "vkcs_kubernetes_addon" "ingress-nginx" {
   version    = "4.1.4"
 }
 
-resource "vkcs_kubernetes_addon" "basic" {
+resource "vkcs_kubernetes_addon" "addon" {
   cluster_id           = vkcs_kubernetes_cluster.cluster.id
   addon_id             = data.vkcs_kubernetes_addon.ingress-nginx.id
   namespace            = "ingress-nginx"
+}
+`
+
+const testAccKubernetesAddonFull = `
+{{ .TestAccKubernetesAddonClusterBase }}
+
+data "vkcs_kubernetes_addon" "ingress-nginx" {
+  cluster_id = vkcs_kubernetes_cluster.cluster.id
+  name       = "ingress-nginx"
+  version    = "4.1.4"
+}
+
+resource "vkcs_kubernetes_addon" "addon" {
+  cluster_id           = vkcs_kubernetes_cluster.cluster.id
+  addon_id             = data.vkcs_kubernetes_addon.ingress-nginx.id
+  name                 = "ingress-nginx"
+  namespace            = "ingress-nginx"
   configuration_values = data.vkcs_kubernetes_addon.ingress-nginx.configuration_values
-  depends_on           = [vkcs_kubernetes_node_group.default-ng]
 }
 `

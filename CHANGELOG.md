@@ -7,6 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 #### v0.5.3 (unreleased)
+- Fix error of inconsistent result on apply when creating a Kubernetes addon
 - Fix error with creating large number of resources at once
 - Add 'sdn' parameter for some network resources (endpoint_group, service and site-connection)
 

@@ -7,15 +7,18 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/privatestate"
 	v1 "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfraaddons/v1"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfraaddons/v1/addons"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfraaddons/v1/clusteraddons"
@@ -42,6 +45,7 @@ const (
 var _ resource.Resource = &AddonResource{}
 var _ resource.ResourceWithConfigure = &AddonResource{}
 var _ resource.ResourceWithImportState = &AddonResource{}
+var _ resource.ResourceWithModifyPlan = &AddonResource{}
 
 func NewAddonResource() resource.Resource {
 	return &AddonResource{}
@@ -72,6 +76,9 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			"id": schema.StringAttribute{
 				Computed:    true,
 				Description: "ID of the resource",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 
 			"region": schema.StringAttribute{
@@ -79,7 +86,19 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Optional:    true,
 				Description: "The region in which to obtain the Container Infra Addons client. If omitted, the `region` argument of the provider is used. Changing this creates a new addon.",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.RequiresReplaceIf(func(ctx context.Context, sr planmodifier.StringRequest, rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse) {
+						var configValue, stateValue types.String
+						resp.Diagnostics.Append(sr.Config.GetAttribute(ctx, sr.Path, &configValue)...)
+						resp.Diagnostics.Append(sr.State.GetAttribute(ctx, sr.Path, &stateValue)...)
+						if resp.Diagnostics.HasError() {
+							return
+						}
+
+						if !configValue.IsNull() && !configValue.Equal(stateValue) {
+							rrifr.RequiresReplace = true
+						}
+					}, "require replacement if configuration value changes", "require replacement if configuration value changes"),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 
@@ -112,7 +131,8 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Computed:    true,
 				Description: "The name of the application. Changing this creates a new addon.",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 
@@ -121,7 +141,7 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Computed:    true,
 				Description: "Configuration code for the addon. Changing this creates a new addon.",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 
@@ -142,6 +162,75 @@ func (r *AddonResource) Configure(ctx context.Context, req resource.ConfigureReq
 	r.config = req.ProviderData.(clients.Config)
 }
 
+func (r *AddonResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var plan *AddonResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region := plan.Region.ValueString()
+	if plan.Region.IsUnknown() {
+		region = r.config.GetRegion()
+		plan.Region = types.StringValue(region)
+		resp.Plan.SetAttribute(ctx, path.Root("region"), region)
+	}
+
+	if req.State.Raw.IsNull() {
+		return
+	}
+
+	var state *AddonResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if state.Region.ValueString() != region {
+		return
+	}
+
+	containerInfraAddonsClient, err := r.config.ContainerInfraAddonsV1Client(region)
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating Kubernetes Addons API client", err.Error())
+		return
+	}
+
+	id := state.ID.ValueString()
+
+	clusterAddon, err := clusteraddons.Get(containerInfraAddonsClient, id).Extract()
+	if errutil.Is(err, 404) {
+		return
+	}
+	if err != nil {
+		resp.Diagnostics.AddError("Error calling Kubernetes Addons API", err.Error())
+		return
+	}
+
+	tflog.Debug(ctx, "Called Addons API to retrieve cluster addon", map[string]interface{}{"cluster_addon": fmt.Sprintf("%#v", clusterAddon)})
+
+	privateChartValues, diags := chartValuesFromPrivateState(ctx, req.Private)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if plan.ConfigurationValues.ValueString() == clusterAddon.UserChartValues &&
+		privateChartValues == clusterAddon.UserChartValues {
+		plan.ConfigurationValues = state.ConfigurationValues
+	}
+
+	if !plan.ConfigurationValues.Equal(state.ConfigurationValues) {
+		resp.RequiresReplace.Append(path.Root("configuration_values"))
+	}
+
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+}
+
 func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data *AddonResourceModel
 
@@ -157,7 +246,7 @@ func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 
 	region := data.Region.ValueString()
-	if region == "" {
+	if data.Region.IsUnknown() {
 		region = r.config.GetRegion()
 	}
 
@@ -171,23 +260,28 @@ func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, 
 	ctx = tflog.SetField(ctx, "cluster_id", clusterID)
 	ctx = tflog.SetField(ctx, "addon_id", addonID)
 
+	tflog.Debug(ctx, "Calling Addons API to get available addon")
+
+	availableAddon, err := addons.GetAvailableAddon(containerInfraAddonsClient, clusterID, addonID).Extract()
+	if err != nil {
+		resp.Diagnostics.AddError("Error calling Kubernetes Addons API to retrieve addon as available", err.Error())
+		return
+	}
+
+	tflog.Debug(ctx, "Called Addons API to get available addon", map[string]interface{}{"available_addon": fmt.Sprintf("%#v", availableAddon)})
+
 	name := data.Name.ValueString()
 	if name == "" {
-		tflog.Debug(ctx, "Calling Addons API to resolve addon name by its ID")
-
-		availableAddon, err := addons.GetAvailableAddon(containerInfraAddonsClient, clusterID, addonID).Extract()
-		if err != nil {
-			resp.Diagnostics.AddError("Error calling Kubernetes Addons API", err.Error())
-			return
-		}
-
 		name = availableAddon.Name
+	}
 
-		tflog.Debug(ctx, "Called Addons API to resolve addon name by its ID", map[string]interface{}{"available_addon": fmt.Sprintf("%#v", availableAddon)})
+	configValues := data.ConfigurationValues.ValueString()
+	if configValues == "" {
+		configValues = availableAddon.ValuesTemplate
 	}
 
 	createOpts := addons.InstallAddonToClusterOpts{
-		Values: data.ConfigurationValues.ValueString(),
+		Values: configValues,
 		Payload: v1.Payload{
 			Namespace: data.Namespace.ValueString(),
 			Name:      name,
@@ -252,8 +346,9 @@ func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, 
 	data.AddonID = types.StringValue(clusterAddon.Addon.ID)
 	data.Namespace = types.StringValue(clusterAddon.Payload.Namespace)
 	data.Name = types.StringValue(clusterAddon.Payload.Name)
-	data.ConfigurationValues = types.StringValue(clusterAddon.UserChartValues)
+	data.ConfigurationValues = types.StringValue(configValues)
 
+	resp.Diagnostics.Append(chartValuesIntoPrivateState(ctx, resp.Private, clusterAddon.UserChartValues)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -298,7 +393,24 @@ func (r *AddonResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	data.AddonID = types.StringValue(clusterAddon.Addon.ID)
 	data.Namespace = types.StringValue(clusterAddon.Payload.Namespace)
 	data.Name = types.StringValue(clusterAddon.Payload.Name)
-	data.ConfigurationValues = types.StringValue(clusterAddon.UserChartValues)
+
+	// NOTE(paaanic): handle read on resource importing.
+	privateChartValues, diags := chartValuesFromPrivateState(ctx, req.Private)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if len(privateChartValues) == 0 {
+		resp.Diagnostics.Append(chartValuesIntoPrivateState(ctx, resp.Private, clusterAddon.UserChartValues)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if data.ConfigurationValues.IsNull() || privateChartValues != clusterAddon.UserChartValues {
+		data.ConfigurationValues = types.StringValue(clusterAddon.UserChartValues)
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -424,4 +536,25 @@ func (r *AddonResource) ImportState(ctx context.Context, req resource.ImportStat
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("cluster_id"), idParts[0])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+}
+
+type chartValuesPrivateState struct {
+	ChartValues string `json:"chart_values"`
+}
+
+func chartValuesFromPrivateState(ctx context.Context, privateState privatestate.PrivateState) (string, diag.Diagnostics) {
+	var chartValues chartValuesPrivateState
+
+	var diags diag.Diagnostics
+	diags.Append(privatestate.ReadInto(ctx, privateState, "chart_values", &chartValues)...)
+	if diags.HasError() {
+		return "", diags
+	}
+
+	return chartValues.ChartValues, diags
+}
+
+func chartValuesIntoPrivateState(ctx context.Context, privateState privatestate.PrivateState, chartValues string) diag.Diagnostics {
+	privateChartValues := chartValuesPrivateState{ChartValues: chartValues}
+	return privatestate.WriteFrom(ctx, privateState, "chart_values", &privateChartValues)
 }
