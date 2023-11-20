@@ -3,7 +3,6 @@ package clients
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"time"
 
@@ -17,13 +16,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/version"
 )
 
 const (
 	maxRetriesCount         = 3
 	requestsMaxRetriesCount = 3
-	requestsRetryDelay      = 30 * time.Millisecond
+	requestsRetryDelay      = 1 * time.Second
 )
 
 // Config is interface to work with configer calls
@@ -100,6 +100,7 @@ func ConfigureSdkProvider(d *schema.ResourceData, terraformVersion string) (Conf
 	}
 
 	config.OsClient.UserAgent.Prepend(fmt.Sprintf("VKCS Terraform Provider %s", version.ProviderVersion))
+	config.OsClient.RetryFunc = retryFunc
 
 	return config, nil
 }
@@ -150,24 +151,6 @@ func (c *configer) KeyManagerV1Client(region string) (*gophercloud.ServiceClient
 // DatabaseV1Client is implementation of DatabaseV1Client method
 func (c *configer) DatabaseV1Client(region string) (*gophercloud.ServiceClient, error) {
 	client, clientErr := c.Config.DatabaseV1Client(region)
-	client.ProviderClient.RetryFunc = func(context context.Context, method, url string, options *gophercloud.RequestOpts, err error, failCount uint) error {
-		if failCount >= requestsMaxRetriesCount {
-			return err
-		}
-		switch errType := err.(type) {
-		case gophercloud.ErrDefault500, gophercloud.ErrDefault503:
-			time.Sleep(requestsRetryDelay)
-			return nil
-		case gophercloud.ErrUnexpectedResponseCode:
-			if errType.Actual == http.StatusGatewayTimeout {
-				time.Sleep(requestsRetryDelay)
-				return nil
-			}
-			return err
-		default:
-			return err
-		}
-	}
 	return client, clientErr
 }
 
@@ -284,6 +267,7 @@ func ConfigureProvider(ctx context.Context, req provider.ConfigureRequest) (Conf
 	}
 
 	config.OsClient.UserAgent.Prepend(fmt.Sprintf("VKCS Terraform Provider %s", version.ProviderVersion))
+	config.OsClient.RetryFunc = retryFunc
 
 	return &config, diags
 }
@@ -298,4 +282,16 @@ func ConfigureFromEnv(ctx context.Context) (Config, error) {
 	}
 
 	return config, nil
+}
+
+func retryFunc(context context.Context, method, url string, options *gophercloud.RequestOpts, err error, failCount uint) error {
+	if failCount >= requestsMaxRetriesCount {
+		return err
+	}
+	if errutil.Any(err, []int{500, 501, 502, 503, 504}) {
+		time.Sleep(requestsRetryDelay)
+		return nil
+	}
+
+	return err
 }
