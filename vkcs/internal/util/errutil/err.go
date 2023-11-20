@@ -43,6 +43,11 @@ func Is(err error, errorCode int) bool {
 		var httpErr gophercloud.ErrDefault503
 		return errors.As(err, &httpErr)
 	}
+
+	var unknownErr gophercloud.ErrUnexpectedResponseCode
+	if errors.As(err, &unknownErr) {
+		return unknownErr.Actual == errorCode
+	}
 	return false
 }
 
