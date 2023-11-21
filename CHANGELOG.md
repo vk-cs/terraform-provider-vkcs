@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 #### v0.5.3 (unreleased)
 - Fix error with creating large number of resources at once
+- Add 'sdn' parameter for some network resources (endpoint_group, service and site-connection)
 
 #### v0.5.2
 - Fixed issue when vkcs_networking_router_route could not be read

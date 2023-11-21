@@ -151,6 +151,14 @@ func ResourceSiteConnection() *schema.Resource {
 				},
 				Description: "A dictionary with dead peer detection (DPD) protocol controls.",
 			},
+			"sdn": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				ValidateDiagFunc: networking.ValidateSDN(),
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
+			},
 		},
 		Description: "Manages a IPSec site connection resource within VKCS.",
 	}
