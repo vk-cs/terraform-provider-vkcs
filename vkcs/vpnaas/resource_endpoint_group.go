@@ -66,6 +66,14 @@ func ResourceEndpointGroup() *schema.Resource {
 				Set:         schema.HashString,
 				Description: "List of endpoints of the same type, for the endpoint group. The values will depend on the type. Changing this creates a new group.",
 			},
+			"sdn": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				ValidateDiagFunc: networking.ValidateSDN(),
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
+			},
 		},
 		Description: "Manages an Endpoint Group resource within VKCS.",
 	}

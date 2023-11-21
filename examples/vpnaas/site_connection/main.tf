@@ -1,5 +1,6 @@
 resource "vkcs_vpnaas_service" "service" {
   router_id = "${vkcs_networking_router.router.id}"
+  sdn = "neutron"
 }
 
 resource "vkcs_vpnaas_ipsec_policy" "policy_1" {
@@ -13,10 +14,12 @@ resource "vkcs_vpnaas_ike_policy" "policy_2" {
 resource "vkcs_vpnaas_endpoint_group" "group_1" {
 	type = "cidr"
 	endpoints = ["10.0.0.24/24", "10.0.0.25/24"]
+	sdn = "neutron"
 }
 resource "vkcs_vpnaas_endpoint_group" "group_2" {
 	type = "subnet"
 	endpoints = [ "${vkcs_networking_subnet.subnet.id}" ]
+	sdn = "neutron"
 }
 
 resource "vkcs_vpnaas_site_connection" "connection" {
@@ -34,5 +37,6 @@ resource "vkcs_vpnaas_site_connection" "connection" {
 		timeout  = 42
 		interval = 21
 	}
+	sdn = "neutron"
 	depends_on = ["vkcs_networking_router_interface.router_interface"]
 }

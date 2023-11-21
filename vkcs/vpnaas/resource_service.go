@@ -85,6 +85,14 @@ func ResourceService() *schema.Resource {
 				Computed:    true,
 				Description: "The read-only external (public) IPv4 address that is used for the VPN service.",
 			},
+			"sdn": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				ValidateDiagFunc: networking.ValidateSDN(),
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
+			},
 		},
 		Description: "Manages a VPN service resource within VKCS.",
 	}
