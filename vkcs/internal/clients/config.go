@@ -80,6 +80,7 @@ func ConfigureSdkProvider(d *schema.ResourceData, terraformVersion string) (Conf
 			TenantID:         getConfigParam(d, "project_id", "OS_PROJECT_ID", ""),
 			Region:           getConfigParam(d, "region", "OS_REGION_NAME", DefaultRegionName),
 			IdentityEndpoint: getConfigParam(d, "auth_url", "OS_AUTH_URL", DefaultIdentityEndpoint),
+			EndpointType:     os.Getenv("OS_ENDPOINT_TYPE"),
 			UserDomainID:     getConfigParam(d, "user_domain_id", "OS_USER_DOMAIN_ID", ""),
 			UserDomainName:   getConfigParam(d, "user_domain_name", "OS_USER_DOMAIN_NAME", DefaultUserDomainName),
 			AllowReauth:      true,
@@ -253,6 +254,9 @@ func (c *configer) updateWithEnv() {
 	}
 	if c.IdentityEndpoint == "" {
 		c.IdentityEndpoint = os.Getenv("OS_AUTH_URL")
+	}
+	if c.EndpointType == "" {
+		c.EndpointType = os.Getenv("OS_ENDPOINT_TYPE")
 	}
 	if c.UserDomainID == "" {
 		c.UserDomainID = os.Getenv("OS_USER_DOMAIN_ID")
