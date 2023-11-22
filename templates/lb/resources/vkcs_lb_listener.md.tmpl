@@ -11,7 +11,11 @@ description: |-
 {{ .Description }}
 
 ## Example Usage
+### Listener for HTTP
 {{tffile .ExampleFile}}
+
+### Listener for TERMINATED_HTTPS
+{{tffile "examples/lb/listener/https/main.tf"}}
 {{ .SchemaMarkdown }}
 
 ## Import
