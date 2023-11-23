@@ -210,14 +210,14 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				ForceNew:    true,
-				Description: "API LoadBalancer vip.",
+				Description: "API LoadBalancer vip. IP address field.",
 			},
 			"api_lb_fip": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
 				ForceNew:    true,
-				Description: "API LoadBalancer fip.",
+				Description: "API LoadBalancer fip. IP address field.",
 			},
 			"ingress_floating_ip": {
 				Type:        schema.TypeString,
