@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.5.3 (unreleased)
+#### v0.5.3
 - Add retrying for 5xx http errors
 - Fix error of inconsistent result on apply when creating a Kubernetes addon
 - Add "skip_deletion" option to control the deletion strategy for Databases user resource
