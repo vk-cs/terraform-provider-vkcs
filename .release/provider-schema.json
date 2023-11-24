@@ -5484,6 +5484,14 @@
             "description": "The region in which to obtain the Networking client. A Networking client is needed to create a VPN service. If omitted, the `region` argument of the provider is used. Changing this creates a new service.",
             "computed": true,
             "force_new": true
+          },
+          "sdn": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
+            "computed": true,
+            "force_new": true,
+            "new_since": "v0.5.3"
           }
         },
         "timeouts": {
@@ -5555,6 +5563,14 @@
             "description": "The region in which to obtain the Networking client. A Networking client is needed to create an IPSec policy. If omitted, the `region` argument of the provider is used. Changing this creates a new policy.",
             "computed": true,
             "force_new": true
+          },
+          "sdn": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
+            "computed": true,
+            "force_new": true,
+            "new_since": "v0.5.3"
           },
           "transform_protocol": {
             "type": "TypeString",

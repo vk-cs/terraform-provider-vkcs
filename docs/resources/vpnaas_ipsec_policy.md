@@ -36,6 +36,8 @@ resource "vkcs_vpnaas_ipsec_policy" "policy_1" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the Networking client. A Networking client is needed to create an IPSec policy. If omitted, the `region` argument of the provider is used. Changing this creates a new policy.
 
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.<br>**New since v0.5.3**.
+
 - `transform_protocol` optional *string* &rarr;  The transform protocol. Valid values are ESP, AH and AH-ESP. Changing this updates the existing policy. Default is ESP.
 
 
