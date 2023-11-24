@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.5.2",
+  "provider_version": "v0.5.3",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -814,11 +814,13 @@
               "schema": {
                 "create": {
                   "type": "TypeString",
-                  "optional": true
+                  "optional": true,
+                  "description": "A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as \"30s\" or \"2h45m\". Valid time units are \"s\" (seconds), \"m\" (minutes), \"h\" (hours)."
                 },
                 "delete": {
                   "type": "TypeString",
-                  "optional": true
+                  "optional": true,
+                  "description": "A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as \"30s\" or \"2h45m\". Valid time units are \"s\" (seconds), \"m\" (minutes), \"h\" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs."
                 }
               }
             },
@@ -1954,6 +1956,23 @@
             "type": "TypeString",
             "required": true,
             "description": "The password of the user."
+          },
+          "vendor_options": {
+            "type": "TypeSet",
+            "optional": true,
+            "elem": {
+              "schema": {
+                "skip_deletion": {
+                  "type": "TypeBool",
+                  "optional": true,
+                  "default": false,
+                  "description": "Boolean to control whether to user deletion should be skipped. If set to true, the resource will be removed from the state, but the remote object will not be deleted. This is useful for PostgreSQL, where users cannot be deleted from the API if they own database objects."
+                }
+              }
+            },
+            "max_items": 1,
+            "min_items": 1,
+            "new_since": "v0.5.3"
           }
         },
         "timeouts": {
@@ -3116,14 +3135,14 @@
           "api_lb_fip": {
             "type": "TypeString",
             "optional": true,
-            "description": "API LoadBalancer fip.",
+            "description": "API LoadBalancer fip. IP address field.",
             "computed": true,
             "force_new": true
           },
           "api_lb_vip": {
             "type": "TypeString",
             "optional": true,
-            "description": "API LoadBalancer vip.",
+            "description": "API LoadBalancer vip. IP address field.",
             "computed": true,
             "force_new": true
           },
@@ -3181,7 +3200,7 @@
           "labels": {
             "type": "TypeMap",
             "optional": true,
-            "description": "The list of optional key value pairs representing additional properties of the cluster. _note_ Updating this attribute will not immediately apply the changes; these options will be used when recreating or deleting cluster nodes, for example, during an upgrade operation.\n\n  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16. _note_ Updating this value while the cluster is running is dangerous because it can lead to loss of connectivity of the cluster nodes.\n  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False. _note_ Changes to this value will be applied immediately.\n  * `cloud_monitoring` to enable cloud monitoring feature.\n  * `etcd_volume_size` to set etcd volume size. Default 10Gb.\n  * `kube_log_level` to set log level for kubelet in range 0 to 8.\n  * `master_volume_size` to set master vm volume size. Default 50Gb.\n  * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.\n",
+            "description": "The list of optional key value pairs representing additional properties of the cluster. _note_ Updating this attribute will not immediately apply the changes; these options will be used when recreating or deleting cluster nodes, for example, during an upgrade operation.\n\n  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16. _note_ Updating this value while the cluster is running is dangerous because it can lead to loss of connectivity of the cluster nodes.\n  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False. _note_ Changes to this value will be applied immediately.\n  * `cloud_monitoring` to enable cloud monitoring feature. Default False.\n  * `etcd_volume_size` to set etcd volume size in GB. Default 10.\n  * `kube_log_level` to set log level for kubelet in range 0 to 8. Default 0.\n  * `master_volume_size` to set master vm volume size in GB. Default 50.\n  * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.\n",
             "computed": true,
             "elem": {
               "type": "TypeString"
@@ -4148,7 +4167,7 @@
             "force_new": true
           }
         },
-        "description": "Associates a floating IP to a port. This is useful for situations where you have a pre-allocated floating IP or are unable to use the `vkcs_networking_floatingip` resource to create a floating IP."
+        "description": "Associates a floating IP to a port. This can be done only if port is assigned to router connected to external network. This is useful for situations where you have a pre-allocated floating IP or are unable to use the `vkcs_networking_floatingip` resource to create a floating IP."
       },
       "vkcs_networking_network": {
         "schema": {
@@ -5372,6 +5391,14 @@
             "computed": true,
             "force_new": true
           },
+          "sdn": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
+            "computed": true,
+            "force_new": true,
+            "new_since": "v0.5.3"
+          },
           "type": {
             "type": "TypeString",
             "optional": true,
@@ -5582,6 +5609,14 @@
             "description": "The ID of the router. Changing this creates a new service.",
             "force_new": true
           },
+          "sdn": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
+            "computed": true,
+            "force_new": true,
+            "new_since": "v0.5.3"
+          },
           "status": {
             "type": "TypeString",
             "description": "Indicates whether IPsec VPN service is currently operational. Values are ACTIVE, DOWN, BUILD, ERROR, PENDING_CREATE, PENDING_UPDATE, or PENDING_DELETE.",
@@ -5715,6 +5750,14 @@
             "description": "The region in which to obtain the Networking client. A Networking client is needed to create an IPSec site connection. If omitted, the `region` argument of the provider is used. Changing this creates a new site connection.",
             "computed": true,
             "force_new": true
+          },
+          "sdn": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
+            "computed": true,
+            "force_new": true,
+            "new_since": "v0.5.3"
           },
           "vpnservice_id": {
             "type": "TypeString",
