@@ -146,12 +146,14 @@ func testAccCheckIKEPolicyExists(n string, policy *ikepolicies.Policy) resource.
 
 const testAccIKEPolicyBasic = `
 resource "vkcs_vpnaas_ike_policy" "policy_1" {
+	sdn = "neutron"
 }
 `
 
 const testAccIKEPolicyUpdate = `
 resource "vkcs_vpnaas_ike_policy" "policy_1" {
 	name = "updatedname"
+	sdn = "neutron"
 }
 `
 
@@ -163,6 +165,7 @@ resource "vkcs_vpnaas_ike_policy" "policy_1" {
 		units = "seconds"
 		value = 1200
 	}
+	sdn = "neutron"
 }
 `
 

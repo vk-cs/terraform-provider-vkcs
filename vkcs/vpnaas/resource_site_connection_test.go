@@ -98,41 +98,50 @@ const testAccSiteConnectionBasic = `
 	resource "vkcs_networking_network" "network_1" {
 		name           = "tf_test_network"
   		admin_state_up = "true"
+		sdn = "neutron"
 	}
 
 	resource "vkcs_networking_subnet" "subnet_1" {
   		network_id = vkcs_networking_network.network_1.id
   		cidr       = "192.168.199.0/24"
+		sdn = "neutron"
 	}
 
 	resource "vkcs_networking_router" "router_1" {
   		name             = "my_router"
   		external_network_id = data.vkcs_networking_network.extnet.id
+		sdn = "neutron"
 	}
 
 	resource "vkcs_networking_router_interface" "router_interface_1" {
   		router_id = vkcs_networking_router.router_1.id
   		subnet_id = vkcs_networking_subnet.subnet_1.id
+		sdn = "neutron"
 	}
 
 	resource "vkcs_vpnaas_service" "service_1" {
 		router_id = vkcs_networking_router.router_1.id
 		admin_state_up = "false"
+		sdn = "neutron"
 	}
 
 	resource "vkcs_vpnaas_ipsec_policy" "policy_1" {
+		sdn = "neutron"
 	}
 
 	resource "vkcs_vpnaas_ike_policy" "policy_2" {
+		sdn = "neutron"
 	}
 
 	resource "vkcs_vpnaas_endpoint_group" "group_1" {
 		type = "cidr"
 		endpoints = ["10.0.0.24/24", "10.0.0.25/24"]
+		sdn = "neutron"
 	}
 	resource "vkcs_vpnaas_endpoint_group" "group_2" {
 		type = "subnet"
 		endpoints = [ vkcs_networking_subnet.subnet_1.id ]
+		sdn = "neutron"
 	}
 
 	resource "vkcs_vpnaas_site_connection" "conn_1" {
@@ -151,5 +160,6 @@ const testAccSiteConnectionBasic = `
 			interval = 21
 		}
 		depends_on = ["vkcs_networking_router_interface.router_interface_1"]
+		sdn = "neutron"
 	}
 	`
