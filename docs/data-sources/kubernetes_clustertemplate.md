@@ -13,21 +13,8 @@ Use this data source to get the ID of an available VKCS kubernetes cluster templ
 ## Example Usage
 
 ```terraform
-data "vkcs_kubernetes_clustertemplate" "example_template" {
-  name = "clustertemplate_1"
-}
-
-output "example_template_id" {
-  value = "${data.vkcs_kubernetes_clustertemplate.example_template.id}"
-}
-```
-```terraform
-data "vkcs_kubernetes_clustertemplate" "example_template_by_version" {
-  version = "1.20.4"
-}
-
-output "example_template_id" {
-  value = "${data.vkcs_kubernetes_clustertemplate.example_template_by_version.id}"
+data "vkcs_kubernetes_clustertemplate" "k8s_24" {    
+  version = "1.24"
 }
 ```
 ## Argument Reference

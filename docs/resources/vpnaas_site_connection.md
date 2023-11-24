@@ -14,6 +14,7 @@ Manages a IPSec site connection resource within VKCS.
 ```terraform
 resource "vkcs_vpnaas_service" "service" {
   router_id = "${vkcs_networking_router.router.id}"
+  sdn = "neutron"
 }
 
 resource "vkcs_vpnaas_ipsec_policy" "policy_1" {
@@ -27,10 +28,12 @@ resource "vkcs_vpnaas_ike_policy" "policy_2" {
 resource "vkcs_vpnaas_endpoint_group" "group_1" {
 	type = "cidr"
 	endpoints = ["10.0.0.24/24", "10.0.0.25/24"]
+	sdn = "neutron"
 }
 resource "vkcs_vpnaas_endpoint_group" "group_2" {
 	type = "subnet"
 	endpoints = [ "${vkcs_networking_subnet.subnet.id}" ]
+	sdn = "neutron"
 }
 
 resource "vkcs_vpnaas_site_connection" "connection" {
@@ -48,6 +51,7 @@ resource "vkcs_vpnaas_site_connection" "connection" {
 		timeout  = 42
 		interval = 21
 	}
+	sdn = "neutron"
 	depends_on = ["vkcs_networking_router_interface.router_interface"]
 }
 ```
@@ -90,6 +94,8 @@ resource "vkcs_vpnaas_site_connection" "connection" {
 - `peer_ep_group_id` optional *string* &rarr;  The ID for the endpoint group that contains private CIDRs in the form < net_address > / < prefix > for the peer side of the connection. You must specify this parameter with the local_ep_group_id parameter unless in backward-compatible mode where peer_cidrs is provided with a subnet_id for the VPN service.
 
 - `region` optional *string* &rarr;  The region in which to obtain the Networking client. A Networking client is needed to create an IPSec site connection. If omitted, the `region` argument of the provider is used. Changing this creates a new site connection.
+
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
 
 ## Attributes Reference

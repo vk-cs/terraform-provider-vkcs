@@ -15,6 +15,13 @@ Use this data source to get a list of available VKCS Kubernetes Cluster Template
 Enabled VKCS Kubernetes Cluster Templates:
 ```terraform
 data "vkcs_kubernetes_clustertemplates" "templates" {}
+
+output "available_templates_by_name" {
+  value = [
+    for template in data.vkcs_kubernetes_clustertemplates.templates.cluster_templates :
+    { name = template.name, version = template.version }
+  ]
+}
 ```
 ## Argument Reference
 - `region` optional *string* &rarr;  The region to obtain the service client. If omitted, the `region` argument of the provider is used.<br>**New since v0.3.0**.

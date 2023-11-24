@@ -11,17 +11,12 @@ description: |-
 Use this data source to get the ID of an available VKCS kubernetes cluster.
 
 ## Example Usage
+```terraform
+data "vkcs_kubernetes_cluster" "k8s-cluster" {
+  cluster_id = vkcs_kubernetes_cluster.k8s-cluster.id
+}
+```
 
-```terraform
-data "vkcs_kubernetes_cluster" "mycluster" {
-  name = "myclustername"
-}
-```
-```terraform
-data "vkcs_kubernetes_cluster" "mycluster" {
-  cluster_id = "myclusteruuid"
-}
-```
 ## Argument Reference
 - `cluster_id` optional *string* &rarr;  The UUID of the Kubernetes cluster template. <br>**Note:** Only one of `name` or `cluster_id` must be specified.
 

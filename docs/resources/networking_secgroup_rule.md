@@ -11,20 +11,37 @@ description: |-
 Manages a security group rule resource within VKCS.
 
 ## Example Usage
+### Basic-rule one protocol one port
 ```terraform
-resource "vkcs_networking_secgroup" "secgroup_1" {
-  name        = "secgroup_1"
-  description = "My security group"
-}
-
-resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
+resource "vkcs_networking_secgroup_rule" "etcd_app_clients" {
+  description       = "etcd app clients rule"
+  security_group_id = vkcs_networking_secgroup.etcd.id
   direction         = "ingress"
-  ethertype         = "IPv4"
   protocol          = "tcp"
-  port_range_min    = 22
-  port_range_max    = 22
-  remote_ip_prefix  = "0.0.0.0/0"
-  security_group_id = "${vkcs_networking_secgroup.secgroup_1.id}"
+  port_range_max    = 2379
+  port_range_min    = 2379
+  remote_ip_prefix  = vkcs_networking_subnet.app.cidr
+}
+```
+
+### Rule for all ports for particular protocol (udp)
+```terraform
+resource "vkcs_networking_secgroup_rule" "all_udp" {
+  description       = "All inbound UDP traffic from etcd hosts"
+  security_group_id = vkcs_networking_secgroup.etcd.id
+  direction         = "ingress"
+  protocol          = "udp"
+  remote_group_id   = vkcs_networking_secgroup.etcd.id
+}
+```
+
+### Rule for all protocols
+```terraform
+resource "vkcs_networking_secgroup_rule" "all" {
+  description       = "Any inbound traffic from etcd hosts"
+  security_group_id = vkcs_networking_secgroup.etcd.id
+  direction         = "ingress"
+  remote_group_id   = vkcs_networking_secgroup.etcd.id 
 }
 ```
 
