@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
@@ -242,7 +243,8 @@ func resourceSiteConnectionRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	conn, err := siteconnections.Get(networkingClient, d.Id()).Extract()
+	var conn connectionExtended
+	err = vpnaas.ExtractConnectionInto(siteconnections.Get(networkingClient, d.Id()), &conn)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "site_connection"))
 	}
@@ -264,6 +266,7 @@ func resourceSiteConnectionRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("psk", conn.PSK)
 	d.Set("mtu", conn.MTU)
 	d.Set("peer_cidrs", conn.PeerCIDRs)
+	d.Set("sdn", conn.SDN)
 
 	// Set the dpd
 	dpdMap := make(map[string]interface{})
