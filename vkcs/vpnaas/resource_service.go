@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
@@ -155,7 +156,8 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	service, err := services.Get(networkingClient, d.Id()).Extract()
+	var service serviceExtended
+	err = vpnaas.ExtractServiceInto(services.Get(networkingClient, d.Id()), &service)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "service"))
 	}
@@ -171,6 +173,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("external_v6_ip", service.ExternalV6IP)
 	d.Set("external_v4_ip", service.ExternalV4IP)
 	d.Set("region", util.GetRegion(d, config))
+	d.Set("sdn", service.SDN)
 
 	return nil
 }

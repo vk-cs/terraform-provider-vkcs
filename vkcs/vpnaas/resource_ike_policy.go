@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
@@ -176,7 +177,8 @@ func resourceIKEPolicyRead(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	policy, err := ikepolicies.Get(networkingClient, d.Id()).Extract()
+	var policy ikePolicyExtended
+	err = vpnaas.ExtractIKEPolicyInto(ikepolicies.Get(networkingClient, d.Id()), &policy)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "IKE policy"))
 	}
@@ -191,6 +193,7 @@ func resourceIKEPolicyRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("phase1_negotiation_mode", policy.Phase1NegotiationMode)
 	d.Set("ike_version", policy.IKEVersion)
 	d.Set("region", util.GetRegion(d, config))
+	d.Set("sdn", policy.SDN)
 
 	// Set the lifetime
 	lifetimeMap := make(map[string]interface{})

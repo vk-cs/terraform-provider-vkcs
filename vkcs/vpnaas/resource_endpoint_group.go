@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
@@ -137,7 +138,8 @@ func resourceEndpointGroupRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	group, err := endpointgroups.Get(networkingClient, d.Id()).Extract()
+	var group groupExtended
+	err = vpnaas.ExtractEndpointGroupInto(endpointgroups.Get(networkingClient, d.Id()), &group)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "group"))
 	}
@@ -149,6 +151,7 @@ func resourceEndpointGroupRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("type", group.Type)
 	d.Set("endpoints", group.Endpoints)
 	d.Set("region", util.GetRegion(d, config))
+	d.Set("sdn", group.SDN)
 
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/ipsecpolicies"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/services"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/siteconnections"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 )
 
 // EndpointGroupCreateOpts represents the attributes used when creating a new endpoint group.
@@ -31,4 +32,29 @@ type ServiceCreateOpts struct {
 // SiteConnectionCreateOpts represents the attributes used when creating a new IPSec site connection.
 type SiteConnectionCreateOpts struct {
 	siteconnections.CreateOpts
+}
+
+type groupExtended struct {
+	endpointgroups.EndpointGroup
+	networking.SDNExt
+}
+
+type ikePolicyExtended struct {
+	ikepolicies.Policy
+	networking.SDNExt
+}
+
+type ipsecPolicyExtended struct {
+	ipsecpolicies.Policy
+	networking.SDNExt
+}
+
+type serviceExtended struct {
+	services.Service
+	networking.SDNExt
+}
+
+type connectionExtended struct {
+	siteconnections.Connection
+	networking.SDNExt
 }

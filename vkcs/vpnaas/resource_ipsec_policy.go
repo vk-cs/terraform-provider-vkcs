@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 
@@ -177,7 +178,8 @@ func resourceIPSecPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	policy, err := ipsecpolicies.Get(networkingClient, d.Id()).Extract()
+	var policy ipsecPolicyExtended
+	err = vpnaas.ExtractIPSecPolicyInto(ipsecpolicies.Get(networkingClient, d.Id()), &policy)
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "IPSec policy"))
 	}
@@ -192,6 +194,7 @@ func resourceIPSecPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.Set("pfs", policy.PFS)
 	d.Set("auth_algorithm", policy.AuthAlgorithm)
 	d.Set("region", util.GetRegion(d, config))
+	d.Set("sdn", policy.SDN)
 
 	// Set the lifetime
 	lifetimeMap := make(map[string]interface{})
