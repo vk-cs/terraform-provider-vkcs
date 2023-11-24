@@ -12,30 +12,29 @@ Provides a kubernetes cluster resource. This can be used to create, modify and d
 
 ## Example Usage
 ```terraform
-data "vkcs_kubernetes_clustertemplate" "ct" {
-  version = "1.24"
-}
-
 resource "vkcs_kubernetes_cluster" "k8s-cluster" {
-  depends_on = [
-    vkcs_networking_router_interface.k8s,
-  ]
-
-  labels = {
-    cloud_monitoring = "true"
-    kube_log_level   = "2"
-  }
-
   name                = "k8s-cluster"
-  cluster_template_id = data.vkcs_kubernetes_clustertemplate.ct.id
-  master_flavor       = data.vkcs_compute_flavor.k8s.id
+  cluster_template_id = data.vkcs_kubernetes_clustertemplate.k8s_24.id
+  master_flavor       = data.vkcs_compute_flavor.basic.id
   master_count        = 1
 
-  network_id          = vkcs_networking_network.k8s.id
-  subnet_id           = vkcs_networking_subnet.k8s-subnetwork.id
-  floating_ip_enabled = true
+  labels = {
+    cloud_monitoring         = "true"
+    kube_log_level           = "2"
+    clean_volumes            = "true"
+    master_volume_size       = "100"
+    cluster_node_volume_type = "ceph-ssd"
+  }
+
   availability_zone   = "MS1"
-  insecure_registries = ["1.2.3.4"]
+  network_id          = vkcs_networking_network.app.id
+  subnet_id           = vkcs_networking_subnet.app.id
+  floating_ip_enabled = true
+  # If your configuration also defines a network for the instance,
+  # ensure it is attached to a router before creating of the instance
+  depends_on = [
+    vkcs_networking_router_interface.app,
+  ]
 }
 ```
 ## Argument Reference
@@ -51,9 +50,9 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 
 - `subnet_id` **required** *string* &rarr;  UUID of the cluster's subnet.
 
-- `api_lb_fip` optional *string* &rarr;  API LoadBalancer fip.
+- `api_lb_fip` optional *string* &rarr;  API LoadBalancer fip. IP address field.
 
-- `api_lb_vip` optional *string* &rarr;  API LoadBalancer vip.
+- `api_lb_vip` optional *string* &rarr;  API LoadBalancer vip. IP address field.
 
 - `dns_domain` optional *string* &rarr;  Custom DNS cluster domain. Changing this creates a new cluster.
 
@@ -67,10 +66,10 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 
   * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16. <br>**Note:** Updating this value while the cluster is running is dangerous because it can lead to loss of connectivity of the cluster nodes.
   * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False. <br>**Note:** Changes to this value will be applied immediately.
-  * `cloud_monitoring` to enable cloud monitoring feature.
-  * `etcd_volume_size` to set etcd volume size. Default 10Gb.
-  * `kube_log_level` to set log level for kubelet in range 0 to 8.
-  * `master_volume_size` to set master vm volume size. Default 50Gb.
+  * `cloud_monitoring` to enable cloud monitoring feature. Default False.
+  * `etcd_volume_size` to set etcd volume size in GB. Default 10.
+  * `kube_log_level` to set log level for kubelet in range 0 to 8. Default 0.
+  * `master_volume_size` to set master vm volume size in GB. Default 50.
   * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.
 
 - `loadbalancer_subnet_id` optional *string* &rarr;  The UUID of the load balancer's subnet. Changing this creates new cluster.

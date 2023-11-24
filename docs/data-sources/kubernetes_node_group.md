@@ -12,8 +12,8 @@ Use this data source to get information on VKCS Kubernetes cluster's node group.
 
 ## Example Usage
 ```terraform
-data "vkcs_kubernetes_node_group" "mynodegroup" {
-  uuid = "mynguuid"
+data "vkcs_kubernetes_node_group" "k8s-node-group" {
+  uuid = vkcs_kubernetes_node_group.default_ng.id
 }
 ```
 ## Argument Reference
