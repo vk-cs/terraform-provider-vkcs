@@ -100,6 +100,14 @@ func ResourceIKEPolicy() *schema.Resource {
 				},
 				Description: "The lifetime of the security association. Consists of Unit and Value.",
 			},
+			"sdn": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				ValidateDiagFunc: networking.ValidateSDN(),
+				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
+			},
 		},
 		Description: "Manages a IKE policy resource within VKCS.",
 	}

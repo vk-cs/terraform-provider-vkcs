@@ -155,6 +155,7 @@ const testAccEndpointGroupBasic = `
 		type = "cidr"
 		endpoints = ["10.3.0.0/24",
 			"10.2.0.0/24",]
+		sdn = "neutron"
 	}
 `
 
@@ -164,5 +165,6 @@ const testAccEndpointGroupUpdate = `
 		type = "cidr"
 		endpoints = ["10.2.0.0/24",
 			"10.3.0.0/24",]
+		sdn = "neutron"
 	}
 `

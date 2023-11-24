@@ -13,16 +13,18 @@ Manages a IPSec site connection resource within VKCS.
 ## Example Usage
 ```terraform
 resource "vkcs_vpnaas_service" "service" {
-  router_id = "${vkcs_networking_router.router.id}"
-  sdn = "neutron"
+	router_id = "${vkcs_networking_router.router.id}"
+	sdn = "neutron"
 }
 
 resource "vkcs_vpnaas_ipsec_policy" "policy_1" {
 	name = "ipsec-policy"
+	sdn = "neutron"
 }
 
 resource "vkcs_vpnaas_ike_policy" "policy_2" {
-  name = "ike-policy"
+	name = "ike-policy"
+	sdn = "neutron"
 }
 
 resource "vkcs_vpnaas_endpoint_group" "group_1" {
