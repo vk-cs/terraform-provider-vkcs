@@ -64,6 +64,9 @@ resource "vkcs_db_user" "db-user" {
 
 - `host` optional *string* &rarr;  IP address of the host that user will be accessible from.
 
+- `vendor_options` optional
+  - `skip_deletion` optional *boolean* &rarr;  Boolean to control whether to user deletion should be skipped. If set to true, the resource will be removed from the state, but the remote object will not be deleted. This is useful for PostgreSQL, where users cannot be deleted from the API if they own database objects.
+
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
