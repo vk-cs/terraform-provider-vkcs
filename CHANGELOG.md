@@ -6,13 +6,12 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.5.3 (unreleased)
-- Add 'sdn' parameter for ipsec_policy and ike_policy resources
+#### v0.5.3
+- Add 'sdn' parameter for vpnaas resources
+- Add "skip_deletion" option to control the deletion strategy for Databases user resource
 - Add retrying for 5xx http errors
 - Fix error of inconsistent result on apply when creating a Kubernetes addon
-- Add "skip_deletion" option to control the deletion strategy for Databases user resource
 - Fix error with creating large number of resources at once
-- Add 'sdn' parameter for some network resources (endpoint_group, service and site-connection)
 
 #### v0.5.2
 - Fixed issue when vkcs_networking_router_route could not be read
