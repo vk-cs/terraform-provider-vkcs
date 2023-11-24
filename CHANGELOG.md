@@ -9,6 +9,7 @@ description: |-
 #### v0.5.3 (unreleased)
 - Add retrying for 5xx http errors
 - Fix error of inconsistent result on apply when creating a Kubernetes addon
+- Add "skip_deletion" option to control the deletion strategy for Databases user resource
 - Fix error with creating large number of resources at once
 - Add 'sdn' parameter for some network resources (endpoint_group, service and site-connection)
 

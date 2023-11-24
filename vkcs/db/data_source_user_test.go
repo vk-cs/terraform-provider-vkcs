@@ -10,8 +10,10 @@ import (
 )
 
 func TestAccDatabaseDataSourceUser_basic(t *testing.T) {
-	resourceName := "vkcs_db_user.basic"
-	datasourceName := "data.vkcs_db_user.basic"
+	resourceName := "vkcs_db_user.user"
+	datasourceName := "data.vkcs_db_user.user"
+
+	baseConfig := acctest.AccTestRenderConfig(testAccDatabaseUserBasic, map[string]string{"TestAccDatabaseUserBase": acctest.AccTestRenderConfig(testAccDatabaseUserBase)})
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
@@ -19,7 +21,7 @@ func TestAccDatabaseDataSourceUser_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckDatabaseUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccDataSourceDatabaseUserBasic, map[string]string{"TestAccDatabaseUserBasic": acctest.AccTestRenderConfig(testAccDatabaseUserBasic)}),
+				Config: acctest.AccTestRenderConfig(testAccDataSourceDatabaseUserBasic, map[string]string{"TestAccDatabaseUserBasic": baseConfig}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceDatabaseUserID(datasourceName),
 					resource.TestCheckResourceAttrPair(resourceName, "name", datasourceName, "name"),
@@ -45,9 +47,9 @@ func testAccDataSourceDatabaseUserID(n string) resource.TestCheckFunc {
 }
 
 const testAccDataSourceDatabaseUserBasic = `
-{{.TestAccDatabaseUserBasic}}
+{{ .TestAccDatabaseUserBasic }}
 
-data "vkcs_db_user" "basic" {
-	id = vkcs_db_user.basic.id
+data "vkcs_db_user" "user" {
+	id = vkcs_db_user.user.id
 }
 `

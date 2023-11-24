@@ -77,6 +77,23 @@ func ResourceDatabaseUser() *schema.Resource {
 				Computed:    true,
 				Description: "Type of dbms for the user, can be \"instance\" or \"cluster\".",
 			},
+
+			"vendor_options": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				MinItems: 1,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"skip_deletion": {
+							Type:        schema.TypeBool,
+							Default:     false,
+							Optional:    true,
+							Description: "Boolean to control whether to user deletion should be skipped. If set to true, the resource will be removed from the state, but the remote object will not be deleted. This is useful for PostgreSQL, where users cannot be deleted from the API if they own database objects.",
+						},
+					},
+				},
+			},
 		},
 		Description: "Provides a db user resource. This can be used to create, modify and delete db user.",
 	}
@@ -304,6 +321,15 @@ func resourceDatabaseUserUpdate(ctx context.Context, d *schema.ResourceData, met
 
 func resourceDatabaseUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
+
+	vendorOptionsRaw := d.Get("vendor_options").(*schema.Set)
+	if vendorOptionsRaw.Len() > 0 {
+		vendorOptions := util.ExpandVendorOptions(vendorOptionsRaw.List())
+		if v, ok := vendorOptions["skip_deletion"]; ok && v.(bool) {
+			return nil
+		}
+	}
+
 	DatabaseV1Client, err := config.DatabaseV1Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating vkcs database client: %s", err)
