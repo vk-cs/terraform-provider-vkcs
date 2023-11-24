@@ -95,7 +95,7 @@ resource "vkcs_vpnaas_site_connection" "connection" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the Networking client. A Networking client is needed to create an IPSec site connection. If omitted, the `region` argument of the provider is used. Changing this creates a new site connection.
 
-- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.<br>**New since v0.5.3**.
 
 
 ## Attributes Reference
