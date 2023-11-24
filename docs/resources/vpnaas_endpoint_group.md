@@ -30,7 +30,7 @@ resource "vkcs_vpnaas_endpoint_group" "group_1" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the Networking client. A Networking client is needed to create an endpoint group. If omitted, the `region` argument of the provider is used. Changing this creates a new group.
 
-- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
+- `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.<br>**New since v0.5.3**.
 
 - `type` optional *string* &rarr;  The type of the endpoints in the group. A valid value is subnet, cidr, network, router, or vlan. Changing this creates a new group.
 
