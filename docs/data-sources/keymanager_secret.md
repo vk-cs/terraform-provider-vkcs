@@ -15,9 +15,11 @@ Use this data source to get the ID and the payload of an available Key secret
 ## Example Usage
 
 ```terraform
-data "vkcs_keymanager_secret" "example" {
-  mode        = "cbc"
-  secret_type = "passphrase"
+data "vkcs_keymanager_secret" "certificate" {
+  secret_type = "certificate"
+  # This is unnecessary in real life.
+  # This is required here to let the example work with secret resource example. 
+  depends_on = [vkcs_keymanager_secret.certificate]
 }
 ```
 

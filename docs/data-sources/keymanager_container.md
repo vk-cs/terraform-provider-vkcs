@@ -13,8 +13,11 @@ Use this data source to get the ID of an available Key container.
 ## Example Usage
 
 ```terraform
-data "vkcs_keymanager_container" "example" {
-  name = "my_container"
+data "vkcs_keymanager_container" "lb_cert" {
+  name = "container-tf-example"
+  # This is unnecessary in real life.
+  # This is required here to let the example work with container resource example. 
+  depends_on = [vkcs_keymanager_container.lb_cert]
 }
 ```
 

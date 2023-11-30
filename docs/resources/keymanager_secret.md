@@ -13,69 +13,23 @@ Manages a key secret resource within VKCS.
 ~> **Important Security Notice** The payload of this resource will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).
 
 ## Example Usage
-### Simple secret
+### Private key for TERMINATED_HTTPS loadbalancer listener
 ```terraform
-resource "vkcs_keymanager_secret" "secret_1" {
-  algorithm            = "aes"
-  bit_length           = 256
-  mode                 = "cbc"
-  name                 = "mysecret"
-  payload              = "foobar"
+resource "vkcs_keymanager_secret" "priv_key" {
+  name                 = "priv-key-tf-example"
+  secret_type          = "private"
   payload_content_type = "text/plain"
-  secret_type          = "passphrase"
-
-  metadata = {
-    key = "foo"
-  }
+  payload              = file("${path.module}/private-key.key")
 }
 ```
 
-### Secret with whitespaces
+### Certificate for TERMINATED_HTTPS loadbalancer listener
 ```terraform
-resource "vkcs_keymanager_secret" "secret_1" {
-  name                     = "password"
-  payload                  = "${base64encode("password with the whitespace at the end ")}"
-  secret_type              = "passphrase"
-  payload_content_type     = "application/octet-stream"
-  payload_content_encoding = "base64"
-}
-```
-
-### Secret with the expiration date
-```terraform
-resource "vkcs_keymanager_secret" "secret_1" {
-  name                 = "certificate"
-  payload              = "${file("certificate.pem")}"
+resource "vkcs_keymanager_secret" "certificate" {
+  name                 = "certificate-tf-example"
   secret_type          = "certificate"
   payload_content_type = "text/plain"
-  expiration           = "${timeadd(timestamp(), format("%dh", 8760))}" # one year in hours
-
-  lifecycle {
-    ignore_changes = [
-      expiration
-    ]
-  }
-}
-```
-
-### Secret with the ACL
-~> **Note** Only read ACLs are supported
-```terraform
-resource "vkcs_keymanager_secret" "secret_1" {
-  name                 = "certificate"
-  payload              = "${file("certificate.pem")}"
-  secret_type          = "certificate"
-  payload_content_type = "text/plain"
-
-  acl {
-    read {
-      project_access = false
-      users = [
-        "userid1",
-        "userid2",
-      ]
-    }
-  }
+  payload              = file("${path.module}/certificate.pem")
 }
 ```
 
