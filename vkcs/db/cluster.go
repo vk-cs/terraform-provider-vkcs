@@ -648,6 +648,9 @@ func getClusterStatus(c *clusters.ClusterResp) string {
 		}
 	}
 	if c.Task.Name == "NONE" {
+		if len(c.Instances) == 0 {
+			return string(dbClusterStatusError)
+		}
 		switch instancesStatus {
 		case string(dbInstanceStatusActive):
 			return string(dbClusterStatusActive)
@@ -672,7 +675,7 @@ func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterI
 		}
 
 		clusterStatus := getClusterStatus(c)
-		if clusterStatus == "error" {
+		if clusterStatus == string(dbClusterStatusError) {
 			return c, clusterStatus, fmt.Errorf("there was an error creating the database cluster")
 		}
 		if clusterStatus == string(dbClusterStatusActive) {
