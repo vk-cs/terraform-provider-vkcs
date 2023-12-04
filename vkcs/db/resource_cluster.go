@@ -31,6 +31,7 @@ var (
 	dbClusterStatusUpdating           dbClusterStatus = "UPDATING_CLUSTER"
 	dbClusterStatusCapabilityApplying dbClusterStatus = "CAPABILITY_APPLYING"
 	dbClusterStatusBackup             dbClusterStatus = "BACKUP"
+	dbClusterStatusError              dbClusterStatus = "ERROR"
 )
 
 const (
@@ -671,30 +672,34 @@ func resourceDatabaseClusterRead(ctx context.Context, d *schema.ResourceData, me
 
 	d.Set("name", cluster.Name)
 	d.Set("datastore", flattenDatabaseInstanceDatastore(*cluster.DataStore))
-	d.Set("flavor_id", cluster.Instances[0].Flavor.ID)
-	d.Set("cluster_size", len(cluster.Instances))
-	d.Set("volume_size", cluster.Instances[0].Volume.Size)
 	d.Set("loadbalancer_id", cluster.LoadbalancerID)
 
 	d.Set("configuration_id", cluster.ConfigurationID)
 	if _, ok := d.GetOk("disk_autoexpand"); ok {
 		d.Set("disk_autoexpand", flattenDatabaseInstanceAutoExpand(cluster.AutoExpand, cluster.MaxDiskSize))
 	}
-	if cluster.Instances[0].WalVolume != nil && cluster.Instances[0].WalVolume.VolumeID != "" {
-		var walVolumeType string
-		if v, ok := d.GetOk("wal_volume"); ok {
-			walV, _ := extractDatabaseWalVolume(v.([]interface{}))
-			walVolumeType = walV.VolumeType
-		}
-		walvolume := instances.WalVolume{Size: cluster.Instances[0].WalVolume.Size, VolumeType: walVolumeType}
-		d.Set("wal_volume", flattenDatabaseClusterWalVolume(walvolume))
 
-		if _, ok := d.GetOk("wal_disk_autoexpand"); ok {
-			d.Set("wal_disk_autoexpand", flattenDatabaseInstanceAutoExpand(cluster.WalAutoExpand, cluster.WalMaxDiskSize))
+	if len(cluster.Instances) > 0 {
+		d.Set("flavor_id", cluster.Instances[0].Flavor.ID)
+		d.Set("cluster_size", len(cluster.Instances))
+		d.Set("volume_size", cluster.Instances[0].Volume.Size)
+
+		if cluster.Instances[0].WalVolume != nil && cluster.Instances[0].WalVolume.VolumeID != "" {
+			var walVolumeType string
+			if v, ok := d.GetOk("wal_volume"); ok {
+				walV, _ := extractDatabaseWalVolume(v.([]interface{}))
+				walVolumeType = walV.VolumeType
+			}
+			walvolume := instances.WalVolume{Size: cluster.Instances[0].WalVolume.Size, VolumeType: walVolumeType}
+			d.Set("wal_volume", flattenDatabaseClusterWalVolume(walvolume))
+
+			if _, ok := d.GetOk("wal_disk_autoexpand"); ok {
+				d.Set("wal_disk_autoexpand", flattenDatabaseInstanceAutoExpand(cluster.WalAutoExpand, cluster.WalMaxDiskSize))
+			}
 		}
+
+		d.Set("instances", flattenDatabaseClusterInstances(cluster.Instances))
 	}
-
-	d.Set("instances", flattenDatabaseClusterInstances(cluster.Instances))
 
 	backupSchedule, err := clusters.GetBackupSchedule(DatabaseV1Client, d.Id()).Extract()
 	if err != nil {

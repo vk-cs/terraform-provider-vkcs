@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.5.4 (unreleased)
+- Fix error when trying to read vkcs_db_cluster without instances
+
 #### v0.5.3
 - Add 'sdn' parameter for vpnaas resources
 - Add "skip_deletion" option to control the deletion strategy for Databases user resource
