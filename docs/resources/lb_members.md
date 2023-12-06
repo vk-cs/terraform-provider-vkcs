@@ -12,18 +12,16 @@ description: |-
 
 ## Example Usage
 ```terraform
-resource "vkcs_lb_members" "members_1" {
-	pool_id = "935685fb-a896-40f9-9ff4-ae531a3a00fe"
+resource "vkcs_lb_members" "front_workers" {
+  pool_id = vkcs_lb_pool.http.id
 
-	member {
-		address       = "192.168.199.23"
-		protocol_port = 8080
-	}
-
-	member {
-		address       = "192.168.199.24"
-		protocol_port = 8080
-	}
+  dynamic "member" {
+    for_each = vkcs_compute_instance.front_worker
+    content {
+      address       = member.value.access_ip_v4
+      protocol_port = 8080
+    }
+  }
 }
 ```
 ## Argument Reference
