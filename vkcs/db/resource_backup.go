@@ -311,12 +311,12 @@ func (r *BackupResource) Create(ctx context.Context, req resource.CreateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if backup.InstanceID != "" {
-		data.DbmsID = types.StringValue(backup.InstanceID)
-		data.DbmsType = types.StringValue(db.DBMSTypeInstance)
-	} else {
+	if backup.ClusterID != "" {
 		data.DbmsID = types.StringValue(backup.ClusterID)
 		data.DbmsType = types.StringValue(db.DBMSTypeCluster)
+	} else {
+		data.DbmsID = types.StringValue(backup.InstanceID)
+		data.DbmsType = types.StringValue(db.DBMSTypeInstance)
 	}
 	data.Description = types.StringValue(backup.Description)
 	data.LocationRef = types.StringValue(backup.LocationRef)
@@ -373,12 +373,12 @@ func (r *BackupResource) Read(ctx context.Context, req resource.ReadRequest, res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if backup.InstanceID != "" {
-		data.DbmsID = types.StringValue(backup.InstanceID)
-		data.DbmsType = types.StringValue(db.DBMSTypeInstance)
-	} else {
+	if backup.ClusterID != "" {
 		data.DbmsID = types.StringValue(backup.ClusterID)
 		data.DbmsType = types.StringValue(db.DBMSTypeCluster)
+	} else {
+		data.DbmsID = types.StringValue(backup.InstanceID)
+		data.DbmsType = types.StringValue(db.DBMSTypeInstance)
 	}
 	data.LocationRef = types.StringValue(backup.LocationRef)
 	data.Meta = types.StringValue(backup.Meta)
