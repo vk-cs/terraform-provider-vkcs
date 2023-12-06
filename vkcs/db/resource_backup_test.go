@@ -22,6 +22,21 @@ func TestAccDatabaseBackup_basic(t *testing.T) {
 	})
 }
 
+func TestAccDatabaseBackupCluster_basic_big(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccDatabaseBackupClusterBasic, map[string]string{"TestAccDatabaseClusterBasic": acctest.AccTestRenderConfig(testAccDatabaseClusterBasic)}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_db_backup.basic", "name", "basic"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDatabaseBackupResource_migrateToFramework(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.AccTestPreCheck(t) },
@@ -53,6 +68,16 @@ const testAccDatabaseBackupBasic = `
 resource "vkcs_db_backup" "basic" {
     name = "basic"
     dbms_id = vkcs_db_instance.basic.id
+    description = "basic description"
+}
+`
+
+const testAccDatabaseBackupClusterBasic = `
+{{.TestAccDatabaseClusterBasic}}
+
+resource "vkcs_db_backup" "basic" {
+    name = "basic"
+    dbms_id = vkcs_db_cluster.basic.id
     description = "basic description"
 }
 `
