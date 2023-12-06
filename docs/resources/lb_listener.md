@@ -11,15 +11,26 @@ description: |-
 Manages a listener resource within VKCS.
 
 ## Example Usage
+### Listener for HTTP
 ```terraform
-resource "vkcs_lb_listener" "listener_1" {
-	loadbalancer_id = "d9415786-5f1a-428b-b35f-2f1523e146d2"
-	protocol        = "HTTP"
-	protocol_port   = 8080
+resource "vkcs_lb_listener" "app_http" {
+  name            = "app-http-tf-example"
+  description     = "Listener for resources/datasources testing"
+  loadbalancer_id = vkcs_lb_loadbalancer.app.id
+  protocol        = "HTTP"
+  protocol_port   = 8080
+}
+```
 
-	insert_headers = {
-		X-Forwarded-For = "true"
-	}
+### Listener for TERMINATED_HTTPS
+```terraform
+resource "vkcs_lb_listener" "app_terminated_https" {
+  name                      = "app-https-tf-example"
+  description               = "Listener for resources/datasources testing"
+  protocol                  = "TERMINATED_HTTPS"
+  protocol_port             = 8443
+  loadbalancer_id           = vkcs_lb_loadbalancer.app.id
+  default_tls_container_ref = vkcs_keymanager_container.lb_cert.container_ref
 }
 ```
 ## Argument Reference
