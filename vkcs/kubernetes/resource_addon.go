@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/planmodifiers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/privatestate"
 	v1 "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfraaddons/v1"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfraaddons/v1/addons"
@@ -86,18 +87,8 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Optional:    true,
 				Description: "The region in which to obtain the Container Infra Addons client. If omitted, the `region` argument of the provider is used. Changing this creates a new addon.",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplaceIf(func(ctx context.Context, sr planmodifier.StringRequest, rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse) {
-						var configValue, stateValue types.String
-						resp.Diagnostics.Append(sr.Config.GetAttribute(ctx, sr.Path, &configValue)...)
-						resp.Diagnostics.Append(sr.State.GetAttribute(ctx, sr.Path, &stateValue)...)
-						if resp.Diagnostics.HasError() {
-							return
-						}
-
-						if !configValue.IsNull() && !configValue.Equal(stateValue) {
-							rrifr.RequiresReplace = true
-						}
-					}, "require replacement if configuration value changes", "require replacement if configuration value changes"),
+					stringplanmodifier.RequiresReplaceIf(planmodifiers.GetRegionPlanModifier(resp),
+						"require replacement if configuration value changes", "require replacement if configuration value changes"),
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},

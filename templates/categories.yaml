@@ -14,3 +14,4 @@ subCategoryMapping:
   keymanager: Key Manager
   backup: Backup
   dc: Direct Connect
+  mlplatform: ML Platform

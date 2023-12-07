@@ -44,6 +44,7 @@ type Config interface {
 	SharedfilesystemV2Client(region string) (*gophercloud.ServiceClient, error)
 	LoadBalancerV2Client(region string) (*gophercloud.ServiceClient, error)
 	BackupV1Client(region string, tenantID string) (*gophercloud.ServiceClient, error)
+	MLPlatformV1Client(region string) (*gophercloud.ServiceClient, error)
 	GetMutex() *mutexkv.MutexKV
 }
 
@@ -188,6 +189,11 @@ func (c *configer) LoadBalancerV2Client(region string) (*gophercloud.ServiceClie
 func (c *configer) BackupV1Client(region string, tenantID string) (*gophercloud.ServiceClient, error) {
 	client, err := c.CommonServiceClientInit(newBackupV1, region, "data-protect")
 	client.Endpoint = fmt.Sprintf("%s%s/", client.Endpoint, tenantID)
+	return client, err
+}
+
+func (c *configer) MLPlatformV1Client(region string) (*gophercloud.ServiceClient, error) {
+	client, err := c.CommonServiceClientInit(newMLPlatformV1, region, "mlplatform")
 	return client, err
 }
 

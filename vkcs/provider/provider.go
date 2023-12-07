@@ -16,6 +16,7 @@ import (
 	wrapper "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/providerwrapper/framework"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/keymanager"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/mlplatform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 )
 
@@ -133,5 +134,8 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		dc.NewVRRPResource,
 		dc.NewVRRPInterfaceResource,
 		dc.NewVRRPAddressResource,
+		mlplatform.NewJupyterHubResource,
+		mlplatform.NewMLFlowResource,
+		mlplatform.NewMLFlowDeployResource,
 	}
 }

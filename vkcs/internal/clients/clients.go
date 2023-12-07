@@ -35,3 +35,9 @@ func newBackupV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts
 	sc, err := initClientOpts(client, eo, "data-protect")
 	return sc, err
 }
+
+func newMLPlatformV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
+	sc, err := initClientOpts(client, eo, "mlplatform")
+	sc.ResourceBase = sc.Endpoint + "v1_0/"
+	return sc, err
+}
