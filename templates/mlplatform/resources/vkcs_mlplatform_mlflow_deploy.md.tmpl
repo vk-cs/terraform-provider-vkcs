@@ -1,0 +1,21 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a ML Platform MLFlow Deploy instance resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+ML Platform JupyterHub instance can be imported using the `id`, e.g.
+{{codefile "shell" "templates/mlplatform/resources/vkcs_mlplatform_mlflow_deploy/import.sh"}}

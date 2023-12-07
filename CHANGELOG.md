@@ -6,7 +6,8 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.5.6 (unreleased)
+#### v0.6.0 (unreleased)
+- Add mlplatform jupyterhub, mlflow, mlflow_deploy resources
 - Use chart name as Kubernetes addon's default name
 
 #### v0.5.5

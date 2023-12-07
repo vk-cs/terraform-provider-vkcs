@@ -1,0 +1,1 @@
+terraform import vkcs_mlplatform_jupyterhub.myjupyterhub 3a679dd9-0942-49b0-b233-95de5a5a9502
