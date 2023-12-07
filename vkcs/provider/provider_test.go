@@ -4,9 +4,12 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/pathorcontents"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/provider"
 )
@@ -134,6 +137,57 @@ func TestAccProvider_clientCertString(t *testing.T) {
 		t.Fatalf("unexpected err when specifying VKCS Client keypair by contents: %v", diag)
 	}
 }
+
+func TestAccSDKProvider_InvalidConfig(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccSDKProviderInvalidConfig,
+				ExpectError: regexp.MustCompile("OpenStack connection error, retries exhausted"),
+			},
+		},
+	})
+}
+
+func TestAccProvider_InvalidConfig(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccProviderInvalidConfig,
+				ExpectError: regexp.MustCompile("OpenStack connection error, retries exhausted"),
+			},
+		},
+	})
+}
+
+const testAccSDKProviderInvalidConfig = `
+provider "vkcs" {
+	alias = "invalid_config"
+	auth_url = "example.com"
+}
+
+resource "vkcs_blockstorage_volume" "volume" {
+	provider = vkcs.invalid_config
+	size = 8
+	volume_type = "ssd"
+	availability_zone = "GZ1"
+}
+`
+
+const testAccProviderInvalidConfig = `
+provider "vkcs" {
+	alias = "invalid_config"
+	auth_url = "example.com"
+}
+
+resource "vkcs_dc_router" "volume" {
+	provider = vkcs.invalid_config
+}
+`
 
 func envVarContents(varName string) (string, error) {
 	// TODO(irlndts): the function is deprecated, replace it.
