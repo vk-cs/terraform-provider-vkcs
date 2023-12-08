@@ -138,13 +138,13 @@ func TestAccProvider_clientCertString(t *testing.T) {
 	}
 }
 
-func TestAccSDKProvider_InvalidConfig(t *testing.T) {
+func TestAccProviderSDK_InvalidConfig(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccSDKProviderInvalidConfig,
+				Config:      testAccProviderSDKInvalidConfig,
 				ExpectError: regexp.MustCompile("OpenStack connection error, retries exhausted"),
 			},
 		},
@@ -164,7 +164,7 @@ func TestAccProvider_InvalidConfig(t *testing.T) {
 	})
 }
 
-const testAccSDKProviderInvalidConfig = `
+const testAccProviderSDKInvalidConfig = `
 provider "vkcs" {
 	alias = "invalid_config"
 	auth_url = "example.com"
