@@ -12,8 +12,8 @@ Manages a Server Group resource within VKCS.
 
 ## Example Usage
 ```terraform
-resource "vkcs_compute_servergroup" "test-sg" {
-  name     = "my-sg"
+resource "vkcs_compute_servergroup" "cusom_group" {
+  name     = "custom-group-tf-example"
   policies = ["anti-affinity"]
 }
 ```
