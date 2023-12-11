@@ -82,6 +82,7 @@ func ConfigureSdkProvider(d *schema.ResourceData, terraformVersion string) (Conf
 			IdentityEndpoint: getConfigParam(d, "auth_url", "OS_AUTH_URL", DefaultIdentityEndpoint),
 			UserDomainID:     getConfigParam(d, "user_domain_id", "OS_USER_DOMAIN_ID", ""),
 			UserDomainName:   getConfigParam(d, "user_domain_name", "OS_USER_DOMAIN_NAME", DefaultUserDomainName),
+			EndpointType:     os.Getenv("OS_INTERFACE"),
 			AllowReauth:      true,
 			MaxRetries:       maxRetriesCount,
 			TerraformVersion: terraformVersion,
@@ -242,6 +243,9 @@ func (c *configer) updateWithEnv() {
 	}
 	if c.UserDomainName == "" {
 		c.UserDomainName = os.Getenv("OS_USER_DOMAIN_NAME")
+	}
+	if c.EndpointType == "" {
+		c.EndpointType = os.Getenv("OS_INTERFACE")
 	}
 }
 
