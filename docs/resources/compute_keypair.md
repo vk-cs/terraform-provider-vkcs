@@ -15,24 +15,24 @@ Manages a keypair resource within VKCS.
 ## Example Usage
 ### Import an Existing Public Key
 ```terraform
-resource "vkcs_compute_keypair" "test-keypair" {
-  name       = "my-keypair"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDAjpC1hwiOCCmKEWxJ4qzTTsJbKzndLotBCz5PcwtUnflmU+gHJtWMZKpuEGVi29h0A/+ydKek1O18k10Ff+4tyFjiHDQAnOfgWf7+b1yK+qDip3X1C0UPMbwHlTfSGWLGZqd9LvEFx9k3h/M+VtMvwR1lJ9LUyTAImnNjWG7TaIPmui30HvM2UiFEmqkr4ijq45MyX2+fLIePLRIF61p4whjHAQYufqyno3BS48icQb4p6iVEZPo4AE2o9oIyQvj2mx4dk5Y8CgSETOZTYDOR3rU2fZTRDRgPJDH9FWvQjF5tA0p3d9CoWWd2s6GKKbfoUIi8R/Db1BSPJwkqB"
+resource "vkcs_compute_keypair" "existing-key" {
+  name       = "existing-key-tf-example"
+  public_key = file("${path.module}/public_key.key")
 }
 ```
 
 ### Generate a Public/Private Key Pair
 ```terraform
-resource "vkcs_compute_keypair" "keypair" {
-  name = "test-keypair"
+resource "vkcs_compute_keypair" "generated-key" {
+  name = "generated-key-tf-example"
 }
 
 output "public_key" {
-  value = vkcs_compute_keypair.keypair.public_key
+  value = vkcs_compute_keypair.generated-key.public_key
 }
 
 output "private_key" {
-  value = vkcs_compute_keypair.keypair.private_key
+  value = vkcs_compute_keypair.generated-key.private_key
   sensitive = true
 }
 ```

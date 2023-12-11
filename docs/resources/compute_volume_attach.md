@@ -10,82 +10,33 @@ description: |-
 
 Attaches a Block Storage Volume to an Instance using the VKCS Compute API.
 
-## Example Usage
-### Basic attachment of a single volume to a single instance
+## Examples
+### Usage with one volume
 ```terraform
-resource "vkcs_blockstorage_volume" "volume_1" {
-  name = "volume_1"
-  size = 1
-}
-
-resource "vkcs_compute_instance" "instance_1" {
-  name            = "instance_1"
-  security_groups = ["default"]
-}
-
-resource "vkcs_compute_volume_attach" "va_1" {
-  instance_id = "${vkcs_compute_instance.instance_1.id}"
-  volume_id   = "${vkcs_blockstorage_volume.volume_1.id}"
+resource "vkcs_compute_volume_attach" "data" {
+  instance_id = vkcs_compute_instance.basic.id
+  volume_id   = vkcs_blockstorage_volume.volume.id
 }
 ```
 
-### Attaching multiple volumes to a single instance
-```terraform
-resource "vkcs_blockstorage_volume" "volumes" {
-  count = 2
-  name  = "${format("vol-%02d", count.index + 1)}"
-  size  = 1
-}
-
-resource "vkcs_compute_instance" "instance_1" {
-  name            = "instance_1"
-  security_groups = ["default"]
-}
-
-resource "vkcs_compute_volume_attach" "attachments" {
-  count       = 2
-  instance_id = "${vkcs_compute_instance.instance_1.id}"
-  volume_id   = "${vkcs_blockstorage_volume.volumes.*.id[count.index]}"
-}
-
-output "volume_devices" {
-  value = "${vkcs_compute_volume_attach.attachments.*.device}"
-}
-```
-
-Note that the above example will not guarantee that the volumes are attached in
+### Usage with ORDERED multiple volumes
+Attaching multiple volumes will not guarantee that the volumes are attached in
 a deterministic manner. The volumes will be attached in a seemingly random
 order.
 
 If you want to ensure that the volumes are attached in a given order, create
 explicit dependencies between the volumes, such as:
-
 ```terraform
-resource "vkcs_blockstorage_volume" "volumes" {
-  count = 2
-  name  = "${format("vol-%02d", count.index + 1)}"
-  size  = 1
-}
-
-resource "vkcs_compute_instance" "instance_1" {
-  name            = "instance_1"
-  security_groups = ["default"]
-}
-
 resource "vkcs_compute_volume_attach" "attach_1" {
-  instance_id = "${vkcs_compute_instance.instance_1.id}"
-  volume_id   = "${vkcs_blockstorage_volume.volumes.0.id}"
+  instance_id = vkcs_compute_instance.basic.id
+  volume_id   = vkcs_blockstorage_volume.volumes.0.id
 }
 
 resource "vkcs_compute_volume_attach" "attach_2" {
-  instance_id = "${vkcs_compute_instance.instance_1.id}"
-  volume_id   = "${vkcs_blockstorage_volume.volumes.1.id}"
+  instance_id = vkcs_compute_instance.basic.id
+  volume_id   = vkcs_blockstorage_volume.volumes.1.id
 
-  depends_on = ["vkcs_compute_volume_attach.attach_1"]
-}
-
-output "volume_devices" {
-  value = "${vkcs_compute_volume_attach.attachments.*.device}"
+  depends_on = [vkcs_compute_volume_attach.attach_1]
 }
 ```
 ## Argument Reference
