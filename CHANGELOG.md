@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.5.5 (unreleased)
+- Add force_deletion option to vkcs_db_database resource
+
 #### v0.5.4
 - Fix creating vkcs_db_backup for clusters
 - Fix error when trying to read vkcs_db_cluster without instances

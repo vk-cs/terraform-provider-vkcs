@@ -51,8 +51,12 @@ func List(client *gophercloud.ServiceClient, id string, dbmsType string) paginat
 }
 
 // Delete performs request to delete database
-func Delete(client *gophercloud.ServiceClient, id string, dbName string, dbmsType string) (r DeleteResult) {
-	resp, err := client.Delete(databaseURL(client, dbmsType, id, dbName), &gophercloud.RequestOpts{})
+func Delete(client *gophercloud.ServiceClient, id string, dbName string, dbmsType string, force bool) (r DeleteResult) {
+	url := databaseURL(client, dbmsType, id, dbName)
+	if force {
+		url += "?force=true"
+	}
+	resp, err := client.Delete(url, &gophercloud.RequestOpts{})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return

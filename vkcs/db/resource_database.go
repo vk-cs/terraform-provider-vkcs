@@ -20,6 +20,7 @@ func ResourceDatabaseDatabase() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceDatabaseDatabaseCreate,
 		ReadContext:   resourceDatabaseDatabaseRead,
+		UpdateContext: resourceDatabaseDatabaseUpdate,
 		DeleteContext: resourceDatabaseDatabaseDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -63,6 +64,23 @@ func ResourceDatabaseDatabase() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Type of dbms for the database, can be \"instance\" or \"cluster\".",
+			},
+
+			"vendor_options": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				MinItems: 1,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"force_deletion": {
+							Type:        schema.TypeBool,
+							Default:     false,
+							Optional:    true,
+							Description: "Whether to try to force delete the database. Some datastores restricts regular database deletion in some circumstances but provides force deletion for that cases.",
+						},
+					},
+				},
 			},
 		},
 		Description: "Provides a db database resource. This can be used to create, modify and delete db databases.",
@@ -179,6 +197,10 @@ func resourceDatabaseDatabaseRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
+func resourceDatabaseDatabaseUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return resourceDatabaseDatabaseRead(ctx, d, meta)
+}
+
 func resourceDatabaseDatabaseDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
 	DatabaseV1Client, err := config.DatabaseV1Client(util.GetRegion(d, config))
@@ -204,7 +226,16 @@ func resourceDatabaseDatabaseDelete(ctx context.Context, d *schema.ResourceData,
 		return nil
 	}
 
-	err = databases.Delete(DatabaseV1Client, dbmsID, databaseName, dbmsType).ExtractErr()
+	var forceDeletion bool
+	vendorOptionsRaw := d.Get("vendor_options").(*schema.Set)
+	if vendorOptionsRaw.Len() > 0 {
+		vendorOptions := util.ExpandVendorOptions(vendorOptionsRaw.List())
+		if v, ok := vendorOptions["force_deletion"]; ok {
+			forceDeletion = v.(bool)
+		}
+	}
+
+	err = databases.Delete(DatabaseV1Client, dbmsID, databaseName, dbmsType, forceDeletion).ExtractErr()
 	if err != nil {
 		return diag.Errorf("error deleting vkcs_db_database %s: %s", d.Id(), err)
 	}
