@@ -1,5 +1,5 @@
-resource "vkcs_blockstorage_volume" "volume" {
-  name = "volume"
+resource "vkcs_blockstorage_volume" "data" {
+  name = "data-tf-example"
   description = "test volume"
   metadata = {
     foo = "bar"
