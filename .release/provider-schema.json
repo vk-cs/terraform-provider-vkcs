@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.5.4",
+  "provider_version": "v0.5.5",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -1578,6 +1578,23 @@
             "required": true,
             "description": "The name of the database. Changing this creates a new database.",
             "force_new": true
+          },
+          "vendor_options": {
+            "type": "TypeSet",
+            "optional": true,
+            "elem": {
+              "schema": {
+                "force_deletion": {
+                  "type": "TypeBool",
+                  "optional": true,
+                  "default": false,
+                  "description": "Whether to try to force delete the database. Some datastores restricts regular database deletion in some circumstances but provides force deletion for that cases."
+                }
+              }
+            },
+            "max_items": 1,
+            "min_items": 1,
+            "new_since": "v0.5.5"
           }
         },
         "timeouts": {
