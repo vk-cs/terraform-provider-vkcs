@@ -11,23 +11,17 @@ description: |-
 {{ .Description }}
 
 ## Example Usage
-### Basic Attachment
-{{tffile "templates/compute/resources/vkcs_compute_interface_attach/basic/main.tf"}}
-
-### Attachment Specifying a Fixed IP
-{{tffile "templates/compute/resources/vkcs_compute_interface_attach/fixed_ip/main.tf"}}
-
 ### Attachment Using an Existing Port
-{{tffile "templates/compute/resources/vkcs_compute_interface_attach/existing_port/main.tf"}}
+{{tffile .ExampleFile}}
 
-### Attaching Multiple Interfaces
-{{tffile "templates/compute/resources/vkcs_compute_interface_attach/multiple_interfaces/main.tf"}}
+### Attachment Using a Network ID
+{{tffile "examples/compute/interface_attach/main-network.tf"}}
 
-Note that the above example will not guarantee that the ports are attached in a deterministic manner. The ports will be attached in a seemingly random order.
-
-If you want to ensure that the ports are attached in a given order, create explicit dependencies between the ports, such as:
-{{tffile "templates/compute/resources/vkcs_compute_interface_attach/multiple_interfaces_ordered/main.tf"}}
-{{ .SchemaMarkdown }}
+Attaching multiple interfaces will not guarantee that interfaces are attached in
+a deterministic manner. The interfaces will be attached in a seemingly random
+order.
+If you want to ensure that interfaces are attached in a given order, create
+explicit dependencies between the interfaces , such as in virtual machines/vkcs_compute_volume_attach
 
 ## Import
 
