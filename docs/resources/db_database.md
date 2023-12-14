@@ -53,7 +53,7 @@ resource "vkcs_db_database" "db-database" {
 
 - `collate` optional *string* &rarr;  Collate option of the database.  Changing this creates a new database.
 
-- `vendor_options` optional
+- `vendor_options` optional &rarr;  <br>**New since v0.5.5**.
   - `force_deletion` optional *boolean* &rarr;  Whether to try to force delete the database. Some datastores restricts regular database deletion in some circumstances but provides force deletion for that cases.
 
 
