@@ -13,8 +13,11 @@ Use this data source to get information about an existing volume.
 ## Example Usage
 
 ```terraform
-data "vkcs_blockstorage_volume" "volume_1" {
-  name = "volume_1"
+data "vkcs_blockstorage_volume" "data" {
+  name = "data-tf-example"
+  # This is unnecessary in real life.
+  # This is required here to let the example work with volume resource example.
+  depends_on = [vkcs_blockstorage_volume.data]
 }
 ```
 

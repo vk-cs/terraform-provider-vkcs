@@ -14,15 +14,15 @@ Provides a blockstorage volume resource. This can be used to create, modify and 
 
 ### Create an empty volume
 ```terraform
-resource "vkcs_blockstorage_volume" "volume" {
-  name = "volume"
+resource "vkcs_blockstorage_volume" "data" {
+  name        = "data-tf-example"
   description = "test volume"
   metadata = {
     foo = "bar"
   }
-  size = 1
+  size              = 1
   availability_zone = "GZ1"
-  volume_type = "ceph-ssd"
+  volume_type       = "ceph-ssd"
 }
 ```
 
