@@ -1,10 +1,10 @@
 resource "vkcs_blockstorage_volume" "data" {
-  name = "data-tf-example"
+  name        = "data-tf-example"
   description = "test volume"
   metadata = {
     foo = "bar"
   }
-  size = 1
+  size              = 1
   availability_zone = "GZ1"
-  volume_type = "ceph-ssd"
+  volume_type       = "ceph-ssd"
 }
