@@ -13,9 +13,12 @@ Use this data source to get information about an existing snapshot.
 ## Example Usage
 
 ```terraform
-data "vkcs_blockstorage_snapshot" "snapshot_1" {
-  name        = "snapshot_1"
+data "vkcs_blockstorage_snapshot" "recent_snapshot" {
+  name        = "snapshot-tf-example"
   most_recent = true
+  # This is unnecessary in real life.
+  # This is required here to let the example work with snapshot resource example.
+  depends_on = [vkcs_blockstorage_snapshot.recent_snapshot]
 }
 ```
 
