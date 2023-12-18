@@ -11,7 +11,11 @@ description: |-
 {{ .Description }}
 
 ## Example Usage
+### Use Remote endpoint group
 {{tffile .ExampleFile}}
+
+### Use Local (private) endpoint group
+{{tffile "examples/vpnaas/endpoint_group/subnet/main.tf"}}
 {{ .SchemaMarkdown }}
 
 ## Import
