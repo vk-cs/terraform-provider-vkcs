@@ -14,8 +14,7 @@ Use this data source to get the details of a running server
 
 ```terraform
 data "vkcs_compute_instance" "instance" {
-  # Randomly generated UUID, for demonstration purposes
-  id = "2ba26dc6-a12d-4889-8f25-794ea5bf4453"
+  id = vkcs_compute_instance.basic.id
 }
 ```
 
