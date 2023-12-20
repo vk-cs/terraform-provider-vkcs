@@ -272,7 +272,7 @@ func (r *AddonResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	name := data.Name.ValueString()
 	if name == "" {
-		name = availableAddon.Name
+		name = availableAddon.ChartName
 	}
 
 	configValues := data.ConfigurationValues.ValueString()
