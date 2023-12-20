@@ -11,14 +11,23 @@ description: |-
 Manages an Endpoint Group resource within VKCS.
 
 ## Example Usage
+### Use Remote endpoint group
 ```terraform
-resource "vkcs_vpnaas_endpoint_group" "group_1" {
-	name = "Group 1"
-	type = "cidr"
-	endpoints = [
-		"10.2.0.0/24",
-		"10.3.0.0/24",
-	]
+resource "vkcs_vpnaas_endpoint_group" "allowed_hosts" {
+  name = "allowed-hosts-tf-example"
+  type = "cidr"
+  endpoints = [
+    "10.2.0.0/24",
+    "10.3.0.0/24",
+  ]
+}
+```
+
+### Use Local (private) endpoint group
+```terraform
+resource "vkcs_vpnaas_endpoint_group" "subnet_hosts" {
+  type      = "subnet"
+  endpoints = [vkcs_networking_subnet.app.id]
 }
 ```
 ## Argument Reference

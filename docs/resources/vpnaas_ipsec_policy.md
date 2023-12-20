@@ -12,8 +12,13 @@ Manages a IPSec policy resource within VKCS.
 
 ## Example Usage
 ```terraform
-resource "vkcs_vpnaas_ipsec_policy" "policy_1" {
-	name = "my_policy"
+resource "vkcs_vpnaas_ipsec_policy" "data_center" {
+  name        = "database-key-policy-tf-example"
+  description = "Policy that restricts remote working users to connect to our data ceneter over VPN"
+  lifetime {
+    units = "seconds"
+    value = 3600
+  }
 }
 ```
 ## Argument Reference
