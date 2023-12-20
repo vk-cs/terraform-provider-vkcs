@@ -12,10 +12,9 @@ Manages a VPN service resource within VKCS.
 
 ## Example Usage
 ```terraform
-resource "vkcs_vpnaas_service" "service_1" {
-	name           = "my_service"
-	router_id      = "14a75700-fc03-4602-9294-26ee44f366b3"
-	admin_state_up = "true"
+resource "vkcs_vpnaas_service" "vpn_to_datacenter" {
+  name      = "vpn-tf-example"
+  router_id = vkcs_networking_router.router.id
 }
 ```
 ## Argument Reference
