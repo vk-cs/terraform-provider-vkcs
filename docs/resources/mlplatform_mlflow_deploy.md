@@ -10,6 +10,8 @@ description: |-
 
 Manages a ML Platform Deploy resource.
 
+**New since v0.6.0**.
+
 ## Example Usage
 ```terraform
 resource "vkcs_mlplatform_mlflow_deploy" "deploy" {
