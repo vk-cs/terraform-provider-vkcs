@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.5.5",
+  "provider_version": "v0.6.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -4076,6 +4076,347 @@
           "update": 10
         },
         "description": "Manages a pool resource within VKCS."
+      },
+      "vkcs_mlplatform_jupyterhub": {
+        "schema": {
+          "admin_name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "JupyterHub admin name. Changing this creates a new resource"
+          },
+          "admin_password": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "JupyterHub admin password. Changing this creates a new resource"
+          },
+          "availability_zone": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The availability zone in which to create the resource. Changing this creates a new resource"
+          },
+          "boot_volume": {
+            "required": true,
+            "description": "Instance's boot volume configuration"
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "data_volumes": {
+            "type": "TypeList",
+            "required": true,
+            "description": "Instance's data volumes configuration",
+            "elem": {
+              "schema": {
+                "name": {
+                  "type": "TypeString",
+                  "description": "Name of the volume",
+                  "computed": true
+                },
+                "size": {
+                  "type": "TypeInt",
+                  "required": true,
+                  "description": "Size of the volume"
+                },
+                "volume_id": {
+                  "type": "TypeString",
+                  "description": "ID of the volume",
+                  "computed": true
+                },
+                "volume_type": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Type of the volume"
+                }
+              }
+            }
+          },
+          "dns_name": {
+            "type": "TypeString",
+            "description": "DNS name",
+            "computed": true
+          },
+          "domain_name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Domain name. Changing this creates a new resource"
+          },
+          "flavor_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Flavor ID"
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Instance name. Changing this creates a new resource"
+          },
+          "networks": {
+            "type": "TypeList",
+            "required": true,
+            "description": "Network configuration",
+            "elem": {
+              "schema": {
+                "ip_pool": {
+                  "type": "TypeString",
+                  "optional": true,
+                  "description": "ID of the ip pool"
+                },
+                "network_id": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "ID of the network"
+                }
+              }
+            }
+          },
+          "private_ip": {
+            "type": "TypeString",
+            "description": "Private IP address",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "s3fs_bucket": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Connect specified s3 bucket to instance as volume. Changing this creates a new resource"
+          },
+          "timeouts": {
+            "optional": true
+          }
+        },
+        "description": "Manages a ML Platform JupyterHub resource.",
+        "new_since": "v0.6.0"
+      },
+      "vkcs_mlplatform_mlflow": {
+        "schema": {
+          "availability_zone": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The availability zone in which to create the resource. Changing this creates a new resource"
+          },
+          "boot_volume": {
+            "required": true,
+            "description": "Instance's boot volume configuration"
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "data_volumes": {
+            "type": "TypeList",
+            "optional": true,
+            "description": "Instance's data volumes configuration",
+            "elem": {
+              "schema": {
+                "name": {
+                  "type": "TypeString",
+                  "description": "Name of the volume",
+                  "computed": true
+                },
+                "size": {
+                  "type": "TypeInt",
+                  "required": true,
+                  "description": "Size of the volume"
+                },
+                "volume_id": {
+                  "type": "TypeString",
+                  "description": "ID of the volume",
+                  "computed": true
+                },
+                "volume_type": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Type of the volume"
+                }
+              }
+            }
+          },
+          "demo_mode": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Controls whether demo mode is enabled. If true, data will be stored on mlflow virtual machine. If false, s3 bucket will be used alongside dbaas postgres database."
+          },
+          "dns_name": {
+            "type": "TypeString",
+            "description": "DNS name",
+            "computed": true
+          },
+          "flavor_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Flavor ID"
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "jh_instance_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "JupyterHub instance ID"
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Instance name. Changing this creates a new resource"
+          },
+          "networks": {
+            "type": "TypeList",
+            "required": true,
+            "description": "Network configuration",
+            "elem": {
+              "schema": {
+                "ip_pool": {
+                  "type": "TypeString",
+                  "optional": true,
+                  "description": "ID of the ip pool"
+                },
+                "network_id": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "ID of the network"
+                }
+              }
+            }
+          },
+          "private_ip": {
+            "type": "TypeString",
+            "description": "Private IP address",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "timeouts": {
+            "optional": true
+          }
+        },
+        "description": "Manages a ML Platform MLFlow resource.",
+        "new_since": "v0.6.0"
+      },
+      "vkcs_mlplatform_mlflow_deploy": {
+        "schema": {
+          "availability_zone": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The availability zone in which to create the resource. Changing this creates a new resource"
+          },
+          "boot_volume": {
+            "required": true,
+            "description": "Instance's boot volume configuration"
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "data_volumes": {
+            "type": "TypeList",
+            "optional": true,
+            "description": "Instance's data volumes configuration",
+            "elem": {
+              "schema": {
+                "name": {
+                  "type": "TypeString",
+                  "description": "Name of the volume",
+                  "computed": true
+                },
+                "size": {
+                  "type": "TypeInt",
+                  "required": true,
+                  "description": "Size of the volume"
+                },
+                "volume_id": {
+                  "type": "TypeString",
+                  "description": "ID of the volume",
+                  "computed": true
+                },
+                "volume_type": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Type of the volume"
+                }
+              }
+            }
+          },
+          "dns_name": {
+            "type": "TypeString",
+            "description": "DNS name",
+            "computed": true
+          },
+          "flavor_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Flavor ID"
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "mlflow_instance_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "MLFlow instance ID"
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Instance name. Changing this creates a new resource"
+          },
+          "networks": {
+            "type": "TypeList",
+            "required": true,
+            "description": "Network configuration",
+            "elem": {
+              "schema": {
+                "ip_pool": {
+                  "type": "TypeString",
+                  "optional": true,
+                  "description": "ID of the ip pool"
+                },
+                "network_id": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "ID of the network"
+                }
+              }
+            }
+          },
+          "private_ip": {
+            "type": "TypeString",
+            "description": "Private IP address",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "timeouts": {
+            "optional": true
+          }
+        },
+        "description": "Manages a ML Platform Deploy resource.",
+        "new_since": "v0.6.0"
       },
       "vkcs_networking_floatingip": {
         "schema": {
