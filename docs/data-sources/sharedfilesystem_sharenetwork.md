@@ -13,8 +13,11 @@ Use this data source to get the ID of an available Shared File System share netw
 ## Example Usage
 
 ```terraform
-data "vkcs_sharedfilesystem_sharenetwork" "sharenetwork_1" {
-  name = "sharenetwork_1"
+data "vkcs_sharedfilesystem_sharenetwork" "data" {
+  name = "sharenetwork-tf-example"
+  # This is unnecessary in real life.
+  # This is required here to let the example work with sharenetwork resource example. 
+  depends_on = [ vkcs_sharedfilesystem_sharenetwork.data ]
 }
 ```
 
