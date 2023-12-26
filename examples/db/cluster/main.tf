@@ -1,5 +1,5 @@
-resource "vkcs_db_cluster" "db-cluster" {
-  name        = "db-cluster"
+resource "vkcs_db_cluster" "pg-cluster" {
+  name        = "pg-cluster"
 
   availability_zone = "GZ1"
   datastore {
@@ -9,7 +9,7 @@ resource "vkcs_db_cluster" "db-cluster" {
 
   cluster_size = 3
 
-  flavor_id   = data.vkcs_compute_flavor.db.id
+  flavor_id   = data.vkcs_compute_flavor.basic.id
   cloud_monitoring_enabled = true
 
   volume_size = 10
@@ -25,14 +25,14 @@ resource "vkcs_db_cluster" "db-cluster" {
 }
 
 data "vkcs_lb_loadbalancer" "loadbalancer" {
-  id = "${vkcs_db_cluster.db-cluster.loadbalancer_id}"
+  id = vkcs_db_cluster.pg-cluster.loadbalancer_id
 }
 
 data "vkcs_networking_port" "loadbalancer-port" {
-  port_id = "${data.vkcs_lb_loadbalancer.loadbalancer.vip_port_id}"
+  port_id = data.vkcs_lb_loadbalancer.loadbalancer.vip_port_id
 }
 
 output "cluster_ips" {
-  value = "${data.vkcs_networking_port.loadbalancer-port.all_fixed_ips}"
+  value = data.vkcs_networking_port.loadbalancer-port.all_fixed_ips
   description = "IP addresses of the cluster."
 }
