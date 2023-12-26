@@ -1,16 +1,16 @@
-resource "vkcs_db_instance" "basic" {
+resource "vkcs_db_instance" "mysql" {
   name = "basic-tf-example"
   # AZ, flavor and datastore are mandatory
   availability_zone = "GZ1"
   flavor_id         = data.vkcs_compute_flavor.basic.id
   datastore {
     type    = "mysql"
-    version = "5.7"
+    version = "8.0"
   }
   # Specify at least one network to not depend on project assets
   # Specify required security groups if you do not want `default` one
   network {
-    uuid            = vkcs_networking_network.app.id
+    uuid            = vkcs_networking_network.db.id
     security_groups = [vkcs_networking_secgroup.admin.id]
   }
   # Specify volume type, size and autoexpand options
@@ -21,6 +21,7 @@ resource "vkcs_db_instance" "basic" {
     max_disk_size = 1000
   }
   # Specify required db capabilities
+  configuration_id = vkcs_db_config_group.mysql-80.id
   capabilities {
     name = "node_exporter"
     settings = {
@@ -32,6 +33,6 @@ resource "vkcs_db_instance" "basic" {
   # If your configuration also defines a network for the db instance,
   # ensure it is attached to a router before creating of the instance
   depends_on = [
-    vkcs_networking_router_interface.app,
+    vkcs_networking_router_interface.db,
   ]
 }
