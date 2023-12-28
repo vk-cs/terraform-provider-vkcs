@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.6.1 (unreleased)
+- Make 'private_key' attribute of resource vkcs_compute_keypair sensitive
+
 #### v0.6.0
 - Add mlplatform jupyterhub, mlflow, mlflow_deploy resources
 - Use chart name as Kubernetes addon's default name
