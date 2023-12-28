@@ -13,44 +13,13 @@ Provides a db user resource. This can be used to create, modify and delete db us
 ## Example Usage
 
 ```terraform
-resource "vkcs_db_instance" "db-instance" {
-  name        = "db-instance"
-
-  availability_zone = "GZ1"
-
-  datastore {
-    type    = "mysql"
-    version = "5.7"
-  }
-
-  flavor_id   = data.vkcs_compute_flavor.db.id
-
-  size        = 8
-  volume_type = "ceph-ssd"  
-
-  network {
-    uuid = vkcs_networking_network.db.id
-  }
-
-  depends_on = [
-    vkcs_networking_router_interface.db
-  ]
-}
-
-resource "vkcs_db_database" "db-database" {
-  name        = "testdb"
-  dbms_id     = vkcs_db_instance.db-instance.id
-  charset     = "utf8"
-  collate     = "utf8_general_ci"
-}
-
-resource "vkcs_db_user" "db-user" {
+resource "vkcs_db_user" "mysql-user" {
   name        = "testuser"
-  password    = "SomePass1_"
+  password    = "Test_p@ssword-12-3"
 
-  dbms_id     = vkcs_db_instance.db-instance.id
+  dbms_id     = vkcs_db_instance.mysql.id
 
-  databases   = [vkcs_db_database.db-database.name]
+  databases   = [vkcs_db_database.mysql-db.name]
 }
 ```
 ## Argument Reference
