@@ -57,6 +57,7 @@ func ResourceComputeKeypair() *schema.Resource {
 			"private_key": {
 				Type:        schema.TypeString,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "The generated private key when no public key is specified.",
 			},
 
