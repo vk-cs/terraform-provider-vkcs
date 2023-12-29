@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/planmodifiers"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/mlplatform/v1/backups"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/mlplatform/v1/instances"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
@@ -331,4 +332,20 @@ func instanceUpdateVolumes(ctx context.Context, client *gophercloud.ServiceClien
 		}
 	}
 	return nil
+}
+
+func flattenBackupOpts(backupsRaw []*backups.Response) []*MLPlatformBackupModel {
+	backups := make([]*MLPlatformBackupModel, len(backupsRaw))
+
+	for i, backup := range backupsRaw {
+		backupFlattened := MLPlatformBackupModel{
+			VolumeID:  types.StringValue(backup.CinderID),
+			CreatedAt: types.StringValue(backup.CreatedAt),
+			BackupID:  types.StringValue(backup.BackupID),
+			Comment:   types.StringValue(backup.Comment),
+		}
+		backups[i] = &backupFlattened
+	}
+
+	return backups
 }
