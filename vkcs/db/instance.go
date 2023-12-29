@@ -17,22 +17,48 @@ import (
 
 // Datastore names
 const (
-	Redis       = "redis"
-	MongoDB     = "mongodb"
-	PostgresPro = "postgrespro"
-	Galera      = "galera_mysql"
-	Postgres    = "postgresql"
-	Clickhouse  = "clickhouse"
-	MySQL       = "mysql"
-	Tarantool   = "tarantool"
+	Redis                   = "redis"
+	MongoDB                 = "mongodb"
+	PostgresPro             = "postgrespro"
+	PostgresProEnterprise   = "postgrespro_enterprise"
+	PostgresProEnterprise1C = "postgrespro_enterprise_1c"
+	Galera                  = "galera_mysql"
+	Postgres                = "postgresql"
+	Clickhouse              = "clickhouse"
+	MySQL                   = "mysql"
+	Tarantool               = "tarantool"
 )
 
 func getClusterDatastores() []string {
-	return []string{Galera, Postgres, Tarantool}
+	return []string{Galera, Postgres, Tarantool, PostgresProEnterprise, PostgresProEnterprise1C}
 }
 
 func getClusterWithShardsDatastores() []string {
 	return []string{Clickhouse}
+}
+
+func getReplicaDatastores() []string {
+	return []string{PostgresProEnterprise, MySQL, Postgres, PostgresProEnterprise1C}
+}
+
+func checkReplicaDatastore(datastore string) error {
+	allowedDatastores := getReplicaDatastores()
+	for _, allowedDatastore := range allowedDatastores {
+		if datastore == allowedDatastore {
+			return nil
+		}
+	}
+	return fmt.Errorf("replica_of field is not supported for the %q datastore", datastore)
+}
+
+func datastoresWithQuotes(datastores []string) []string {
+	wrappedDatastores := make([]string, len(datastores))
+
+	for i, datastore := range datastores {
+		wrappedDatastores[i] = fmt.Sprintf("`%s`", datastore)
+	}
+
+	return wrappedDatastores
 }
 
 func extractDatabaseRestorePoint(v []interface{}) (instances.RestorePoint, error) {

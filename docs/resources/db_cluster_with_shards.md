@@ -118,7 +118,7 @@ resource "vkcs_db_cluster_with_shards" "db-cluster-with-shards" {
 ```
 ## Argument Reference
 - `datastore` **required** &rarr;  Object that represents datastore of the cluster. Changing this creates a new cluster.
-  - `type` **required** *string* &rarr;  Type of the datastore. Changing this creates a new cluster. Type of the datastore must be "clickhouse".
+  - `type` **required** *string* &rarr;  Type of the datastore. Changing this creates a new cluster. Must be one of: `clickhouse`
 
   - `version` **required** *string* &rarr;  Version of the datastore. Changing this creates a new cluster.
 

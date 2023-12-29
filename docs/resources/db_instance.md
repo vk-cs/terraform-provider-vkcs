@@ -194,7 +194,7 @@ resource "vkcs_db_instance" "db-instance" {
 
 - `region` optional *string* &rarr;  Region to create resource in.
 
-- `replica_of` optional *string* &rarr;  ID of the instance, that current instance is replica of.
+- `replica_of` optional *string* &rarr;  ID of the instance, that current instance is replica of. Instance's datastore must be one of: `postgrespro_enterprise`, `mysql`, `postgresql`, `postgrespro_enterprise_1c`
 
 - `restore_point` optional &rarr;  Object that represents backup to restore instance from.<br>**New since v0.1.4**.
   - `backup_id` **required** *string* &rarr;  ID of the backup.
