@@ -242,7 +242,6 @@ func resourceListenerCreate(ctx context.Context, d *schema.ResourceData, meta in
 	log.Printf("[DEBUG] vkcs_lb_listener create options: %#v", createOpts)
 	var listener *listeners.Listener
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		log.Printf("[sch] creating listener")
 		listener, err = ilisteners.Create(lbClient, createOpts).Extract()
 		if err != nil {
 			return util.CheckForRetryableError(err)

@@ -165,7 +165,7 @@ func ResourceDatabaseCluster() *schema.Resource {
 							Required:     true,
 							ForceNew:     true,
 							ValidateFunc: validation.StringInSlice(getClusterDatastores(), true),
-							Description:  "Type of the datastore. Changing this creates a new cluster. Type of the datastore can either be \"galera_mysql\", \"postgresql\" or \"tarantool\".",
+							Description:  fmt.Sprintf("Type of the datastore. Changing this creates a new cluster. Must be one of: %s", strings.Join(datastoresWithQuotes(getClusterDatastores()), ", ")),
 						},
 					},
 				},

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -258,7 +259,7 @@ func ResourceDatabaseInstance() *schema.Resource {
 				Optional:    true,
 				Computed:    false,
 				ForceNew:    false,
-				Description: "ID of the instance, that current instance is replica of.",
+				Description: fmt.Sprintf("ID of the instance, that current instance is replica of. Instance's datastore must be one of: %s", strings.Join(datastoresWithQuotes(getReplicaDatastores()), ", ")),
 			},
 
 			"root_enabled": {
@@ -513,8 +514,9 @@ func resourceDatabaseInstanceCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if replicaOf, ok := d.GetOk("replica_of"); ok {
-		if createOpts.Datastore.Type == PostgresPro {
-			return diag.Errorf("replica_of field is forbidden for PostgresPro")
+		err := checkReplicaDatastore(createOpts.Datastore.Type)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 		createOpts.ReplicaOf = replicaOf.(string)
 	}

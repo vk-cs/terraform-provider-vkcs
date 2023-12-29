@@ -114,7 +114,7 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 - `cluster_size` **required** *number* &rarr;  The number of instances in the cluster.
 
 - `datastore` **required** &rarr;  Object that represents datastore of the cluster. Changing this creates a new cluster.
-  - `type` **required** *string* &rarr;  Type of the datastore. Changing this creates a new cluster. Type of the datastore can either be "galera_mysql", "postgresql" or "tarantool".
+  - `type` **required** *string* &rarr;  Type of the datastore. Changing this creates a new cluster. Must be one of: `galera_mysql`, `postgresql`, `tarantool`, `postgrespro_enterprise`, `postgrespro_enterprise_1c`
 
   - `version` **required** *string* &rarr;  Version of the datastore. Changing this creates a new cluster.
 

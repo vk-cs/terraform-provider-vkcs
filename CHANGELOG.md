@@ -7,6 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 #### v0.6.1 (unreleased)
+- Allow usage of Postgres Pro Enterprise and Postgres Pro Enterprise 1C datastore for database clusters and instance with replicas
 - Make 'private_key' attribute of resource vkcs_compute_keypair sensitive
 
 #### v0.6.0

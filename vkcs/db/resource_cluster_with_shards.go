@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/instances"
@@ -105,17 +106,11 @@ func ResourceDatabaseClusterWithShards() *schema.Resource {
 							Description: "Version of the datastore. Changing this creates a new cluster.",
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: true,
-							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-								v := val.(string)
-								if v != Clickhouse {
-									errs = append(errs, fmt.Errorf("datastore type must be %v, got: %s", getClusterWithShardsDatastores(), v))
-								}
-								return
-							},
-							Description: "Type of the datastore. Changing this creates a new cluster. Type of the datastore must be \"clickhouse\".",
+							Type:         schema.TypeString,
+							Required:     true,
+							ForceNew:     true,
+							ValidateFunc: validation.StringInSlice(getClusterWithShardsDatastores(), true),
+							Description:  fmt.Sprintf("Type of the datastore. Changing this creates a new cluster. Must be one of: %s", strings.Join(datastoresWithQuotes(getClusterWithShardsDatastores()), ", ")),
 						},
 					},
 				},
