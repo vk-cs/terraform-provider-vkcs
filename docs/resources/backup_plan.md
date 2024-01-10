@@ -67,7 +67,7 @@ resource "vkcs_backup_plan" "backup_plan" {
   full_retention = {
     max_full_backup = 25
   }
-  instance_ids       = [vkcs_db_instance.basic.id]
+  instance_ids       = [vkcs_db_instance.mysql.id]
 }
 ```
 
