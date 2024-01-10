@@ -104,7 +104,7 @@ func TestAccDatabaseUser_update(t *testing.T) {
 				Config: acctest.AccTestRenderConfig(testAccDatabaseUpdate, map[string]string{
 					"TestAccDatabaseUserBase": baseConfig,
 					"Name":                    "tfacc-user",
-					"Password":                "Qw!weZ12$",
+					"Password":                "Qw!weZ12$234Ax09",
 					"Host":                    "192.168.0.1",
 					"Databases":               `[ vkcs_db_database.db_1.name, vkcs_db_database.db_2.name ]`,
 				}),
@@ -347,7 +347,7 @@ const testAccDatabaseUserBasic = `
 resource "vkcs_db_user" "user" {
   name        = "tfacc-basic"
   dbms_id     = vkcs_db_instance.base.id
-  password    = "Qw!weZ12$"
+  password    = "Qw!weZ12$234Ax09"
 }
 `
 
@@ -357,7 +357,7 @@ const testAccDatabaseUserFull = `
 resource "vkcs_db_user" "user" {
   name     = "tfacc-full"
   dbms_id  = vkcs_db_instance.base.id
-  password = "Qw!weZ12$"
+  password = "Qw!weZ12$234Ax09"
   host     = "192.168.0.1"
   databases = [
     vkcs_db_database.db_1.name,
@@ -389,7 +389,7 @@ const testAccDatabaseUserSkipDeletion = `
 resource "vkcs_db_user" "user" {
   name     = "tfacc-basic"
   dbms_id  = vkcs_db_instance.base.id
-  password = "Qw!weZ12$"
+  password = "Qw!weZ12$234Ax09"
 
   vendor_options {
     skip_deletion = true
