@@ -1,0 +1,1 @@
+terraform import vkcs_mlplatform_spark_k8s.mysparkk8s 32cc47a5-9726-454f-bffa-6723f21fbbc7

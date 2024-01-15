@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/planmodifiers"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/mlplatform/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/mlplatform/v1/instances"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
@@ -46,6 +47,25 @@ const (
 	instanceStatusDeleting       = "DELETING"
 	instanceStatusDeleted        = "DELETED"
 	instanceStatusCreateFailed   = "CREATE_FAILED"
+)
+
+const (
+	clusterStatusCreating             = "CREATING"
+	clusterStatusRunning              = "RUNNING"
+	clusterStatusInstallSparkOperator = "INSTALL_SPARK_OPERATOR"
+	clusterStatusCreatingRegistry     = "CREATING_REGISTRY"
+	clusterStatusCreateFailed         = "CREATE_FAILED"
+	clusterStatusProvisioning         = "PROVISIONING"
+	clusterStatusDeleting             = "DELETING"
+	clusterStatusDeleted              = "DELETED"
+	clusterStatusStarting             = "STARTING"
+)
+
+const (
+	clusterDelay         = 10 * time.Second
+	clusterMinTimeout    = 10 * time.Second
+	clusterCreateTimeout = 60 * time.Minute
+	clusterDeleteTimeout = 60 * time.Minute
 )
 
 const (
@@ -175,7 +195,7 @@ func getCommonInstanceSchema(ctx context.Context, resp *resource.SchemaResponse)
 		"region": schema.StringAttribute{
 			Optional:    true,
 			Computed:    true,
-			Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+			Description: "The `region` in which ML Platform client is obtained, defaults to the provider's `region`.",
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplaceIf(planmodifiers.GetRegionPlanModifier(resp),
 					"require replacement if configuration value changes", "require replacement if configuration value changes"),
@@ -243,6 +263,34 @@ func flattenVolumeOpts(volumes []instances.VolumeResponse) (*MLPlatformVolumeMod
 		return dataVolumes[i].Name.ValueString() < dataVolumes[j].Name.ValueString()
 	})
 	return bootVolume, dataVolumes, volumes[0].AvailabilityZone
+}
+
+func expandNodeGroupOpts(nodeGroups []*SparkK8SNodeGroupModel) []clusters.NodeGroupCreateOpts {
+	nodeGroupOpts := make([]clusters.NodeGroupCreateOpts, len(nodeGroups))
+	for i, nodeGroup := range nodeGroups {
+		nodeGroupOpts[i] = clusters.NodeGroupCreateOpts{
+			NodeCount:          int(nodeGroup.NodeCount.ValueInt64()),
+			FlavorID:           nodeGroup.FlavorID.ValueString(),
+			AutoscalingEnabled: nodeGroup.AutoscalingEnabled.ValueBool(),
+			MinNodes:           int(nodeGroup.MinNodes.ValueInt64()),
+			MaxNodes:           int(nodeGroup.MaxNodes.ValueInt64()),
+		}
+	}
+	return nodeGroupOpts
+}
+
+func flattenNodeGroupOpts(nodeGroups []clusters.NodeGroupResponse) []*SparkK8SNodeGroupModel {
+	nodeGroupOpts := make([]*SparkK8SNodeGroupModel, len(nodeGroups))
+	for i, nodeGroup := range nodeGroups {
+		nodeGroupOpts[i] = &SparkK8SNodeGroupModel{
+			NodeCount:          types.Int64Value(int64(nodeGroup.NodeCount)),
+			FlavorID:           types.StringValue(nodeGroup.FlavorID),
+			AutoscalingEnabled: types.BoolValue(nodeGroup.AutoscalingEnabled),
+			MinNodes:           types.Int64Value(int64(nodeGroup.MinNodes)),
+			MaxNodes:           types.Int64Value(int64(nodeGroup.MaxNodes)),
+		}
+	}
+	return nodeGroupOpts
 }
 
 func instanceStateRefreshFunc(client *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
@@ -331,4 +379,22 @@ func instanceUpdateVolumes(ctx context.Context, client *gophercloud.ServiceClien
 		}
 	}
 	return nil
+}
+
+func clusterStateRefreshFunc(client *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		c, err := clusters.Get(client, id).Extract()
+		if err != nil {
+			if errutil.IsNotFound(err) {
+				return c, clusterStatusDeleted, nil
+			}
+			return nil, "", err
+		}
+
+		if c.Status == clusterStatusCreateFailed {
+			return c, c.Status, fmt.Errorf("cluster is in failed status, retry the operation or contact support")
+		}
+
+		return c, c.Status, nil
+	}
 }
