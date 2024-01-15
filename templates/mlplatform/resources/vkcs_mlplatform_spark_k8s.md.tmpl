@@ -1,0 +1,21 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a ML Platform Spark K8S cluster resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+ML Platform Spark K8S cluster can be imported using the `id`, e.g.
+{{codefile "shell" "templates/mlplatform/resources/vkcs_mlplatform_spark_k8s/import.sh"}}
