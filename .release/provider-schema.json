@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.6.0",
+  "provider_version": "v0.6.1",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -932,7 +932,7 @@
                 "type": {
                   "type": "TypeString",
                   "required": true,
-                  "description": "Type of the datastore. Changing this creates a new cluster. Type of the datastore can either be \"galera_mysql\", \"postgresql\" or \"tarantool\".",
+                  "description": "Type of the datastore. Changing this creates a new cluster. Must be one of: `galera_mysql`, `postgresql`, `tarantool`, `postgrespro_enterprise`, `postgrespro_enterprise_1c`",
                   "force_new": true
                 },
                 "version": {
@@ -1229,7 +1229,7 @@
                 "type": {
                   "type": "TypeString",
                   "required": true,
-                  "description": "Type of the datastore. Changing this creates a new cluster. Type of the datastore must be \"clickhouse\".",
+                  "description": "Type of the datastore. Changing this creates a new cluster. Must be one of: `clickhouse`",
                   "force_new": true
                 },
                 "version": {
@@ -1811,7 +1811,7 @@
           "replica_of": {
             "type": "TypeString",
             "optional": true,
-            "description": "ID of the instance, that current instance is replica of."
+            "description": "ID of the instance, that current instance is replica of. Instance's datastore must be one of: `postgrespro_enterprise`, `mysql`, `postgresql`, `postgrespro_enterprise_1c`"
           },
           "restore_point": {
             "type": "TypeList",
