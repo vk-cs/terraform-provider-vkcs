@@ -126,6 +126,7 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		db.NewBackupResource,
 		kubernetes.NewAddonResource,
+		kubernetes.NewSecurityPolicyResource,
 		backup.NewPlanResource,
 		dc.NewRouterResource,
 		dc.NewInterfaceResource,
