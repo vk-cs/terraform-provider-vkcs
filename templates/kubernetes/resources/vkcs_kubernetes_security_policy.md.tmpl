@@ -1,0 +1,21 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a kubernetes cluster security policy.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Security policies can be imported using the `id`, e.g.
+
+{{codefile "shell" "templates/kubernetes/resources/vkcs_kubernetes_security_policy/import.sh"}}

@@ -6,6 +6,11 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.7.0
+- Add vkcs_kubernetes_security_policy resource
+- Add vkcs_kubernetes_security_policy_template and vkcs_kubernetes_security_policy_templates data sources
+- Add 'sync_security_policy' parameter for vkcs_kubernetes_cluster resource and data source
+
 #### v0.6.1
 - Allow usage of Postgres Pro Enterprise and Postgres Pro Enterprise 1C datastore for database clusters and instance with replicas
 - Make 'private_key' attribute of resource vkcs_compute_keypair sensitive
