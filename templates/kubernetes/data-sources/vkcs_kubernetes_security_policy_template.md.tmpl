@@ -1,0 +1,17 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Get information on a kubernetes security policy template.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+{{tffile "examples/kubernetes/security_policy_template/data.tf"}}
+
+{{ .SchemaMarkdown }}
