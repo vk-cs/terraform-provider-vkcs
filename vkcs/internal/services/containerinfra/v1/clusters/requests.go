@@ -17,23 +17,24 @@ type OptsBuilder interface {
 
 // CreateOpts contains options to create cluster
 type CreateOpts struct {
-	ClusterTemplateID    string            `json:"cluster_template_id" required:"true"`
-	Keypair              string            `json:"keypair,omitempty"`
-	Labels               map[string]string `json:"labels,omitempty"`
-	MasterCount          int               `json:"master_count,omitempty"`
-	MasterFlavorID       string            `json:"master_flavor_id,omitempty"`
-	Name                 string            `json:"name"`
-	NetworkID            string            `json:"network_id" required:"true"`
-	SubnetID             string            `json:"subnet_id" required:"true"`
-	PodsNetworkCidr      string            `json:"pods_network_cidr,omitempty"`
-	FloatingIPEnabled    bool              `json:"floating_ip_enabled"`
-	APILBVIP             string            `json:"api_lb_vip,omitempty"`
-	APILBFIP             string            `json:"api_lb_fip,omitempty"`
-	RegistryAuthPassword string            `json:"registry_auth_password,omitempty"`
-	AvailabilityZone     string            `json:"availability_zone,omitempty"`
-	LoadbalancerSubnetID string            `json:"loadbalancer_subnet_id,omitempty"`
-	InsecureRegistries   []string          `json:"insecure_registries,omitempty"`
-	DNSDomain            string            `json:"dns_domain,omitempty"`
+	ClusterTemplateID         string            `json:"cluster_template_id" required:"true"`
+	Keypair                   string            `json:"keypair,omitempty"`
+	Labels                    map[string]string `json:"labels,omitempty"`
+	MasterCount               int               `json:"master_count,omitempty"`
+	MasterFlavorID            string            `json:"master_flavor_id,omitempty"`
+	Name                      string            `json:"name"`
+	NetworkID                 string            `json:"network_id" required:"true"`
+	SubnetID                  string            `json:"subnet_id" required:"true"`
+	PodsNetworkCidr           string            `json:"pods_network_cidr,omitempty"`
+	FloatingIPEnabled         bool              `json:"floating_ip_enabled"`
+	APILBVIP                  string            `json:"api_lb_vip,omitempty"`
+	APILBFIP                  string            `json:"api_lb_fip,omitempty"`
+	RegistryAuthPassword      string            `json:"registry_auth_password,omitempty"`
+	AvailabilityZone          string            `json:"availability_zone,omitempty"`
+	LoadbalancerSubnetID      string            `json:"loadbalancer_subnet_id,omitempty"`
+	InsecureRegistries        []string          `json:"insecure_registries,omitempty"`
+	DNSDomain                 string            `json:"dns_domain,omitempty"`
+	SecurityPolicySyncEnabled *bool             `json:"security_policy_sync_enabled,omitempty"`
 }
 
 type UpdateOp string
@@ -61,37 +62,38 @@ type UpgradeOpts struct {
 }
 
 type Cluster struct {
-	APIAddress           string             `json:"api_address"`
-	ClusterTemplateID    string             `json:"cluster_template_id"`
-	CreatedAt            time.Time          `json:"created_at"`
-	DiscoveryURL         string             `json:"discovery_url"`
-	KeyPair              string             `json:"keypair"`
-	Labels               map[string]string  `json:"labels"`
-	Links                []gophercloud.Link `json:"links"`
-	MasterFlavorID       string             `json:"master_flavor_id"`
-	MasterAddresses      []string           `json:"master_addresses"`
-	MasterCount          int                `json:"master_count"`
-	Name                 string             `json:"name"`
-	ProjectID            string             `json:"project_id"`
-	StackID              string             `json:"stack_id"`
-	Status               string             `json:"status"`
-	NewStatus            string             `json:"new_status"`
-	StatusReason         string             `json:"status_reason"`
-	UUID                 string             `json:"uuid"`
-	UpdatedAt            time.Time          `json:"updated_at"`
-	UserID               string             `json:"user_id"`
-	NetworkID            string             `json:"network_id"`
-	SubnetID             string             `json:"subnet_id"`
-	PodsNetworkCidr      string             `json:"pods_network_cidr"`
-	FloatingIPEnabled    bool               `json:"floating_ip_enabled"`
-	APILBVIP             string             `json:"api_lb_vip"`
-	APILBFIP             string             `json:"api_lb_fip"`
-	IngressFloatingIP    string             `json:"ingress_floating_ip"`
-	RegistryAuthPassword string             `json:"registry_auth_password"`
-	AvailabilityZone     string             `json:"availability_zone"`
-	LoadbalancerSubnetID string             `json:"loadbalancer_subnet_id"`
-	InsecureRegistries   []string           `json:"insecure_registries,omitempty"`
-	DNSDomain            string             `json:"dns_domain,omitempty"`
+	APIAddress                string             `json:"api_address"`
+	ClusterTemplateID         string             `json:"cluster_template_id"`
+	CreatedAt                 time.Time          `json:"created_at"`
+	DiscoveryURL              string             `json:"discovery_url"`
+	KeyPair                   string             `json:"keypair"`
+	Labels                    map[string]string  `json:"labels"`
+	Links                     []gophercloud.Link `json:"links"`
+	MasterFlavorID            string             `json:"master_flavor_id"`
+	MasterAddresses           []string           `json:"master_addresses"`
+	MasterCount               int                `json:"master_count"`
+	Name                      string             `json:"name"`
+	ProjectID                 string             `json:"project_id"`
+	StackID                   string             `json:"stack_id"`
+	Status                    string             `json:"status"`
+	NewStatus                 string             `json:"new_status"`
+	StatusReason              string             `json:"status_reason"`
+	UUID                      string             `json:"uuid"`
+	UpdatedAt                 time.Time          `json:"updated_at"`
+	UserID                    string             `json:"user_id"`
+	NetworkID                 string             `json:"network_id"`
+	SubnetID                  string             `json:"subnet_id"`
+	PodsNetworkCidr           string             `json:"pods_network_cidr"`
+	FloatingIPEnabled         bool               `json:"floating_ip_enabled"`
+	APILBVIP                  string             `json:"api_lb_vip"`
+	APILBFIP                  string             `json:"api_lb_fip"`
+	IngressFloatingIP         string             `json:"ingress_floating_ip"`
+	RegistryAuthPassword      string             `json:"registry_auth_password"`
+	AvailabilityZone          string             `json:"availability_zone"`
+	LoadbalancerSubnetID      string             `json:"loadbalancer_subnet_id"`
+	InsecureRegistries        []string           `json:"insecure_registries,omitempty"`
+	DNSDomain                 string             `json:"dns_domain,omitempty"`
+	SecurityPolicySyncEnabled *bool              `json:"security_policy_sync_enabled,omitempty"`
 }
 
 // Map builds request params.

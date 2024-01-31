@@ -260,6 +260,12 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Computed:    true,
 				Description: "Custom DNS cluster domain. Changing this creates a new cluster.",
 			},
+			"sync_security_policy": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Enables syncing of security policies of cluster. Default value is false.",
+			},
 		},
 		Description: "Provides a kubernetes cluster resource. This can be used to create, modify and delete kubernetes clusters.",
 	}
@@ -312,6 +318,11 @@ func resourceKubernetesClusterCreate(ctx context.Context, d *schema.ResourceData
 			insecureRegistries = append(insecureRegistries, val.(string))
 		}
 		createOpts.InsecureRegistries = insecureRegistries
+	}
+
+	if syncSecurityPolicyRaw, ok := d.GetOk("sync_security_policy"); ok {
+		syncSecurityPolicy := syncSecurityPolicyRaw.(bool)
+		createOpts.SecurityPolicySyncEnabled = &syncSecurityPolicy
 	}
 
 	s, err := clusters.Create(containerInfraClient, &createOpts).Extract()
@@ -374,6 +385,7 @@ func resourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("region", util.GetRegion(d, config))
 	d.Set("insecure_registries", cluster.InsecureRegistries)
 	d.Set("dns_domain", cluster.DNSDomain)
+	d.Set("sync_security_policy", cluster.SecurityPolicySyncEnabled)
 
 	// Allow to read old api clusters
 	if cluster.NetworkID != "" {
@@ -602,6 +614,15 @@ func checkForUpdate(ctx context.Context, d *schema.ResourceData, containerInfraC
 			Op:    clusters.ReplaceOp,
 			Path:  "/labels",
 			Value: allLabels,
+		})
+	}
+
+	if d.HasChange("sync_security_policy") {
+		syncSecurityPolicy := d.Get("sync_security_policy").(bool)
+		updateOpts = append(updateOpts, &clusters.UpdateOpts{
+			Op:    clusters.ReplaceOp,
+			Path:  "/security_policy_sync_enabled",
+			Value: syncSecurityPolicy,
 		})
 	}
 
