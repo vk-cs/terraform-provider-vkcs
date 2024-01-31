@@ -30,6 +30,8 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
   network_id          = vkcs_networking_network.app.id
   subnet_id           = vkcs_networking_subnet.app.id
   floating_ip_enabled = true
+
+  sync_security_policy = true
   # If your configuration also defines a network for the instance,
   # ensure it is attached to a router before creating of the instance
   depends_on = [
@@ -85,6 +87,8 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 - `registry_auth_password` optional *string* &rarr;  Docker registry access password.
 
 - `status` optional *string* &rarr;  Current state of a cluster. Changing this to `RUNNING` or `SHUTOFF` will turn cluster on/off.
+
+- `sync_security_policy` optional *boolean* &rarr;  Enables syncing of security policies of cluster. Default value is false.
 
 
 ## Attributes Reference

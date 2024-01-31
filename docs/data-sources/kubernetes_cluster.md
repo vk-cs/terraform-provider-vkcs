@@ -79,6 +79,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `subnet_id` *string* &rarr;  UUID of the cluster's subnet.
 
+- `sync_security_policy` *boolean* &rarr;  Enables syncing of security policies of cluster.
+
 - `updated_at` *string* &rarr;  The time at which cluster was created.
 
 - `user_id` *string* &rarr;  The user of the cluster.

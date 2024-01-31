@@ -174,6 +174,11 @@ func DataSourceKubernetesCluster() *schema.Resource {
 				Computed:    true,
 				Description: "Custom DNS cluster domain.",
 			},
+			"sync_security_policy": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Enables syncing of security policies of cluster.",
+			},
 		},
 		Description: "Use this data source to get the ID of an available VKCS kubernetes cluster.",
 	}
@@ -220,6 +225,7 @@ func dataSourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData
 	d.Set("loadbalancer_subnet_id", c.LoadbalancerSubnetID)
 	d.Set("insecure_registries", c.InsecureRegistries)
 	d.Set("dns_domain", c.DNSDomain)
+	d.Set("sync_security_policy", c.SecurityPolicySyncEnabled)
 
 	k8sConfig, err := clusters.KubeConfigGet(containerInfraClient, c.UUID)
 	if err != nil {
