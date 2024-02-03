@@ -1,0 +1,1 @@
+terraform import vkcs_mlplatform_k8s_registry.myk8sregistry 0229eb40-5b56-4ab1-857f-453848a542f3

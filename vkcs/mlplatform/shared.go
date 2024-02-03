@@ -28,6 +28,7 @@ const (
 	jupyterHubInstanceType   = "JUPYTERHUB"
 	mlFlowInstanceType       = "MLFLOW"
 	mlFlowDeployInstanceType = "DEPLOY"
+	k8sRegistryInstanceType  = "K8SREGISTRY"
 )
 
 const (
