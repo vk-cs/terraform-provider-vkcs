@@ -1,0 +1,21 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a ML Platform K8S Registry instance resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+ML Platform K8S Registry instance can be imported using the `id`, e.g.
+{{codefile "shell" "templates/mlplatform/resources/vkcs_mlplatform_k8s_registry/import.sh"}}
