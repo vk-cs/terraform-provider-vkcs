@@ -154,7 +154,6 @@ func (r *MLFlowResource) Create(ctx context.Context, req resource.CreateRequest,
 	volumesOpts := expandVolumeOpts(data.BootVolume, bootVolumeSize, data.DataVolumes, data.AvailabilityZone.ValueString())
 	networksOpts := expandNetworkOpts(data.Networks)
 	mlFlowCreateOpts := instances.CreateOpts{
-		ProjectID:          r.config.GetTenantID(),
 		InstanceName:       data.Name.ValueString(),
 		DomainName:         "",
 		InstanceType:       mlFlowInstanceType,

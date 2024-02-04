@@ -80,7 +80,7 @@ resource "vkcs_mlplatform_jupyterhub" "jupyterhub" {
 
 - `domain_name` optional *string* &rarr;  Domain name. Changing this creates a new resource
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` in which ML Platform client is obtained, defaults to the provider's `region`.
 
 - `s3fs_bucket` optional *string* &rarr;  Connect specified s3 bucket to instance as volume. Changing this creates a new resource
 

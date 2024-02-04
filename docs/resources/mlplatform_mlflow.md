@@ -75,7 +75,7 @@ resource "vkcs_mlplatform_mlflow" "mlflow" {
 
 - `demo_mode` optional *boolean* &rarr;  Controls whether demo mode is enabled. If true, data will be stored on mlflow virtual machine. If false, s3 bucket will be used alongside dbaas postgres database.
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` in which ML Platform client is obtained, defaults to the provider's `region`.
 
 
 ## Attributes Reference

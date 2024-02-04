@@ -146,7 +146,6 @@ func (r *MLFlowDeployResource) Create(ctx context.Context, req resource.CreateRe
 	volumesOpts := expandVolumeOpts(data.BootVolume, bootVolumeSize, data.DataVolumes, data.AvailabilityZone.ValueString())
 	networksOpts := expandNetworkOpts(data.Networks)
 	deployCreateOpts := instances.CreateOpts{
-		ProjectID:              r.config.GetTenantID(),
 		InstanceName:           data.Name.ValueString(),
 		DomainName:             "",
 		InstanceType:           mlFlowDeployInstanceType,
