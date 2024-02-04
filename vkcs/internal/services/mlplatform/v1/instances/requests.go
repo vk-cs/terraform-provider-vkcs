@@ -11,7 +11,6 @@ type OptsBuilder interface {
 }
 
 type CreateOpts struct {
-	ProjectID              string             `json:"project_id" required:"true"`
 	InstanceName           string             `json:"instance_name" required:"true"`
 	DomainName             string             `json:"domain_name"`
 	InstanceType           string             `json:"instance_type" required:"true"`

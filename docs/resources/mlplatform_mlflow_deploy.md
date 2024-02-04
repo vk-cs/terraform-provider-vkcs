@@ -73,7 +73,7 @@ resource "vkcs_mlplatform_mlflow_deploy" "deploy" {
   - `volume_id` read-only *string* &rarr;  ID of the volume
 
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` in which ML Platform client is obtained, defaults to the provider's `region`.
 
 
 ## Attributes Reference

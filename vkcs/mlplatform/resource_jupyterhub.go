@@ -191,7 +191,6 @@ func (r *JupyterHubResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	jupyterHubCreateOpts := instances.CreateOpts{
-		ProjectID:       r.config.GetTenantID(),
 		InstanceName:    data.Name.ValueString(),
 		DomainName:      domainName,
 		InstanceType:    jupyterHubInstanceType,
