@@ -11,8 +11,7 @@ description: |-
 - Add vkcs_kubernetes_security_policy_template and vkcs_kubernetes_security_policy_templates data sources
 - Add 'sync_security_policy' parameter for vkcs_kubernetes_cluster resource and data source
 - Allow getting deprecated images by vkcs_images_image data source
-- Add resource vkcs_mlplatform_spark_k8s
-- Add resource vkcs_mlplatform_k8s_registry
+- Add vkcs_mlplatform_spark_k8s and vkcs_mlplatform_k8s_registry resources
 
 #### v0.6.1
 - Allow usage of Postgres Pro Enterprise and Postgres Pro Enterprise 1C datastore for database clusters and instance with replicas

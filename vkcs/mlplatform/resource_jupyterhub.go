@@ -124,8 +124,9 @@ func getSchemaJupyterHub(ctx context.Context, resp *resource.SchemaResponse) map
 		},
 	}
 
-	maps.Copy(jupyterHubAttrs, getCommonInstanceSchema(ctx, resp))
-	return jupyterHubAttrs
+	jupyterHubSchema := getCommonInstanceSchema(ctx, resp)
+	maps.Copy(jupyterHubSchema, jupyterHubAttrs)
+	return jupyterHubSchema
 }
 
 func (r *JupyterHubResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {

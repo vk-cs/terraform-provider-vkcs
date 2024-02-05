@@ -147,6 +147,37 @@ func getCommonInstanceSchema(ctx context.Context, resp *resource.SchemaResponse)
 			Description: "Instance's boot volume configuration",
 		},
 
+		"data_volumes": schema.ListNestedAttribute{
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"size": schema.Int64Attribute{
+						Required:    true,
+						Description: "Size of the volume",
+					},
+					"volume_type": schema.StringAttribute{
+						Required:    true,
+						Description: "Type of the volume",
+					},
+					"name": schema.StringAttribute{
+						Computed:    true,
+						Description: "Name of the volume",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"volume_id": schema.StringAttribute{
+						Computed:    true,
+						Description: "ID of the volume",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+				},
+			},
+			Optional:    true,
+			Description: "Instance's data volumes configuration",
+		},
+
 		"networks": schema.ListNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
