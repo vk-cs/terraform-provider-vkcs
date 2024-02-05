@@ -8,8 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -58,40 +56,11 @@ func getSchemaMLFlowDeploy(ctx context.Context, resp *resource.SchemaResponse) m
 			Required:    true,
 			Description: "MLFlow instance ID",
 		},
-		"data_volumes": schema.ListNestedAttribute{
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: map[string]schema.Attribute{
-					"size": schema.Int64Attribute{
-						Required:    true,
-						Description: "Size of the volume",
-					},
-					"volume_type": schema.StringAttribute{
-						Required:    true,
-						Description: "Type of the volume",
-					},
-					"name": schema.StringAttribute{
-						Computed:    true,
-						Description: "Name of the volume",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
-					"volume_id": schema.StringAttribute{
-						Computed:    true,
-						Description: "ID of the volume",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
-				},
-			},
-			Optional:    true,
-			Description: "Instance's data volumes configuration",
-		},
 	}
 
-	maps.Copy(mlFlowDeployAttrs, getCommonInstanceSchema(ctx, resp))
-	return mlFlowDeployAttrs
+	mlFlowDeploySchema := getCommonInstanceSchema(ctx, resp)
+	maps.Copy(mlFlowDeploySchema, mlFlowDeployAttrs)
+	return mlFlowDeploySchema
 }
 
 func (r *MLFlowDeployResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
