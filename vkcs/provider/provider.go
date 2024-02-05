@@ -116,6 +116,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		backup.NewProviderDataSource,
 		backup.NewProvidersDataSource,
 		dc.NewAPIOptionsDataSource,
+		mlplatform.NewBackupDataSource,
 	}
 }
 
