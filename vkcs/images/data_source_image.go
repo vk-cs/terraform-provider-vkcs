@@ -225,7 +225,6 @@ func dataSourceImagesImageRead(ctx context.Context, d *schema.ResourceData, meta
 
 	log.Printf("[DEBUG] List Options: %#v", listOpts)
 
-	var image images.Image
 	allPages, err := images.List(imageClient, listOpts).AllPages()
 	if err != nil {
 		return diag.Errorf("Unable to query images: %s", err)
@@ -236,37 +235,27 @@ func dataSourceImagesImageRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("Unable to retrieve images: %s", err)
 	}
 
-	if d.Get("default").(bool) {
-		allImages = filterImagesByDefault(allImages)
-		log.Printf("[DEBUG] Image list filtered by default flag")
-	}
+	var image *images.Image
+	image, found, diagnostics := filterAllImages(allImages, d)
+	if !found && listOpts.Name != "" {
+		listOpts.Hidden = true
+		log.Printf("[DEBUG] Listing deprecated images, options: %#v", listOpts)
 
-	properties := resourceImagesImageExpandProperties(
-		d.Get("properties").(map[string]interface{}))
-
-	if len(allImages) > 1 {
-		allImages = imagesFilterByProperties(allImages, properties)
-
-		log.Printf("[DEBUG] Image list filtered by properties: %#v", properties)
-	}
-
-	if len(allImages) < 1 {
-		return diag.Errorf("Your query returned no results. " +
-			"Please change your search criteria and try again.")
-	}
-
-	if len(allImages) > 1 {
-		recent := d.Get("most_recent").(bool)
-		log.Printf("[DEBUG] Multiple results found and `most_recent` is set to: %t", recent)
-		if recent {
-			image = mostRecentImage(allImages)
-		} else {
-			log.Printf("[DEBUG] Multiple results found: %#v", allImages)
-			return diag.Errorf("Your query returned more than one result. Please try a more " +
-				"specific search criteria, or set `most_recent` attribute to true.")
+		allPages, err := images.List(imageClient, listOpts).AllPages()
+		if err != nil {
+			return diag.Errorf("Unable to query images: %s", err)
 		}
-	} else {
-		image = allImages[0]
+
+		allImages, err := images.ExtractImages(allPages)
+		if err != nil {
+			return diag.Errorf("Unable to retrieve images: %s", err)
+		}
+		image, _, diagnostics = filterAllImages(allImages, d)
+		if diagnostics != nil {
+			return diagnostics
+		}
+	} else if diagnostics != nil {
+		return diagnostics
 	}
 
 	log.Printf("[DEBUG] Single Image found: %s", image.ID)
@@ -292,6 +281,16 @@ func dataSourceImagesImageRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("file", image.File)
 	d.Set("schema", image.Schema)
 
+	if image.Hidden {
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Image has been deprecated.",
+				Detail:   "Found image has been deprecated. Please, refrain from using it.",
+			},
+		}
+	}
+
 	return nil
 }
 
@@ -310,4 +309,41 @@ func mostRecentImage(images []images.Image) images.Image {
 	sortedImages := images
 	sort.Sort(imageSort(sortedImages))
 	return sortedImages[len(sortedImages)-1]
+}
+
+func filterAllImages(allImages []images.Image, d *schema.ResourceData) (*images.Image, bool, diag.Diagnostics) {
+	var image images.Image
+	if d.Get("default").(bool) {
+		allImages = filterImagesByDefault(allImages)
+		log.Printf("[DEBUG] Image list filtered by default flag")
+	}
+
+	properties := resourceImagesImageExpandProperties(
+		d.Get("properties").(map[string]interface{}))
+
+	if len(allImages) > 1 {
+		allImages = imagesFilterByProperties(allImages, properties)
+
+		log.Printf("[DEBUG] Image list filtered by properties: %#v", properties)
+	}
+
+	if len(allImages) < 1 {
+		return nil, false, diag.Errorf("Your query returned no results. " +
+			"Please change your search criteria and try again.")
+	}
+
+	if len(allImages) > 1 {
+		recent := d.Get("most_recent").(bool)
+		log.Printf("[DEBUG] Multiple results found and `most_recent` is set to: %t", recent)
+		if recent {
+			image = mostRecentImage(allImages)
+		} else {
+			log.Printf("[DEBUG] Multiple results found: %#v", allImages)
+			return nil, true, diag.Errorf("Your query returned more than one result. Please try a more " +
+				"specific search criteria, or set `most_recent` attribute to true.")
+		}
+	} else {
+		image = allImages[0]
+	}
+	return &image, true, nil
 }
