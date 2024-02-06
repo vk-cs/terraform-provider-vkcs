@@ -6,10 +6,11 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.7.0
+#### v0.7.0 (unreleased)
 - Add vkcs_kubernetes_security_policy resource
 - Add vkcs_kubernetes_security_policy_template and vkcs_kubernetes_security_policy_templates data sources
 - Add 'sync_security_policy' parameter for vkcs_kubernetes_cluster resource and data source
+- Allow getting deprecated images by vkcs_images_image data source
 
 #### v0.6.1
 - Allow usage of Postgres Pro Enterprise and Postgres Pro Enterprise 1C datastore for database clusters and instance with replicas
