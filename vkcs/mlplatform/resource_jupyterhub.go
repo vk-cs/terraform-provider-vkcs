@@ -349,7 +349,7 @@ func (r *JupyterHubResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	var changedVolumes []instances.ResizeVolumeParams
-	if !plan.BootVolume.Size.Equal(data.BootVolume.Size) {
+	if !plan.BootVolume.Size.IsUnknown() && !plan.BootVolume.Size.Equal(data.BootVolume.Size) {
 		changedVolumes = append(changedVolumes, instances.ResizeVolumeParams{
 			ID:   plan.BootVolume.VolumeID.ValueString(),
 			Size: int(plan.BootVolume.Size.ValueInt64()),
