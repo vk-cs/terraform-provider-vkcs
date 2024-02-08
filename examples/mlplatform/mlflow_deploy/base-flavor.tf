@@ -1,1 +1,1 @@
-../../compute/flavor/main.tf
+../../compute/flavor/name/main.tf
