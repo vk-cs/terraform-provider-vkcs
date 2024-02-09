@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.7.0 (unreleased)
+#### v0.7.0
 - Add vkcs_kubernetes_security_policy resource
 - Add vkcs_kubernetes_security_policy_template and vkcs_kubernetes_security_policy_templates data sources
 - Add 'sync_security_policy' parameter for vkcs_kubernetes_cluster resource and data source

@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.6.1",
+  "provider_version": "v0.7.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -3309,6 +3309,13 @@
             "description": "UUID of the cluster's subnet.",
             "force_new": true
           },
+          "sync_security_policy": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Enables syncing of security policies of cluster. Default value is false.",
+            "computed": true,
+            "new_since": "v0.7.0"
+          },
           "updated_at": {
             "type": "TypeString",
             "description": "The time at which cluster was created.",
@@ -3467,6 +3474,59 @@
           "update": 60
         },
         "description": "Provides a cluster node group resource. This can be used to create, modify and delete cluster's node group."
+      },
+      "vkcs_kubernetes_security_policy": {
+        "schema": {
+          "cluster_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the kubernetes cluster. Changing this creates a new security policy."
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "enabled": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Controls whether the security policy is enabled. Default is true.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "namespace": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Namespace to apply security policy to."
+          },
+          "policy_settings": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Policy settings."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the Container Infra client. If omitted, the `region` argument of the provider is used. Changing this creates a new security policy.",
+            "computed": true
+          },
+          "security_policy_template_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the security policy template. Changing this creates a new security policy."
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Update timestamp.",
+            "computed": true
+          }
+        },
+        "description": "Provides a kubernetes cluster security policy resource. This can be used to create, modify and delete kubernetes security policies.",
+        "new_since": "v0.7.0"
       },
       "vkcs_lb_l7policy": {
         "schema": {
@@ -4184,7 +4244,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` in which ML Platform client is obtained, defaults to the provider's `region`.",
             "computed": true
           },
           "s3fs_bucket": {
@@ -4198,6 +4258,123 @@
         },
         "description": "Manages a ML Platform JupyterHub resource.",
         "new_since": "v0.6.0"
+      },
+      "vkcs_mlplatform_k8s_registry": {
+        "schema": {
+          "admin_name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "K8SRegistry admin name. Changing this creates a new resource"
+          },
+          "admin_password": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "K8SRegistry admin password. Changing this creates a new resource"
+          },
+          "availability_zone": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The availability zone in which to create the resource. Changing this creates a new resource"
+          },
+          "boot_volume": {
+            "required": true,
+            "description": "Instance's boot volume configuration"
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "data_volumes": {
+            "type": "TypeList",
+            "optional": true,
+            "description": "Instance's data volumes configuration",
+            "elem": {
+              "schema": {
+                "name": {
+                  "type": "TypeString",
+                  "description": "Name of the volume",
+                  "computed": true
+                },
+                "size": {
+                  "type": "TypeInt",
+                  "required": true,
+                  "description": "Size of the volume"
+                },
+                "volume_id": {
+                  "type": "TypeString",
+                  "description": "ID of the volume",
+                  "computed": true
+                },
+                "volume_type": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Type of the volume"
+                }
+              }
+            }
+          },
+          "dns_name": {
+            "type": "TypeString",
+            "description": "DNS name",
+            "computed": true
+          },
+          "domain_name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Domain name. Changing this creates a new resource"
+          },
+          "flavor_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Flavor ID"
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Instance name. Changing this creates a new resource"
+          },
+          "networks": {
+            "type": "TypeList",
+            "required": true,
+            "description": "Network configuration",
+            "elem": {
+              "schema": {
+                "ip_pool": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "ID of the ip pool"
+                },
+                "network_id": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "ID of the network"
+                }
+              }
+            }
+          },
+          "private_ip": {
+            "type": "TypeString",
+            "description": "Private IP address",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` in which ML Platform client is obtained, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "timeouts": {
+            "optional": true
+          }
+        },
+        "description": "Manages a ML Platform K8SRegistry resource.",
+        "new_since": "v0.7.0"
       },
       "vkcs_mlplatform_mlflow": {
         "schema": {
@@ -4301,7 +4478,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` in which ML Platform client is obtained, defaults to the provider's `region`.",
             "computed": true
           },
           "timeouts": {
@@ -4408,7 +4585,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` in which ML Platform client is obtained, defaults to the provider's `region`.",
             "computed": true
           },
           "timeouts": {
@@ -4417,6 +4594,135 @@
         },
         "description": "Manages a ML Platform Deploy resource.",
         "new_since": "v0.6.0"
+      },
+      "vkcs_mlplatform_spark_k8s": {
+        "schema": {
+          "availability_zone": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The availability zone in which to create the resource. Changing this creates a new resource"
+          },
+          "cluster_mode": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Cluster Mode. Should be `DEV` or `PROD`. Changing this creates a new resource"
+          },
+          "control_instance_id": {
+            "type": "TypeString",
+            "description": "ID of the control instance",
+            "computed": true
+          },
+          "delete_after_inactive_min": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "Timeout of cluster inactivity before deletion, in minutes. Changing this creates a new resource"
+          },
+          "environment_variables": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Environment variables. Read more about this parameter here: https://cloud.vk.com/docs/en/ml/spark-to-k8s/instructions/create. Changing this creates a new resource"
+          },
+          "history_server_url": {
+            "type": "TypeString",
+            "description": "URL of the history server",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "inactive_min": {
+            "type": "TypeInt",
+            "description": "Current time of cluster inactivity, in minutes",
+            "computed": true
+          },
+          "ip_pool": {
+            "type": "TypeString",
+            "required": true,
+            "description": "ID of the ip pool. Changing this creates a new resource"
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Cluster name. Changing this creates a new resource"
+          },
+          "network_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "ID of the network. Changing this creates a new resource"
+          },
+          "node_groups": {
+            "type": "TypeList",
+            "required": true,
+            "description": "Cluster's node groups configuration",
+            "elem": {
+              "schema": {
+                "autoscaling_enabled": {
+                  "type": "TypeBool",
+                  "required": true,
+                  "description": "Enables autoscaling for node group"
+                },
+                "flavor_id": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "ID of the flavor to be used in nodes"
+                },
+                "max_nodes": {
+                  "type": "TypeInt",
+                  "optional": true,
+                  "description": "Maximum number of nodes in node group. It is used only when autoscaling is enabled"
+                },
+                "min_nodes": {
+                  "type": "TypeInt",
+                  "optional": true,
+                  "description": "Minimum count of nodes in node group. It is used only when autoscaling is enabled"
+                },
+                "node_count": {
+                  "type": "TypeInt",
+                  "optional": true,
+                  "description": "Count of nodes in node group"
+                }
+              }
+            }
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` in which ML Platform client is obtained, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "registry_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "ID of the K8S registry to use with cluster. Changing this creates a new resource"
+          },
+          "s3_bucket_name": {
+            "type": "TypeString",
+            "description": "S3 bucket name",
+            "computed": true
+          },
+          "spark_configuration": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Spark configuration. Read more about this parameter here: https://cloud.vk.com/docs/en/ml/spark-to-k8s/instructions/create. Changing this creates a new resource"
+          },
+          "subnet_id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "ID of the subnet. Changing this creates a new resource"
+          },
+          "suspend_after_inactive_min": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "Timeout of cluster inactivity before suspending, in minutes. Changing this creates a new resource"
+          },
+          "timeouts": {
+            "optional": true
+          }
+        },
+        "description": "Manages a ML Platform Spark K8S cluster resource.",
+        "new_since": "v0.7.0"
       },
       "vkcs_networking_floatingip": {
         "schema": {
@@ -5619,9 +5925,9 @@
           }
         },
         "timeouts": {
-          "create": 10,
-          "delete": 10,
-          "update": 10
+          "create": 20,
+          "delete": 20,
+          "update": 20
         },
         "description": "Use this resource to configure a share."
       },
@@ -8155,6 +8461,12 @@
             "description": "UUID of the cluster's subnet.",
             "computed": true
           },
+          "sync_security_policy": {
+            "type": "TypeBool",
+            "description": "Enables syncing of security policies of cluster.",
+            "computed": true,
+            "new_since": "v0.7.0"
+          },
           "updated_at": {
             "type": "TypeString",
             "description": "The time at which cluster was created.",
@@ -8495,6 +8807,114 @@
           }
         },
         "description": "Use this data source to get information on VKCS Kubernetes cluster's node group."
+      },
+      "vkcs_kubernetes_security_policy_template": {
+        "schema": {
+          "created_at": {
+            "type": "TypeString",
+            "description": "Template creation timestamp",
+            "computed": true
+          },
+          "description": {
+            "type": "TypeString",
+            "description": "Description of the security policy template.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Name of the security policy template."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          },
+          "settings_description": {
+            "type": "TypeString",
+            "description": "Security policy settings description.",
+            "computed": true
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Template update timestamp.",
+            "computed": true
+          },
+          "version": {
+            "type": "TypeString",
+            "description": "Version of the security policy template.",
+            "computed": true
+          }
+        },
+        "description": "Provides a kubernetes security policy template datasource. This can be used to get information about an VKCS kubernetes security policy template.",
+        "new_since": "v0.7.0"
+      },
+      "vkcs_kubernetes_security_policy_templates": {
+        "schema": {
+          "id": {
+            "type": "TypeString",
+            "description": "Random identifier of the data source.",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          },
+          "security_policy_templates": {
+            "type": "TypeList",
+            "description": "Available kubernetes security policy templates.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "created_at": {
+                  "type": "TypeString",
+                  "description": "Template creation timestamp",
+                  "computed": true
+                },
+                "description": {
+                  "type": "TypeString",
+                  "description": "Description of the security policy template.",
+                  "computed": true
+                },
+                "id": {
+                  "type": "TypeString",
+                  "description": "ID of the template.",
+                  "computed": true
+                },
+                "name": {
+                  "type": "TypeString",
+                  "description": "Name of the security policy template.",
+                  "computed": true
+                },
+                "settings_description": {
+                  "type": "TypeString",
+                  "description": "Security policy settings description.",
+                  "computed": true
+                },
+                "updated_at": {
+                  "type": "TypeString",
+                  "description": "Template update timestamp.",
+                  "computed": true
+                },
+                "version": {
+                  "type": "TypeString",
+                  "description": "Version of the security policy template.",
+                  "computed": true
+                }
+              }
+            }
+          }
+        },
+        "description": "Provides a kubernetes security policy templates datasource. This can be used to get information about all available VKCS kubernetes security policy templates.",
+        "new_since": "v0.7.0"
       },
       "vkcs_lb_loadbalancer": {
         "schema": {
