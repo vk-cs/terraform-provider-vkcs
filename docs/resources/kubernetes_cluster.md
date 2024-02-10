@@ -88,7 +88,7 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 
 - `status` optional *string* &rarr;  Current state of a cluster. Changing this to `RUNNING` or `SHUTOFF` will turn cluster on/off.
 
-- `sync_security_policy` optional *boolean* &rarr;  Enables syncing of security policies of cluster. Default value is false.
+- `sync_security_policy` optional *boolean* &rarr;  Enables syncing of security policies of cluster. Default value is false.<br>**New since v0.7.0**.
 
 
 ## Attributes Reference

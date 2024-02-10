@@ -10,6 +10,8 @@ description: |-
 
 Provides a kubernetes cluster security policy resource. This can be used to create, modify and delete kubernetes security policies.
 
+**New since v0.7.0**.
+
 ## Example Usage
 ```terraform
 locals {

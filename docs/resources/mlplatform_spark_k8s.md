@@ -10,6 +10,8 @@ description: |-
 
 Manages a ML Platform Spark K8S cluster resource.
 
+**New since v0.7.0**.
+
 ## Example Usage
 ```terraform
 locals {
