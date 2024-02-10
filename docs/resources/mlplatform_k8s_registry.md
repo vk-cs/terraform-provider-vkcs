@@ -10,6 +10,8 @@ description: |-
 
 Manages a ML Platform K8SRegistry resource.
 
+**New since v0.7.0**.
+
 ## Example Usage
 ```terraform
 resource "vkcs_mlplatform_k8s_registry" "k8s_registry" {

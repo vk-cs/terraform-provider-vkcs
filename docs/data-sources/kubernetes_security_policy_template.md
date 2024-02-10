@@ -10,6 +10,8 @@ description: |-
 
 Provides a kubernetes security policy template datasource. This can be used to get information about an VKCS kubernetes security policy template.
 
+**New since v0.7.0**.
+
 ## Example Usage
 
 ```terraform
