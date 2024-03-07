@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
@@ -179,8 +178,6 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("Error creating VKCS loadbalancer client: %s", err)
 	}
 
-	var vipPortID string
-
 	lb, err := iloadbalancers.Get(lbClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "Unable to retrieve vkcs_lb_loadbalancer"))
@@ -198,18 +195,6 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set("availability_zone", lb.AvailabilityZone)
 	d.Set("region", util.GetRegion(d, config))
 	d.Set("tags", lb.Tags)
-	vipPortID = lb.VipPortID
-
-	// Get any security groups on the VIP Port.
-	if vipPortID != "" {
-		networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), networking.SearchInAllSDNs)
-		if err != nil {
-			return diag.Errorf("Error creating VKCS networking client: %s", err)
-		}
-		if err := resourceLoadBalancerGetSecurityGroups(networkingClient, vipPortID, d); err != nil {
-			return diag.Errorf("Error getting port security groups for vkcs_lb_loadbalancer: %s", err)
-		}
-	}
 
 	return nil
 }

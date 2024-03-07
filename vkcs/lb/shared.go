@@ -16,7 +16,6 @@ import (
 	loadbalancers "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	il7policies "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/l7policies"
 	ilisteners "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/listeners"
 	iloadbalancers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/lb/v2/loadbalancers"
@@ -639,15 +638,4 @@ func expandLBMembers(members *schema.Set, lbClient *gophercloud.ServiceClient) [
 	}
 
 	return m
-}
-
-func resourceLoadBalancerGetSecurityGroups(networkingClient *gophercloud.ServiceClient, vipPortID string, d *schema.ResourceData) error {
-	port, err := ports.Get(networkingClient, vipPortID).Extract()
-	if err != nil {
-		return err
-	}
-
-	d.Set("security_group_ids", port.SecurityGroups)
-
-	return nil
 }
