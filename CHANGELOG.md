@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.7.1 (unreleased)
+- Remove reading of security groups on VIP port of load balancer
+
 #### v0.7.0
 - Add vkcs_kubernetes_security_policy resource
 - Add vkcs_kubernetes_security_policy_template and vkcs_kubernetes_security_policy_templates data sources
