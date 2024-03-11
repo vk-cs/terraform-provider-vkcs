@@ -9,6 +9,7 @@ description: |-
 #### v0.7.1 (unreleased)
 - Remove reading of security groups on VIP port of load balancer
 - Fix error on reading vkcs_networking_floatingip_associate resource
+- Omit sending SDN header for operations on existing resources
 
 #### v0.7.0
 - Add vkcs_kubernetes_security_policy resource

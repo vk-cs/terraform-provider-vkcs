@@ -12,6 +12,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	inetworking "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 )
 
 func ResourceNetworkingSubnetRoute() *schema.Resource {
@@ -130,7 +131,7 @@ func resourceNetworkingSubnetRouteCreate(ctx context.Context, d *schema.Resource
 
 func resourceNetworkingSubnetRouteRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), GetSDN(d))
+	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), inetworking.SearchInAllSDNs)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -177,7 +178,7 @@ func resourceNetworkingSubnetRouteRead(ctx context.Context, d *schema.ResourceDa
 
 func resourceNetworkingSubnetRouteDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), GetSDN(d))
+	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), inetworking.SearchInAllSDNs)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
