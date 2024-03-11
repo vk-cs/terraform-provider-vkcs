@@ -16,6 +16,7 @@ import (
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	irules "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall/v2/rules"
+	inetworking "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 )
 
 func ResourceNetworkingSecGroupRule() *schema.Resource {
@@ -215,7 +216,7 @@ func resourceNetworkingSecGroupRuleCreate(ctx context.Context, d *schema.Resourc
 
 func resourceNetworkingSecGroupRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), networking.GetSDN(d))
+	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), inetworking.SearchInAllSDNs)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -245,7 +246,7 @@ func resourceNetworkingSecGroupRuleRead(ctx context.Context, d *schema.ResourceD
 
 func resourceNetworkingSecGroupRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), networking.GetSDN(d))
+	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), inetworking.SearchInAllSDNs)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}

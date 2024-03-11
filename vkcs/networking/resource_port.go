@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	inetworking "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/attributestags"
@@ -369,7 +370,7 @@ func resourceNetworkingPortCreate(ctx context.Context, d *schema.ResourceData, m
 
 func resourceNetworkingPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), GetSDN(d))
+	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), inetworking.SearchInAllSDNs)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -416,7 +417,7 @@ func resourceNetworkingPortRead(ctx context.Context, d *schema.ResourceData, met
 
 func resourceNetworkingPortUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), GetSDN(d))
+	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), inetworking.SearchInAllSDNs)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -555,7 +556,7 @@ func resourceNetworkingPortUpdate(ctx context.Context, d *schema.ResourceData, m
 
 func resourceNetworkingPortDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), GetSDN(d))
+	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), inetworking.SearchInAllSDNs)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}

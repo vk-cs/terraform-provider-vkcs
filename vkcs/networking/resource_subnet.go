@@ -18,6 +18,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/attributestags"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	inetworking "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 )
 
 func ResourceNetworkingSubnet() *schema.Resource {
@@ -284,7 +285,7 @@ func resourceNetworkingSubnetCreate(ctx context.Context, d *schema.ResourceData,
 
 func resourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), GetSDN(d))
+	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), inetworking.SearchInAllSDNs)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -331,7 +332,7 @@ func resourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData, m
 
 func resourceNetworkingSubnetUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), GetSDN(d))
+	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), inetworking.SearchInAllSDNs)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -411,7 +412,7 @@ func resourceNetworkingSubnetUpdate(ctx context.Context, d *schema.ResourceData,
 
 func resourceNetworkingSubnetDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), GetSDN(d))
+	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), inetworking.SearchInAllSDNs)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
