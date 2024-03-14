@@ -1,0 +1,26 @@
+{
+    "go.testEnvVars": {
+        "TF_ACC_TERRAFORM_PATH": "D:\\MAIL\\terraform\\terraform.exe",
+        "TF_ACC": "1",
+        "TF_LOG": "DEBUG",
+        "OS_VOLUME_TYPE": "ceph-ssd",
+        "OS_AVAILABILITY_ZONE": "GZ1",
+        "OS_FLAVOR_NAME": "Standard-2-8-50",
+        "OS_NEW_FLAVOR_NAME": "Standard-4-12",
+        "OS_IMAGE_NAME": "Ubuntu-18.04-Standard",
+        "OS_EXT_NET_NAME": "ext-net",
+        "OS_PROJECT_ID": "15cf009e8a014bf0978484e262aa2f84",
+        "OS_USERNAME": "test.box_jirru067@list.ru",
+        "OS_PASSWORD": "TpiytyRUO92#",
+        "CLUSTER_TEMPLATE_ID": "42777b6f-e9ea-4fc4-899a-eef08b8b0380",
+    "OS_FLAVOR_ID":        "9d86e0e1-b11d-4655-8454-57698a5eab9e",
+    "OS_NETWORK_ID":       "9d86e0e1-b11d-4655-8454-57698a5eab9e",
+    "OS_SUBNETWORK_ID":    "9d86e0e1-b11d-4655-8454-57698a5eab9e",
+    "OS_KEYPAIR_NAME":     "test",
+        "OS_REGION_NAME": "RegionOne",
+    },
+    "go.testTimeout": "120m",
+    "go.testFlags": [
+        "-v"
+    ],
+}

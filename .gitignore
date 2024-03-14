@@ -19,7 +19,8 @@ bin/
 *.iml
 *.test
 *.iml
-release-notes.txt
+release-notes.
+.vscode/
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate

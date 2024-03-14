@@ -113,7 +113,7 @@ func resourceNetworkingFloatingIPAssociateRead(ctx context.Context, d *schema.Re
 
 	log.Printf("[DEBUG] Retrieved vkcs_networking_floatingip_associate %s: %#v", d.Id(), fip)
 
-	d.Set("floating_ip", fip.FloatingIP)
+	d.Set("floating_ip", fip.FloatingIP.FloatingIP)
 	d.Set("port_id", fip.PortID)
 	d.Set("fixed_ip", fip.FixedIP)
 	d.Set("region", util.GetRegion(d, config))
