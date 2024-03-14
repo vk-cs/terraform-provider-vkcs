@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.7.1 (unreleased)
+#### v0.7.1
 - Remove reading of security groups on VIP port of load balancer
 - Fix error on reading vkcs_networking_floatingip_associate resource
 - Omit sending SDN header for operations on existing resources
