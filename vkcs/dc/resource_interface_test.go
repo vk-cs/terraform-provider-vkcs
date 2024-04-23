@@ -42,6 +42,7 @@ resource "vkcs_dc_interface" "dc_interface" {
 	dc_router_id = vkcs_dc_router.dc_router.id
 	network_id = vkcs_networking_network.base.id
 	subnet_id = vkcs_networking_subnet.base.id
+	ip_address = "192.168.199.42"
 	bgp_announce_enabled = true
 }
 `
