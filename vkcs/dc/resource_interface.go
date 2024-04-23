@@ -187,6 +187,7 @@ func (r *InterfaceResource) Create(ctx context.Context, req resource.CreateReque
 		DCRouterID:         data.DCRouterID.ValueString(),
 		NetworkID:          data.NetworkID.ValueString(),
 		SubnetID:           data.SubnetID.ValueString(),
+		IPAddress:          data.IPAddress.ValueString(),
 		BGPAnnounceEnabled: util.ValueKnownBoolPointer(data.BGPAnnounceEnabled),
 	}
 

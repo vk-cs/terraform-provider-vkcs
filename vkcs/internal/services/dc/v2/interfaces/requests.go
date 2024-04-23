@@ -19,6 +19,7 @@ type CreateOpts struct {
 	DCRouterID         string `json:"dc_router_id"`
 	NetworkID          string `json:"network_id"`
 	SubnetID           string `json:"subnet_id,omitempty"`
+	IPAddress          string `json:"ip_address,omitempty"`
 	BGPAnnounceEnabled *bool  `json:"bgp_announce_enabled,omitempty"`
 }
 
