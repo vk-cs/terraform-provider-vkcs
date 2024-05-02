@@ -59,7 +59,7 @@ func DataSourceComputeFlavor() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The exact amount of RAM (in megabytes).",
+				Description: "The exact amount of RAM (in megabytes). Don't set ram, when min_ram is set.",
 			},
 
 			"vcpus": {
@@ -81,7 +81,7 @@ func DataSourceComputeFlavor() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The exact amount of disk (in gigabytes).",
+				Description: "The exact amount of disk (in gigabytes). Don't set disk, when min_disk is set.",
 			},
 
 			"swap": {
@@ -109,7 +109,7 @@ func DataSourceComputeFlavor() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The cpu generation of the flavor.",
+				Description: "The `cpu_generation` of the flavor.",
 			},
 
 			// Computed values
