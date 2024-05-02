@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.7.2",
+  "provider_version": "v0.7.3",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -6705,10 +6705,17 @@
       },
       "vkcs_compute_flavor": {
         "schema": {
+          "cpu_generation": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `cpu_generation` of the flavor.",
+            "force_new": true,
+            "new_since": "v0.7.3"
+          },
           "disk": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The exact amount of disk (in gigabytes).",
+            "description": "The exact amount of disk (in gigabytes). Don't set disk, when min_disk is set.",
             "force_new": true
           },
           "extra_specs": {
@@ -6754,7 +6761,7 @@
           "ram": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The exact amount of RAM (in megabytes).",
+            "description": "The exact amount of RAM (in megabytes). Don't set ram, when min_ram is set.",
             "force_new": true
           },
           "region": {
