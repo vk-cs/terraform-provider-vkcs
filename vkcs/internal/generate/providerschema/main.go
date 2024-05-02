@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -52,7 +51,7 @@ func (g ProviderSchemaJSONGenerator) Code() string {
 }
 
 func (g ProviderSchemaJSONGenerator) codeForSchema() string {
-	pSchemaJSON, err := ioutil.ReadFile(g.SchemaPath)
+	pSchemaJSON, err := os.ReadFile(g.SchemaPath)
 	if err != nil {
 		panic(err)
 	}

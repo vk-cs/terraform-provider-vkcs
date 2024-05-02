@@ -140,11 +140,11 @@ type RequiredFlavor struct {
 
 	// RAM is the amount of memory, measured in MB.
 	RAM    int  `json:"ram"`
-	HasRam bool `json:"has_ram"`
+	HasRAM bool `json:"has_ram"`
 
 	// MinRAM is the amount of memory, measured in MB.
 	MinRAM    int  `json:"min_ram"`
-	HasMinRam bool `json:"has_min_ram"`
+	HasMinRAM bool `json:"has_min_ram"`
 
 	// Name is the name of the flavor.
 	Name    string `json:"name"`
@@ -171,11 +171,11 @@ type RequiredFlavor struct {
 
 func NewRequiredFlavorFromResourceData(d *schema.ResourceData) *RequiredFlavor {
 	name, hasName := d.GetOk("name")
-	ram, hasRam := d.GetOk("ram")
+	ram, hasRAM := d.GetOk("ram")
 	VCPUs, hasVCPUs := d.GetOk("vcpus")
 	disk, hasDisk := d.GetOk("disk")
 	minDisk, hasMinDisk := d.GetOk("min_disk")
-	minRAM, hasMinRam := d.GetOk("min_ram")
+	minRAM, hasMinRAM := d.GetOk("min_ram")
 	rxTxFactor, hasRxTxFactor := d.GetOk("rx_tx_factor")
 	swap, hasSwap := d.GetOk("swap")
 	cpuGeneration, hasCPUGeneration := d.GetOk("cpu_generation")
@@ -204,9 +204,9 @@ func NewRequiredFlavorFromResourceData(d *schema.ResourceData) *RequiredFlavor {
 		MinDisk:          minDisk.(int),
 		HasMinDisk:       hasMinDisk,
 		RAM:              ram.(int),
-		HasRam:           hasRam,
+		HasRAM:           hasRAM,
 		MinRAM:           minRAM.(int),
-		HasMinRam:        hasMinRam,
+		HasMinRAM:        hasMinRAM,
 		Name:             name.(string),
 		HasName:          hasName,
 		RxTxFactor:       rxTxFactor.(float64),
@@ -319,7 +319,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 			switch {
 			case requiredFlavor.HasName && flavor.Name != requiredFlavor.Name:
 				continue
-			case requiredFlavor.HasRam && flavor.RAM != requiredFlavor.RAM:
+			case requiredFlavor.HasRAM && flavor.RAM != requiredFlavor.RAM:
 				continue
 			case requiredFlavor.HasVCPUs && flavor.VCPUs != requiredFlavor.VCPUs:
 				continue
@@ -354,7 +354,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 
 	// if we find many flavors and the user sets the min_ram or min_disk values
 	// we give him the flavor with the minimum amount of RAM from the found flavors
-	if len(allFlavors) > 1 && (requiredFlavor.HasMinRam || requiredFlavor.HasMinDisk) {
+	if len(allFlavors) > 1 && (requiredFlavor.HasMinRAM || requiredFlavor.HasMinDisk) {
 		minFlavor := slices.MinFunc(allFlavors, func(a, b FlavorWithExtraInfo) int {
 			if a.RAM != b.RAM {
 				return cmp.Compare(a.RAM, b.RAM)
@@ -368,11 +368,11 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 	if len(allFlavors) > 1 {
 		log.Printf("[DEBUG] Multiple results found: %#v", allFlavors)
 		if len(allFlavors) > 2 {
-			return diag.Errorf("Found %d avalaible flavors. Please try a more specific search criteria", len(allFlavors))
+			return diag.Errorf("Found %d available flavors. Please try a more specific search criteria", len(allFlavors))
 		}
 		bytes, _ := json.MarshalIndent(allFlavors, "", "\t")
 
-		return diag.Errorf("Found %d avalaible flavors. Avalaible flavors:\n%s\n"+
+		return diag.Errorf("Found %d available flavors. Available flavors:\n%s\n"+
 			"Please try a more specific search criteria", len(allFlavors), bytes)
 	}
 

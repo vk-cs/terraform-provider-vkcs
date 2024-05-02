@@ -18,9 +18,9 @@ bin/
 .idea
 *.iml
 *.test
-*.iml
 release-notes.txt
 .vscode/
+vendor
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
