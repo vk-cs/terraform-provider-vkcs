@@ -69,7 +69,14 @@ func DataSourceComputeInstance() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
-				Description: "An array of security group names associated with this server.",
+				Description: "An array of security group names associated with this server. _note_ if you want to use ids instead of names use field `security_group_ids`",
+			},
+			"security_group_ids": {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "An array of one or more security group ids to associate with the server.",
 			},
 			"availability_zone": {
 				Type:        schema.TypeString,
@@ -186,14 +193,18 @@ func dataSourceComputeInstanceRead(ctx context.Context, d *schema.ResourceData, 
 
 	d.Set("metadata", server.Metadata)
 
-	secGrpNames := []string{}
-	for _, sg := range server.SecurityGroups {
-		secGrpNames = append(secGrpNames, sg["name"].(string))
+	sgNames := make([]string, len(server.SecurityGroups))
+	sgIDs := make([]string, len(server.SecurityGroups))
+	for i, sg := range server.SecurityGroups {
+		sgNames[i] = sg["name"].(string)
+		sgIDs[i] = sg["id"].(string)
 	}
 
-	log.Printf("[DEBUG] Setting security groups: %+v", secGrpNames)
+	log.Printf("[DEBUG] Setting security groups: %+v", sgNames)
+	log.Printf("[DEBUG] Setting security group ids: %+v", sgIDs)
 
-	d.Set("security_groups", secGrpNames)
+	d.Set("security_groups", sgNames)
+	d.Set("security_group_ids", sgIDs)
 
 	flavorID, ok := server.Flavor["id"].(string)
 	if !ok {

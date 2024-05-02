@@ -21,8 +21,8 @@ resource "vkcs_compute_instance" "multiple_networks" {
   }
   # Attach 'admin' security group to autocreated port
   # This does not associate the group to 'persistent' port
-  security_groups = [
-    vkcs_networking_secgroup.admin.name
+  security_group_ids = [
+    vkcs_networking_secgroup.admin.id
   ]
   depends_on = [
     vkcs_networking_router_interface.app,

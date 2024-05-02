@@ -10,6 +10,7 @@ description: |-
 #### v0.7.3 (unreleased)
 - Add ability to filter by extra_specs attribute in vkcs_compute_flavor data source.
 - Enhancement searching the closest appropriate flavor by min_ram argument in vkcs_compute_flavor data source.
+- Add security_group_ids param to vkcs_compute_instance resource
 
 #### v0.7.2
 - Allow 'ip_address' parameter for vkcs_dc_interface resource creation

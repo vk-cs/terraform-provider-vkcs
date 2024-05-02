@@ -121,13 +121,24 @@ func ResourceComputeInstance() *schema.Resource {
 				Description: "The user data to provide when launching the instance.	Changing this creates a new server.",
 			},
 			"security_groups": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				ForceNew:    false,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Set:         schema.HashString,
-				Description: "An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. _note_ When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. _note_ Names should be used and not ids, as ids trigger unnecessary updates.",
+				Type:          schema.TypeSet,
+				Optional:      true,
+				ForceNew:      false,
+				Computed:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Set:           schema.HashString,
+				ConflictsWith: []string{"security_group_ids"},
+				Description:   "An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. _note_ When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. _note_ We recommend to use the new argument `security_group_ids` instead of this argument.",
+			},
+			"security_group_ids": {
+				Type:          schema.TypeSet,
+				Optional:      true,
+				ForceNew:      false,
+				Computed:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Set:           schema.HashString,
+				ConflictsWith: []string{"security_groups"},
+				Description:   "An array of one or more security group ids to associate with the server. Changing this results in adding/removing security groups from the existing server. _note_ When attaching the instance to networks using Ports, place the security groups on the Port and not the instance.",
 			},
 			"availability_zone": {
 				Type:             schema.TypeString,
@@ -645,11 +656,14 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 
 	d.Set("all_metadata", server.Metadata)
 
-	secGrpNames := []string{}
-	for _, sg := range server.SecurityGroups {
-		secGrpNames = append(secGrpNames, sg["name"].(string))
+	sgNames := make([]string, len(server.SecurityGroups))
+	sgIDs := make([]string, len(server.SecurityGroups))
+	for i, sg := range server.SecurityGroups {
+		sgNames[i] = sg["name"].(string)
+		sgIDs[i] = sg["id"].(string)
 	}
-	d.Set("security_groups", secGrpNames)
+	d.Set("security_groups", sgNames)
+	d.Set("security_group_ids", sgIDs)
 
 	flavorID, ok := server.Flavor["id"].(string)
 	if !ok {
@@ -844,32 +858,26 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		oldSGRaw, newSGRaw := d.GetChange("security_groups")
 		oldSGSet := oldSGRaw.(*schema.Set)
 		newSGSet := newSGRaw.(*schema.Set)
-		secgroupsToAdd := newSGSet.Difference(oldSGSet)
-		secgroupsToRemove := oldSGSet.Difference(newSGSet)
+		sgToAdd := util.ExpandToStringSlice(newSGSet.Difference(oldSGSet).List())
+		sgToRemove := util.ExpandToStringSlice(oldSGSet.Difference(newSGSet).List())
 
-		log.Printf("[DEBUG] Security groups to add: %v", secgroupsToAdd)
+		log.Printf("[DEBUG] Security groups to add: %v", sgToAdd)
+		log.Printf("[DEBUG] Security groups to remove: %v", sgToRemove)
 
-		log.Printf("[DEBUG] Security groups to remove: %v", secgroupsToRemove)
+		updateSecGroups(computeClient, d.Id(), sgToAdd, sgToRemove)
+	}
 
-		for _, g := range secgroupsToRemove.List() {
-			err := isecgroups.RemoveServer(computeClient, d.Id(), g.(string)).ExtractErr()
-			if err != nil && err.Error() != "EOF" {
-				if errutil.IsNotFound(err) {
-					continue
-				}
+	if d.HasChange("security_group_ids") {
+		oldSGRaw, newSGRaw := d.GetChange("security_group_ids")
+		oldSGSet := oldSGRaw.(*schema.Set)
+		newSGSet := newSGRaw.(*schema.Set)
+		sgIDsToAdd := util.ExpandToStringSlice(newSGSet.Difference(oldSGSet).List())
+		sgIDsToRemove := util.ExpandToStringSlice(oldSGSet.Difference(newSGSet).List())
 
-				return diag.Errorf("Error removing security group (%s) from VKCS server (%s): %s", g, d.Id(), err)
-			}
-			log.Printf("[DEBUG] Removed security group (%s) from instance (%s)", g, d.Id())
-		}
+		log.Printf("[DEBUG] Security group ids to add: %v", sgIDsToAdd)
+		log.Printf("[DEBUG] Security group ids to remove: %v", sgIDsToRemove)
 
-		for _, g := range secgroupsToAdd.List() {
-			err := isecgroups.AddServer(computeClient, d.Id(), g.(string)).ExtractErr()
-			if err != nil && err.Error() != "EOF" {
-				return diag.Errorf("Error adding security group (%s) to VKCS server (%s): %s", g, d.Id(), err)
-			}
-			log.Printf("[DEBUG] Added security group (%s) to instance (%s)", g, d.Id())
-		}
+		updateSecGroups(computeClient, d.Id(), sgIDsToAdd, sgIDsToRemove)
 	}
 
 	if d.HasChange("admin_pass") {
@@ -980,6 +988,30 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	return resourceComputeInstanceRead(ctx, d, meta)
+}
+
+func updateSecGroups(computeClient *gophercloud.ServiceClient, resourceID string, sgToAdd, sgToRemove []string) diag.Diagnostics {
+	for _, groupName := range sgToRemove {
+		err := isecgroups.RemoveServer(computeClient, resourceID, groupName).ExtractErr()
+		if err != nil && err.Error() != "EOF" {
+			if errutil.IsNotFound(err) {
+				continue
+			}
+
+			return diag.Errorf("Error removing security group (%s) from VKCS server (%s): %s", groupName, resourceID, err)
+		}
+		log.Printf("[DEBUG] Removed security group (%s) from instance (%s)", groupName, resourceID)
+	}
+
+	for _, groupName := range sgToAdd {
+		err := isecgroups.AddServer(computeClient, resourceID, groupName).ExtractErr()
+		if err != nil && err.Error() != "EOF" {
+			return diag.Errorf("Error adding security group (%s) to VKCS server (%s): %s", groupName, resourceID, err)
+		}
+		log.Printf("[DEBUG] Added security group (%s) to instance (%s)", groupName, resourceID)
+	}
+
+	return nil
 }
 
 func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1126,7 +1158,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 	log.Printf("[DEBUG] Retrieved vkcs_compute_instance %s volume attachments: %#v",
 		d.Id(), serverWithAttachments)
 
-	bds := []map[string]interface{}{}
+	var bds []map[string]interface{}
 	if len(serverWithAttachments.VolumesAttached) > 0 {
 		blockStorageClient, err := config.BlockStorageV3Client(util.GetRegion(d, config))
 		if err != nil {
@@ -1197,11 +1229,11 @@ func ServerStateRefreshFunc(client *gophercloud.ServiceClient, instanceID string
 
 func resourceInstanceSecGroupsV2(d *schema.ResourceData) []string {
 	rawSecGroups := d.Get("security_groups").(*schema.Set).List()
-	res := make([]string, len(rawSecGroups))
-	for i, raw := range rawSecGroups {
-		res[i] = raw.(string)
+	if len(rawSecGroups) > 0 {
+		return util.ExpandToStringSlice(rawSecGroups)
 	}
-	return res
+
+	return util.ExpandToStringSlice(d.Get("security_group_ids").(*schema.Set).List())
 }
 
 func resourceInstanceMetadataV2(d *schema.ResourceData) map[string]string {

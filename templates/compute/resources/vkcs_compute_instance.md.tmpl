@@ -45,7 +45,7 @@ Also, the user_data option can be set to the contents of a script file using the
 
 ### Instances and Security Groups
 
-When referencing a security group resource in an instance resource, always use the _name_ of the security group. If you specify the ID of the security group, Terraform will remove and reapply the security group upon each call. This is because the VKCS Compute API returns the names of the associated security groups and not their IDs.
+When referencing a security group resource in an instance resource, always use the _id_ of the security group. If you want to use _name_ instead of _id_ use _security_groups_ argument, but this is not recommended.
 ```hcl
 resource "vkcs_networking_secgroup" "sg_1" {
   name = "sg_1"
@@ -53,7 +53,7 @@ resource "vkcs_networking_secgroup" "sg_1" {
 
 resource "vkcs_compute_instance" "foo" {
   name            = "terraform-test"
-  security_groups = [vkcs_networking_secgroup.sg_1.name]
+  security_group_ids = [vkcs_networking_secgroup.sg_1.id]
 }
 ```
 
