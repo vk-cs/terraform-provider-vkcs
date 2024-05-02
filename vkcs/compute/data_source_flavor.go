@@ -162,7 +162,7 @@ type RequiredFlavor struct {
 	VCPUs    int  `json:"vcpus"`
 	HasVCPUs bool `json:"has_vcpus"`
 
-	// CPUGeneration is the cpu generation of flavor, cascadelake-v1 for example
+	// CPUGeneration is the cpu generation of flavor
 	CPUGeneration    string `json:"cpu_generation"`
 	HasCPUGeneration bool   `json:"has_cpu_generation"`
 
@@ -178,8 +178,8 @@ func NewRequiredFlavorFromResourceData(d *schema.ResourceData) *RequiredFlavor {
 	minRAM, hasMinRam := d.GetOk("min_ram")
 	rxTxFactor, hasRxTxFactor := d.GetOk("rx_tx_factor")
 	swap, hasSwap := d.GetOk("swap")
-	cpuGeneration, hasCpuGeneraion := d.GetOk("cpu_generation")
-	// extraSpecs, hasExtraSpecs := d.GetOk("extra_specs")
+	cpuGeneration, hasCPUGeneration := d.GetOk("cpu_generation")
+
 	if minRAM.(int) > ram.(int) {
 		ram = minRAM
 	}
@@ -216,11 +216,12 @@ func NewRequiredFlavorFromResourceData(d *schema.ResourceData) *RequiredFlavor {
 		VCPUs:            VCPUs.(int),
 		HasVCPUs:         hasVCPUs,
 		CPUGeneration:    cpuGeneration.(string),
-		HasCPUGeneration: hasCpuGeneraion,
+		HasCPUGeneration: hasCPUGeneration,
 		AccessType:       accessType,
 	}
 }
 
+// FlavorWithExtraInfo needs for extract ExtraSpecs info from flavors.FlavorPage
 type FlavorWithExtraInfo struct {
 	// ID is the flavor's unique ID.
 	ID string `json:"id"`
