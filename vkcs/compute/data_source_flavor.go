@@ -1,8 +1,11 @@
 package compute
 
 import (
+	"cmp"
 	"context"
+	"encoding/json"
 	"log"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -102,6 +105,13 @@ func DataSourceComputeFlavor() *schema.Resource {
 				Description: "The flavor visibility.",
 			},
 
+			"cpu_generation": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The cpu generation of the flavor.",
+			},
+
 			// Computed values
 			"extra_specs": {
 				Type:        schema.TypeMap,
@@ -119,6 +129,143 @@ func DataSourceComputeFlavor() *schema.Resource {
 	}
 }
 
+type RequiredFlavor struct {
+	// Disk is the amount of root disk, measured in GB.
+	Disk    int  `json:"disk"`
+	HasDisk bool `json:"has_disk"`
+
+	// Disk is the amount of root disk, measured in GB.
+	MinDisk    int  `json:"min_disk"`
+	HasMinDisk bool `json:"has_min_disk"`
+
+	// RAM is the amount of memory, measured in MB.
+	RAM    int  `json:"ram"`
+	HasRam bool `json:"has_ram"`
+
+	// MinRAM is the amount of memory, measured in MB.
+	MinRAM    int  `json:"min_ram"`
+	HasMinRam bool `json:"has_min_ram"`
+
+	// Name is the name of the flavor.
+	Name    string `json:"name"`
+	HasName bool   `json:"has_name"`
+
+	// RxTxFactor describes bandwidth alterations of the flavor.
+	RxTxFactor    float64 `json:"rxtx_factor"`
+	HasRxTxFactor bool    `json:"has_rxtx_factor"`
+
+	// Swap is the amount of swap space, measured in MB.
+	Swap    int  `json:"-"`
+	HasSwap bool `json:"has_swap"`
+
+	// VCPUs indicates how many (virtual) CPUs are available for this flavor.
+	VCPUs    int  `json:"vcpus"`
+	HasVCPUs bool `json:"has_vcpus"`
+
+	// CPUGeneration is the cpu generation of flavor, cascadelake-v1 for example
+	CPUGeneration    string `json:"cpu_generation"`
+	HasCPUGeneration bool   `json:"has_cpu_generation"`
+
+	AccessType flavors.AccessType `json:"access_type"`
+}
+
+func NewRequiredFlavorFromResourceData(d *schema.ResourceData) *RequiredFlavor {
+	name, hasName := d.GetOk("name")
+	ram, hasRam := d.GetOk("ram")
+	VCPUs, hasVCPUs := d.GetOk("vcpus")
+	disk, hasDisk := d.GetOk("disk")
+	minDisk, hasMinDisk := d.GetOk("min_disk")
+	minRAM, hasMinRam := d.GetOk("min_ram")
+	rxTxFactor, hasRxTxFactor := d.GetOk("rx_tx_factor")
+	swap, hasSwap := d.GetOk("swap")
+	cpuGeneration, hasCpuGeneraion := d.GetOk("cpu_generation")
+	// extraSpecs, hasExtraSpecs := d.GetOk("extra_specs")
+	if minRAM.(int) > ram.(int) {
+		ram = minRAM
+	}
+	if minDisk.(int) > disk.(int) {
+		disk = minDisk
+	}
+
+	accessType := flavors.AllAccess
+	if v, ok := d.GetOk("is_public"); ok {
+		if v, ok := v.(bool); ok {
+			if v {
+				accessType = flavors.PublicAccess
+			} else {
+				accessType = flavors.PrivateAccess
+			}
+		}
+	}
+
+	return &RequiredFlavor{
+		Disk:             disk.(int),
+		HasDisk:          hasDisk,
+		MinDisk:          minDisk.(int),
+		HasMinDisk:       hasMinDisk,
+		RAM:              ram.(int),
+		HasRam:           hasRam,
+		MinRAM:           minRAM.(int),
+		HasMinRam:        hasMinRam,
+		Name:             name.(string),
+		HasName:          hasName,
+		RxTxFactor:       rxTxFactor.(float64),
+		HasRxTxFactor:    hasRxTxFactor,
+		Swap:             swap.(int),
+		HasSwap:          hasSwap,
+		VCPUs:            VCPUs.(int),
+		HasVCPUs:         hasVCPUs,
+		CPUGeneration:    cpuGeneration.(string),
+		HasCPUGeneration: hasCpuGeneraion,
+		AccessType:       accessType,
+	}
+}
+
+type FlavorWithExtraInfo struct {
+	// ID is the flavor's unique ID.
+	ID string `json:"id"`
+
+	// Disk is the amount of root disk, measured in GB.
+	Disk int `json:"disk"`
+
+	// RAM is the amount of memory, measured in MB.
+	RAM int `json:"ram"`
+
+	// Name is the name of the flavor.
+	Name string `json:"name"`
+
+	// RxTxFactor describes bandwidth alterations of the flavor.
+	RxTxFactor float64 `json:"rxtx_factor"`
+
+	// Swap is the amount of swap space, measured in MB.
+	Swap int `json:"-"`
+
+	// VCPUs indicates how many (virtual) CPUs are available for this flavor.
+	VCPUs int `json:"vcpus"`
+
+	// IsPublic indicates whether the flavor is public.
+	IsPublic bool `json:"os-flavor-access:is_public"`
+
+	// Ephemeral is the amount of ephemeral disk space, measured in GB.
+	Ephemeral int `json:"OS-FLV-EXT-DATA:ephemeral"`
+
+	ExtraSpecs map[string]interface{} `json:"extra_specs"`
+}
+
+func (f *FlavorWithExtraInfo) toFlavor() *flavors.Flavor {
+	return &flavors.Flavor{
+		ID:         f.ID,
+		Disk:       f.Disk,
+		RAM:        f.RAM,
+		Name:       f.Name,
+		RxTxFactor: f.RxTxFactor,
+		Swap:       f.Swap,
+		VCPUs:      f.VCPUs,
+		IsPublic:   f.IsPublic,
+		Ephemeral:  f.Ephemeral,
+	}
+}
+
 // dataSourceComputeFlavorRead performs the flavor lookup.
 func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
@@ -127,7 +274,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
-	var allFlavors []flavors.Flavor
+	// choose only one by flavor_id
 	if v := d.Get("flavor_id").(string); v != "" {
 		flavor, err := iflavors.Get(computeClient, v).Extract()
 		if err != nil {
@@ -137,79 +284,63 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 			return diag.Errorf("Unable to retrieve VKCS %s flavor: %s", v, err)
 		}
 
-		allFlavors = append(allFlavors, *flavor)
-	} else {
-		accessType := flavors.AllAccess
-		if v, ok := d.GetOk("is_public"); ok {
-			if v, ok := v.(bool); ok {
-				if v {
-					accessType = flavors.PublicAccess
-				} else {
-					accessType = flavors.PrivateAccess
-				}
-			}
-		}
-		listOpts := flavors.ListOpts{
-			MinDisk:    d.Get("min_disk").(int),
-			MinRAM:     d.Get("min_ram").(int),
-			AccessType: accessType,
-		}
-
-		log.Printf("[DEBUG] vkcs_compute_flavor ListOpts: %#v", listOpts)
-
-		allPages, err := flavors.ListDetail(computeClient, listOpts).AllPages()
-		if err != nil {
-			return diag.Errorf("Unable to query VKCS flavors: %s", err)
-		}
-
-		allFlavors, err = flavors.ExtractFlavors(allPages)
-		if err != nil {
-			return diag.Errorf("Unable to retrieve VKCS flavors: %s", err)
-		}
+		return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, flavor))
 	}
+
+	requiredFlavor := NewRequiredFlavorFromResourceData(d)
+	listOpts := flavors.ListOpts{
+		MinDisk:    requiredFlavor.MinDisk,
+		MinRAM:     requiredFlavor.MinRAM,
+		AccessType: requiredFlavor.AccessType,
+	}
+
+	log.Printf("[DEBUG] vkcs_compute_flavor ListOpts: %#v", listOpts)
+
+	allPages, err := flavors.ListDetail(computeClient, listOpts).AllPages()
+	if err != nil {
+		return diag.Errorf("Unable to query VKCS flavors: %s", err)
+	}
+
+	var s struct {
+		FlavorsExtra []FlavorWithExtraInfo `json:"flavors"`
+	}
+	err = (allPages.(flavors.FlavorPage)).ExtractInto(&s)
+
+	if err != nil {
+		return diag.Errorf("Unable to retrieve VKCS flavors: %s", err)
+	}
+	allFlavors := s.FlavorsExtra
 
 	// Loop through all flavors to find a more specific one.
 	if len(allFlavors) > 0 {
-		var filteredFlavors []flavors.Flavor
+		var filteredFlavors []FlavorWithExtraInfo
 		for _, flavor := range allFlavors {
-			if v := d.Get("name").(string); v != "" {
-				if flavor.Name != v {
-					continue
-				}
+			switch {
+			case requiredFlavor.HasName && flavor.Name != requiredFlavor.Name:
+				continue
+			case requiredFlavor.HasRam && flavor.RAM != requiredFlavor.RAM:
+				continue
+			case requiredFlavor.HasVCPUs && flavor.VCPUs != requiredFlavor.VCPUs:
+				continue
+			case requiredFlavor.HasDisk && flavor.Disk != requiredFlavor.Disk:
+				continue
+			case requiredFlavor.HasSwap && flavor.Swap != requiredFlavor.Swap:
+				continue
+			case requiredFlavor.HasRxTxFactor && flavor.RxTxFactor != requiredFlavor.RxTxFactor:
+				continue
+			case requiredFlavor.HasCPUGeneration && flavor.ExtraSpecs == nil:
+				continue
+			}
+			if !requiredFlavor.HasCPUGeneration {
+				filteredFlavors = append(filteredFlavors, flavor)
+				continue
 			}
 
-			// d.GetOk is used because 0 might be a valid choice.
-			if v, ok := d.GetOk("ram"); ok {
-				if flavor.RAM != v.(int) {
-					continue
+			if flavorCPU, ok := flavor.ExtraSpecs["mcs:cpu_generation"]; ok {
+				if requiredFlavor.CPUGeneration == flavorCPU {
+					filteredFlavors = append(filteredFlavors, flavor)
 				}
 			}
-
-			if v, ok := d.GetOk("vcpus"); ok {
-				if flavor.VCPUs != v.(int) {
-					continue
-				}
-			}
-
-			if v, ok := d.GetOk("disk"); ok {
-				if flavor.Disk != v.(int) {
-					continue
-				}
-			}
-
-			if v, ok := d.GetOk("swap"); ok {
-				if flavor.Swap != v.(int) {
-					continue
-				}
-			}
-
-			if v, ok := d.GetOk("rx_tx_factor"); ok {
-				if flavor.RxTxFactor != v.(float64) {
-					continue
-				}
-			}
-
-			filteredFlavors = append(filteredFlavors, flavor)
 		}
 
 		allFlavors = filteredFlavors
@@ -220,13 +351,31 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 			"Please change your search criteria and try again.")
 	}
 
-	if len(allFlavors) > 1 {
-		log.Printf("[DEBUG] Multiple results found: %#v", allFlavors)
-		return diag.Errorf("Your query returned more than one result. " +
-			"Please try a more specific search criteria")
+	// if we find many flavors and the user sets the min_ram or min_disk values
+	// we give him the flavor with the minimum amount of RAM from the found flavors
+	if len(allFlavors) > 1 && (requiredFlavor.HasMinRam || requiredFlavor.HasMinDisk) {
+		minFlavor := slices.MinFunc(allFlavors, func(a, b FlavorWithExtraInfo) int {
+			if a.RAM != b.RAM {
+				return cmp.Compare(a.RAM, b.RAM)
+			}
+			return cmp.Compare(a.Disk, b.Disk)
+		})
+
+		return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, minFlavor.toFlavor()))
 	}
 
-	return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, &allFlavors[0]))
+	if len(allFlavors) > 1 {
+		log.Printf("[DEBUG] Multiple results found: %#v", allFlavors)
+		if len(allFlavors) > 2 {
+			return diag.Errorf("Found %d avalaible flavors. Please try a more specific search criteria", len(allFlavors))
+		}
+		bytes, _ := json.MarshalIndent(allFlavors, "", "\t")
+
+		return diag.Errorf("Found %d avalaible flavors. Avalaible flavors:\n%s\n"+
+			"Please try a more specific search criteria", len(allFlavors), bytes)
+	}
+
+	return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, allFlavors[0].toFlavor()))
 }
 
 // dataSourceComputeFlavorAttributes populates the fields of a Flavor resource.
