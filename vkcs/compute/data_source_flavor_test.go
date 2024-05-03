@@ -60,6 +60,42 @@ func TestAccComputeFlavorDataSource_testQueries(t *testing.T) {
 				),
 			},
 			{
+				Config: testAccComputeFlavorDataSourceQueryMinDiskWithName,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeFlavorDataSourceID("data.vkcs_compute_flavor.flavor_1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "name", "Basic-1-2-20"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "ram", "2048"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "disk", "20"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "vcpus", "1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "rx_tx_factor", "1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "is_public", "true"),
+				),
+			},
+			{
+				Config: testAccComputeFlavorDataSourceQueryMinRAMWithName,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeFlavorDataSourceID("data.vkcs_compute_flavor.flavor_1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "name", "Basic-1-2-20"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "ram", "2048"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "disk", "20"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "vcpus", "1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "rx_tx_factor", "1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "is_public", "true"),
+				),
+			},
+			{
 				Config: testAccComputeFlavorDataSourceQueryMinDisk,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeFlavorDataSourceID("data.vkcs_compute_flavor.flavor_1"),
@@ -82,13 +118,31 @@ func TestAccComputeFlavorDataSource_testQueries(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeFlavorDataSourceID("data.vkcs_compute_flavor.flavor_1"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_compute_flavor.flavor_1", "name", "Basic-1-2-20"),
+						"data.vkcs_compute_flavor.flavor_1", "name", "STD3-4-4"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_compute_flavor.flavor_1", "ram", "2048"),
+						"data.vkcs_compute_flavor.flavor_1", "ram", "4096"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_compute_flavor.flavor_1", "disk", "20"),
+						"data.vkcs_compute_flavor.flavor_1", "disk", "0"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_compute_flavor.flavor_1", "vcpus", "1"),
+						"data.vkcs_compute_flavor.flavor_1", "vcpus", "4"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "rx_tx_factor", "1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "is_public", "true"),
+				),
+			},
+			{
+				Config: testAccComputeFlavorDataSourceQueryMinRAMAndMinDisk,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeFlavorDataSourceID("data.vkcs_compute_flavor.flavor_1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "name", "Standard-2-4-40"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "ram", "4096"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "disk", "40"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "vcpus", "2"),
 					resource.TestCheckResourceAttr(
 						"data.vkcs_compute_flavor.flavor_1", "rx_tx_factor", "1"),
 					resource.TestCheckResourceAttr(
@@ -113,6 +167,26 @@ func TestAccComputeFlavorDataSource_testQueries(t *testing.T) {
 						"data.vkcs_compute_flavor.flavor_1", "is_public", "true"),
 				),
 			},
+			{
+				Config: testAccComputeFlavorDataSourceQueryCPUGeneration,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeFlavorDataSourceID("data.vkcs_compute_flavor.flavor_1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "name", "STD2-1-2"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "ram", "2048"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "disk", "0"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "vcpus", "1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "rx_tx_factor", "1"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "is_public", "true"),
+					resource.TestCheckResourceAttr(
+						"data.vkcs_compute_flavor.flavor_1", "extra_specs.mcs:cpu_generation", "cascadelake-v1"),
+				),
+			},
 		},
 	})
 }
@@ -129,7 +203,7 @@ func TestAccComputeFlavorDataSource_extraSpecs(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.vkcs_compute_flavor.flavor_1", "name", "Basic-1-2-20"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_compute_flavor.flavor_1", "extra_specs.%", "3"),
+						"data.vkcs_compute_flavor.flavor_1", "extra_specs.%", "4"),
 					resource.TestCheckResourceAttr(
 						"data.vkcs_compute_flavor.flavor_1", "extra_specs.agg_common", "true"),
 					resource.TestCheckResourceAttr(
@@ -169,17 +243,36 @@ data "vkcs_compute_flavor" "flavor_1" {
 }
 `
 
-const testAccComputeFlavorDataSourceQueryMinDisk = `
+const testAccComputeFlavorDataSourceQueryMinDiskWithName = `
 data "vkcs_compute_flavor" "flavor_1" {
   name = "Basic-1-2-20"
   min_disk = 20
 }
 `
 
-const testAccComputeFlavorDataSourceQueryMinRAM = `
+const testAccComputeFlavorDataSourceQueryMinRAMWithName = `
 data "vkcs_compute_flavor" "flavor_1" {
   name = "Basic-1-2-20"
   min_ram = 2048
+}
+`
+
+const testAccComputeFlavorDataSourceQueryMinDisk = `
+data "vkcs_compute_flavor" "flavor_1" {
+  min_disk = 20
+}
+`
+
+const testAccComputeFlavorDataSourceQueryMinRAM = `
+data "vkcs_compute_flavor" "flavor_1" {
+  min_ram = 4096
+}
+`
+
+const testAccComputeFlavorDataSourceQueryMinRAMAndMinDisk = `
+data "vkcs_compute_flavor" "flavor_1" {
+  min_disk = 20
+  min_ram = 4096
 }
 `
 
@@ -187,6 +280,13 @@ const testAccComputeFlavorDataSourceQueryVCPUs = `
 data "vkcs_compute_flavor" "flavor_1" {
   name = "Basic-1-2-20"
   vcpus = 1
+}
+`
+
+const testAccComputeFlavorDataSourceQueryCPUGeneration = `
+data "vkcs_compute_flavor" "flavor_1" {
+  name = "STD2-1-2"
+  cpu_generation = "cascadelake-v1"
 }
 `
 
