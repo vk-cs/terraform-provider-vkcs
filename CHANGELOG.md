@@ -6,7 +6,13 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+
 #### v0.7.3 (unreleased)
+- Add a warning when creating a block_device with incorrect use of the delete_on_termination parameter
+- Add `cpu_generation` param to terraform schema of `vkcs_compute_flavor`
+- improve search flavor using min_ram and min_disk
+- Improve error messages for `vkcs_compute_flavor`
+
 
 #### v0.7.2
 - Allow 'ip_address' parameter for vkcs_dc_interface resource creation
