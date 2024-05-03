@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
+	"github.com/gophercloud/gophercloud/pagination"
 	"log"
 	"slices"
 
@@ -221,39 +222,38 @@ func NewRequiredFlavorFromResourceData(d *schema.ResourceData) *RequiredFlavor {
 	}
 }
 
-// FlavorWithExtraInfo needs for extract ExtraSpecs info from flavors.FlavorPage
-type FlavorWithExtraInfo struct {
-	// ID is the flavor's unique ID.
-	ID string `json:"id"`
-
-	// Disk is the amount of root disk, measured in GB.
-	Disk int `json:"disk"`
-
-	// RAM is the amount of memory, measured in MB.
-	RAM int `json:"ram"`
-
-	// Name is the name of the flavor.
-	Name string `json:"name"`
-
-	// RxTxFactor describes bandwidth alterations of the flavor.
-	RxTxFactor float64 `json:"rxtx_factor"`
-
-	// Swap is the amount of swap space, measured in MB.
-	Swap int `json:"-"`
-
-	// VCPUs indicates how many (virtual) CPUs are available for this flavor.
-	VCPUs int `json:"vcpus"`
-
-	// IsPublic indicates whether the flavor is public.
-	IsPublic bool `json:"os-flavor-access:is_public"`
-
-	// Ephemeral is the amount of ephemeral disk space, measured in GB.
-	Ephemeral int `json:"OS-FLV-EXT-DATA:ephemeral"`
-
+type FlavorMissingFields struct {
 	ExtraSpecs map[string]interface{} `json:"extra_specs"`
 }
 
-func (f *FlavorWithExtraInfo) toFlavor() *flavors.Flavor {
+// FlavorWithExtraSpecs needs for extract ExtraSpecs from flavors.FlavorPage
+type FlavorWithExtraSpecs struct {
+	flavors.Flavor
+	FlavorMissingFields
+}
+
+func (f *FlavorWithExtraSpecs) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &f.Flavor); err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(data, &f.FlavorMissingFields); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ExtractFlavorWithExtraSpecs(r pagination.Page) ([]FlavorWithExtraSpecs, error) {
+	var s struct {
+		Flavors []FlavorWithExtraSpecs `json:"flavors"`
+	}
+	err := (r.(flavors.FlavorPage)).ExtractInto(&s)
+
+	return s.Flavors, err
+}
+
+func (f *FlavorWithExtraSpecs) toFlavor() *flavors.Flavor {
 	return &flavors.Flavor{
 		ID:         f.ID,
 		Disk:       f.Disk,
@@ -302,19 +302,14 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("Unable to query VKCS flavors: %s", err)
 	}
 
-	var s struct {
-		FlavorsExtra []FlavorWithExtraInfo `json:"flavors"`
-	}
-	err = (allPages.(flavors.FlavorPage)).ExtractInto(&s)
-
+	allFlavors, err := ExtractFlavorWithExtraSpecs(allPages)
 	if err != nil {
 		return diag.Errorf("Unable to retrieve VKCS flavors: %s", err)
 	}
-	allFlavors := s.FlavorsExtra
 
 	// Loop through all flavors to find a more specific one.
 	if len(allFlavors) > 0 {
-		var filteredFlavors []FlavorWithExtraInfo
+		var filteredFlavors []FlavorWithExtraSpecs
 		for _, flavor := range allFlavors {
 			switch {
 			case requiredFlavor.HasName && flavor.Name != requiredFlavor.Name:
@@ -329,7 +324,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 				continue
 			case requiredFlavor.HasRxTxFactor && flavor.RxTxFactor != requiredFlavor.RxTxFactor:
 				continue
-			case requiredFlavor.HasCPUGeneration && flavor.ExtraSpecs == nil:
+			case requiredFlavor.HasCPUGeneration && flavor.FlavorMissingFields.ExtraSpecs == nil:
 				continue
 			}
 			if !requiredFlavor.HasCPUGeneration {
@@ -337,7 +332,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 				continue
 			}
 
-			if flavorCPU, ok := flavor.ExtraSpecs["mcs:cpu_generation"]; ok {
+			if flavorCPU, ok := flavor.FlavorMissingFields.ExtraSpecs["mcs:cpu_generation"]; ok {
 				if requiredFlavor.CPUGeneration == flavorCPU {
 					filteredFlavors = append(filteredFlavors, flavor)
 				}
@@ -355,7 +350,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 	// if we find many flavors and the user sets the min_ram or min_disk values
 	// we give him the flavor with the minimum amount of RAM from the found flavors
 	if len(allFlavors) > 1 && (requiredFlavor.HasMinRAM || requiredFlavor.HasMinDisk) {
-		minFlavor := slices.MinFunc(allFlavors, func(a, b FlavorWithExtraInfo) int {
+		minFlavor := slices.MinFunc(allFlavors, func(a, b FlavorWithExtraSpecs) int {
 			if a.RAM != b.RAM {
 				return cmp.Compare(a.RAM, b.RAM)
 			}
