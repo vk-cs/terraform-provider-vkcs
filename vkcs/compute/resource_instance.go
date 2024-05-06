@@ -36,6 +36,7 @@ import (
 	ishelveunshelve "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/shelveunshelve"
 	istartstop "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/startstop"
 	itags "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/tags"
+	idiag "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/diagutil"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
@@ -442,11 +443,10 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 
 	// determine if block_device configuration is correct
 	// this includes valid combinations and required attributes
-	blockDeviceDiag := checkBlockDeviceConfig(d)
-	if blockDeviceDiag.HasError() {
-		return blockDeviceDiag
+	diags = append(diags, checkBlockDeviceConfig(d)...)
+	if diags.HasError() {
+		return diags
 	}
-	diags = append(diags, blockDeviceDiag...)
 
 	if networkMode := d.Get("network_mode").(string); networkMode == "auto" || networkMode == "none" {
 		// Use special string for network option
@@ -589,12 +589,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	readDiagnostic := resourceComputeInstanceRead(ctx, d, meta)
-	if readDiagnostic.HasError() {
-		return readDiagnostic
-	}
-	diags = append(diags, readDiagnostic...)
-
+	diags = append(diags, resourceComputeInstanceRead(ctx, d, meta)...)
 	return diags
 }
 
@@ -1435,7 +1430,6 @@ func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
 		return diag.Errorf("you must set boot_index to 0 for one of block_devices")
 	}
 
-	diags := diag.Diagnostics{}
 	for _, v := range vLs {
 		vM := v.(map[string]interface{})
 		deleteOnTermination := vM["delete_on_termination"].(bool)
@@ -1443,25 +1437,16 @@ func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
 		switch {
 		case sourceType == "blank" || sourceType == "image" || sourceType == "snapshot":
 			if !deleteOnTermination {
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary: fmt.Sprintf("block_device %s: delete_on_termination should be true, when source_type is %s",
-						vM["uuid"].(string), sourceType),
-				})
-				break
+				return idiag.Warningf("block_device %s: delete_on_termination should be true, when source_type is %s", vM["uuid"].(string), sourceType)
 			}
 		case sourceType == "volume":
 			if deleteOnTermination {
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  fmt.Sprintf("block_device %s: delete_on_termination should be false, when source_type is volume", vM["uuid"].(string)),
-				})
-				break
+				return idiag.Warningf("block_device %s: delete_on_termination should be false, when source_type is volume", vM["uuid"].(string))
 			}
 		}
 	}
 
-	return diags
+	return nil
 }
 
 func resourceComputeInstancePersonalityHash(v interface{}) int {
