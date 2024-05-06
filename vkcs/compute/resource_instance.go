@@ -45,7 +45,7 @@ func ResourceComputeInstance() *schema.Resource {
 	return &schema.Resource{
 		CustomizeDiff: resourceComputeInstanceCustomizeDiff,
 
-		CreateContext: resourceComputeInstanceCreateWithWarnings,
+		CreateContext: resourceComputeInstanceCreate,
 		ReadContext:   resourceComputeInstanceRead,
 		UpdateContext: resourceComputeInstanceUpdate,
 		DeleteContext: resourceComputeInstanceDelete,
@@ -405,40 +405,6 @@ func ResourceComputeInstance() *schema.Resource {
 	}
 }
 
-func resourceComputeInstanceCreateWithWarnings(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	diags := resourceComputeInstanceCreate(ctx, d, meta)
-	if diags.HasError() {
-		return diags
-	}
-
-	// check synchronization of fields `delete_on_termination` and `source_type`
-	if vL, ok := d.GetOk("block_device"); ok {
-		for _, bd := range vL.([]interface{}) {
-			bdM := bd.(map[string]interface{})
-			deleteOnTermination := bdM["delete_on_termination"].(bool)
-			sourceType := bdM["source_type"].(string)
-			switch {
-			case sourceType == "blank" || sourceType == "image" || sourceType == "snapshot":
-				if !deleteOnTermination {
-					diags = append(diags, diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  fmt.Sprintf("delete_on_termination should be true, when source_type is %s", sourceType),
-					})
-				}
-			case sourceType == "volume":
-				if deleteOnTermination {
-					diags = append(diags, diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "delete_on_termination should be false, when source_type is volume",
-					})
-				}
-			}
-		}
-	}
-
-	return diags
-}
-
 func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(util.GetRegion(d, config))
@@ -455,6 +421,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	var createOpts servers.CreateOptsBuilder
 	var availabilityZone string
 	var networks interface{}
+	var diags diag.Diagnostics
 
 	// Determines the Image ID using the following rules:
 	// If a bootable block_device was specified, ignore the image altogether.
@@ -475,9 +442,11 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 
 	// determine if block_device configuration is correct
 	// this includes valid combinations and required attributes
-	if err := checkBlockDeviceConfig(d); err != nil {
-		return diag.FromErr(err)
+	blockDeviceDiag := checkBlockDeviceConfig(d)
+	if blockDeviceDiag.HasError() {
+		return blockDeviceDiag
 	}
+	diags = append(diags, blockDeviceDiag...)
 
 	if networkMode := d.Get("network_mode").(string); networkMode == "auto" || networkMode == "none" {
 		// Use special string for network option
@@ -620,7 +589,13 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	return resourceComputeInstanceRead(ctx, d, meta)
+	readDiagnostic := resourceComputeInstanceRead(ctx, d, meta)
+	if readDiagnostic.HasError() {
+		return readDiagnostic
+	}
+	diags = append(diags, readDiagnostic...)
+
+	return diags
 }
 
 func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1424,41 +1399,69 @@ func resourceComputeSchedulerHintsHash(v interface{}) int {
 	return hashcode.String(buf.String())
 }
 
-func checkBlockDeviceConfig(d *schema.ResourceData) error {
-	if vL, ok := d.GetOk("block_device"); ok {
-		vLs := vL.([]interface{})
-		isBootIdxZeroSet := (len(vLs) <= 1)
+func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
+	vL, ok := d.GetOk("block_device")
+	if !ok {
+		return nil
+	}
 
-		for _, v := range vLs {
-			vM := v.(map[string]interface{})
+	vLs := vL.([]interface{})
+	isBootIdxZeroSet := len(vLs) <= 1
+	for _, v := range vLs {
+		vM := v.(map[string]interface{})
 
-			if vM["source_type"] != "blank" && vM["uuid"] == "" {
-				return fmt.Errorf("you must specify a uuid for %s block device types", vM["source_type"])
-			}
+		if vM["source_type"] != "blank" && vM["uuid"] == "" {
+			return diag.Errorf("you must specify a uuid for %s block device types", vM["source_type"])
+		}
 
-			if vM["source_type"] == "image" && vM["destination_type"] == "volume" {
-				if vM["volume_size"] == 0 {
-					return fmt.Errorf("you must specify a volume_size when creating a volume from an image")
-				}
-			}
-
-			if vM["source_type"] == "blank" && vM["destination_type"] == "local" {
-				if vM["volume_size"] == 0 {
-					return fmt.Errorf("you must specify a volume_size when creating a blank block device")
-				}
-			}
-
-			if vM["boot_index"] == 0 {
-				isBootIdxZeroSet = true
+		if vM["source_type"] == "image" && vM["destination_type"] == "volume" {
+			if vM["volume_size"] == 0 {
+				return diag.Errorf("you must specify a volume_size when creating a volume from an image")
 			}
 		}
 
-		if !isBootIdxZeroSet {
-			return fmt.Errorf("you must set boot_index to 0 for one of block_devices")
+		if vM["source_type"] == "blank" && vM["destination_type"] == "local" {
+			if vM["volume_size"] == 0 {
+				return diag.Errorf("you must specify a volume_size when creating a blank block device")
+			}
+		}
+
+		if vM["boot_index"] == 0 {
+			isBootIdxZeroSet = true
 		}
 	}
 
-	return nil
+	if !isBootIdxZeroSet {
+		return diag.Errorf("you must set boot_index to 0 for one of block_devices")
+	}
+
+	diags := diag.Diagnostics{}
+	for _, v := range vLs {
+		vM := v.(map[string]interface{})
+		deleteOnTermination := vM["delete_on_termination"].(bool)
+		sourceType := vM["source_type"].(string)
+		switch {
+		case sourceType == "blank" || sourceType == "image" || sourceType == "snapshot":
+			if !deleteOnTermination {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary: fmt.Sprintf("block_device %s: delete_on_termination should be true, when source_type is %s",
+						vM["uuid"].(string), sourceType),
+				})
+				break
+			}
+		case sourceType == "volume":
+			if deleteOnTermination {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  fmt.Sprintf("block_device %s: delete_on_termination should be false, when source_type is volume", vM["uuid"].(string)),
+				})
+				break
+			}
+		}
+	}
+
+	return diags
 }
 
 func resourceComputeInstancePersonalityHash(v interface{}) int {
