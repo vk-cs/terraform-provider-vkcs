@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
+
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
@@ -36,7 +38,6 @@ import (
 	ishelveunshelve "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/shelveunshelve"
 	istartstop "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/startstop"
 	itags "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/tags"
-	idiag "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/diagutil"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
@@ -1430,6 +1431,7 @@ func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
 		return diag.Errorf("you must set boot_index to 0 for one of block_devices")
 	}
 
+	diags := diag.Diagnostics{}
 	for _, v := range vLs {
 		vM := v.(map[string]interface{})
 		deleteOnTermination := vM["delete_on_termination"].(bool)
@@ -1437,16 +1439,34 @@ func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
 		switch {
 		case sourceType == "blank" || sourceType == "image" || sourceType == "snapshot":
 			if !deleteOnTermination {
-				return idiag.Warningf("block_device %s: delete_on_termination should be true, when source_type is %s", vM["uuid"].(string), sourceType)
+				path := cty.Path{
+					cty.GetAttrStep{Name: "block_device"},
+					cty.IndexStep{Key: cty.StringVal(vM["uuid"].(string))},
+					cty.GetAttrStep{Name: "delete_on_termination"},
+				}
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       fmt.Sprintf("delete_on_termination should be true, when source_type is %s", sourceType),
+					AttributePath: path,
+				})
 			}
 		case sourceType == "volume":
 			if deleteOnTermination {
-				return idiag.Warningf("block_device %s: delete_on_termination should be false, when source_type is volume", vM["uuid"].(string))
+				path := cty.Path{
+					cty.GetAttrStep{Name: "block_device"},
+					cty.IndexStep{Key: cty.StringVal(vM["uuid"].(string))},
+					cty.GetAttrStep{Name: "delete_on_termination"},
+				}
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       "delete_on_termination should be false, when source_type is volume",
+					AttributePath: path,
+				})
 			}
 		}
 	}
 
-	return nil
+	return diags
 }
 
 func resourceComputeInstancePersonalityHash(v interface{}) int {
