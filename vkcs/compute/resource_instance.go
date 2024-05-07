@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
+
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
@@ -421,6 +423,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	var createOpts servers.CreateOptsBuilder
 	var availabilityZone string
 	var networks interface{}
+	var diags diag.Diagnostics
 
 	// Determines the Image ID using the following rules:
 	// If a bootable block_device was specified, ignore the image altogether.
@@ -441,8 +444,9 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 
 	// determine if block_device configuration is correct
 	// this includes valid combinations and required attributes
-	if err := checkBlockDeviceConfig(d); err != nil {
-		return diag.FromErr(err)
+	diags = append(diags, checkBlockDeviceConfig(d)...)
+	if diags.HasError() {
+		return diags
 	}
 
 	if networkMode := d.Get("network_mode").(string); networkMode == "auto" || networkMode == "none" {
@@ -571,7 +575,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 			return diag.Errorf("Error stopping VKCS instance: %s", err)
 		}
 		stopStateConf := &retry.StateChangeConf{
-			//Pending:    []string{"ACTIVE"},
+			// Pending:    []string{"ACTIVE"},
 			Target:     []string{"SHUTOFF"},
 			Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
 			Timeout:    d.Timeout(schema.TimeoutCreate),
@@ -586,7 +590,8 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	return resourceComputeInstanceRead(ctx, d, meta)
+	diags = append(diags, resourceComputeInstanceRead(ctx, d, meta)...)
+	return diags
 }
 
 func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -731,7 +736,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 				return diag.Errorf("Error shelve VKCS instance: %s", err)
 			}
 			shelveStateConf := &retry.StateChangeConf{
-				//Pending:    []string{"ACTIVE"},
+				// Pending:    []string{"ACTIVE"},
 				Target:     []string{"SHELVED_OFFLOADED"},
 				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
 				Timeout:    d.Timeout(schema.TimeoutUpdate),
@@ -751,7 +756,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 				return diag.Errorf("Error stopping VKCS instance: %s", err)
 			}
 			stopStateConf := &retry.StateChangeConf{
-				//Pending:    []string{"ACTIVE"},
+				// Pending:    []string{"ACTIVE"},
 				Target:     []string{"SHUTOFF"},
 				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
 				Timeout:    d.Timeout(schema.TimeoutUpdate),
@@ -781,7 +786,7 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 				}
 			}
 			startStateConf := &retry.StateChangeConf{
-				//Pending:    []string{"SHUTOFF"},
+				// Pending:    []string{"SHUTOFF"},
 				Target:     []string{"ACTIVE"},
 				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
 				Timeout:    d.Timeout(schema.TimeoutUpdate),
@@ -1390,41 +1395,88 @@ func resourceComputeSchedulerHintsHash(v interface{}) int {
 	return hashcode.String(buf.String())
 }
 
-func checkBlockDeviceConfig(d *schema.ResourceData) error {
-	if vL, ok := d.GetOk("block_device"); ok {
-		vLs := vL.([]interface{})
-		isBootIdxZeroSet := (len(vLs) <= 1)
+func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
+	vL, ok := d.GetOk("block_device")
+	if !ok {
+		return nil
+	}
 
-		for _, v := range vLs {
-			vM := v.(map[string]interface{})
+	vLs := vL.([]interface{})
+	isBootIdxZeroSet := len(vLs) <= 1
+	diags := diag.Diagnostics{}
+	getAttrPath := func(idx int, attributeName string) cty.Path {
+		return cty.Path{
+			cty.GetAttrStep{Name: "block_device"},
+			cty.IndexStep{Key: cty.NumberIntVal(int64(idx))},
+			cty.GetAttrStep{Name: attributeName},
+		}
+	}
+	for idx, v := range vLs {
+		vM := v.(map[string]interface{})
 
-			if vM["source_type"] != "blank" && vM["uuid"] == "" {
-				return fmt.Errorf("you must specify a uuid for %s block device types", vM["source_type"])
-			}
+		if vM["source_type"] != "blank" && vM["uuid"] == "" {
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       fmt.Sprintf("you must specify a uuid for %s block device types", vM["source_type"]),
+				AttributePath: getAttrPath(idx, "uuid"),
+			})
+		}
 
-			if vM["source_type"] == "image" && vM["destination_type"] == "volume" {
-				if vM["volume_size"] == 0 {
-					return fmt.Errorf("you must specify a volume_size when creating a volume from an image")
-				}
-			}
-
-			if vM["source_type"] == "blank" && vM["destination_type"] == "local" {
-				if vM["volume_size"] == 0 {
-					return fmt.Errorf("you must specify a volume_size when creating a blank block device")
-				}
-			}
-
-			if vM["boot_index"] == 0 {
-				isBootIdxZeroSet = true
+		if vM["source_type"] == "image" && vM["destination_type"] == "volume" {
+			if vM["volume_size"] == 0 {
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Error,
+					Summary:       "you must specify a volume_size when creating a volume from an image",
+					AttributePath: getAttrPath(idx, "volume_size"),
+				})
 			}
 		}
 
-		if !isBootIdxZeroSet {
-			return fmt.Errorf("you must set boot_index to 0 for one of block_devices")
+		if vM["source_type"] == "blank" && vM["destination_type"] == "local" {
+			if vM["volume_size"] == 0 {
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Error,
+					Summary:       "you must specify a volume_size when creating a blank block device",
+					AttributePath: getAttrPath(idx, "volume_size"),
+				})
+			}
+		}
+
+		if vM["boot_index"] == 0 {
+			isBootIdxZeroSet = true
+		}
+
+		deleteOnTermination := vM["delete_on_termination"].(bool)
+		sourceType := vM["source_type"].(string)
+		switch {
+		case sourceType == "blank" || sourceType == "image" || sourceType == "snapshot":
+			if !deleteOnTermination {
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       fmt.Sprintf("delete_on_termination should be true, when source_type is %s", sourceType),
+					AttributePath: getAttrPath(idx, "delete_on_termination"),
+				})
+			}
+		case sourceType == "volume":
+			if deleteOnTermination {
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       "delete_on_termination should be false, when source_type is volume",
+					AttributePath: getAttrPath(idx, "delete_on_termination"),
+				})
+			}
 		}
 	}
 
-	return nil
+	if !isBootIdxZeroSet {
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Error,
+			Summary:       "you must set boot_index to 0 for one of block_devices",
+			AttributePath: cty.Path{cty.GetAttrStep{Name: "block_device"}},
+		})
+	}
+
+	return diags
 }
 
 func resourceComputeInstancePersonalityHash(v interface{}) int {
