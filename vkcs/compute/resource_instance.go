@@ -1403,67 +1403,77 @@ func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
 
 	vLs := vL.([]interface{})
 	isBootIdxZeroSet := len(vLs) <= 1
-	for _, v := range vLs {
+	diags := diag.Diagnostics{}
+	getAttrPath := func(idx int, attributeName string) cty.Path {
+		return cty.Path{
+			cty.GetAttrStep{Name: "block_device"},
+			cty.IndexStep{Key: cty.NumberIntVal(int64(idx))},
+			cty.GetAttrStep{Name: attributeName},
+		}
+	}
+	for idx, v := range vLs {
 		vM := v.(map[string]interface{})
 
 		if vM["source_type"] != "blank" && vM["uuid"] == "" {
-			return diag.Errorf("you must specify a uuid for %s block device types", vM["source_type"])
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       fmt.Sprintf("you must specify a uuid for %s block device types", vM["source_type"]),
+				AttributePath: getAttrPath(idx, "uuid"),
+			})
 		}
 
 		if vM["source_type"] == "image" && vM["destination_type"] == "volume" {
 			if vM["volume_size"] == 0 {
-				return diag.Errorf("you must specify a volume_size when creating a volume from an image")
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Error,
+					Summary:       "you must specify a volume_size when creating a volume from an image",
+					AttributePath: getAttrPath(idx, "volume_size"),
+				})
 			}
 		}
 
 		if vM["source_type"] == "blank" && vM["destination_type"] == "local" {
 			if vM["volume_size"] == 0 {
-				return diag.Errorf("you must specify a volume_size when creating a blank block device")
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Error,
+					Summary:       "you must specify a volume_size when creating a blank block device",
+					AttributePath: getAttrPath(idx, "volume_size"),
+				})
 			}
 		}
 
 		if vM["boot_index"] == 0 {
 			isBootIdxZeroSet = true
 		}
-	}
 
-	if !isBootIdxZeroSet {
-		return diag.Errorf("you must set boot_index to 0 for one of block_devices")
-	}
-
-	diags := diag.Diagnostics{}
-	for idx, v := range vLs {
-		vM := v.(map[string]interface{})
 		deleteOnTermination := vM["delete_on_termination"].(bool)
 		sourceType := vM["source_type"].(string)
 		switch {
 		case sourceType == "blank" || sourceType == "image" || sourceType == "snapshot":
 			if !deleteOnTermination {
-				path := cty.Path{
-					cty.GetAttrStep{Name: "block_device"},
-					cty.IndexStep{Key: cty.NumberIntVal(int64(idx))},
-					cty.GetAttrStep{Name: "delete_on_termination"},
-				}
 				diags = append(diags, diag.Diagnostic{
 					Severity:      diag.Warning,
 					Summary:       fmt.Sprintf("delete_on_termination should be true, when source_type is %s", sourceType),
-					AttributePath: path,
+					AttributePath: getAttrPath(idx, "delete_on_termination"),
 				})
 			}
 		case sourceType == "volume":
 			if deleteOnTermination {
-				path := cty.Path{
-					cty.GetAttrStep{Name: "block_device"},
-					cty.IndexStep{Key: cty.NumberIntVal(int64(idx))},
-					cty.GetAttrStep{Name: "delete_on_termination"},
-				}
 				diags = append(diags, diag.Diagnostic{
 					Severity:      diag.Warning,
 					Summary:       "delete_on_termination should be false, when source_type is volume",
-					AttributePath: path,
+					AttributePath: getAttrPath(idx, "delete_on_termination"),
 				})
 			}
 		}
+	}
+
+	if !isBootIdxZeroSet {
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Error,
+			Summary:       "you must set boot_index to 0 for one of block_devices",
+			AttributePath: cty.Path{cty.GetAttrStep{Name: "block_device"}},
+		})
 	}
 
 	return diags
