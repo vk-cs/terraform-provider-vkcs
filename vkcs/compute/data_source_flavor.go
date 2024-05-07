@@ -109,7 +109,7 @@ func DataSourceComputeFlavor() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The `cpu_generation` of the flavor.",
+				Description: "The `cpu_generation` of the flavor. __note__ ask nova owners https://cloud.vk.com/home/node/app/docs/base/iaas/concepts/vm-concept#cpu_generations_a045e625",
 			},
 
 			// Computed values
@@ -263,7 +263,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 
 	// Loop through all flavors to find a more specific one.
 	if len(allFlavors) > 0 {
-		var filteredFlavors []iflavors.FlavorWithExtraSpecs
+		var filteredFlavors []iflavors.FlavorWithExtraFields
 		for _, flavor := range allFlavors {
 			switch {
 			case requiredFlavor.HasName && flavor.Name != requiredFlavor.Name:
@@ -278,7 +278,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 				continue
 			case requiredFlavor.HasRxTxFactor && flavor.RxTxFactor != requiredFlavor.RxTxFactor:
 				continue
-			case requiredFlavor.HasCPUGeneration && flavor.FlavorMissingFields.ExtraSpecs == nil:
+			case requiredFlavor.HasCPUGeneration && flavor.FlavorExtraFields.ExtraSpecs == nil:
 				continue
 			}
 			if !requiredFlavor.HasCPUGeneration {
@@ -286,7 +286,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 				continue
 			}
 
-			if flavorCPU, ok := flavor.FlavorMissingFields.ExtraSpecs["mcs:cpu_generation"]; ok {
+			if flavorCPU, ok := flavor.FlavorExtraFields.ExtraSpecs["mcs:cpu_generation"]; ok {
 				if requiredFlavor.CPUGeneration == flavorCPU {
 					filteredFlavors = append(filteredFlavors, flavor)
 				}
@@ -304,7 +304,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 	// if we find many flavors and the user sets the min_ram or min_disk values
 	// we give him the flavor with the minimum amount of RAM from the found flavors
 	if len(allFlavors) > 1 && (requiredFlavor.HasMinRAM || requiredFlavor.HasMinDisk) {
-		minFlavor := slices.MinFunc(allFlavors, func(a, b iflavors.FlavorWithExtraSpecs) int {
+		minFlavor := slices.MinFunc(allFlavors, func(a, b iflavors.FlavorWithExtraFields) int {
 			if a.RAM != b.RAM {
 				return cmp.Compare(a.RAM, b.RAM)
 			}

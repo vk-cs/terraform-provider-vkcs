@@ -8,10 +8,8 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.7.3 (unreleased)
-- Add a warning when creating a block_device with incorrect use of the delete_on_termination parameter
-- Add `cpu_generation` param to terraform schema of `vkcs_compute_flavor`
-- improve search flavor using min_ram and min_disk
-- Improve error messages for `vkcs_compute_flavor`
+- Add cpu_generation param to terraform schema of vkcs_compute_flavor
+- Fix searching the closest appropriate flavor by min_ram and min_disk argument
 
 
 #### v0.7.2
