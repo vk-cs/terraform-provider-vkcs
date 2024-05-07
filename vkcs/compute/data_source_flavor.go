@@ -1,11 +1,9 @@
 package compute
 
 import (
-	"cmp"
 	"context"
 	"encoding/json"
 	"log"
-	"slices"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -304,14 +302,16 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 	// if we find many flavors and the user sets the min_ram or min_disk values
 	// we give him the flavor with the minimum amount of RAM from the found flavors
 	if len(allFlavors) > 1 && (requiredFlavor.HasMinRAM || requiredFlavor.HasMinDisk) {
-		minFlavor := slices.MinFunc(allFlavors, func(a, b iflavors.FlavorWithExtraFields) int {
-			if a.RAM != b.RAM {
-				return cmp.Compare(a.RAM, b.RAM)
+		resIdx := 0
+		for idx, flavor := range allFlavors {
+			if flavor.RAM == allFlavors[resIdx].RAM && flavor.Disk < allFlavors[resIdx].Disk {
+				resIdx = idx
+			} else if flavor.RAM < allFlavors[resIdx].RAM {
+				resIdx = idx
 			}
-			return cmp.Compare(a.Disk, b.Disk)
-		})
+		}
 
-		return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, minFlavor.ToFlavor()))
+		return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, allFlavors[resIdx].ToFlavor()))
 	}
 
 	if len(allFlavors) > 1 {
