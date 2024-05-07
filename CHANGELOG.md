@@ -6,6 +6,8 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.7.3 (unreleased)
+
 #### v0.7.2
 - Allow 'ip_address' parameter for vkcs_dc_interface resource creation
 

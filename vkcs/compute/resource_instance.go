@@ -1432,7 +1432,7 @@ func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
 	}
 
 	diags := diag.Diagnostics{}
-	for _, v := range vLs {
+	for idx, v := range vLs {
 		vM := v.(map[string]interface{})
 		deleteOnTermination := vM["delete_on_termination"].(bool)
 		sourceType := vM["source_type"].(string)
@@ -1441,7 +1441,7 @@ func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
 			if !deleteOnTermination {
 				path := cty.Path{
 					cty.GetAttrStep{Name: "block_device"},
-					cty.IndexStep{Key: cty.StringVal(vM["uuid"].(string))},
+					cty.IndexStep{Key: cty.NumberIntVal(int64(idx))},
 					cty.GetAttrStep{Name: "delete_on_termination"},
 				}
 				diags = append(diags, diag.Diagnostic{
@@ -1454,7 +1454,7 @@ func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
 			if deleteOnTermination {
 				path := cty.Path{
 					cty.GetAttrStep{Name: "block_device"},
-					cty.IndexStep{Key: cty.StringVal(vM["uuid"].(string))},
+					cty.IndexStep{Key: cty.NumberIntVal(int64(idx))},
 					cty.GetAttrStep{Name: "delete_on_termination"},
 				}
 				diags = append(diags, diag.Diagnostic{
