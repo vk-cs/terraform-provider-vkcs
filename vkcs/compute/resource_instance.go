@@ -47,7 +47,7 @@ func ResourceComputeInstance() *schema.Resource {
 	return &schema.Resource{
 		CustomizeDiff: resourceComputeInstanceCustomizeDiff,
 
-		CreateContext: resourceComputeInstanceCreateWithWarnings,
+		CreateContext: resourceComputeInstanceCreate,
 		ReadContext:   resourceComputeInstanceRead,
 		UpdateContext: resourceComputeInstanceUpdate,
 		DeleteContext: resourceComputeInstanceDelete,
@@ -405,40 +405,6 @@ func ResourceComputeInstance() *schema.Resource {
 		},
 		Description: "Manages a compute VM instance resource._note_ All arguments including the instance admin password will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html).",
 	}
-}
-
-func resourceComputeInstanceCreateWithWarnings(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	diags := resourceComputeInstanceCreate(ctx, d, meta)
-	if diags.HasError() {
-		return diags
-	}
-
-	// check synchronization of fields `delete_on_termination` and `source_type`
-	if vL, ok := d.GetOk("block_device"); ok {
-		for _, bd := range vL.([]interface{}) {
-			bdM := bd.(map[string]interface{})
-			deleteOnTermination := bdM["delete_on_termination"].(bool)
-			sourceType := bdM["source_type"].(string)
-			switch {
-			case sourceType == "blank" || sourceType == "image" || sourceType == "snapshot":
-				if !deleteOnTermination {
-					diags = append(diags, diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  fmt.Sprintf("delete_on_termination should be true, when source_type is %s", sourceType),
-					})
-				}
-			case sourceType == "volume":
-				if deleteOnTermination {
-					diags = append(diags, diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "delete_on_termination should be false, when source_type is volume",
-					})
-				}
-			}
-		}
-	}
-
-	return diags
 }
 
 func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
