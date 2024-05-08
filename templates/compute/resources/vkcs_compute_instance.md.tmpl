@@ -44,8 +44,11 @@ Also, the user_data option can be set to the contents of a script file using the
 * An instance cannot be created without a valid network configuration even if you intend to use `vkcs_compute_interface_attach` after the instance has been created. Please note that if the network block is not explicitly specified, it will be automatically created implicitly only if there is a single network configuration in the project. However, if there are multiple network configurations, the process will fail.
 
 ### Instances and Security Groups
+~> **Attention:** If you specify the ID of the security group instead of name in old argument _security_groups_, terraform will remove and reapply the security group upon each call. This is because the VKCS Compute API returns the names of the associated security groups and not their IDs.
 
 When referencing a security group resource in an instance resource, always use the _id_ of the security group. If you want to use _name_ instead of _id_ use _security_groups_ argument, but this is not recommended.
+If you want replace old argument _security_groups_ with _security_group_ids_ just find their ID's and change resource in terraform file, your cloud resource will not be changed.
+
 ```hcl
 resource "vkcs_networking_secgroup" "sg_1" {
   name = "sg_1"

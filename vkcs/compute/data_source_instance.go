@@ -69,7 +69,7 @@ func DataSourceComputeInstance() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
-				Description: "An array of security group names associated with this server. _note_ if you want to use ids instead of names use field `security_group_ids`",
+				Description: "An array of security group names associated with this server.",
 			},
 			"security_group_ids": {
 				Type:        schema.TypeSet,
