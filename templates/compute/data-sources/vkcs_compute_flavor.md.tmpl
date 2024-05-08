@@ -11,13 +11,13 @@ description: |-
 {{ .Description }}
 
 ## Example Usage
-### Basic instance
+### Filter by name
 {{tffile "examples/compute/flavor/name/main.tf"}}
 
-### Instance with vcpus, ram and cpu_generation
+### Filter by number of vCPUs, RAM and CPU generation
 {{tffile "examples/compute/flavor/main.tf"}}
 
-### Instance with vcpus and min_ram
+### Filter by number of vCPUs and minimum RAM
 {{tffile "examples/compute/flavor/min_ram/main.tf"}}
 
 {{ .SchemaMarkdown }}

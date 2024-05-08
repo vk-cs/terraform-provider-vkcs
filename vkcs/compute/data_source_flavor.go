@@ -2,8 +2,10 @@ package compute
 
 import (
 	"context"
-	"encoding/json"
 	"log"
+	"reflect"
+
+	"github.com/hashicorp/go-cty/cty"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -103,18 +105,11 @@ func DataSourceComputeFlavor() *schema.Resource {
 				Description: "The flavor visibility.",
 			},
 
-			"cpu_generation": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The `cpu_generation` of the flavor. __note__ See https://cloud.vk.com/home/node/app/docs/base/iaas/concepts/vm-concept#cpu_generations_a045e625",
-			},
-
-			// Computed values
 			"extra_specs": {
 				Type:        schema.TypeMap,
+				Optional:    true,
 				Computed:    true,
-				Description: "Key/Value pairs of metadata for the flavor.",
+				Description: "Key/Value pairs of metadata for the flavor. Be careful when using it, there is no validation applied to this field. When searching for a suitable flavor, it checks all required extra specs in a flavor metadata. See https://cloud.vk.com/home/node/app/docs/base/iaas/concepts/vm-concept#cpu_generations_a045e625",
 			},
 
 			"id": {
@@ -160,9 +155,9 @@ type RequiredFlavor struct {
 	VCPUs    int  `json:"vcpus"`
 	HasVCPUs bool `json:"has_vcpus"`
 
-	// CPUGeneration is the cpu generation of flavor
-	CPUGeneration    string `json:"cpu_generation"`
-	HasCPUGeneration bool   `json:"has_cpu_generation"`
+	// ExtraSpecs of the flavor
+	ExtraSpecs    map[string]interface{} `json:"extra_specs"`
+	HasExtraSpecs bool                   `json:"has_extra_specs"`
 
 	AccessType flavors.AccessType `json:"access_type"`
 }
@@ -176,13 +171,13 @@ func NewRequiredFlavorFromResourceData(d *schema.ResourceData) *RequiredFlavor {
 	minRAM, hasMinRAM := d.GetOk("min_ram")
 	rxTxFactor, hasRxTxFactor := d.GetOk("rx_tx_factor")
 	swap, hasSwap := d.GetOk("swap")
-	cpuGeneration, hasCPUGeneration := d.GetOk("cpu_generation")
+	extraSpecs, hasExtraSpecs := d.GetOk("extra_specs")
 
-	if minRAM.(int) > ram.(int) {
-		ram = minRAM
+	if hasRAM {
+		minRAM = ram
 	}
-	if minDisk.(int) > disk.(int) {
-		disk = minDisk
+	if hasDisk {
+		minDisk = disk
 	}
 
 	accessType := flavors.AllAccess
@@ -197,25 +192,25 @@ func NewRequiredFlavorFromResourceData(d *schema.ResourceData) *RequiredFlavor {
 	}
 
 	return &RequiredFlavor{
-		Disk:             disk.(int),
-		HasDisk:          hasDisk,
-		MinDisk:          minDisk.(int),
-		HasMinDisk:       hasMinDisk,
-		RAM:              ram.(int),
-		HasRAM:           hasRAM,
-		MinRAM:           minRAM.(int),
-		HasMinRAM:        hasMinRAM,
-		Name:             name.(string),
-		HasName:          hasName,
-		RxTxFactor:       rxTxFactor.(float64),
-		HasRxTxFactor:    hasRxTxFactor,
-		Swap:             swap.(int),
-		HasSwap:          hasSwap,
-		VCPUs:            VCPUs.(int),
-		HasVCPUs:         hasVCPUs,
-		CPUGeneration:    cpuGeneration.(string),
-		HasCPUGeneration: hasCPUGeneration,
-		AccessType:       accessType,
+		Disk:          disk.(int),
+		HasDisk:       hasDisk,
+		MinDisk:       minDisk.(int),
+		HasMinDisk:    hasMinDisk,
+		RAM:           ram.(int),
+		HasRAM:        hasRAM,
+		MinRAM:        minRAM.(int),
+		HasMinRAM:     hasMinRAM,
+		Name:          name.(string),
+		HasName:       hasName,
+		RxTxFactor:    rxTxFactor.(float64),
+		HasRxTxFactor: hasRxTxFactor,
+		Swap:          swap.(int),
+		HasSwap:       hasSwap,
+		VCPUs:         VCPUs.(int),
+		HasVCPUs:      hasVCPUs,
+		ExtraSpecs:    extraSpecs.(map[string]interface{}),
+		HasExtraSpecs: hasExtraSpecs,
+		AccessType:    accessType,
 	}
 }
 
@@ -237,7 +232,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 			return diag.Errorf("Unable to retrieve VKCS %s flavor: %s", v, err)
 		}
 
-		return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, flavor))
+		return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, flavor, nil))
 	}
 
 	requiredFlavor := NewRequiredFlavorFromResourceData(d)
@@ -276,27 +271,54 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 				continue
 			case requiredFlavor.HasRxTxFactor && flavor.RxTxFactor != requiredFlavor.RxTxFactor:
 				continue
-			case requiredFlavor.HasCPUGeneration && flavor.FlavorExtraFields.ExtraSpecs == nil:
+			case requiredFlavor.HasExtraSpecs && flavor.FlavorExtraFields.ExtraSpecs == nil:
 				continue
 			}
-			if !requiredFlavor.HasCPUGeneration {
+			if !requiredFlavor.HasExtraSpecs {
 				filteredFlavors = append(filteredFlavors, flavor)
 				continue
 			}
 
-			if flavorCPU, ok := flavor.FlavorExtraFields.ExtraSpecs["mcs:cpu_generation"]; ok {
-				if requiredFlavor.CPUGeneration == flavorCPU {
-					filteredFlavors = append(filteredFlavors, flavor)
+			match := true
+			for spec, reqVal := range requiredFlavor.ExtraSpecs {
+				val, ok := flavor.ExtraSpecs[spec]
+				if !ok || !reflect.DeepEqual(val, reqVal) {
+					match = false
+					break
 				}
+			}
+
+			if match {
+				filteredFlavors = append(filteredFlavors, flavor)
 			}
 		}
 
 		allFlavors = filteredFlavors
 	}
 
+	diags := diag.Diagnostics{}
+	if requiredFlavor.HasMinDisk && requiredFlavor.HasDisk {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Don't set min_disk and disk together, min_disk will be overwritten by disk",
+			AttributePath: cty.Path{
+				cty.GetAttrStep{Name: "min_disk"},
+			},
+		})
+	}
+	if requiredFlavor.HasMinRAM && requiredFlavor.HasRAM {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Don't set min_ram and ram together, min_ram will be overwritten by ram",
+			AttributePath: cty.Path{
+				cty.GetAttrStep{Name: "min_ram"},
+			},
+		})
+	}
+
 	if len(allFlavors) < 1 {
-		return diag.Errorf("Your query returned no results. " +
-			"Please change your search criteria and try again.")
+		return append(diags, diag.Errorf("Your query returned no results. "+
+			"Please change your search criteria and try again.")...)
 	}
 
 	// if we find many flavors and the user sets the min_ram or min_disk values
@@ -311,25 +333,20 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 
-		return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, allFlavors[resIdx].ToFlavor()))
+		return append(diags, diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, &allFlavors[resIdx].Flavor, allFlavors[resIdx].ExtraSpecs))...)
 	}
 
 	if len(allFlavors) > 1 {
 		log.Printf("[DEBUG] Multiple results found: %#v", allFlavors)
-		if len(allFlavors) > 2 {
-			return diag.Errorf("Found %d available flavors. Please try a more specific search criteria", len(allFlavors))
-		}
-		bytes, _ := json.MarshalIndent(allFlavors, "", "\t")
-
-		return diag.Errorf("Found %d available flavors. Available flavors:\n%s\n"+
-			"Please try a more specific search criteria", len(allFlavors), bytes)
+		return append(diags, diag.Errorf("Found %d available flavors. Please try a more specific search criteria", len(allFlavors))...)
 	}
 
-	return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, allFlavors[0].ToFlavor()))
+	return append(diags, diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, &allFlavors[0].Flavor, allFlavors[0].ExtraSpecs))...)
 }
 
 // dataSourceComputeFlavorAttributes populates the fields of a Flavor resource.
-func dataSourceComputeFlavorAttributes(d *schema.ResourceData, computeClient *gophercloud.ServiceClient, flavor *flavors.Flavor) error {
+func dataSourceComputeFlavorAttributes(d *schema.ResourceData, computeClient *gophercloud.ServiceClient,
+	flavor *flavors.Flavor, extraSpecs map[string]interface{}) error {
 	log.Printf("[DEBUG] Retrieved vkcs_compute_flavor %s: %#v", flavor.ID, flavor)
 
 	d.SetId(flavor.ID)
@@ -342,13 +359,19 @@ func dataSourceComputeFlavorAttributes(d *schema.ResourceData, computeClient *go
 	d.Set("vcpus", flavor.VCPUs)
 	d.Set("is_public", flavor.IsPublic)
 
-	es, err := iflavors.ListExtraSpecs(computeClient, d.Id()).Extract()
-	if err != nil {
-		return err
-	}
+	if extraSpecs != nil {
+		if err := d.Set("extra_specs", extraSpecs); err != nil {
+			log.Printf("[WARN] Unable to set extra_specs for vkcs_compute_flavor %s: %s", d.Id(), err)
+		}
+	} else {
+		es, err := iflavors.ListExtraSpecs(computeClient, d.Id()).Extract()
+		if err != nil {
+			return err
+		}
 
-	if err := d.Set("extra_specs", es); err != nil {
-		log.Printf("[WARN] Unable to set extra_specs for vkcs_compute_flavor %s: %s", d.Id(), err)
+		if err := d.Set("extra_specs", es); err != nil {
+			log.Printf("[WARN] Unable to set extra_specs for vkcs_compute_flavor %s: %s", d.Id(), err)
+		}
 	}
 
 	return nil
