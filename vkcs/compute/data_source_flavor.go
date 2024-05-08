@@ -107,7 +107,7 @@ func DataSourceComputeFlavor() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The `cpu_generation` of the flavor. __note__ ask nova owners https://cloud.vk.com/home/node/app/docs/base/iaas/concepts/vm-concept#cpu_generations_a045e625",
+				Description: "The `cpu_generation` of the flavor. __note__ See https://cloud.vk.com/home/node/app/docs/base/iaas/concepts/vm-concept#cpu_generations_a045e625",
 			},
 
 			// Computed values

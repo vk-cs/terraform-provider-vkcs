@@ -11,6 +11,13 @@ description: |-
 {{ .Description }}
 
 ## Example Usage
+### Basic instance
 {{tffile "examples/compute/flavor/name/main.tf"}}
+
+### Instance with vcpus, ram and cpu_generation
+{{tffile "examples/compute/flavor/main.tf"}}
+
+### Instance with vcpus and min_ram
+{{tffile "examples/compute/flavor/min_ram/main.tf"}}
 
 {{ .SchemaMarkdown }}

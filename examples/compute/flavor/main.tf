@@ -1,5 +1,5 @@
 data "vkcs_compute_flavor" "basic" {
-  vcpus = 1
-  ram   = 1024
-  disk  = 10
+  vcpus          = 2
+  ram            = 2048
+  cpu_generation = "cascadelake-v1"
 }
