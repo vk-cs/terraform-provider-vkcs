@@ -286,7 +286,7 @@ data "vkcs_compute_flavor" "flavor_1" {
 const testAccComputeFlavorDataSourceQueryCPUGeneration = `
 data "vkcs_compute_flavor" "flavor_1" {
   name = "STD2-1-2"
-  cpu_generation = "cascadelake-v1"
+  extra_specs = {"mcs:cpu_generation": "cascadelake-v1"}
 }
 `
 

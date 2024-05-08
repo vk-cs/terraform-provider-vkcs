@@ -37,17 +37,3 @@ func ExtractFlavorWithExtraSpecs(r pagination.Page) ([]FlavorWithExtraFields, er
 
 	return s.Flavors, err
 }
-
-func (f *FlavorWithExtraFields) ToFlavor() *flavors.Flavor {
-	return &flavors.Flavor{
-		ID:         f.ID,
-		Disk:       f.Disk,
-		RAM:        f.RAM,
-		Name:       f.Name,
-		RxTxFactor: f.RxTxFactor,
-		Swap:       f.Swap,
-		VCPUs:      f.VCPUs,
-		IsPublic:   f.IsPublic,
-		Ephemeral:  f.Ephemeral,
-	}
-}

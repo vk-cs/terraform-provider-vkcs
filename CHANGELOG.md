@@ -8,9 +8,8 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.7.3 (unreleased)
-- Add cpu_generation param to terraform schema of vkcs_compute_flavor
-- Fix searching the closest appropriate flavor by min_ram and min_disk argument
-
+- Add ability to search by extra_specs param of vkcs_compute_flavor
+- Enhancement searching the closest appropriate flavor by min_ram and min_disk argument
 
 #### v0.7.2
 - Allow 'ip_address' parameter for vkcs_dc_interface resource creation
