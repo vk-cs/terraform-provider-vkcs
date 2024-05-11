@@ -232,7 +232,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 			return diag.Errorf("Unable to retrieve VKCS %s flavor: %s", v, err)
 		}
 
-		return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, flavor, nil))
+		return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, &iflavors.FlavorWithExtraFields{Flavor: *flavor}))
 	}
 
 	requiredFlavor := NewRequiredFlavorFromResourceData(d)
@@ -257,6 +257,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 	// Loop through all flavors to find a more specific one.
 	if len(allFlavors) > 0 {
 		var filteredFlavors []iflavors.FlavorWithExtraFields
+	FlavorsLoop:
 		for _, flavor := range allFlavors {
 			switch {
 			case requiredFlavor.HasName && flavor.Name != requiredFlavor.Name:
@@ -279,18 +280,14 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 				continue
 			}
 
-			match := true
 			for spec, reqVal := range requiredFlavor.ExtraSpecs {
 				val, ok := flavor.ExtraSpecs[spec]
 				if !ok || !reflect.DeepEqual(val, reqVal) {
-					match = false
-					break
+					continue FlavorsLoop
 				}
 			}
 
-			if match {
-				filteredFlavors = append(filteredFlavors, flavor)
-			}
+			filteredFlavors = append(filteredFlavors, flavor)
 		}
 
 		allFlavors = filteredFlavors
@@ -333,7 +330,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 
-		return append(diags, diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, &allFlavors[resIdx].Flavor, allFlavors[resIdx].ExtraSpecs))...)
+		return append(diags, diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, &allFlavors[resIdx]))...)
 	}
 
 	if len(allFlavors) > 1 {
@@ -341,12 +338,11 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 		return append(diags, diag.Errorf("Found %d available flavors. Please try a more specific search criteria", len(allFlavors))...)
 	}
 
-	return append(diags, diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, &allFlavors[0].Flavor, allFlavors[0].ExtraSpecs))...)
+	return append(diags, diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, &allFlavors[0]))...)
 }
 
 // dataSourceComputeFlavorAttributes populates the fields of a Flavor resource.
-func dataSourceComputeFlavorAttributes(d *schema.ResourceData, computeClient *gophercloud.ServiceClient,
-	flavor *flavors.Flavor, extraSpecs map[string]interface{}) error {
+func dataSourceComputeFlavorAttributes(d *schema.ResourceData, computeClient *gophercloud.ServiceClient, flavor *iflavors.FlavorWithExtraFields) error {
 	log.Printf("[DEBUG] Retrieved vkcs_compute_flavor %s: %#v", flavor.ID, flavor)
 
 	d.SetId(flavor.ID)
@@ -359,8 +355,8 @@ func dataSourceComputeFlavorAttributes(d *schema.ResourceData, computeClient *go
 	d.Set("vcpus", flavor.VCPUs)
 	d.Set("is_public", flavor.IsPublic)
 
-	if extraSpecs != nil {
-		if err := d.Set("extra_specs", extraSpecs); err != nil {
+	if flavor.ExtraSpecs != nil {
+		if err := d.Set("extra_specs", flavor.ExtraSpecs); err != nil {
 			log.Printf("[WARN] Unable to set extra_specs for vkcs_compute_flavor %s: %s", d.Id(), err)
 		}
 	} else {
