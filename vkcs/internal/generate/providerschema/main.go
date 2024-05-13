@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -52,7 +51,7 @@ func (g ProviderSchemaJSONGenerator) Code() string {
 }
 
 func (g ProviderSchemaJSONGenerator) codeForSchema() string {
-	pSchemaJSON, err := ioutil.ReadFile(g.SchemaPath)
+	pSchemaJSON, err := os.ReadFile(g.SchemaPath)
 	if err != nil {
 		panic(err)
 	}
@@ -69,12 +68,12 @@ func (g ProviderSchemaJSONGenerator) codeForSchema() string {
 }
 
 func goFmtAndWriteToFile(filePath, fileContents string) error {
-	fmt, err := GolangCodeFormatter{}.Format(fileContents)
+	formatted, err := GolangCodeFormatter{}.Format(fileContents)
 	if err != nil {
 		return err
 	}
 
-	if err := os.WriteFile(filePath, []byte(*fmt), 0o644); err != nil {
+	if err := os.WriteFile(filePath, []byte(*formatted), 0o644); err != nil {
 		return err
 	}
 
