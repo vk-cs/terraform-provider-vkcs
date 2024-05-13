@@ -247,9 +247,9 @@ Also, the user_data option can be set to the contents of a script file using the
 - `network_mode` optional *string* &rarr;  Special string for `network` option to create the server. `network_mode` can be `"auto"` or `"none"`. Please see the following [reference](https://docs.openstack.org/api-ref/compute/?expanded=create-server-detail#id11) for more information. Conflicts with `network`.
 
 - `personality` optional &rarr;  Customize the personality of an instance by defining one or more files and their contents. The personality structure is described below. <br>**Note:** 'config_drive' must be enabled.
-  - `content` **required** *string* &rarr;  The contents of the file. Limited to 255 bytes.
+  - `content` **required** *string* &rarr;  The contents of the file.
 
-  - `file` **required** *string* &rarr;  The absolute path of the destination file.
+  - `file` **required** *string* &rarr;  The absolute path of the destination file. Limited to 255 bytes.
 
 - `power_state` optional *string* &rarr;  Provide the VM state. Only 'active' and 'shutoff' are supported values. <br>**Note:** If the initial power_state is the shutoff the VM will be stopped immediately after build and the provisioners like remote-exec or files are not supported.
 
