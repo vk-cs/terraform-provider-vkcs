@@ -109,7 +109,7 @@ func DataSourceComputeFlavor() *schema.Resource {
 				Type:        schema.TypeMap,
 				Optional:    true,
 				Computed:    true,
-				Description: "Key/Value pairs of metadata for the flavor. Be careful when using it, there is no validation applied to this field. When searching for a suitable flavor, it checks all required extra specs in a flavor metadata. See https://cloud.vk.com/home/node/app/docs/base/iaas/concepts/vm-concept#cpu_generations_a045e625",
+				Description: "Key/Value pairs of metadata for the flavor. Be careful when using it, there is no validation applied to this field. When searching for a suitable flavor, it checks all required extra specs in a flavor metadata. See https://cloud.vk.com/docs/base/iaas/concepts/vm-concept",
 			},
 
 			"id": {
@@ -214,6 +214,12 @@ func NewRequiredFlavorFromResourceData(d *schema.ResourceData) *RequiredFlavor {
 	}
 }
 
+// FlavorExt needs for extract FlavorExtExtraSpecs from flavors.FlavorPage
+type FlavorExt struct {
+	flavors.Flavor
+	iflavors.FlavorExtExtraSpecs
+}
+
 // dataSourceComputeFlavorRead performs the flavor lookup.
 func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
@@ -232,7 +238,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 			return diag.Errorf("Unable to retrieve VKCS %s flavor: %s", v, err)
 		}
 
-		return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, &iflavors.FlavorWithExtraFields{Flavor: *flavor}))
+		return diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, &FlavorExt{Flavor: *flavor}))
 	}
 
 	requiredFlavor := NewRequiredFlavorFromResourceData(d)
@@ -249,14 +255,15 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("Unable to query VKCS flavors: %s", err)
 	}
 
-	allFlavors, err := iflavors.ExtractFlavorWithExtraSpecs(allPages)
+	var allFlavors []FlavorExt
+	err = iflavors.ExtractFlavorsInto(allPages, &allFlavors)
 	if err != nil {
 		return diag.Errorf("Unable to retrieve VKCS flavors: %s", err)
 	}
 
 	// Loop through all flavors to find a more specific one.
 	if len(allFlavors) > 0 {
-		var filteredFlavors []iflavors.FlavorWithExtraFields
+		var filteredFlavors []FlavorExt
 	FlavorsLoop:
 		for _, flavor := range allFlavors {
 			switch {
@@ -272,7 +279,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 				continue
 			case requiredFlavor.HasRxTxFactor && flavor.RxTxFactor != requiredFlavor.RxTxFactor:
 				continue
-			case requiredFlavor.HasExtraSpecs && flavor.FlavorExtraFields.ExtraSpecs == nil:
+			case requiredFlavor.HasExtraSpecs && flavor.FlavorExtExtraSpecs.ExtraSpecs == nil:
 				continue
 			}
 			if !requiredFlavor.HasExtraSpecs {
@@ -342,7 +349,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 }
 
 // dataSourceComputeFlavorAttributes populates the fields of a Flavor resource.
-func dataSourceComputeFlavorAttributes(d *schema.ResourceData, computeClient *gophercloud.ServiceClient, flavor *iflavors.FlavorWithExtraFields) error {
+func dataSourceComputeFlavorAttributes(d *schema.ResourceData, computeClient *gophercloud.ServiceClient, flavor *FlavorExt) error {
 	log.Printf("[DEBUG] Retrieved vkcs_compute_flavor %s: %#v", flavor.ID, flavor)
 
 	d.SetId(flavor.ID)
