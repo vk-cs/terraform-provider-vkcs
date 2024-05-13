@@ -342,7 +342,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 
 	if len(allFlavors) > 1 {
 		log.Printf("[DEBUG] Multiple results found: %#v", allFlavors)
-		return append(diags, diag.Errorf("Found %d available flavors. Please try a more specific search criteria", len(allFlavors))...)
+		return diag.Errorf("Your query returned more than one result. Please try a more specific search criteria")
 	}
 
 	return append(diags, diag.FromErr(dataSourceComputeFlavorAttributes(d, computeClient, &allFlavors[0]))...)
