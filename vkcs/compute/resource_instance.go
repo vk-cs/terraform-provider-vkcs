@@ -327,12 +327,12 @@ func ResourceComputeInstance() *schema.Resource {
 						"file": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The absolute path of the destination file.",
+							Description: "The absolute path of the destination file. Limited to 255 bytes.",
 						},
 						"content": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The contents of the file. Limited to 255 bytes.",
+							Description: "The contents of the file.",
 						},
 					},
 				},
