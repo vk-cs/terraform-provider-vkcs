@@ -1,7 +1,6 @@
 resource "vkcs_compute_instance" "compute_1" {
   name            = "compute-instance-1"
   flavor_id       = data.vkcs_compute_flavor.compute.id
-  security_groups = ["default"]
   image_id        = data.vkcs_images_image.compute.id
 
   network {
@@ -18,7 +17,6 @@ resource "vkcs_compute_instance" "compute_1" {
 resource "vkcs_compute_instance" "compute_2" {
   name            = "compute-instance-2"
   flavor_id       = data.vkcs_compute_flavor.compute.id
-  security_groups = ["default"]
   image_id        = data.vkcs_images_image.compute.id
 
   network {

@@ -127,8 +127,9 @@ func ResourceComputeInstance() *schema.Resource {
 				Computed:      true,
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Set:           schema.HashString,
+				Deprecated:    "Configure `security_group_ids` instead.",
 				ConflictsWith: []string{"security_group_ids"},
-				Description:   "An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. _note_ When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. _note_ We recommend to use the new argument `security_group_ids` instead of this argument.",
+				Description:   "An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. _note_ When attaching the instance to networks using Ports, place the security groups on the Port and not the instance.",
 			},
 			"security_group_ids": {
 				Type:          schema.TypeSet,
