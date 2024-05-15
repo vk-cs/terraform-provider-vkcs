@@ -1,1 +1,0 @@
-../../../images/image/datasource/main.tf

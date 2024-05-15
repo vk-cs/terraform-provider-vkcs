@@ -23,6 +23,9 @@ Use `vkcs_compute_floatingip_associate` to make the instance accessible from Int
 ~> **Attention:** When an instance connects to a network using an existing port, the instance's security groups are not automatically applied to the port. Instead, the security groups that were initially defined when the port was created will be applied to the port. As a result, the instance's security groups will not take effect in this scenario.
 {{tffile "examples/compute/instance/multiple_networks/main.tf"}}
 
+### Instance with default security group
+{{tffile "examples/compute/instance/default_secgroup/main.tf"}}
+
 ### Instance with personality
 ~> **Attention:** To use this feature, you must set the `config_drive` argument to true.
 The Personality feature allows you to customize the files and scripts that are injected into an instance during its provisioning. When using the Personality feature, you can provide one or more files or scripts that are associated with an instance. During instance creation, these files are injected into the instance's file system.
