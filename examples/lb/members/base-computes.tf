@@ -1,6 +1,6 @@
 resource "vkcs_compute_instance" "front_worker" {
-  count           = 2
-  name            = "front-worker-${count.index}-tf-example"
+  count     = 2
+  name      = "front-worker-${count.index}-tf-example"
   flavor_id = data.vkcs_compute_flavor.basic.id
   security_group_ids = [
     vkcs_networking_secgroup.admin.id,
@@ -11,4 +11,8 @@ resource "vkcs_compute_instance" "front_worker" {
   network {
     uuid = vkcs_networking_network.app.id
   }
+
+  depends_on = [
+    vkcs_networking_router_interface.app
+  ]
 }
