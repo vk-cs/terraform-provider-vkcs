@@ -288,7 +288,7 @@ Also, the user_data option can be set to the contents of a script file using the
 - `scheduler_hints` optional &rarr;  Provide the Nova scheduler with hints on how the instance should be launched. The available hints are described below.
   - `group` optional *string* &rarr;  A UUID of a Server Group. The instance will be placed into that group.
 
-- `security_group_ids` optional *set of* *string* &rarr;  An array of one or more security group ids to associate with the server. Changing this results in adding/removing security groups from the existing server. <br>**Note:** When attaching the instance to networks using Ports, place the security groups on the Port and not the instance.
+- `security_group_ids` optional *set of* *string* &rarr;  An array of one or more security group ids to associate with the server. Changing this results in adding/removing security groups from the existing server. <br>**Note:** When attaching the instance to networks using Ports, place the security groups on the Port and not the instance.<br>**New since v0.7.3**.
 
 - `security_groups` optional deprecated *set of* *string* &rarr;  An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. <br>**Note:** When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. **Deprecated** Configure `security_group_ids` instead.
 
