@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.7.2",
+  "provider_version": "v0.7.3",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -478,12 +478,12 @@
                 "content": {
                   "type": "TypeString",
                   "required": true,
-                  "description": "The contents of the file. Limited to 255 bytes."
+                  "description": "The contents of the file."
                 },
                 "file": {
                   "type": "TypeString",
                   "required": true,
-                  "description": "The absolute path of the destination file."
+                  "description": "The absolute path of the destination file. Limited to 255 bytes."
                 }
               }
             }
@@ -516,14 +516,25 @@
               }
             }
           },
-          "security_groups": {
+          "security_group_ids": {
             "type": "TypeSet",
             "optional": true,
-            "description": "An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. _note_ When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. _note_ Names should be used and not ids, as ids trigger unnecessary updates.",
+            "description": "An array of one or more security group ids to associate with the server. Changing this results in adding/removing security groups from the existing server. _note_ When attaching the instance to networks using Ports, place the security groups on the Port and not the instance.",
             "computed": true,
             "elem": {
               "type": "TypeString"
-            }
+            },
+            "new_since": "v0.7.3"
+          },
+          "security_groups": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. _note_ When attaching the instance to networks using Ports, place the security groups on the Port and not the instance.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            },
+            "deprecated": "Configure `security_group_ids` instead."
           },
           "stop_before_destroy": {
             "type": "TypeBool",
@@ -6708,12 +6719,13 @@
           "disk": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The exact amount of disk (in gigabytes).",
+            "description": "The exact amount of disk (in gigabytes). Don't set disk, when min_disk is set.",
             "force_new": true
           },
           "extra_specs": {
             "type": "TypeMap",
-            "description": "Key/Value pairs of metadata for the flavor.",
+            "optional": true,
+            "description": "Key/Value pairs of metadata for the flavor. Be careful when using it, there is no validation applied to this field. When searching for a suitable flavor, it checks all required extra specs in a flavor metadata. See https://cloud.vk.com/docs/base/iaas/concepts/vm-concept",
             "computed": true
           },
           "flavor_id": {
@@ -6754,7 +6766,7 @@
           "ram": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The exact amount of RAM (in megabytes).",
+            "description": "The exact amount of RAM (in megabytes). Don't set ram, when min_ram is set.",
             "force_new": true
           },
           "region": {
@@ -6882,6 +6894,15 @@
             "optional": true,
             "description": "The region in which to obtain the Compute client. If omitted, the `region` argument of the provider is used.",
             "computed": true
+          },
+          "security_group_ids": {
+            "type": "TypeSet",
+            "description": "An array of one or more security group ids to associate with the server.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            },
+            "new_since": "v0.7.3"
           },
           "security_groups": {
             "type": "TypeSet",
