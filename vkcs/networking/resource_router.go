@@ -112,6 +112,26 @@ func ResourceNetworkingRouter() *schema.Resource {
 				Description: "The collection of tags assigned on the router, which have been explicitly and implicitly added.",
 			},
 
+			"external_fixed_ips": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip_address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "IP address of the external gateway of a router.",
+						},
+						"subnet_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Subnet ID of the external gateway of a router.",
+						},
+					},
+				},
+				Description: "List of external gateways of the router.",
+			},
+
 			"sdn": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -257,6 +277,15 @@ func resourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData, m
 
 	// Gateway settings.
 	d.Set("external_network_id", r.GatewayInfo.NetworkID)
+
+	externalIPs := make([]map[string]interface{}, len(r.GatewayInfo.ExternalFixedIPs))
+	for i, externalIP := range r.GatewayInfo.ExternalFixedIPs {
+		externalIPs[i] = map[string]interface{}{
+			"ip_address": externalIP.IPAddress,
+			"subnet_id":  externalIP.SubnetID,
+		}
+	}
+	d.Set("external_fixed_ips", externalIPs)
 
 	return nil
 }

@@ -90,6 +90,26 @@ func DataSourceNetworkingRouter() *schema.Resource {
 				Computed:    true,
 				Description: "ID of the found router.",
 			},
+
+			"external_fixed_ips": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip_address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "IP address of the external gateway of a router.",
+						},
+						"subnet_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Subnet ID of the external gateway of a router.",
+						},
+					},
+				},
+				Description: "List of external gateways of the router.",
+			},
 		},
 		Description: "Use this data source to get the ID of an available VKCS router.",
 	}
@@ -169,5 +189,14 @@ func dataSourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("all_tags", router.Tags)
 	d.Set("region", util.GetRegion(d, config))
 	d.Set("sdn", router.SDN)
+	externalIPs := make([]map[string]interface{}, len(router.GatewayInfo.ExternalFixedIPs))
+	for i, externalIP := range router.GatewayInfo.ExternalFixedIPs {
+		externalIPs[i] = map[string]interface{}{
+			"ip_address": externalIP.IPAddress,
+			"subnet_id":  externalIP.SubnetID,
+		}
+	}
+	d.Set("external_fixed_ips", externalIPs)
+
 	return nil
 }

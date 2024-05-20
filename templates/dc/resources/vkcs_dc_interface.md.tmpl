@@ -11,7 +11,10 @@ description: |-
 {{ .Description }}
 
 ## Example Usage
-{{tffile .ExampleFile}}
+{{tffile "examples/dc/interface/main.tf"}}
+
+## Connect dc router to Internet
+{{tffile "examples/dc/interface/internet_connection/main.tf"}}
 
 {{ .SchemaMarkdown }}
 
