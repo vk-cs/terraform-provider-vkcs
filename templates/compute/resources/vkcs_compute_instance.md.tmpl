@@ -23,6 +23,9 @@ Use `vkcs_compute_floatingip_associate` to make the instance accessible from Int
 ~> **Attention:** When an instance connects to a network using an existing port, the instance's security groups are not automatically applied to the port. Instead, the security groups that were initially defined when the port was created will be applied to the port. As a result, the instance's security groups will not take effect in this scenario.
 {{tffile "examples/compute/instance/multiple_networks/main.tf"}}
 
+### Instance with default and custom security groups
+{{tffile "examples/compute/instance/default_secgroup/main.tf"}}
+
 ### Instance with personality
 ~> **Attention:** To use this feature, you must set the `config_drive` argument to true.
 The Personality feature allows you to customize the files and scripts that are injected into an instance during its provisioning. When using the Personality feature, you can provide one or more files or scripts that are associated with an instance. During instance creation, these files are injected into the instance's file system.
@@ -44,8 +47,11 @@ Also, the user_data option can be set to the contents of a script file using the
 * An instance cannot be created without a valid network configuration even if you intend to use `vkcs_compute_interface_attach` after the instance has been created. Please note that if the network block is not explicitly specified, it will be automatically created implicitly only if there is a single network configuration in the project. However, if there are multiple network configurations, the process will fail.
 
 ### Instances and Security Groups
+~> **Attention:** If you specify the ID of the security group instead of name in old argument _security_groups_, terraform will remove and reapply the security group upon each call.
 
-When referencing a security group resource in an instance resource, always use the _name_ of the security group. If you specify the ID of the security group, Terraform will remove and reapply the security group upon each call. This is because the VKCS Compute API returns the names of the associated security groups and not their IDs.
+When referencing a security group resource in an instance resource, always use _security_group_id_ argument.
+If you want replace old argument _security_groups_ with _security_group_ids_ just find their ID's and change resource in terraform file, your cloud resource will not be changed.
+
 ```hcl
 resource "vkcs_networking_secgroup" "sg_1" {
   name = "sg_1"
@@ -53,7 +59,7 @@ resource "vkcs_networking_secgroup" "sg_1" {
 
 resource "vkcs_compute_instance" "foo" {
   name            = "terraform-test"
-  security_groups = [vkcs_networking_secgroup.sg_1.name]
+  security_group_ids = [vkcs_networking_secgroup.sg_1.id]
 }
 ```
 

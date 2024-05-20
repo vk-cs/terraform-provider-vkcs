@@ -20,9 +20,10 @@ resource "vkcs_compute_instance" "basic" {
     uuid = vkcs_networking_network.app.id
   }
   # Specify required security groups if you do not want `default` one
-  security_groups = [
-    vkcs_networking_secgroup.admin.name
+  security_group_ids = [
+    vkcs_networking_secgroup.admin.id
   ]
+
   # If your configuration also defines a network for the instance,
   # ensure it is attached to a router before creating of the instance
   depends_on = [
