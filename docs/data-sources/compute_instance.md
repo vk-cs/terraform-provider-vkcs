@@ -59,6 +59,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `power_state` *string* &rarr;  VM state
 
+- `security_group_ids` *set of* *string* &rarr;  An array of one or more security group ids to associate with the server.
+
 - `security_groups` *set of* *string* &rarr;  An array of security group names associated with this server.
 
 - `tags` *set of* *string* &rarr;  A set of string tags for the instance.
