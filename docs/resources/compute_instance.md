@@ -37,9 +37,10 @@ resource "vkcs_compute_instance" "basic" {
     uuid = vkcs_networking_network.app.id
   }
   # Specify required security groups if you do not want `default` one
-  security_groups = [
-    vkcs_networking_secgroup.admin.name
+  security_group_ids = [
+    vkcs_networking_secgroup.admin.id
   ]
+
   # If your configuration also defines a network for the instance,
   # ensure it is attached to a router before creating of the instance
   depends_on = [
@@ -112,13 +113,42 @@ resource "vkcs_compute_instance" "multiple_networks" {
   }
   # Attach 'admin' security group to autocreated port
   # This does not associate the group to 'persistent' port
-  security_groups = [
-    vkcs_networking_secgroup.admin.name
+  security_group_ids = [
+    vkcs_networking_secgroup.admin.id
   ]
   depends_on = [
     vkcs_networking_router_interface.app,
     vkcs_networking_router_interface.db
   ]
+}
+```
+
+### Instance with default and custom security groups
+```terraform
+resource "vkcs_compute_instance" "front_worker" {
+  name      = "front-worker-tf-example"
+  flavor_id = data.vkcs_compute_flavor.basic.id
+  
+  block_device {
+    source_type      = "image"
+    uuid             = data.vkcs_images_image.debian.id
+    destination_type = "volume"
+    volume_size      = 10
+    # Must be set to delete volume after instance deletion
+    # Otherwise you get "orphaned" volume with terraform
+    delete_on_termination = true
+  }
+
+  security_group_ids = [
+    data.vkcs_networking_secgroup.default_secgroup.id,
+    vkcs_networking_secgroup.admin.id,
+    vkcs_networking_secgroup.http.id
+  ]
+  image_id = data.vkcs_images_image.debian.id
+
+  network {
+    uuid = vkcs_networking_network.app.id
+  }
 }
 ```
 
@@ -258,7 +288,9 @@ Also, the user_data option can be set to the contents of a script file using the
 - `scheduler_hints` optional &rarr;  Provide the Nova scheduler with hints on how the instance should be launched. The available hints are described below.
   - `group` optional *string* &rarr;  A UUID of a Server Group. The instance will be placed into that group.
 
-- `security_groups` optional *set of* *string* &rarr;  An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. <br>**Note:** When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. <br>**Note:** Names should be used and not ids, as ids trigger unnecessary updates.
+- `security_group_ids` optional *set of* *string* &rarr;  An array of one or more security group ids to associate with the server. Changing this results in adding/removing security groups from the existing server. <br>**Note:** When attaching the instance to networks using Ports, place the security groups on the Port and not the instance.
+
+- `security_groups` optional deprecated *set of* *string* &rarr;  An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. <br>**Note:** When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. **Deprecated** Configure `security_group_ids` instead.
 
 - `stop_before_destroy` optional *boolean* &rarr;  Whether to try stop instance gracefully before destroying it, thus giving chance for guest OS daemons to stop correctly. If instance doesn't stop within timeout, it will be destroyed anyway.
 
@@ -291,8 +323,11 @@ In addition to all arguments above, the following attributes are exported:
 * An instance cannot be created without a valid network configuration even if you intend to use `vkcs_compute_interface_attach` after the instance has been created. Please note that if the network block is not explicitly specified, it will be automatically created implicitly only if there is a single network configuration in the project. However, if there are multiple network configurations, the process will fail.
 
 ### Instances and Security Groups
+~> **Attention:** If you specify the ID of the security group instead of name in old argument _security_groups_, terraform will remove and reapply the security group upon each call.
 
-When referencing a security group resource in an instance resource, always use the _name_ of the security group. If you specify the ID of the security group, Terraform will remove and reapply the security group upon each call. This is because the VKCS Compute API returns the names of the associated security groups and not their IDs.
+When referencing a security group resource in an instance resource, always use _security_group_id_ argument.
+If you want replace old argument _security_groups_ with _security_group_ids_ just find their ID's and change resource in terraform file, your cloud resource will not be changed.
+
 ```hcl
 resource "vkcs_networking_secgroup" "sg_1" {
   name = "sg_1"
@@ -300,7 +335,7 @@ resource "vkcs_networking_secgroup" "sg_1" {
 
 resource "vkcs_compute_instance" "foo" {
   name            = "terraform-test"
-  security_groups = [vkcs_networking_secgroup.sg_1.name]
+  security_group_ids = [vkcs_networking_secgroup.sg_1.id]
 }
 ```
 
