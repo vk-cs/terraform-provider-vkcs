@@ -2,12 +2,11 @@ package networking
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	inetworking "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
-	"net/http"
-	"strings"
+	isdn "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 )
 
 func DataSourceNetworkingSDN() *schema.Resource {
@@ -28,22 +27,14 @@ func DataSourceNetworkingSDN() *schema.Resource {
 
 func dataSourceNetworkingSDNRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(config.GetRegion(), inetworking.SearchInAllSDNs)
+	networkingClient, err := config.NetworkingV2Client(config.GetRegion(), isdn.SearchInAllSDNs)
 	if err != nil {
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	var sdn []string
-	httpResp, err := networkingClient.Get(networkingClient.ServiceURL("available-sdn"), &sdn, nil)
+	sdn, err := isdn.GetAvailableSDNs(networkingClient)
 	if err != nil {
-		return diag.Errorf("Error getting avalible SDN's: %s", err)
-	}
-	if httpResp.StatusCode != http.StatusOK {
-		return diag.Errorf("Error getting available SDN's: %s", httpResp.Status)
-	}
-
-	for i := 0; i < len(sdn); i++ {
-		sdn[i] = strings.ToLower(sdn[i])
+		return diag.FromErr(err)
 	}
 
 	d.SetId(config.GetTenantID())
