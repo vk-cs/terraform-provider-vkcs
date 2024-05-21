@@ -8,6 +8,7 @@ terraform.tfstate
 terraform-provider-vkcs_darwin
 terraform-provider-vkcs_linux
 terraform-provider-vkcs_windows
+vkcs_provider.tf
 bin/
 *.backup
 ./*.tfstate

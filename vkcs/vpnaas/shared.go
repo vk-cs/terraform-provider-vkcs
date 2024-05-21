@@ -7,6 +7,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/services"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/siteconnections"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	isiteconnections "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas/v2/siteconnections"
 )
 
 // EndpointGroupCreateOpts represents the attributes used when creating a new endpoint group.
@@ -32,6 +33,41 @@ type ServiceCreateOpts struct {
 // SiteConnectionCreateOpts represents the attributes used when creating a new IPSec site connection.
 type SiteConnectionCreateOpts struct {
 	siteconnections.CreateOpts
+	*isiteconnections.TrafficSelectorEPMergeExt
+}
+
+// ToConnectionCreateMap casts a CreateOpts struct to a map.
+func (opts SiteConnectionCreateOpts) ToConnectionCreateMap() (map[string]interface{}, error) {
+	base, err := opts.CreateOpts.ToConnectionCreateMap()
+	if err != nil {
+		return nil, err
+	}
+
+	siteConnection := base["ipsec_site_connection"].(map[string]interface{})
+	if opts.TrafficSelectorEPMergeExt != nil {
+		siteConnection["traffic_selector_ep_merge"] = opts.TrafficSelectorEPMerge
+	}
+
+	return base, nil
+}
+
+type SiteConnectionUpdateOpts struct {
+	siteconnections.UpdateOpts
+	*isiteconnections.TrafficSelectorEPMergeExt
+}
+
+func (opts SiteConnectionUpdateOpts) ToConnectionUpdateMap() (map[string]interface{}, error) {
+	base, err := opts.UpdateOpts.ToConnectionUpdateMap()
+	if err != nil {
+		return nil, err
+	}
+
+	siteConnection := base["ipsec_site_connection"].(map[string]interface{})
+	if opts.TrafficSelectorEPMergeExt != nil {
+		siteConnection["traffic_selector_ep_merge"] = opts.TrafficSelectorEPMerge
+	}
+
+	return base, nil
 }
 
 type groupExtended struct {
@@ -57,4 +93,5 @@ type serviceExtended struct {
 type connectionExtended struct {
 	siteconnections.Connection
 	networking.SDNExt
+	*isiteconnections.TrafficSelectorEPMergeExt
 }

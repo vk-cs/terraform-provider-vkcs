@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	inetworking "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -161,6 +163,12 @@ func ResourceSiteConnection() *schema.Resource {
 				ValidateDiagFunc: networking.ValidateSDN(),
 				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
+			"traffic_selector_ep_merge": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Traffic selector ep should merge or not. Available only for site connection in sprut SDN.",
+			},
 		},
 		Description: "Manages a IPSec site connection resource within VKCS.",
 	}
@@ -185,6 +193,12 @@ func resourceSiteConnectionCreate(ctx context.Context, d *schema.ResourceData, m
 
 	adminStateUp := d.Get("admin_state_up").(bool)
 	initiator := resourceSiteConnectionInitiator(d.Get("initiator").(string))
+	var trafficSelector *isiteconnections.TrafficSelectorEPMergeExt
+	if networking.GetSDN(d) == inetworking.SprutSDN {
+		trafficSelector = &isiteconnections.TrafficSelectorEPMergeExt{
+			TrafficSelectorEPMerge: d.Get("traffic_selector_ep_merge").(bool),
+		}
+	}
 
 	createOpts = SiteConnectionCreateOpts{
 		CreateOpts: siteconnections.CreateOpts{
@@ -205,6 +219,7 @@ func resourceSiteConnectionCreate(ctx context.Context, d *schema.ResourceData, m
 			PeerCIDRs:      peerCidrs,
 			DPD:            &dpd,
 		},
+		TrafficSelectorEPMergeExt: trafficSelector,
 	}
 
 	log.Printf("[DEBUG] Create site connection: %#v", createOpts)
@@ -268,6 +283,11 @@ func resourceSiteConnectionRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("mtu", conn.MTU)
 	d.Set("peer_cidrs", conn.PeerCIDRs)
 	d.Set("sdn", conn.SDN)
+	if conn.TrafficSelectorEPMergeExt != nil {
+		d.Set("traffic_selector_ep_merge", conn.TrafficSelectorEPMerge)
+	} else {
+		d.Set("traffic_selector_ep_merge", true)
+	}
 
 	// Set the dpd
 	dpdMap := make(map[string]interface{})
@@ -291,7 +311,7 @@ func resourceSiteConnectionUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
-	opts := siteconnections.UpdateOpts{}
+	opts := SiteConnectionUpdateOpts{}
 
 	var hasChange bool
 
@@ -362,6 +382,13 @@ func resourceSiteConnectionUpdate(ctx context.Context, d *schema.ResourceData, m
 	if d.HasChange("dpd") {
 		dpdUpdateOpts := resourceSiteConnectionDPDUpdateOpts(d.Get("dpd").(*schema.Set))
 		opts.DPD = &dpdUpdateOpts
+		hasChange = true
+	}
+
+	if d.HasChange("traffic_selector_ep_merge") {
+		opts.TrafficSelectorEPMergeExt = &isiteconnections.TrafficSelectorEPMergeExt{
+			TrafficSelectorEPMerge: d.Get("traffic_selector_ep_merge").(bool),
+		}
 		hasChange = true
 	}
 
