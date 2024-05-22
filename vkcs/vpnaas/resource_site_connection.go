@@ -6,6 +6,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+
+	"github.com/hashicorp/go-cty/cty"
+
 	inetworking "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -164,17 +168,39 @@ func ResourceSiteConnection() *schema.Resource {
 				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
 			"traffic_selector_ep_merge": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "Traffic selector ep should merge or not. Available only for site connection in sprut SDN.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"sdn"},
+				ValidateFunc: validation.StringInSlice([]string{"enabled", "disabled"}, false),
+				Description:  "This argument controls whether multiple traffic selection rules for a network interface should be merged into one rule, or applied independently. When set to \"true\", this parameter can improve system performance, while providing more granular control over traffic selection when set to \"false\". __note__ Available only in sprut SDN.",
 			},
 		},
 		Description: "Manages a IPSec site connection resource within VKCS.",
 	}
 }
 
+func validateTrafficSelectorEPMerge(d *schema.ResourceData) diag.Diagnostics {
+	_, exist := d.GetOk("traffic_selector_ep_merge")
+	if networking.GetSDN(d) == inetworking.NeutronSDN && exist {
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Neutron doesn't support traffic_selector_ep_merge argument",
+				AttributePath: cty.Path{
+					cty.GetAttrStep{Name: "traffic_selector_ep_merge"},
+				},
+			},
+		}
+	}
+
+	return nil
+}
+
 func resourceSiteConnectionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	if diags := validateTrafficSelectorEPMerge(d); diags.HasError() {
+		return diags
+	}
+
 	config := meta.(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(util.GetRegion(d, config), networking.GetSDN(d))
 	if err != nil {
@@ -193,12 +219,6 @@ func resourceSiteConnectionCreate(ctx context.Context, d *schema.ResourceData, m
 
 	adminStateUp := d.Get("admin_state_up").(bool)
 	initiator := resourceSiteConnectionInitiator(d.Get("initiator").(string))
-	var trafficSelector *isiteconnections.TrafficSelectorEPMergeExt
-	if networking.GetSDN(d) == inetworking.SprutSDN {
-		trafficSelector = &isiteconnections.TrafficSelectorEPMergeExt{
-			TrafficSelectorEPMerge: d.Get("traffic_selector_ep_merge").(bool),
-		}
-	}
 
 	createOpts = SiteConnectionCreateOpts{
 		CreateOpts: siteconnections.CreateOpts{
@@ -219,7 +239,7 @@ func resourceSiteConnectionCreate(ctx context.Context, d *schema.ResourceData, m
 			PeerCIDRs:      peerCidrs,
 			DPD:            &dpd,
 		},
-		TrafficSelectorEPMergeExt: trafficSelector,
+		TrafficSelectorEPMerge: d.Get("traffic_selector_ep_merge").(string),
 	}
 
 	log.Printf("[DEBUG] Create site connection: %#v", createOpts)
@@ -283,10 +303,12 @@ func resourceSiteConnectionRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("mtu", conn.MTU)
 	d.Set("peer_cidrs", conn.PeerCIDRs)
 	d.Set("sdn", conn.SDN)
-	if conn.TrafficSelectorEPMergeExt != nil {
-		d.Set("traffic_selector_ep_merge", conn.TrafficSelectorEPMerge)
-	} else {
-		d.Set("traffic_selector_ep_merge", true)
+	if conn.SDN != inetworking.NeutronSDN {
+		if conn.TrafficSelectorEPMerge {
+			d.Set("traffic_selector_ep_merge", "enabled")
+		} else {
+			d.Set("traffic_selector_ep_merge", "disabled")
+		}
 	}
 
 	// Set the dpd
@@ -386,9 +408,11 @@ func resourceSiteConnectionUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChange("traffic_selector_ep_merge") {
-		opts.TrafficSelectorEPMergeExt = &isiteconnections.TrafficSelectorEPMergeExt{
-			TrafficSelectorEPMerge: d.Get("traffic_selector_ep_merge").(bool),
+		if diags := validateTrafficSelectorEPMerge(d); diags.HasError() {
+			return diags
 		}
+
+		opts.TrafficSelectorEPMerge = d.Get("traffic_selector_ep_merge").(string)
 		hasChange = true
 	}
 

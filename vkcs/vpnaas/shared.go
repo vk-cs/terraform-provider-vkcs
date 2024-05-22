@@ -7,7 +7,6 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/services"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/siteconnections"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
-	isiteconnections "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/vpnaas/v2/siteconnections"
 )
 
 // EndpointGroupCreateOpts represents the attributes used when creating a new endpoint group.
@@ -33,7 +32,7 @@ type ServiceCreateOpts struct {
 // SiteConnectionCreateOpts represents the attributes used when creating a new IPSec site connection.
 type SiteConnectionCreateOpts struct {
 	siteconnections.CreateOpts
-	*isiteconnections.TrafficSelectorEPMergeExt
+	TrafficSelectorEPMerge string `json:"traffic_selector_ep_merge,omitempty"`
 }
 
 // ToConnectionCreateMap casts a CreateOpts struct to a map.
@@ -43,9 +42,15 @@ func (opts SiteConnectionCreateOpts) ToConnectionCreateMap() (map[string]interfa
 		return nil, err
 	}
 
+	if opts.TrafficSelectorEPMerge == "" {
+		return base, nil
+	}
+
 	siteConnection := base["ipsec_site_connection"].(map[string]interface{})
-	if opts.TrafficSelectorEPMergeExt != nil {
-		siteConnection["traffic_selector_ep_merge"] = opts.TrafficSelectorEPMerge
+	if opts.TrafficSelectorEPMerge == "enabled" {
+		siteConnection["traffic_selector_ep_merge"] = true
+	} else {
+		siteConnection["traffic_selector_ep_merge"] = false
 	}
 
 	return base, nil
@@ -53,7 +58,7 @@ func (opts SiteConnectionCreateOpts) ToConnectionCreateMap() (map[string]interfa
 
 type SiteConnectionUpdateOpts struct {
 	siteconnections.UpdateOpts
-	*isiteconnections.TrafficSelectorEPMergeExt
+	TrafficSelectorEPMerge string `json:"traffic_selector_ep_merge,omitempty"`
 }
 
 func (opts SiteConnectionUpdateOpts) ToConnectionUpdateMap() (map[string]interface{}, error) {
@@ -62,9 +67,15 @@ func (opts SiteConnectionUpdateOpts) ToConnectionUpdateMap() (map[string]interfa
 		return nil, err
 	}
 
+	if opts.TrafficSelectorEPMerge == "" {
+		return base, nil
+	}
+
 	siteConnection := base["ipsec_site_connection"].(map[string]interface{})
-	if opts.TrafficSelectorEPMergeExt != nil {
-		siteConnection["traffic_selector_ep_merge"] = opts.TrafficSelectorEPMerge
+	if opts.TrafficSelectorEPMerge == "enabled" {
+		siteConnection["traffic_selector_ep_merge"] = true
+	} else {
+		siteConnection["traffic_selector_ep_merge"] = false
 	}
 
 	return base, nil
@@ -93,5 +104,5 @@ type serviceExtended struct {
 type connectionExtended struct {
 	siteconnections.Connection
 	networking.SDNExt
-	*isiteconnections.TrafficSelectorEPMergeExt
+	TrafficSelectorEPMerge bool `json:"traffic_selector_ep_merge,omitempty"`
 }
