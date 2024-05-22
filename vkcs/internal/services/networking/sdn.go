@@ -28,13 +28,13 @@ func SelectSDN(c *gophercloud.ServiceClient, sdn string) error {
 	return nil
 }
 
-func sdnURL(c *gophercloud.ServiceClient) string {
+func availableSDNsURL(c *gophercloud.ServiceClient) string {
 	return c.ServiceURL("available-sdn")
 }
 
 func GetAvailableSDNs(c *gophercloud.ServiceClient) ([]string, error) {
 	var sdn []string
-	httpResp, err := c.Get(sdnURL(c), &sdn, nil)
+	httpResp, err := c.Get(availableSDNsURL(c), &sdn, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error getting avalible SDN's: %s", err)
 	}

@@ -18,10 +18,10 @@ func DataSourceNetworkingSDN() *schema.Resource {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Names of available VKCS SDN's in the current project.",
+				Description: "Names of available VKCS SDNs in the current project.",
 			},
 		},
-		Description: "Use this data source to get list of an available VKCS SDN in the current project.",
+		Description: "Use this data source to get a list of available VKCS SDNs in the current project.",
 	}
 }
 
