@@ -181,8 +181,11 @@ func isSetTrafficSelectorEPMerge(d *schema.ResourceData) bool {
 }
 
 func getTrafficSelectorEPMerge(d *schema.ResourceData) *bool {
-	val := d.Get("traffic_selector_ep_merge").(bool)
-	return &val
+	if isSetTrafficSelectorEPMerge(d) {
+		val := d.Get("traffic_selector_ep_merge").(bool)
+		return &val
+	}
+	return nil
 }
 
 func validateTrafficSelectorEPMerge(d *schema.ResourceData) diag.Diagnostics {
@@ -309,7 +312,7 @@ func resourceSiteConnectionRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("mtu", conn.MTU)
 	d.Set("peer_cidrs", conn.PeerCIDRs)
 	d.Set("sdn", conn.SDN)
-	if conn.SDN != inetworking.NeutronSDN {
+	if conn.SDN == inetworking.SprutSDN {
 		if conn.TrafficSelectorEPMerge {
 			d.Set("traffic_selector_ep_merge", "enabled")
 		} else {
