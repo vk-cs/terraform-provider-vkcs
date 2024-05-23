@@ -3,6 +3,7 @@ package networking
 import (
 	"context"
 
+	"github.com/gophercloud/utils/terraform/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
@@ -37,7 +38,7 @@ func dataSourceNetworkingSDNRead(_ context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	d.SetId(config.GetTenantID())
+	d.SetId(config.GetTenantID() + hashcode.Strings(sdn))
 	d.Set("sdn", sdn)
 
 	return nil
