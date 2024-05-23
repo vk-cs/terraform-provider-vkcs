@@ -32,7 +32,7 @@ type ServiceCreateOpts struct {
 // SiteConnectionCreateOpts represents the attributes used when creating a new IPSec site connection.
 type SiteConnectionCreateOpts struct {
 	siteconnections.CreateOpts
-	TrafficSelectorEPMerge string `json:"traffic_selector_ep_merge,omitempty"`
+	TrafficSelectorEPMerge *bool `json:"traffic_selector_ep_merge,omitempty"`
 }
 
 // ToConnectionCreateMap casts a CreateOpts struct to a map.
@@ -42,23 +42,19 @@ func (opts SiteConnectionCreateOpts) ToConnectionCreateMap() (map[string]interfa
 		return nil, err
 	}
 
-	if opts.TrafficSelectorEPMerge == "" {
+	if opts.TrafficSelectorEPMerge == nil {
 		return base, nil
 	}
 
 	siteConnection := base["ipsec_site_connection"].(map[string]interface{})
-	if opts.TrafficSelectorEPMerge == "enabled" {
-		siteConnection["traffic_selector_ep_merge"] = true
-	} else {
-		siteConnection["traffic_selector_ep_merge"] = false
-	}
+	siteConnection["traffic_selector_ep_merge"] = *opts.TrafficSelectorEPMerge
 
 	return base, nil
 }
 
 type SiteConnectionUpdateOpts struct {
 	siteconnections.UpdateOpts
-	TrafficSelectorEPMerge string `json:"traffic_selector_ep_merge,omitempty"`
+	TrafficSelectorEPMerge *bool `json:"traffic_selector_ep_merge,omitempty"`
 }
 
 func (opts SiteConnectionUpdateOpts) ToConnectionUpdateMap() (map[string]interface{}, error) {
@@ -67,16 +63,12 @@ func (opts SiteConnectionUpdateOpts) ToConnectionUpdateMap() (map[string]interfa
 		return nil, err
 	}
 
-	if opts.TrafficSelectorEPMerge == "" {
+	if opts.TrafficSelectorEPMerge == nil {
 		return base, nil
 	}
 
 	siteConnection := base["ipsec_site_connection"].(map[string]interface{})
-	if opts.TrafficSelectorEPMerge == "enabled" {
-		siteConnection["traffic_selector_ep_merge"] = true
-	} else {
-		siteConnection["traffic_selector_ep_merge"] = false
-	}
+	siteConnection["traffic_selector_ep_merge"] = *opts.TrafficSelectorEPMerge
 
 	return base, nil
 }
