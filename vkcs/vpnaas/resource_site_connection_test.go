@@ -2,7 +2,6 @@ package vpnaas_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -39,24 +38,6 @@ func TestAccVPNaaSSiteConnection_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_vpnaas_site_connection.conn_1", "dpd.0.timeout", "42"),
 					resource.TestCheckResourceAttr("vkcs_vpnaas_site_connection.conn_1", "dpd.0.interval", "21"),
 				),
-			},
-		},
-	})
-}
-
-func TestAccVPNaaSSiteConnection_trafficSelectorEPMerge(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: acctest.AccTestProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: acctest.AccTestRenderConfig(testAccSiteConnectionTrafficSelectorEPMergeError,
-					map[string]string{"traffic_selector_ep_merge_arg": "traffic_selector_ep_merge = true"}),
-				ExpectError: regexp.MustCompile(`Neutron doesn't support traffic_selector_ep_merge argument`),
-			},
-			{
-				Config: acctest.AccTestRenderConfig(testAccSiteConnectionTrafficSelectorEPMergeError,
-					map[string]string{"traffic_selector_ep_merge_arg": "traffic_selector_ep_merge = false"}),
-				ExpectError: regexp.MustCompile(`Neutron doesn't support traffic_selector_ep_merge argument`),
 			},
 		},
 	})
@@ -179,80 +160,7 @@ const testAccSiteConnectionBasic = `
 			timeout  = 42
 			interval = 21
 		}
-		depends_on = ["vkcs_networking_router_interface.router_interface_1"]
-		sdn = "neutron"
-	}
-	`
-
-const testAccSiteConnectionTrafficSelectorEPMergeError = `
-	{{.BaseExtNetwork}}
-	
-	resource "vkcs_networking_network" "network_1" {
-		name           = "tf_test_network"
-  		admin_state_up = "true"
-		sdn = "neutron"
-	}
-
-	resource "vkcs_networking_subnet" "subnet_1" {
-  		network_id = vkcs_networking_network.network_1.id
-  		cidr       = "192.168.199.0/24"
-		sdn = "neutron"
-	}
-
-	resource "vkcs_networking_router" "router_1" {
-  		name             = "my_router"
-  		external_network_id = data.vkcs_networking_network.extnet.id
-		sdn = "neutron"
-	}
-
-	resource "vkcs_networking_router_interface" "router_interface_1" {
-  		router_id = vkcs_networking_router.router_1.id
-  		subnet_id = vkcs_networking_subnet.subnet_1.id
-		sdn = "neutron"
-	}
-
-	resource "vkcs_vpnaas_service" "service_1" {
-		router_id = vkcs_networking_router.router_1.id
-		admin_state_up = "false"
-		sdn = "neutron"
-	}
-
-	resource "vkcs_vpnaas_ipsec_policy" "policy_1" {
-		sdn = "neutron"
-	}
-
-	resource "vkcs_vpnaas_ike_policy" "policy_2" {
-		sdn = "neutron"
-	}
-
-	resource "vkcs_vpnaas_endpoint_group" "group_1" {
-		type = "cidr"
-		endpoints = ["10.0.0.24/24", "10.0.0.25/24"]
-		sdn = "neutron"
-	}
-	resource "vkcs_vpnaas_endpoint_group" "group_2" {
-		type = "subnet"
-		endpoints = [ vkcs_networking_subnet.subnet_1.id ]
-		sdn = "neutron"
-	}
-
-	resource "vkcs_vpnaas_site_connection" "conn_1" {
-		name = "connection_1"
-		ikepolicy_id = vkcs_vpnaas_ike_policy.policy_2.id
-		ipsecpolicy_id = vkcs_vpnaas_ipsec_policy.policy_1.id
-		vpnservice_id = vkcs_vpnaas_service.service_1.id
-		psk = "secret"
-		peer_address = "192.168.10.1"
-		peer_id = "192.168.10.1"
-		local_ep_group_id = vkcs_vpnaas_endpoint_group.group_2.id
-		peer_ep_group_id = vkcs_vpnaas_endpoint_group.group_1.id
-		dpd {
-			action   = "restart"
-			timeout  = 42
-			interval = 21
-		}
-		{{.traffic_selector_ep_merge_arg}}
-		depends_on = ["vkcs_networking_router_interface.router_interface_1"]
+		depends_on = [vkcs_networking_router_interface.router_interface_1]
 		sdn = "neutron"
 	}
 	`
