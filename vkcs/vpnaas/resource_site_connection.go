@@ -167,7 +167,8 @@ func ResourceSiteConnection() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Computed:    true,
-				Description: "This argument controls whether multiple traffic selection rules for an IPSec site connection should be merged into one rule, or applied independently. When set to \"true\", this parameter results in single IPsec SA negotiation with multiple IP prefixes, while providing a separate negotiation that results in the multiple IPsec tunnels when set to \"false\". __note__ Available only in sprut SDN. Default value is true."},
+				Description: "This argument controls whether multiple traffic selection rules for an IPSec site connection should be merged into one rule, or applied independently. When set to \"true\", this parameter results in single IPsec SA negotiation with multiple IP prefixes, while providing a separate negotiation that results in the multiple IPsec tunnels when set to \"false\". __note__ Available only in sprut SDN. Default value is true.",
+			},
 		},
 		Description: "Manages a IPSec site connection resource within VKCS.",
 	}
