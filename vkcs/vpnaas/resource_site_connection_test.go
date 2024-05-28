@@ -160,7 +160,7 @@ const testAccSiteConnectionBasic = `
 			timeout  = 42
 			interval = 21
 		}
-		depends_on = ["vkcs_networking_router_interface.router_interface_1"]
+		depends_on = [vkcs_networking_router_interface.router_interface_1]
 		sdn = "neutron"
 	}
 	`

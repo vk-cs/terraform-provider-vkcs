@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.7.4 (unreleased)
+- Add traffic_selector_ep_merge argument to vkcs_vpnaas_site_connection resource
+
 #### v0.7.3
 - Add security_group_ids argument to vkcs_compute_instance resource
 - Add ability to filter by extra_specs attribute in vkcs_compute_flavor data source.
