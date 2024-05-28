@@ -8,7 +8,8 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.7.4 (unreleased)
-- Add traffic_selector_ep_merge argument to vkcs_vpnaas_site_connection resource
+- Add vkcs_networking_sdn data source for getting a list of available SDNs.
+- Add traffic_selector_ep_merge argument to vkcs_vpnaas_site_connection resource.
 
 #### v0.7.3
 - Add security_group_ids argument to vkcs_compute_instance resource
