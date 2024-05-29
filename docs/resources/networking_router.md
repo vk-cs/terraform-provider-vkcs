@@ -45,6 +45,8 @@ resource "vkcs_networking_router" "router" {
 In addition to all arguments above, the following attributes are exported:
 - `all_tags` *set of* *string* &rarr;  The collection of tags assigned on the router, which have been explicitly and implicitly added.
 
+- `external_fixed_ips` *object* &rarr;  List of external gateways of the router.
+
 - `id` *string* &rarr;  ID of the resource.
 
 
