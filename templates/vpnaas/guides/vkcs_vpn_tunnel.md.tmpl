@@ -1,0 +1,56 @@
+---
+layout: "vkcs"
+description: |-
+  VPN Tunnel within VKCS.
+---
+
+## VPN tunnel
+
+VPN allows you to organize a tunnel between one or more VK Cloud private subnets and the client local network.
+See https://cloud.vk.com/docs/en/networks/vnet/concepts/vpn for more info.
+
+The tunnel is organized between private router and local VPN service. So you need:
+- connect your private router to Internet;
+- connect required private subnets to the router.
+
+Building VPN tunnel depends on VKCS SDN you are using for networking.
+Consult to `vkcs_networking_sdn` datasource to figure out available SDNs in you project.
+If both `neutron` and `sprut` are available look at `sdn` attribute of network objects you are going to plug to VPN tunnel.
+
+## Configure VPN tunnel
+
+In this guide, we configure a vpn tunnel between Neutron network and Sprut network.
+Complete example files can be viewed in the `examples/vpnaas` folder on GitHub project.
+You need both SDNs enabled in your project to try the example.
+
+### Neutron SDN:
+If Neutron SDN is the only SDN available in a project then a standard router (`vkcs_networking_router`)
+must be used as a private router to build VPN tunnel for Neutron networks.
+Connect them to the router and specify router ID in `router_id` argument of `vkcs_vpnaas_service` resource.
+
+Only `subnet` type is supported for `type` argument of private `vkcs_vpnaas_endpoint_group` resource.
+Neutron VPNaaS can plug several subnets to one VPN tunnel but a way it is used for that could be not supported by certain client VPN hardware.
+So check documentation and use the single subnet in this case.
+
+If Sprut SDN is also available in the project then Sprut's VPN can used to build VPN tunnel for Neutron networks as well.
+
+In this guide we build pure Neutron SDN VPN tunnel. In `examples/vpnaas/neutron_base.tf` file we prepare Neutron networks and router.
+Next in `examples/vpnaas/neutron_main.tf` we build VPN tunnel.
+
+{{tffile "examples/vpnaas/neutron_main.tf"}}
+
+### Sprut SDN:
+An advanced router (DC router, `vkcs_dc_router`) is required as a private router to build VPN tunnel for Sprut networks.
+Supply network connectivity to the router for them and specify router ID in `router_id` argument of `vkcs_vpnaas_service` resource.
+
+Only `cidr` type is supported for `type` argument of private `vkcs_vpnaas_endpoint_group` resource.
+This makes VPN tunnel settings more flexible.
+
+In the guide's `examples/vpnaas/sprut_base.tf` file we prepare advanced router and Sprut networks connected to it.
+Next in `examples/vpnaas/sprut_main.tf` we build VPN tunnel.
+
+{{tffile "examples/vpnaas/sprut_main.tf"}}
+
+## Verify tunnel
+In the guide's example we start two VMs in Neutron and Sprut networks and check connectivity between them.
+See `examples/vpnaas/neutron_vm.tf`, `examples/vpnaas/sprut_vm.tf` if you are interested.
