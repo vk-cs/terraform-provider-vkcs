@@ -7,6 +7,8 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.8.1 (unreleased)
+
 #### v0.8.0
 - Add vkcs_dc_conntrack_helper resource
 - Add vkcs_dc_ip_port_forwarding resource
