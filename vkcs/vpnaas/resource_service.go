@@ -70,7 +70,7 @@ func ResourceService() *schema.Resource {
 				Required:    true,
 				Computed:    false,
 				ForceNew:    true,
-				Description: "The ID of the router. Changing this creates a new service.",
+				Description: "The ID of the router. Use router id for Neutron SDN and dc_router id for sprut SDN. To get a list of available SDNs in a project, you can use vkcs_networking_sdn datasource. Changing this creates a new service",
 			},
 			"status": {
 				Type:        schema.TypeString,

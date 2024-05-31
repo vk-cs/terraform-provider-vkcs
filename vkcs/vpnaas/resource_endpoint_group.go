@@ -58,7 +58,7 @@ func ResourceEndpointGroup() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The type of the endpoints in the group. A valid value is subnet, cidr, network, router, or vlan. Changing this creates a new group.",
+				Description: "The type of the endpoints in the group. A valid value is subnet and cidr. For sprut SDN only cidr can be used, for Neutron SDN - subnet. Changing this creates a new group.",
 			},
 			"endpoints": {
 				Type:        schema.TypeSet,
