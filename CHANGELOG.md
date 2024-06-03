@@ -10,6 +10,8 @@ description: |-
 #### v0.8.0 (unreleased)
 - Add vkcs_dc_conntrack_helper resource
 - Add vkcs_dc_ip_port_forwarding resource
+- Add full_security_groups_control argument to vkcs_networking_port resource.
+- Deprecate no_security_groups argument of vkcs_networking_port resource.
 - Added waiting for roles to be assigned to instance when creating a db cluster. 
 
 #### v0.7.4

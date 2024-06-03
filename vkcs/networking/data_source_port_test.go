@@ -63,6 +63,12 @@ func TestAccNetworkingPortDataSource_migrateToFramework(t *testing.T) {
 				),
 			},
 			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"vkcs": {
+						VersionConstraint: "0.4.0",
+						Source:            "vk-cs/vkcs",
+					},
+				},
 				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 				Config:                   testAccNetworkingPortDataSourceBasic,
 				PlanOnly:                 true,
@@ -92,7 +98,7 @@ resource "vkcs_networking_port" "port_1" {
   name           = "port"
   description    = "test port"
   network_id     = vkcs_networking_network.network_1.id
-  admin_state_up = "true"
+  admin_state_up = true
 
   security_group_ids = [
     data.vkcs_networking_secgroup.default.id,
@@ -111,8 +117,8 @@ resource "vkcs_networking_port" "port_2" {
   name               = "port"
   description        = "test port"
   network_id         = vkcs_networking_network.network_1.id
-  admin_state_up     = "true"
-  no_security_groups = "true"
+  admin_state_up     = true
+  no_security_groups = true
 
   tags = [
     "foo",

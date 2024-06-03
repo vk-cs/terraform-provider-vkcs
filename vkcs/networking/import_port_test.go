@@ -25,6 +25,7 @@ func TestAccNetworkingPort_importBasic(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"fixed_ip",
+					"full_security_groups_control",
 				},
 			},
 		},
@@ -49,6 +50,7 @@ func TestAccNetworkingPort_importAllowedAddressPairs(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"fixed_ip",
+					"full_security_groups_control",
 				},
 			},
 		},
@@ -73,6 +75,7 @@ func TestAccNetworkingPort_importAllowedAddressPairsNoMAC(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"fixed_ip",
+					"full_security_groups_control",
 				},
 			},
 		},
@@ -97,6 +100,7 @@ func TestAccNetworkingPort_importDHCPOpts(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"fixed_ip",
+					"full_security_groups_control",
 				},
 			},
 		},
