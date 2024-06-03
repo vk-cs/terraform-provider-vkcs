@@ -12,6 +12,8 @@ resource "vkcs_networking_port" "persistent_etcd" {
   fixed_ip {
     subnet_id = vkcs_networking_subnet.db.id
   }
+  # Set this argument to true always
+  full_security_groups_control = true
   # Specify required security groups instead of getting 'default' one
   security_group_ids = [vkcs_networking_secgroup.etcd.id]
   tags               = ["tf-example", "etcd"]

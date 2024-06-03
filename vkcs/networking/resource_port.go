@@ -27,6 +27,7 @@ func ResourceNetworkingPort() *schema.Resource {
 		ReadContext:   resourceNetworkingPortRead,
 		UpdateContext: resourceNetworkingPortUpdate,
 		DeleteContext: resourceNetworkingPortDelete,
+		CustomizeDiff: resourceNetworkingPortCustomizeDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -90,19 +91,38 @@ func ResourceNetworkingPort() *schema.Resource {
 			},
 
 			"security_group_ids": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				ForceNew:    false,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Set:         schema.HashString,
-				Description: "(Conflicts with `no_security_groups`) A list of security group IDs to apply to the port. The security groups must be specified by ID and not name (as opposed to how they are configured with the Compute Instance).",
+				Type:     schema.TypeSet,
+				Optional: true,
+				ForceNew: false,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+				Computed: true,
+				Description: "A list of security group IDs to apply to the port. The security groups must be specified by ID and not name. " +
+					"If the list is empty then no one security group is attached to the port. If the argument is absent then " +
+					"`vkcs_networking_port` resource does not control security groups of the port and just reads them from Networking service. " +
+					"The last case yields to the default behavior of the Networking service, which adds the \"default\" security group. " +
+					"_note_ This behavior is actual with `full_security_groups_control` = true only and introduced in 0.8.0 version " +
+					"of the provider. Legacy behavior is still supported but deprecated and too confusing to be described.",
 			},
 
 			"no_security_groups": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    false,
-				Description: "(Conflicts with `security_group_ids`) If set to `true`, then no security groups are applied to the port. If set to `false` and no `security_group_ids` are specified, then the port will yield to the default behavior of the Networking service, which is to usually apply the \"default\" security group.",
+				Type:       schema.TypeBool,
+				Optional:   true,
+				ForceNew:   false,
+				Deprecated: "Configure `full_security_groups_control = true` and `security_group_ids = []` instead.",
+				Description: "If set to `true`, then no security groups are applied to the port. If set to `false` and no `security_group_ids` " +
+					"are specified, then the port will yield to the default behavior of the Networking service, which is to usually apply " +
+					"the \"default\" security group.",
+			},
+
+			"full_security_groups_control": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: false,
+				Default:  false,
+				Description: "Always set this argument to `true`. It brings consistent behavior of managing of security groups of the port. " +
+					"See description of `security_group_ids` argument. _note_ This argument is introduced to seamless migration " +
+					"to the consistent behavior and will get `true` by default in new major version of the provider.",
 			},
 
 			"device_id": {
@@ -205,7 +225,8 @@ func ResourceNetworkingPort() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
-				Description: "The collection of Security Group IDs on the port which have been explicitly and implicitly added.",
+				Deprecated:  "Use `security_group_ids` together with `full_security_groups_control = true` instead.",
+				Description: "The collection of security group IDs on the port which have been explicitly and implicitly added.",
 			},
 
 			"tags": {
@@ -296,7 +317,7 @@ func resourceNetworkingPortCreate(ctx context.Context, d *schema.ResourceData, m
 
 	// Only set SecurityGroups if one was specified.
 	// Otherwise this would mimic the no_security_groups action.
-	if len(securityGroups) > 0 {
+	if needSGControl(d) || len(securityGroups) > 0 {
 		createOpts.SecurityGroups = &securityGroups
 	}
 
@@ -402,6 +423,9 @@ func resourceNetworkingPortRead(ctx context.Context, d *schema.ResourceData, met
 	// This can be different from what the user specified since
 	// the port can have the "default" group automatically applied.
 	d.Set("all_security_group_ids", port.SecurityGroups)
+	if d.Get("full_security_groups_control").(bool) {
+		d.Set("security_group_ids", port.SecurityGroups)
+	}
 
 	d.Set("allowed_address_pairs", flattenNetworkingPortAllowedAddressPairs(port.MACAddress, port.AllowedAddressPairs))
 	d.Set("extra_dhcp_option", flattenNetworkingPortDHCPOpts(port.ExtraDHCPOptsExt))
@@ -411,6 +435,13 @@ func resourceNetworkingPortRead(ctx context.Context, d *schema.ResourceData, met
 
 	d.Set("region", util.GetRegion(d, config))
 	d.Set("sdn", port.SDN)
+
+	if !d.Get("full_security_groups_control").(bool) {
+		return diag.Diagnostics{diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "full_security_groups_control is false. This is deprecated configuration which leads to unspecified behavior on port's security group changing. Please set full_security_groups_control to true.",
+		}}
+	}
 
 	return nil
 }
@@ -448,7 +479,7 @@ func resourceNetworkingPortUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	if d.HasChange("security_group_ids") {
+	if d.HasChange("security_group_ids") || d.HasChange("all_security_group_ids") {
 		hasChange = true
 		updateOpts.SecurityGroups = &securityGroups
 	}
@@ -581,4 +612,25 @@ func resourceNetworkingPortDelete(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId("")
 	return nil
+}
+
+func resourceNetworkingPortCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	if diff.Id() == "" {
+		return nil
+	}
+	if diff.HasChange("full_security_groups_control") && diff.Get("full_security_groups_control").(bool) {
+		if diff.GetRawConfig().GetAttr("security_group_ids").IsNull() {
+			return nil
+		}
+		sgs := diff.Get("security_group_ids").(*schema.Set)
+		allsgs := diff.Get("all_security_group_ids").(*schema.Set)
+		if allsgs.Difference(sgs).Len() > 0 {
+			diff.SetNew("all_security_group_ids", sgs)
+		}
+	}
+	return nil
+}
+
+func needSGControl(d *schema.ResourceData) bool {
+	return d.Get("full_security_groups_control").(bool) && !d.GetRawConfig().GetAttr("security_group_ids").IsNull()
 }

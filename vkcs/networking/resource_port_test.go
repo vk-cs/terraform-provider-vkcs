@@ -369,6 +369,84 @@ func TestAccNetworkingPort_noSecurityGroups(t *testing.T) {
 	})
 }
 
+func TestAccNetworkingPort_fullSecurityGroupsControl(t *testing.T) {
+	var network networks.Network
+	var port ports.Port
+	var subnet subnets.Subnet
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckNetworkingPortDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccNetworkingPortFullSGsControl1,
+					map[string]string{"BaseNetworkAndSubnet": testAccNetworkingPortBaseNetworkAndSubnet}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
+					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
+					testAccCheckNetworkingPortExists("vkcs_networking_port.port_1", &port),
+					testAccCheckNetworkingPortCountSecurityGroups(&port, 0),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccNetworkingPortFullSGsControl2,
+					map[string]string{"BaseNetworkAndSubnet": testAccNetworkingPortBaseNetworkAndSubnet}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
+					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
+					testAccCheckNetworkingPortExists("vkcs_networking_port.port_1", &port),
+					testAccCheckNetworkingPortCountSecurityGroups(&port, 2),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccNetworkingPortFullSGsControl3,
+					map[string]string{"BaseNetworkAndSubnet": testAccNetworkingPortBaseNetworkAndSubnet}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
+					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
+					testAccCheckNetworkingPortExists("vkcs_networking_port.port_1", &port),
+					testAccCheckNetworkingPortCountSecurityGroups(&port, 1),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccNetworkingPortFullSGsControl1,
+					map[string]string{"BaseNetworkAndSubnet": testAccNetworkingPortBaseNetworkAndSubnet}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
+					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
+					testAccCheckNetworkingPortExists("vkcs_networking_port.port_1", &port),
+					testAccCheckNetworkingPortCountSecurityGroups(&port, 0),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNetworkingPort_fullSecurityGroupsControlCreateWithDefaultSG(t *testing.T) {
+	var network networks.Network
+	var port ports.Port
+	var subnet subnets.Subnet
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckNetworkingPortDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccNetworkingPortFullSGsControlWithDefaultSG,
+					map[string]string{"BaseNetworkAndSubnet": testAccNetworkingPortBaseNetworkAndSubnet}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
+					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
+					testAccCheckNetworkingPortExists("vkcs_networking_port.port_1", &port),
+					testAccCheckNetworkingPortCountSecurityGroups(&port, 1),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNetworkingPort_noFixedIP(t *testing.T) {
 	var port ports.Port
 
@@ -1698,6 +1776,7 @@ resource "vkcs_networking_port" "port_1" {
   name = "port_1"
   admin_state_up = "true"
   network_id = vkcs_networking_network.network_1.id
+  security_group_ids = []
   no_security_groups = true
 
   fixed_ip {
@@ -1771,6 +1850,121 @@ resource "vkcs_networking_port" "instance_port" {
 
   allowed_address_pairs {
     ip_address = vkcs_networking_port.vrrp_port_2.fixed_ip.0.ip_address
+  }
+}
+`
+
+const testAccNetworkingPortBaseNetworkAndSubnet = `
+resource "vkcs_networking_network" "network_1" {
+  name = "network_1"
+  admin_state_up = "true"
+}
+
+resource "vkcs_networking_subnet" "subnet_1" {
+  name = "subnet_1"
+  cidr = "192.168.199.0/24"
+  network_id = vkcs_networking_network.network_1.id
+}
+`
+
+const testAccNetworkingPortFullSGsControl1 = `
+{{.BaseNetworkAndSubnet}}
+
+resource "vkcs_networking_secgroup" "secgroup_1" {
+  name = "secgroup_1"
+  description = "terraform security group acceptance test"
+}
+
+resource "vkcs_networking_secgroup" "secgroup_2" {
+  name = "secgroup_2"
+  description = "terraform security group acceptance test"
+}
+
+resource "vkcs_networking_port" "port_1" {
+  name = "port_1"
+  admin_state_up = "true"
+  network_id = vkcs_networking_network.network_1.id
+  security_group_ids = []  
+  full_security_groups_control = true
+
+  fixed_ip {
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
+    ip_address = "192.168.199.23"
+  }
+}
+`
+
+const testAccNetworkingPortFullSGsControl2 = `
+{{.BaseNetworkAndSubnet}}
+
+resource "vkcs_networking_secgroup" "secgroup_1" {
+  name = "secgroup_1"
+  description = "terraform security group acceptance test"
+}
+
+resource "vkcs_networking_secgroup" "secgroup_2" {
+  name = "secgroup_2"
+  description = "terraform security group acceptance test"
+}
+
+resource "vkcs_networking_port" "port_1" {
+  name = "port_1"
+  admin_state_up = "true"
+  network_id = vkcs_networking_network.network_1.id
+  security_group_ids = [
+    vkcs_networking_secgroup.secgroup_1.id,
+    vkcs_networking_secgroup.secgroup_2.id,
+  ]
+  full_security_groups_control = true
+
+  fixed_ip {
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
+    ip_address = "192.168.199.23"
+  }
+}
+`
+
+const testAccNetworkingPortFullSGsControl3 = `
+{{.BaseNetworkAndSubnet}}
+
+resource "vkcs_networking_secgroup" "secgroup_1" {
+  name = "secgroup_1"
+  description = "terraform security group acceptance test"
+}
+
+resource "vkcs_networking_secgroup" "secgroup_2" {
+  name = "secgroup_2"
+  description = "terraform security group acceptance test"
+}
+
+resource "vkcs_networking_port" "port_1" {
+  name = "port_1"
+  admin_state_up = "true"
+  network_id = vkcs_networking_network.network_1.id
+  security_group_ids = [
+    vkcs_networking_secgroup.secgroup_1.id,
+  ]
+  full_security_groups_control = true
+
+  fixed_ip {
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
+    ip_address = "192.168.199.23"
+  }
+}
+`
+
+const testAccNetworkingPortFullSGsControlWithDefaultSG = `
+{{.BaseNetworkAndSubnet}}
+
+resource "vkcs_networking_port" "port_1" {
+  name = "port_1"
+  admin_state_up = "true"
+  network_id = vkcs_networking_network.network_1.id
+  full_security_groups_control = true
+
+  fixed_ip {
+    subnet_id =  vkcs_networking_subnet.subnet_1.id
+    ip_address = "192.168.199.23"
   }
 }
 `
