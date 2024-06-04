@@ -679,22 +679,50 @@ func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterI
 		if clusterStatus == string(dbClusterStatusError) {
 			return c, clusterStatus, fmt.Errorf("there was an error creating the database cluster")
 		}
-		if clusterStatus == string(dbClusterStatusActive) {
-			if capabilitiesOpts != nil {
-				for _, i := range c.Instances {
-					instCapabilities, err := instances.GetCapabilities(client, i.ID).Extract()
-					if err != nil {
-						return nil, "", fmt.Errorf("error getting cluster instance capabilities: %s", err)
-					}
-					capabilitiesReady, err := checkDBMSCapabilities(*capabilitiesOpts, instCapabilities)
-					if err != nil {
-						return nil, "", err
-					}
-					if !capabilitiesReady {
-						return c, string(dbClusterStatusBuild), nil
-					}
+		if clusterStatus != string(dbClusterStatusActive) {
+			return c, clusterStatus, nil
+		}
+
+		if len(c.Instances) == 0 {
+			return c, string(dbClusterStatusBuild), nil
+		}
+		for _, inst := range c.Instances {
+			if inst.Status == string(dbInstanceStatusBuild) || inst.Status == string(dbInstanceStatusResize) {
+				return c, string(dbClusterStatusBuild), nil
+			}
+			if inst.Status == string(dbInstanceStatusError) {
+				return nil, "", fmt.Errorf("instance with id %s is in the error status", inst.СomputeInstanceID)
+			}
+		}
+
+		if len(c.Instances) == 0 {
+			return c, string(dbClusterStatusBuild), nil
+		}
+		for _, inst := range c.Instances {
+			if inst.Status == string(dbInstanceStatusBuild) || inst.Status == string(dbInstanceStatusResize) {
+				return c, string(dbClusterStatusBuild), nil
+			}
+			if inst.Status == string(dbInstanceStatusError) {
+				return nil, "", fmt.Errorf("instance with id %s is in the error status", inst.СomputeInstanceID)
+			}
+			if inst.Role == "" {
+				return c, string(dbClusterStatusBuild), nil
+			}
+		}
+		
+		if capabilitiesOpts != nil {
+			for _, i := range c.Instances {
+				instCapabilities, err := instances.GetCapabilities(client, i.ID).Extract()
+				if err != nil {
+					return nil, "", fmt.Errorf("error getting cluster instance capabilities: %s", err)
 				}
-				return c, string(dbClusterStatusActive), nil
+				capabilitiesReady, err := checkDBMSCapabilities(*capabilitiesOpts, instCapabilities)
+				if err != nil {
+					return nil, "", err
+				}
+				if !capabilitiesReady {
+					return c, string(dbClusterStatusBuild), nil
+				}
 			}
 		}
 
