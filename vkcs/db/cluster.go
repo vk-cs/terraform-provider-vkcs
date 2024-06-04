@@ -709,7 +709,7 @@ func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterI
 				return c, string(dbClusterStatusBuild), nil
 			}
 		}
-		
+
 		if capabilitiesOpts != nil {
 			for _, i := range c.Instances {
 				instCapabilities, err := instances.GetCapabilities(client, i.ID).Extract()
