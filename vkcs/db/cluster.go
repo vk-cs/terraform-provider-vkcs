@@ -683,34 +683,7 @@ func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterI
 			return c, clusterStatus, nil
 		}
 
-		if len(c.Instances) == 0 {
-			return c, string(dbClusterStatusBuild), nil
-		}
-		for _, inst := range c.Instances {
-			if inst.Status == string(dbInstanceStatusBuild) || inst.Status == string(dbInstanceStatusResize) {
-				return c, string(dbClusterStatusBuild), nil
-			}
-			if inst.Status == string(dbInstanceStatusError) {
-				return nil, "", fmt.Errorf("instance with id %s is in the error status", inst.СomputeInstanceID)
-			}
-		}
-
-		if len(c.Instances) == 0 {
-			return c, string(dbClusterStatusBuild), nil
-		}
-		for _, inst := range c.Instances {
-			if inst.Status == string(dbInstanceStatusBuild) || inst.Status == string(dbInstanceStatusResize) {
-				return c, string(dbClusterStatusBuild), nil
-			}
-			if inst.Status == string(dbInstanceStatusError) {
-				return nil, "", fmt.Errorf("instance with id %s is in the error status", inst.СomputeInstanceID)
-			}
-			if inst.Role == "" {
-				return c, string(dbClusterStatusBuild), nil
-			}
-		}
-
-		if capabilitiesOpts != nil {
+		if capabilitiesOpts != nil && len(*capabilitiesOpts) != 0 {
 			for _, i := range c.Instances {
 				instCapabilities, err := instances.GetCapabilities(client, i.ID).Extract()
 				if err != nil {
@@ -721,6 +694,14 @@ func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterI
 					return nil, "", err
 				}
 				if !capabilitiesReady {
+					return c, string(dbClusterStatusBuild), nil
+				}
+			}
+		}
+
+		if util.IsOperationNotSupported(c.DataStore.Type, Postgres, PostgresProEnterprise, PostgresProEnterprise1C, Galera, Tarantool) {
+			for _, instance := range c.Instances {
+				if instance.Role == "unknown" {
 					return c, string(dbClusterStatusBuild), nil
 				}
 			}
