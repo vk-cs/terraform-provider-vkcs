@@ -10,8 +10,12 @@ import (
 
 func TestAccKubernetesAddonsDataSource_basic_big(t *testing.T) {
 	var cluster clusters.Cluster
+	uniqueSuffix := acctest.GenerateNameSuffix()
 	baseConfig := acctest.AccTestRenderConfig(testAccKubernetesAddonClusterBase,
-		map[string]string{"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase})
+		map[string]string{"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase,
+			"Suffix":        uniqueSuffix,
+			"NodeGroupName": uniqueKubernetesNodeGroupName(),
+		})
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },

@@ -180,7 +180,7 @@ resource "vkcs_networking_router_interface" "base" {
 
 const testAccKubernetesClusterBase = `
 data "vkcs_kubernetes_clustertemplate" "base" {
-  version = "1.24"
+  version = "1.27"
 }
 `
 

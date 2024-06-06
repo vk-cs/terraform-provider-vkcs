@@ -10,8 +10,12 @@ import (
 
 func TestAccKubernetesAddonDataSource_basic_big(t *testing.T) {
 	var cluster clusters.Cluster
+	uniqueSuffix := acctest.GenerateNameSuffix()
 	baseConfig := acctest.AccTestRenderConfig(testAccKubernetesAddonClusterBase,
-		map[string]string{"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase})
+		map[string]string{"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase,
+			"Suffix":        uniqueSuffix,
+			"NodeGroupName": uniqueKubernetesNodeGroupName(),
+		})
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
@@ -42,6 +46,6 @@ const testAccKubernetesAddonDataSourceBasic = `
 data "vkcs_kubernetes_addon" "ingress-nginx" {
   cluster_id = vkcs_kubernetes_cluster.cluster.id
   name       = "ingress-nginx"
-  version    = "4.1.4"
+  version    = "4.7.1"
 }
 `
