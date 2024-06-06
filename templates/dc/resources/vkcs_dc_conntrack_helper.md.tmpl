@@ -1,0 +1,21 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a direct connect conntrack helper resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+Direct connect conntrack helper can be imported using the `id`, e.g.
+{{codefile "shell" "templates/dc/resources/vkcs_dc_conntrack_helper/import.sh"}}

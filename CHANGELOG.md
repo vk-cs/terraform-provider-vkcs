@@ -7,7 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
-### v0.7.5 (unreleased)
+#### v0.8.0 (unreleased)
+- Add vkcs_dc_conntrack_helper resource
+- Add vkcs_dc_ip_port_forwarding resource
 - Added waiting for roles to be assigned to instance when creating a db cluster. 
 
 #### v0.7.4

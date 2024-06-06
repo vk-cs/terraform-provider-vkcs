@@ -13,10 +13,15 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dc/v2/routers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 // Ensure the implementation satisfies the desired interfaces.
-var _ resource.Resource = &RouterResource{}
+var (
+	_ resource.Resource                = &RouterResource{}
+	_ resource.ResourceWithConfigure   = &RouterResource{}
+	_ resource.ResourceWithImportState = &RouterResource{}
+)
 
 func NewRouterResource() resource.Resource {
 	return &RouterResource{}
@@ -269,7 +274,9 @@ func (r *RouterResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	id := data.ID.ValueString()
 
 	err = routers.Delete(networkingClient, id).ExtractErr()
-	if err != nil {
+	if errutil.IsNotFound(err) {
+		return
+	} else if err != nil {
 		resp.Diagnostics.AddError("Unable to delete resource vkcs_dc_router", err.Error())
 		return
 	}

@@ -14,10 +14,15 @@ import (
 	bgpinstances "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dc/v2/bgpinstances"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 // Ensure the implementation satisfies the desired interfaces.
-var _ resource.Resource = &BGPInstanceResource{}
+var (
+	_ resource.Resource                = &BGPInstanceResource{}
+	_ resource.ResourceWithConfigure   = &BGPInstanceResource{}
+	_ resource.ResourceWithImportState = &BGPInstanceResource{}
+)
 
 func NewBGPInstanceResource() resource.Resource {
 	return &BGPInstanceResource{}
@@ -334,7 +339,9 @@ func (r *BGPInstanceResource) Delete(ctx context.Context, req resource.DeleteReq
 	id := data.ID.ValueString()
 
 	err = bgpinstances.Delete(networkingClient, id).ExtractErr()
-	if err != nil {
+	if errutil.IsNotFound(err) {
+		return
+	} else if err != nil {
 		resp.Diagnostics.AddError("Unable to delete resource vkcs_dc_bgp_instance", err.Error())
 		return
 	}

@@ -13,7 +13,10 @@ import (
 )
 
 // Ensure the implementation satisfies the desired interfaces.
-var _ datasource.DataSource = &APIOptionsDataSource{}
+var (
+	_ datasource.DataSource              = &APIOptionsDataSource{}
+	_ datasource.DataSourceWithConfigure = &APIOptionsDataSource{}
+)
 
 func NewAPIOptionsDataSource() datasource.DataSource {
 	return &APIOptionsDataSource{}

@@ -18,9 +18,9 @@ Manages a direct connect router resource.
 ```terraform
 resource "vkcs_dc_router" "dc_router" {
   availability_zone = "GZ1"
-  flavor = "standard"
-  name = "tf-example"
-  description = "tf-example-description"
+  flavor            = "standard"
+  name              = "tf-example"
+  description       = "tf-example-description"
 }
 ```
 
@@ -48,7 +48,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Direct connect router can be imported using the `name`, e.g.
+Direct connect router can be imported using the `id`, e.g.
 ```shell
 terraform import vkcs_dc_router.mydcrouter b50b32fc-16e2-4cb0-acdb-638c865c4242
 ```

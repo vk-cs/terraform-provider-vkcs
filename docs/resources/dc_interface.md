@@ -76,7 +76,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Direct connect interface can be imported using the `name`, e.g.
+Direct connect interface can be imported using the `id`, e.g.
 ```shell
 terraform import vkcs_dc_interface.mydcinterface 438d7479-d95f-4afc-b85e-eb8cd130a99f
 ```

@@ -17,10 +17,10 @@ Manages a direct connect VRRP address resource.
 ## Example Usage
 ```terraform
 resource "vkcs_dc_vrrp_address" "dc_vrrp_address" {
-    name = "tf-example"
-    description = "tf-example-description"
-    dc_vrrp_id = vkcs_dc_vrrp.dc_vrrp.id
-    ip_address = "192.168.199.42"
+  name        = "tf-example"
+  description = "tf-example-description"
+  dc_vrrp_id  = vkcs_dc_vrrp.dc_vrrp.id
+  ip_address  = "192.168.199.42"
 }
 ```
 
@@ -50,7 +50,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Direct connect vrrp address can be imported using the `name`, e.g.
+Direct connect vrrp address can be imported using the `id`, e.g.
 ```shell
 terraform import vkcs_dc_vrrp_address.mydcvrrpaddress aa00d2a9-db9c-4976-898b-fcabb9f49505
 ```

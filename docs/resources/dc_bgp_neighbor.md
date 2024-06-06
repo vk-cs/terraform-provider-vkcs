@@ -17,12 +17,12 @@ Manages a direct connect BGP neighbor resource.
 ## Example Usage
 ```terraform
 resource "vkcs_dc_bgp_neighbor" "dc_bgp_neighbor" {
-    name = "tf-example"
-    add_paths = "on"
-    description = "tf-example-description"
-    dc_bgp_id = vkcs_dc_bgp_instance.dc_bgp_instance.id
-    remote_asn = 1
-    remote_ip = "192.168.1.3"
+  name        = "tf-example"
+  add_paths   = "on"
+  description = "tf-example-description"
+  dc_bgp_id   = vkcs_dc_bgp_instance.dc_bgp_instance.id
+  remote_asn  = 1
+  remote_ip   = "192.168.1.3"
 }
 ```
 
@@ -64,7 +64,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Direct connect BGP neighbor can be imported using the `name`, e.g.
+Direct connect BGP neighbor can be imported using the `id`, e.g.
 ```shell
 terraform import vkcs_dc_bgp_neighbor.mydcbgpneighbor 73096185-f200-4790-8095-962617b755f8
 ```
