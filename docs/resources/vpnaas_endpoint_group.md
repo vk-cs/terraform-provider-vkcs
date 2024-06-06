@@ -41,7 +41,7 @@ resource "vkcs_vpnaas_endpoint_group" "subnet_hosts" {
 
 - `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.<br>**New since v0.5.3**.
 
-- `type` optional *string* &rarr;  The type of the endpoints in the group. A valid value is subnet, cidr, network, router, or vlan. Changing this creates a new group.
+- `type` optional *string* &rarr;  The type of the endpoints in the group. A valid value is `subnet` and `cidr`. For sprut SDN only `cidr` can be used, for neutron SDN - `cidr` for remote group, `subnet` for local. Changing this creates a new group.
 
 
 ## Attributes Reference
