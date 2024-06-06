@@ -13,10 +13,15 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dc/v2/vrrps"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 // Ensure the implementation satisfies the desired interfaces.
-var _ resource.Resource = &VRRPResource{}
+var (
+	_ resource.Resource                = &VRRPResource{}
+	_ resource.ResourceWithConfigure   = &VRRPResource{}
+	_ resource.ResourceWithImportState = &VRRPResource{}
+)
 
 func NewVRRPResource() resource.Resource {
 	return &VRRPResource{}
@@ -317,7 +322,9 @@ func (r *VRRPResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	id := data.ID.ValueString()
 
 	err = vrrps.Delete(networkingClient, id).ExtractErr()
-	if err != nil {
+	if errutil.IsNotFound(err) {
+		return
+	} else if err != nil {
 		resp.Diagnostics.AddError("Unable to delete resource vkcs_dc_vrrp", err.Error())
 		return
 	}

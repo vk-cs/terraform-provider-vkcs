@@ -13,10 +13,15 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dc/v2/bgpstaticannounces"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 // Ensure the implementation satisfies the desired interfaces.
-var _ resource.Resource = &BGPStaticAnnounceResource{}
+var (
+	_ resource.Resource                = &BGPStaticAnnounceResource{}
+	_ resource.ResourceWithConfigure   = &BGPStaticAnnounceResource{}
+	_ resource.ResourceWithImportState = &BGPStaticAnnounceResource{}
+)
 
 func NewBGPStaticAnnounceResource() resource.Resource {
 	return &BGPStaticAnnounceResource{}
@@ -296,7 +301,9 @@ func (r *BGPStaticAnnounceResource) Delete(ctx context.Context, req resource.Del
 	id := data.ID.ValueString()
 
 	err = bgpstaticannounces.Delete(networkingClient, id).ExtractErr()
-	if err != nil {
+	if errutil.IsNotFound(err) {
+		return
+	} else if err != nil {
 		resp.Diagnostics.AddError("Unable to delete resource vkcs_dc_bgp_static_announce", err.Error())
 		return
 	}

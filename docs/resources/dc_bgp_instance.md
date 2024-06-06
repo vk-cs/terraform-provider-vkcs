@@ -17,13 +17,13 @@ Manages a direct connect BGP instance resource.
 ## Example Usage
 ```terraform
 resource "vkcs_dc_bgp_instance" "dc_bgp_instance" {
-    name = "tf-example"
-    description = "tf-example-description"
-    dc_router_id = vkcs_dc_router.dc_router.id
-    bgp_router_id = "192.168.1.2"
-    asn = 12345
-    ecmp_enabled = true
-    graceful_restart = true
+  name             = "tf-example"
+  description      = "tf-example-description"
+  dc_router_id     = vkcs_dc_router.dc_router.id
+  bgp_router_id    = "192.168.1.2"
+  asn              = 12345
+  ecmp_enabled     = true
+  graceful_restart = true
 }
 ```
 
@@ -61,7 +61,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Direct connect BGP instance can be imported using the `name`, e.g.
+Direct connect BGP instance can be imported using the `id`, e.g.
 ```shell
 terraform import vkcs_dc_bgp_instance.mydcbgpinstance e73496b2-e476-4536-9167-af24d18e1486
 ```

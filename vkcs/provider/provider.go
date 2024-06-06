@@ -137,6 +137,8 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		dc.NewVRRPResource,
 		dc.NewVRRPInterfaceResource,
 		dc.NewVRRPAddressResource,
+		dc.NewConntrackHelperResource,
+		dc.NewIPPortForwardingResource,
 		mlplatform.NewJupyterHubResource,
 		mlplatform.NewMLFlowResource,
 		mlplatform.NewMLFlowDeployResource,

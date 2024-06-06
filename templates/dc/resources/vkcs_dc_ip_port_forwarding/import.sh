@@ -1,0 +1,1 @@
+terraform import vkcs_dc_ip_port_forwarding.mydcipportforwarding 659be09e-a10e-4762-b729-7a003af40f29

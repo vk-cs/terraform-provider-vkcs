@@ -17,12 +17,12 @@ Manages a direct connect VRRP resource.
 ## Example Usage
 ```terraform
 resource "vkcs_dc_vrrp" "dc_vrrp" {
-    name = "tf-example"
-    description = "tf-example-description"
-    group_id = 100
-    network_id = vkcs_networking_network.app.id
-    subnet_id = vkcs_networking_subnet.app.id
-    advert_interval = 1
+  name            = "tf-example"
+  description     = "tf-example-description"
+  group_id        = 100
+  network_id      = vkcs_networking_network.app.id
+  subnet_id       = vkcs_networking_subnet.app.id
+  advert_interval = 1
 }
 ```
 
@@ -58,7 +58,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Direct connect vrrp can be imported using the `name`, e.g.
+Direct connect vrrp can be imported using the `id`, e.g.
 ```shell
 terraform import vkcs_dc_vrrp.mydcvrrp f6149e79-b441-4327-90fc-7653acbc204c
 ```

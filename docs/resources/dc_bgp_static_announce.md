@@ -17,11 +17,11 @@ Manages a direct connect BGP Static Announce resource.
 ## Example Usage
 ```terraform
 resource "vkcs_dc_bgp_static_announce" "dc_bgp_static_announce" {
-    name = "tf-example"
-    description = "tf-example-description"
-    dc_bgp_id = vkcs_dc_bgp_instance.dc_bgp_instance.id
-    network = "192.168.1.0/24"
-    gateway = "192.168.1.3"
+  name        = "tf-example"
+  description = "tf-example-description"
+  dc_bgp_id   = vkcs_dc_bgp_instance.dc_bgp_instance.id
+  network     = "192.168.1.0/24"
+  gateway     = "192.168.1.3"
 }
 ```
 
@@ -53,7 +53,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Direct connect BGP instance can be imported using the `name`, e.g.
+Direct connect BGP instance can be imported using the `id`, e.g.
 ```shell
 terraform import vkcs_dc_bgp_static_announce.mydcbgpstaticannounce 8a1d9812-305b-468f-8ae5-833e181b01a8
 ```

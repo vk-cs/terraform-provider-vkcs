@@ -1,0 +1,1 @@
+terraform import vkcs_dc_conntrack_helper.mydcconntrackhelper 52a0a638-0a75-4a15-b3f3-d5c9f953e93f

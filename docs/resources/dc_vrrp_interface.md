@@ -17,13 +17,13 @@ Manages a direct connect VRRP interface resource.
 ## Example Usage
 ```terraform
 resource "vkcs_dc_vrrp_interface" "dc_vrrp_interface" {
-    name = "tf-example"
-    description = "tf-example-description"
-    dc_vrrp_id = vkcs_dc_vrrp.dc_vrrp.id
-    dc_interface_id = vkcs_dc_interface.dc_interface.id
-    priority = 100
-    preempt = true
-    master = true
+  name            = "tf-example"
+  description     = "tf-example-description"
+  dc_vrrp_id      = vkcs_dc_vrrp.dc_vrrp.id
+  dc_interface_id = vkcs_dc_interface.dc_interface.id
+  priority        = 100
+  preempt         = true
+  master          = true
 }
 ```
 
@@ -57,7 +57,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Direct connect vrrp interface can be imported using the `name`, e.g.
+Direct connect vrrp interface can be imported using the `id`, e.g.
 ```shell
 terraform import vkcs_dc_vrrp_interface.mydcvrrpinterface 3f071a6d-3d21-435c-83f7-11b276f318f0
 ```

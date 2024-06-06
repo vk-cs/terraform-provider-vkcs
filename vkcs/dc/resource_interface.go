@@ -13,10 +13,15 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dc/v2/interfaces"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 // Ensure the implementation satisfies the desired interfaces.
-var _ resource.Resource = &InterfaceResource{}
+var (
+	_ resource.Resource                = &InterfaceResource{}
+	_ resource.ResourceWithConfigure   = &InterfaceResource{}
+	_ resource.ResourceWithImportState = &InterfaceResource{}
+)
 
 func NewInterfaceResource() resource.Resource {
 	return &InterfaceResource{}
@@ -358,7 +363,9 @@ func (r *InterfaceResource) Delete(ctx context.Context, req resource.DeleteReque
 	id := data.ID.ValueString()
 
 	err = interfaces.Delete(networkingClient, id).ExtractErr()
-	if err != nil {
+	if errutil.IsNotFound(err) {
+		return
+	} else if err != nil {
 		resp.Diagnostics.AddError("Unable to delete resource vkcs_dc_interface", err.Error())
 		return
 	}
