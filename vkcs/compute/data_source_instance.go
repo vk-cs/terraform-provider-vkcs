@@ -251,7 +251,6 @@ func dataSourceComputeInstanceRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	// Populate tags.
-	computeClient.Microversion = computeAPIMicroVersion
 	instanceTags, err := itags.List(computeClient, server.ID).Extract()
 	if err != nil {
 		log.Printf("[DEBUG] Unable to get tags for vkcs_compute_instance: %s", err)

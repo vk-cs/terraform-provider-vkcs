@@ -144,7 +144,6 @@ func ResourceComputeInstance() *schema.Resource {
 			"availability_zone": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         true,
 				Computed:         true,
 				DiffSuppressFunc: suppressAvailabilityZoneDetailDiffs,
 				Description:      "The availability zone in which to create the server. Conflicts with `availability_zone_hints`. Changing this creates a new server.",
@@ -431,7 +430,6 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("Error creating VKCS image client: %s", err)
 	}
 
-	computeClient.Microversion = computeAPIMicroVersion
 	var createOpts servers.CreateOptsBuilder
 	var availabilityZone string
 	var networks interface{}
@@ -711,7 +709,6 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 	}
 
 	// Populate tags.
-	computeClient.Microversion = computeAPIMicroVersion
 	instanceTags, err := itags.List(computeClient, server.ID).Extract()
 	if err != nil {
 		log.Printf("[DEBUG] Unable to get tags for vkcs_compute_instance: %s", err)
@@ -980,7 +977,6 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 	if d.HasChange("tags") {
 		instanceTags := ComputeInstanceUpdateTags(d)
 		instanceTagsOpts := tags.ReplaceAllOpts{Tags: instanceTags}
-		computeClient.Microversion = computeAPIMicroVersion
 		instanceTags, err := tags.ReplaceAll(computeClient, d.Id(), instanceTagsOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error setting tags on vkcs_compute_instance %s: %s", d.Id(), err)
@@ -1127,6 +1123,12 @@ func resourceComputeInstanceCustomizeDiff(ctx context.Context, diff *schema.Reso
 		bds[i] = bd
 	}
 	diff.SetNew("block_device", bds)
+
+	oldState, newState := diff.GetChange("power_state")
+	if !(oldState.(string) == "shelved_offloaded" && newState.(string) == "active" || diff.Get("power_state").(string) == "shelved_offloaded") {
+		diff.ForceNew("availability_zone")
+	}
+
 	return nil
 }
 

@@ -497,6 +497,7 @@ func TestAccComputeInstance_networkModeNone(t *testing.T) {
 
 func TestAccComputeInstance_networkNameToID(t *testing.T) {
 	var instance servers.Server
+	uniqueFields := acctest.GenerateUniqueTestFields(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
@@ -504,11 +505,11 @@ func TestAccComputeInstance_networkNameToID(t *testing.T) {
 		CheckDestroy:      testAccCheckComputeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccComputeInstanceNetworkNameToID),
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceNetworkNameToID, uniqueFields),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
 					resource.TestCheckResourceAttrPair(
-						"vkcs_compute_instance.instance_1", "network.1.uuid", "vkcs_networking_network.network_1", "id"),
+						"vkcs_compute_instance.instance_1", "network.1.uuid", "vkcs_networking_network.network_acc_test", "id"),
 				),
 			},
 		},
@@ -1500,20 +1501,20 @@ const testAccComputeInstanceNetworkNameToID = `
 {{.BaseImage}}
 {{.BaseFlavor}}
 
-resource "vkcs_networking_network" "network_1" {
-  name = "network_1"
+resource "vkcs_networking_network" "network_acc_test" {
+  name = "network_{{.TestName}}_{{.CurrentTime}}"
 }
 
-resource "vkcs_networking_subnet" "subnet_1" {
-  name = "subnet_1"
-  network_id = vkcs_networking_network.network_1.id
+resource "vkcs_networking_subnet" "subnet_acc_test" {
+  name = "subnet_acc_test"
+  network_id = vkcs_networking_network.network_acc_test.id
   cidr = "192.168.1.0/24"
   enable_dhcp = true
   no_gateway = true
 }
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_router_interface.base", "vkcs_networking_subnet.subnet_1"]
+  depends_on = ["vkcs_networking_router_interface.base", "vkcs_networking_subnet.subnet_acc_test"]
 
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
@@ -1524,11 +1525,10 @@ resource "vkcs_compute_instance" "instance_1" {
   }
 
   network {
-    name = vkcs_networking_network.network_1.name
+    name = vkcs_networking_network.network_acc_test.name
   }
   image_id = data.vkcs_images_image.base.id
   flavor_id = data.vkcs_compute_flavor.base.id
-
 }
 `
 
@@ -1709,7 +1709,6 @@ const testAccComputeInstanceStateShelve = `
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
-  availability_zone = "{{.AvailabilityZone}}"
   security_groups = ["default"]
   power_state = "shelved_offloaded"
   network {
