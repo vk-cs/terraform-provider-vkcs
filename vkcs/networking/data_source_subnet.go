@@ -356,5 +356,5 @@ func flattenSubnetDataSourceHostRoutes(_ context.Context, in []subnets.HostRoute
 func expandSubnetDataSourceTags(ctx context.Context, in types.Set, respDiags *diag.Diagnostics) string {
 	var tags []string
 	respDiags.Append(in.ElementsAs(ctx, &tags, true)...)
-	return strings.Join(tags, "")
+	return strings.Join(tags, ",")
 }
