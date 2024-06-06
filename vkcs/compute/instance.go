@@ -25,10 +25,6 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
-const (
-	computeAPIMicroVersion = "2.42"
-)
-
 // InstanceNIC is a structured representation of a Gophercloud servers.Server
 // virtual NIC.
 type InstanceNIC struct {

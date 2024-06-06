@@ -24,6 +24,7 @@ const (
 	maxRetriesCount         = 3
 	requestsMaxRetriesCount = 3
 	requestsRetryDelay      = 1 * time.Second
+	computeAPIMicroVersion  = "2.42"
 )
 
 // Config is interface to work with configer calls
@@ -119,7 +120,14 @@ func (c *configer) GetTenantID() string {
 }
 
 func (c *configer) ComputeV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.ComputeV2Client(region)
+	computeClient, err := c.Config.ComputeV2Client(region)
+	if err != nil {
+		return nil, err
+	}
+
+	computeClient.Microversion = computeAPIMicroVersion
+
+	return computeClient, nil
 }
 
 func (c *configer) ImageV2Client(region string) (*gophercloud.ServiceClient, error) {
