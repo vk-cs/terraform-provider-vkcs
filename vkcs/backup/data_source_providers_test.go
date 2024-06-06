@@ -15,7 +15,7 @@ func TestAccBackupProvidersDataSource_basic(t *testing.T) {
 				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 				Config:                   testAccBackupProvidersDataSourceBasic,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.vkcs_backup_providers.providers", "providers.#", "2"),
+					resource.TestCheckResourceAttr("data.vkcs_backup_providers.providers", "providers.#", "3"),
 				),
 			},
 		},
