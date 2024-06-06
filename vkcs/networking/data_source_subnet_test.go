@@ -10,22 +10,24 @@ import (
 )
 
 func TestAccNetworkingSubnetDataSource_basic(t *testing.T) {
+	uniqueTags := acctest.GenerateUniqueTestFields(t.Name())
+	preRenderBaseConfig := acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceSubnet, uniqueTags)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingSubnetDataSourceSubnet,
+				Config: preRenderBaseConfig,
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceBasic, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
+				Config: acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceBasic, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": preRenderBaseConfig}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
-					testAccCheckNetworkingSubnetDataSourceGoodNetwork("data.vkcs_networking_subnet.subnet_1", "vkcs_networking_network.network_1"),
+					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_acc_test"),
+					testAccCheckNetworkingSubnetDataSourceGoodNetwork("data.vkcs_networking_subnet.subnet_acc_test", "vkcs_networking_network.network_acc_test"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_subnet.subnet_1", "name", "subnet_1"),
+						"data.vkcs_networking_subnet.subnet_acc_test", "name", "subnet_acc_test"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_subnet.subnet_1", "all_tags.#", "2"),
+						"data.vkcs_networking_subnet.subnet_acc_test", "all_tags.#", "2"),
 				),
 			},
 		},
@@ -33,6 +35,8 @@ func TestAccNetworkingSubnetDataSource_basic(t *testing.T) {
 }
 
 func TestAccNetworkingSubnetDataSource_migrateToFramework(t *testing.T) {
+	uniqueTags := acctest.GenerateUniqueTestFields(t.Name())
+	preRenderBaseConfig := acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceSubnet, uniqueTags)
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.AccTestPreCheck(t) },
 		Steps: []resource.TestStep{
@@ -43,19 +47,19 @@ func TestAccNetworkingSubnetDataSource_migrateToFramework(t *testing.T) {
 						Source:            "vk-cs/vkcs",
 					},
 				},
-				Config: acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceBasic, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
+				Config: acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceBasic, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": preRenderBaseConfig}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
-					testAccCheckNetworkingSubnetDataSourceGoodNetwork("data.vkcs_networking_subnet.subnet_1", "vkcs_networking_network.network_1"),
+					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_acc_test"),
+					testAccCheckNetworkingSubnetDataSourceGoodNetwork("data.vkcs_networking_subnet.subnet_acc_test", "vkcs_networking_network.network_acc_test"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_subnet.subnet_1", "name", "subnet_1"),
+						"data.vkcs_networking_subnet.subnet_acc_test", "name", "subnet_acc_test"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_subnet.subnet_1", "all_tags.#", "2"),
+						"data.vkcs_networking_subnet.subnet_acc_test", "all_tags.#", "2"),
 				),
 			},
 			{
 				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
-				Config:                   acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceBasic, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
+				Config:                   acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceBasic, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": preRenderBaseConfig}),
 				PlanOnly:                 true,
 			},
 		},
@@ -63,39 +67,41 @@ func TestAccNetworkingSubnetDataSource_migrateToFramework(t *testing.T) {
 }
 
 func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
+	uniqueTags := acctest.GenerateUniqueTestFields(t.Name())
+	preRenderBaseConfig := acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceSubnet, uniqueTags)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkingSubnetDataSourceSubnet,
+				Config: preRenderBaseConfig,
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceCidr, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
+				Config: acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceCidr, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": preRenderBaseConfig}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
+					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_acc_test"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_subnet.subnet_1", "description", "my subnet description"),
+						"data.vkcs_networking_subnet.subnet_acc_test", "description", "my subnet description"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_subnet.subnet_1", "all_tags.#", "2"),
+						"data.vkcs_networking_subnet.subnet_acc_test", "all_tags.#", "2"),
 				),
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceDhcpEnabled, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
+				Config: acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceDhcpEnabled, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": preRenderBaseConfig}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
+					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_acc_test"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_subnet.subnet_1", "tags.#", "1"),
+						"data.vkcs_networking_subnet.subnet_acc_test", "tags.#", "2"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_subnet.subnet_1", "all_tags.#", "2"),
+						"data.vkcs_networking_subnet.subnet_acc_test", "all_tags.#", "2"),
 				),
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceGatewayIP, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": testAccNetworkingSubnetDataSourceSubnet}),
+				Config: acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceGatewayIP, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": preRenderBaseConfig}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_1"),
+					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_acc_test"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_subnet.subnet_1", "all_tags.#", "2"),
+						"data.vkcs_networking_subnet.subnet_acc_test", "all_tags.#", "2"),
 				),
 			},
 		},
@@ -146,19 +152,23 @@ func testAccCheckNetworkingSubnetDataSourceGoodNetwork(n1, n2 string) resource.T
 }
 
 const testAccNetworkingSubnetDataSourceSubnet = `
-resource "vkcs_networking_network" "network_1" {
-  name = "network_1"
+resource "vkcs_networking_network" "network_acc_test" {
+  name = "network_acc_test"
   admin_state_up = "true"
+  tags = [
+	"{{.TestName}}",
+	"{{.CurrentTime}}",
+  ]
 }
 
-resource "vkcs_networking_subnet" "subnet_1" {
-  name = "subnet_1"
+resource "vkcs_networking_subnet" "subnet_acc_test" {
+  name = "subnet_acc_test"
   description = "my subnet description"
   cidr = "192.168.199.0/24"
-  network_id = vkcs_networking_network.network_1.id
+  network_id = vkcs_networking_network.network_acc_test.id
   tags = [
-    "foo",
-    "bar",
+	"{{.TestName}}",
+	"{{.CurrentTime}}",
   ]
 }
 `
@@ -166,36 +176,36 @@ resource "vkcs_networking_subnet" "subnet_1" {
 const testAccNetworkingSubnetDataSourceBasic = `
 {{.TestAccNetworkingSubnetDataSourceSubnet}}
 
-data "vkcs_networking_subnet" "subnet_1" {
-  name = vkcs_networking_subnet.subnet_1.name
+data "vkcs_networking_subnet" "subnet_acc_test" {
+  name = vkcs_networking_subnet.subnet_acc_test.name
+  tags = vkcs_networking_subnet.subnet_acc_test.tags
 }
 `
 
 const testAccNetworkingSubnetDataSourceCidr = `
 {{.TestAccNetworkingSubnetDataSourceSubnet}}
 
-data "vkcs_networking_subnet" "subnet_1" {
+data "vkcs_networking_subnet" "subnet_acc_test" {
   cidr = "192.168.199.0/24"
-  tags = []
+  tags = vkcs_networking_subnet.subnet_acc_test.tags
 }
 `
 
 const testAccNetworkingSubnetDataSourceDhcpEnabled = `
 {{.TestAccNetworkingSubnetDataSourceSubnet}}
 
-data "vkcs_networking_subnet" "subnet_1" {
-  network_id = vkcs_networking_network.network_1.id
+data "vkcs_networking_subnet" "subnet_acc_test" {
+  network_id = vkcs_networking_network.network_acc_test.id
   dhcp_enabled = true
-  tags = [
-    "bar",
-  ]
+  tags = vkcs_networking_subnet.subnet_acc_test.tags
 }
 `
 
 const testAccNetworkingSubnetDataSourceGatewayIP = `
 {{.TestAccNetworkingSubnetDataSourceSubnet}}
 
-data "vkcs_networking_subnet" "subnet_1" {
-  gateway_ip = vkcs_networking_subnet.subnet_1.gateway_ip
+data "vkcs_networking_subnet" "subnet_acc_test" {
+  gateway_ip = vkcs_networking_subnet.subnet_acc_test.gateway_ip
+  tags = vkcs_networking_subnet.subnet_acc_test.tags
 }
 `

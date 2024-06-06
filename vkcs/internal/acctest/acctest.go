@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 	"text/template"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -194,4 +195,17 @@ func ImportStep(resourceName string) resource.TestStep {
 		ImportState:       true,
 		ImportStateVerify: true,
 	}
+}
+
+func GenerateUniqueTestFields(testName string) map[string]string {
+	t := time.Now()
+	return map[string]string{
+		"TestName":    testName,
+		"CurrentTime": fmt.Sprintf("%dd-%dh-%dm", t.Day(), t.Hour(), t.Minute()),
+	}
+}
+
+func GenerateNameSuffix() string {
+	t := time.Now()
+	return fmt.Sprintf("%dd-%dh-%dm", t.Day(), t.Hour(), t.Minute())
 }
