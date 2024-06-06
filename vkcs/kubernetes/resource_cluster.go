@@ -655,7 +655,7 @@ func resourceKubernetesClusterDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:      []string{string(clusterStatusDeleting), string(clusterStatusDeleted)},
+		Pending:      []string{string(clusterStatusReconciling), string(clusterStatusRunning), string(clusterStatusDeleting), string(clusterStatusDeleted)},
 		Target:       []string{string(clusterStatusNotFound)},
 		Refresh:      kubernetesStateRefreshFunc(client, d.Id()),
 		Timeout:      d.Timeout(schema.TimeoutDelete),

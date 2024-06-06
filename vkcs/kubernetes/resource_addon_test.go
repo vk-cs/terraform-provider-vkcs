@@ -3,6 +3,7 @@ package kubernetes_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -12,9 +13,12 @@ import (
 
 func TestAccKubernetesAddon_basic_big(t *testing.T) {
 	var cluster clusters.Cluster
-
+	uniqueSuffix := acctest.GenerateNameSuffix()
 	baseConfig := acctest.AccTestRenderConfig(testAccKubernetesAddonClusterBase,
-		map[string]string{"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase})
+		map[string]string{"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase,
+			"Suffix":        uniqueSuffix,
+			"NodeGroupName": uniqueKubernetesNodeGroupName(),
+		})
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
@@ -48,8 +52,12 @@ func TestAccKubernetesAddon_basic_big(t *testing.T) {
 
 func TestAccKubernetesAddon_full_big(t *testing.T) {
 	var cluster clusters.Cluster
-
-	baseConfig := acctest.AccTestRenderConfig(testAccKubernetesAddonClusterBase, map[string]string{"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase})
+	uniqueSuffix := acctest.GenerateNameSuffix()
+	baseConfig := acctest.AccTestRenderConfig(testAccKubernetesAddonClusterBase,
+		map[string]string{"TestAccKubernetesAddonNetworkingBase": testAccKubernetesAddonNetworkingBase,
+			"Suffix":        uniqueSuffix,
+			"NodeGroupName": uniqueKubernetesNodeGroupName(),
+		})
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
@@ -95,6 +103,11 @@ func testAccKubernetesAddonImportStateID(s *terraform.State) (string, error) {
 	return "", fmt.Errorf("addon not found")
 }
 
+func uniqueKubernetesNodeGroupName() string {
+	t := time.Now()
+	return fmt.Sprintf("tfacc-default-ng-%dh-%dm", t.Hour(), t.Minute())
+}
+
 const testAccKubernetesAddonNetworkingBase = `
 resource "vkcs_networking_network" "base" {
   name           = "tfacc-base-net"
@@ -132,11 +145,11 @@ data "vkcs_compute_flavor" "base" {
 }
 
 data "vkcs_kubernetes_clustertemplate" "ct" {
-  version = "1.24"
+  version = "1.27"
 }
 
 resource "vkcs_kubernetes_cluster" "cluster" {
-  name                = "tfacc-cluster"
+  name                = "tfacc-cluster-{{.Suffix}}"
   cluster_template_id = data.vkcs_kubernetes_clustertemplate.ct.id
   master_flavor       = data.vkcs_compute_flavor.base.id
   master_count        = 1
@@ -154,7 +167,7 @@ resource "vkcs_kubernetes_cluster" "cluster" {
 
 resource "vkcs_kubernetes_node_group" "default-ng" {
   cluster_id = vkcs_kubernetes_cluster.cluster.id
-  name       = "tfacc-default-ng"
+  name       = "{{.NodeGroupName}}"
   node_count = 1
   max_nodes  = 5
   min_nodes  = 1
@@ -167,7 +180,7 @@ const testAccKubernetesAddonBasic = `
 data "vkcs_kubernetes_addon" "ingress-nginx" {
   cluster_id = vkcs_kubernetes_cluster.cluster.id
   name       = "ingress-nginx"
-  version    = "4.1.4"
+  version    = "4.7.1"
 }
 
 resource "vkcs_kubernetes_addon" "addon" {
@@ -183,7 +196,7 @@ const testAccKubernetesAddonFull = `
 data "vkcs_kubernetes_addon" "ingress-nginx" {
   cluster_id = vkcs_kubernetes_cluster.cluster.id
   name       = "ingress-nginx"
-  version    = "4.1.4"
+  version    = "4.7.1"
 }
 
 resource "vkcs_kubernetes_addon" "addon" {
