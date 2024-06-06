@@ -14,11 +14,14 @@ Manages a VPN service resource within VKCS.
 ```terraform
 resource "vkcs_vpnaas_service" "vpn_to_datacenter" {
   name      = "vpn-tf-example"
+
+  # See the argument description and check vkcs_networks_sdn datasource output to figure out
+  # what type of router you should use in certain case (vkcs_networking_router or vkcs_dc_router)
   router_id = vkcs_networking_router.router.id
 }
 ```
 ## Argument Reference
-- `router_id` **required** *string* &rarr;  The ID of the router. Changing this creates a new service.
+- `router_id` **required** *string* &rarr;  The ID of the router. Use router id for Neutron SDN and dc_router id for sprut SDN. To get a list of available SDNs in a project, you can use `vkcs_networking_sdn` datasource. Changing this creates a new service
 
 - `admin_state_up` optional *boolean* &rarr;  The administrative state of the resource. Can either be up(true) or down(false). Changing this updates the administrative state of the existing service.
 
