@@ -48,7 +48,7 @@ data "vkcs_networking_router" "router" {
 In addition to all arguments above, the following attributes are exported:
 - `all_tags` *set of* *string* &rarr;  The set of string tags applied on the router.
 
-- `external_fixed_ips` *object* &rarr;  List of external gateways of the router.
+- `external_fixed_ips` *object* &rarr;  List of external gateways of the router.<br>**New since v0.7.4**.
 
 - `external_network_id` *string* &rarr;  The network UUID of an external gateway for the router.
 
