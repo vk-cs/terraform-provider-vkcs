@@ -72,7 +72,7 @@ resource "vkcs_vpnaas_site_connection" "connection" {
 
 - `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.<br>**New since v0.5.3**.
 
-- `traffic_selector_ep_merge` optional *boolean* &rarr;  This argument controls whether multiple traffic selection rules for an IPSec site connection should be merged into one rule, or applied independently. When set to "true", this parameter results in single IPsec SA negotiation with multiple IP prefixes, while providing a separate negotiation that results in the multiple IPsec tunnels when set to "false". _<br>**Note:**_ Available only in sprut SDN. Default value is true.
+- `traffic_selector_ep_merge` optional *boolean* &rarr;  This argument controls whether multiple traffic selection rules for an IPSec site connection should be merged into one rule, or applied independently. When set to "true", this parameter results in single IPsec SA negotiation with multiple IP prefixes, while providing a separate negotiation that results in the multiple IPsec tunnels when set to "false". _<br>**Note:**_ Available only in sprut SDN. Default value is true.<br>**New since v0.7.4**.
 
 
 ## Attributes Reference
