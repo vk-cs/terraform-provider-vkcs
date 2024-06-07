@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+### v0.7.5 (unreleased)
+- Added waiting for roles to be assigned to instance when creating a db cluster. 
+
 #### v0.7.4
 - Add vkcs_networking_sdn data source for getting a list of available SDNs.
 - Add traffic_selector_ep_merge argument to vkcs_vpnaas_site_connection resource.
