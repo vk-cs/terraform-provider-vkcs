@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.7.3",
+  "provider_version": "v0.7.4",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -283,8 +283,7 @@
             "type": "TypeString",
             "optional": true,
             "description": "The availability zone in which to create the server. Conflicts with `availability_zone_hints`. Changing this creates a new server.",
-            "computed": true,
-            "force_new": true
+            "computed": true
           },
           "block_device": {
             "type": "TypeList",
@@ -5189,6 +5188,26 @@
             "optional": true,
             "description": "Human-readable description for the router."
           },
+          "external_fixed_ips": {
+            "type": "TypeList",
+            "description": "List of external gateways of the router.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "ip_address": {
+                  "type": "TypeString",
+                  "description": "IP address of the external gateway of a router.",
+                  "computed": true
+                },
+                "subnet_id": {
+                  "type": "TypeString",
+                  "description": "Subnet ID of the external gateway of a router.",
+                  "computed": true
+                }
+              }
+            },
+            "new_since": "v0.7.4"
+          },
           "external_network_id": {
             "type": "TypeString",
             "optional": true,
@@ -6077,7 +6096,7 @@
           "type": {
             "type": "TypeString",
             "optional": true,
-            "description": "The type of the endpoints in the group. A valid value is subnet, cidr, network, router, or vlan. Changing this creates a new group.",
+            "description": "The type of the endpoints in the group. A valid value is `subnet` and `cidr`. For sprut SDN only `cidr` can be used, for neutron SDN - `cidr` for remote group, `subnet` for local. Changing this creates a new group.",
             "computed": true,
             "force_new": true
           }
@@ -6297,7 +6316,7 @@
           "router_id": {
             "type": "TypeString",
             "required": true,
-            "description": "The ID of the router. Changing this creates a new service.",
+            "description": "The ID of the router. Use router id for Neutron SDN and dc_router id for sprut SDN. To get a list of available SDNs in a project, you can use `vkcs_networking_sdn` datasource. Changing this creates a new service",
             "force_new": true
           },
           "sdn": {
@@ -6449,6 +6468,13 @@
             "computed": true,
             "force_new": true,
             "new_since": "v0.5.3"
+          },
+          "traffic_selector_ep_merge": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "This argument controls whether multiple traffic selection rules for an IPSec site connection should be merged into one rule, or applied independently. When set to \"true\", this parameter results in single IPsec SA negotiation with multiple IP prefixes, while providing a separate negotiation that results in the multiple IPsec tunnels when set to \"false\". __note__ Available only in sprut SDN. Default value is true.",
+            "computed": true,
+            "new_since": "v0.7.4"
           },
           "vpnservice_id": {
             "type": "TypeString",
@@ -9375,6 +9401,26 @@
             "description": "The value that points out if the Source NAT is enabled on the router.",
             "computed": true
           },
+          "external_fixed_ips": {
+            "type": "TypeList",
+            "description": "List of external gateways of the router.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "ip_address": {
+                  "type": "TypeString",
+                  "description": "IP address of the external gateway of a router.",
+                  "computed": true
+                },
+                "subnet_id": {
+                  "type": "TypeString",
+                  "description": "Subnet ID of the external gateway of a router.",
+                  "computed": true
+                }
+              }
+            },
+            "new_since": "v0.7.4"
+          },
           "external_network_id": {
             "type": "TypeString",
             "description": "The network UUID of an external gateway for the router.",
@@ -9425,6 +9471,20 @@
           }
         },
         "description": "Use this data source to get the ID of an available VKCS router."
+      },
+      "vkcs_networking_sdn": {
+        "schema": {
+          "sdn": {
+            "type": "TypeList",
+            "description": "Names of available VKCS SDNs in the current project.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          }
+        },
+        "description": "Use this data source to get a list of available VKCS SDNs in the current project. The first SDN is default. You do not have to specify default sdn argument in resources and datasources. You may specify non default SDN only for root resources such as `vkcs_networking_router`, `vkcs_networking_network`, `vkcs_networking_secgroup` (they do not depend on any other resource/datasource with sdn argument).",
+        "new_since": "v0.7.4"
       },
       "vkcs_networking_secgroup": {
         "schema": {

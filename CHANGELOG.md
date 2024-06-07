@@ -7,7 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.7.4 (unreleased)
+#### v0.7.4
 - Add vkcs_networking_sdn data source for getting a list of available SDNs.
 - Add traffic_selector_ep_merge argument to vkcs_vpnaas_site_connection resource.
 - Add external_fixed_ips computed field to vkcs_networking_router resource and data source.
