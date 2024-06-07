@@ -14,7 +14,7 @@ Use this data source to get the ID of an available VKCS kubernetes cluster templ
 
 ```terraform
 data "vkcs_kubernetes_clustertemplate" "k8s_24" {
-  version = "1.24"
+  version = "1.27"
 }
 ```
 ## Argument Reference
