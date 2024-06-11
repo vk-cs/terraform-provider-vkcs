@@ -699,7 +699,7 @@ func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterI
 			}
 		}
 
-		if util.IsOperationNotSupported(c.DataStore.Type, Postgres, PostgresProEnterprise, PostgresProEnterprise1C, Galera, Tarantool) {
+		if util.StrSliceContains(getClusterDatastores(), c.DataStore.Type) {
 			for _, instance := range c.Instances {
 				if instance.Role == "unknown" {
 					return c, string(dbClusterStatusBuild), nil
