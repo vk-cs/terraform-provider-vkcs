@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.7.4",
+  "provider_version": "v0.8.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -2236,6 +2236,65 @@
         "description": "Manages a direct connect BGP Static Announce resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
       },
+      "vkcs_dc_conntrack_helper": {
+        "schema": {
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "dc_router_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Direct Connect Router ID. Changing this creates a new resource"
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the conntrack helper",
+            "computed": true
+          },
+          "helper": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Helper type. Must be one of: \"ftp\"."
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the conntrack helper",
+            "computed": true
+          },
+          "port": {
+            "type": "TypeInt",
+            "required": true,
+            "description": "Network port for conntrack target rule."
+          },
+          "protocol": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Protocol. Must be one of: \"tcp\"."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Update timestamp",
+            "computed": true
+          }
+        },
+        "description": "Manages a direct connect conntrack helper resource._note_ This resource requires Sprut SDN to be enabled in your project.",
+        "new_since": "v0.8.0"
+      },
       "vkcs_dc_interface": {
         "schema": {
           "bgp_announce_enabled": {
@@ -2327,6 +2386,80 @@
         },
         "description": "Manages a direct connect interface resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
+      },
+      "vkcs_dc_ip_port_forwarding": {
+        "schema": {
+          "created_at": {
+            "type": "TypeString",
+            "description": "Creation timestamp",
+            "computed": true
+          },
+          "dc_interface_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Direct Connect Interface ID. Changing this creates a new resource"
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the conntrack helper",
+            "computed": true
+          },
+          "destination": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Destination address selector."
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the conntrack helper",
+            "computed": true
+          },
+          "port": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "Port selector."
+          },
+          "protocol": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Protocol. Must be one of: \"tcp\", \"udp\", \"any\"."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "computed": true
+          },
+          "source": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Source address selector."
+          },
+          "to_destination": {
+            "type": "TypeString",
+            "required": true,
+            "description": "IP Address of forwarding's destination."
+          },
+          "to_port": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "Destination port selector."
+          },
+          "updated_at": {
+            "type": "TypeString",
+            "description": "Update timestamp",
+            "computed": true
+          }
+        },
+        "description": "Manages a direct connect ip port forwarding resource._note_ This resource requires Sprut SDN to be enabled in your project.",
+        "new_since": "v0.8.0"
       },
       "vkcs_dc_router": {
         "schema": {
@@ -4939,11 +5072,12 @@
           },
           "all_security_group_ids": {
             "type": "TypeSet",
-            "description": "The collection of Security Group IDs on the port which have been explicitly and implicitly added.",
+            "description": "The collection of security group IDs on the port which have been explicitly and implicitly added.",
             "computed": true,
             "elem": {
               "type": "TypeString"
-            }
+            },
+            "deprecated": "Use `security_group_ids` together with `full_security_groups_control = true` instead."
           },
           "all_tags": {
             "type": "TypeSet",
@@ -5043,6 +5177,13 @@
               }
             }
           },
+          "full_security_groups_control": {
+            "type": "TypeBool",
+            "optional": true,
+            "default": false,
+            "description": "Always set this argument to `true`. It brings consistent behavior of managing of security groups of the port. See description of `security_group_ids` argument. _note_ This argument is introduced to seamless migration to the consistent behavior and will get `true` by default in new major version of the provider.",
+            "new_since": "v0.8.0"
+          },
           "mac_address": {
             "type": "TypeString",
             "optional": true,
@@ -5069,7 +5210,8 @@
           "no_security_groups": {
             "type": "TypeBool",
             "optional": true,
-            "description": "(Conflicts with `security_group_ids`) If set to `true`, then no security groups are applied to the port. If set to `false` and no `security_group_ids` are specified, then the port will yield to the default behavior of the Networking service, which is to usually apply the \"default\" security group."
+            "description": "If set to `true`, then no security groups are applied to the port. If set to `false` and no `security_group_ids` are specified, then the port will yield to the default behavior of the Networking service, which is to usually apply the \"default\" security group.",
+            "deprecated": "Configure `full_security_groups_control = true` and `security_group_ids = []` instead."
           },
           "port_security_enabled": {
             "type": "TypeBool",
@@ -5094,7 +5236,8 @@
           "security_group_ids": {
             "type": "TypeSet",
             "optional": true,
-            "description": "(Conflicts with `no_security_groups`) A list of security group IDs to apply to the port. The security groups must be specified by ID and not name (as opposed to how they are configured with the Compute Instance).",
+            "description": "A list of security group IDs to apply to the port. The security groups must be specified by ID and not name. If the list is empty then no one security group is attached to the port. If the argument is absent then `vkcs_networking_port` resource does not control security groups of the port and just reads them from Networking service. The last case yields to the default behavior of the Networking service, which adds the \"default\" security group. _note_ This behavior is actual with `full_security_groups_control` = true only and introduced in 0.8.0 version of the provider. Legacy behavior is still supported but deprecated and too confusing to be described.",
+            "computed": true,
             "elem": {
               "type": "TypeString"
             }
