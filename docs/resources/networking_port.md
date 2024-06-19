@@ -27,6 +27,8 @@ resource "vkcs_networking_port" "persistent_etcd" {
   fixed_ip {
     subnet_id = vkcs_networking_subnet.db.id
   }
+  # Set this argument to true always
+  full_security_groups_control = true
   # Specify required security groups instead of getting 'default' one
   security_group_ids = [vkcs_networking_secgroup.etcd.id]
   tags               = ["tf-example", "etcd"]
@@ -61,13 +63,15 @@ resource "vkcs_networking_port" "persistent_etcd" {
 
   - `ip_address` optional *string* &rarr;  IP address desired in the subnet for this port. If you don't specify `ip_address`, an available IP address from the specified subnet will be allocated to this port. This field will not be populated if it is left blank or omitted. To retrieve the assigned IP address, use the `all_fixed_ips` attribute.
 
+- `full_security_groups_control` optional *boolean* &rarr;  Always set this argument to `true`. It brings consistent behavior of managing of security groups of the port. See description of `security_group_ids` argument. <br>**Note:** This argument is introduced to seamless migration to the consistent behavior and will get `true` by default in new major version of the provider.
+
 - `mac_address` optional *string* &rarr;  Specify a specific MAC address for the port. Changing this creates a new port.
 
 - `name` optional *string* &rarr;  A unique name for the port. Changing this updates the `name` of an existing port.
 
 - `no_fixed_ip` optional *boolean* &rarr;  (Conflicts with `fixed_ip`) Create a port with no fixed IP address. This will also remove any fixed IPs previously set on a port. `true` is the only valid value for this argument.
 
-- `no_security_groups` optional *boolean* &rarr;  (Conflicts with `security_group_ids`) If set to `true`, then no security groups are applied to the port. If set to `false` and no `security_group_ids` are specified, then the port will yield to the default behavior of the Networking service, which is to usually apply the "default" security group.
+- `no_security_groups` optional deprecated *boolean* &rarr;  If set to `true`, then no security groups are applied to the port. If set to `false` and no `security_group_ids` are specified, then the port will yield to the default behavior of the Networking service, which is to usually apply the "default" security group. **Deprecated** Configure `full_security_groups_control = true` and `security_group_ids = []` instead.
 
 - `port_security_enabled` optional *boolean* &rarr;  Whether to explicitly enable or disable port security on the port. Port Security is usually enabled by default, so omitting argument will usually result in a value of `true`. Setting this explicitly to `false` will disable port security. In order to disable port security, the port must not have any security groups. Valid values are `true` and `false`.
 
@@ -75,7 +79,7 @@ resource "vkcs_networking_port" "persistent_etcd" {
 
 - `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
-- `security_group_ids` optional *set of* *string* &rarr;  (Conflicts with `no_security_groups`) A list of security group IDs to apply to the port. The security groups must be specified by ID and not name (as opposed to how they are configured with the Compute Instance).
+- `security_group_ids` optional *set of* *string* &rarr;  A list of security group IDs to apply to the port. The security groups must be specified by ID and not name. If the list is empty then no one security group is attached to the port. If the argument is absent then `vkcs_networking_port` resource does not control security groups of the port and just reads them from Networking service. The last case yields to the default behavior of the Networking service, which adds the "default" security group. <br>**Note:** This behavior is actual with `full_security_groups_control` = true only and introduced in 0.8.0 version of the provider. Legacy behavior is still supported but deprecated and too confusing to be described.
 
 - `tags` optional *set of* *string* &rarr;  A set of string tags for the port.
 
@@ -86,7 +90,7 @@ resource "vkcs_networking_port" "persistent_etcd" {
 In addition to all arguments above, the following attributes are exported:
 - `all_fixed_ips` *string* &rarr;  The collection of Fixed IP addresses on the port in the order returned by the Network v2 API.
 
-- `all_security_group_ids` *set of* *string* &rarr;  The collection of Security Group IDs on the port which have been explicitly and implicitly added.
+- `all_security_group_ids` *set of* *string* &rarr;  The collection of security group IDs on the port which have been explicitly and implicitly added. **Deprecated** Use `security_group_ids` together with `full_security_groups_control = true` instead.
 
 - `all_tags` *set of* *string* &rarr;  The collection of tags assigned on the port, which have been explicitly and implicitly added.
 
