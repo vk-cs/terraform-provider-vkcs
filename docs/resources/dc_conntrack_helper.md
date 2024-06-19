@@ -12,6 +12,8 @@ Manages a direct connect conntrack helper resource.
 
 ~> **Note:** This resource requires Sprut SDN to be enabled in your project.
 
+**New since v0.8.0**.
+
 ## Example Usage
 ```terraform
 resource "vkcs_dc_conntrack_helper" "dc-conntrack-helper" {

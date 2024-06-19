@@ -7,7 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.8.0 (unreleased)
+#### v0.8.0
 - Add vkcs_dc_conntrack_helper resource
 - Add vkcs_dc_ip_port_forwarding resource
 - Add full_security_groups_control argument to vkcs_networking_port resource.

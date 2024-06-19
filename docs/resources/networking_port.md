@@ -63,7 +63,7 @@ resource "vkcs_networking_port" "persistent_etcd" {
 
   - `ip_address` optional *string* &rarr;  IP address desired in the subnet for this port. If you don't specify `ip_address`, an available IP address from the specified subnet will be allocated to this port. This field will not be populated if it is left blank or omitted. To retrieve the assigned IP address, use the `all_fixed_ips` attribute.
 
-- `full_security_groups_control` optional *boolean* &rarr;  Always set this argument to `true`. It brings consistent behavior of managing of security groups of the port. See description of `security_group_ids` argument. <br>**Note:** This argument is introduced to seamless migration to the consistent behavior and will get `true` by default in new major version of the provider.
+- `full_security_groups_control` optional *boolean* &rarr;  Always set this argument to `true`. It brings consistent behavior of managing of security groups of the port. See description of `security_group_ids` argument. <br>**Note:** This argument is introduced to seamless migration to the consistent behavior and will get `true` by default in new major version of the provider.<br>**New since v0.8.0**.
 
 - `mac_address` optional *string* &rarr;  Specify a specific MAC address for the port. Changing this creates a new port.
 
