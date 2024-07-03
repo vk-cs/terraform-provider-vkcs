@@ -20,54 +20,63 @@ func DataSourceNetworkingFloatingIP() *schema.Resource {
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The region in which to obtain the Network client. A Network client is needed to retrieve floating IP ids. If omitted, the `region` argument of the provider is used.",
 			},
 
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Human-readable description of the floating IP.",
 			},
 
 			"address": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The IP address of the floating IP.",
 			},
 
 			"pool": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The name of the pool from which the floating IP belongs to.",
 			},
 
 			"port_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The ID of the port the floating IP is attached.",
 			},
 
 			"tenant_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The owner of the floating IP.",
 			},
 
 			"fixed_ip": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The specific IP address of the internal port which should be associated with the floating IP.",
 			},
 
 			"status": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Status of the floating IP (ACTIVE/DOWN).",
 			},
 
 			"sdn": {
 				Type:             schema.TypeString,
 				Optional:         true,
+				Computed:         true,
 				ValidateDiagFunc: ValidateSDN(),
 				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
@@ -104,7 +113,15 @@ func dataSourceNetworkingFloatingIPRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	if v, ok := d.GetOk("pool"); ok {
-		listOpts.FloatingNetworkID = v.(string)
+		poolName := v.(string)
+		poolID, err := networkingNetworkID(d, meta, poolName)
+		if err != nil {
+			return diag.Errorf("Error retrieving ID for vkcs_networking_floatingip pool %q: %s", poolName, err)
+		}
+		if poolID == "" {
+			return diag.Errorf("Unable to find network with name %q", poolName)
+		}
+		listOpts.FloatingNetworkID = poolID
 	}
 
 	if v, ok := d.GetOk("port_id"); ok {

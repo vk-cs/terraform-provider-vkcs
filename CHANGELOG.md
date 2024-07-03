@@ -10,6 +10,7 @@ description: |-
 #### v0.8.1 (unreleased)
 - Add "k8s_config" attribute to vkcs_kubernetes_cluster resource
 - Fix order-induced changes in the plan for "allowed_cidrs" of the vkcs_lb_listener resource
+- Fix an error when filtering by pool name in the vkcs_networking_floatingip data source in SDN Sprut
 
 #### v0.8.0
 - Add vkcs_dc_conntrack_helper resource
