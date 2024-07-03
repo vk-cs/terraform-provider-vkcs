@@ -148,9 +148,11 @@ func ResourceListener() *schema.Resource {
 			},
 
 			"allowed_cidrs": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
 				Description: "A list of CIDR blocks that are permitted to connect to this listener, denying all other source addresses. If not present, defaults to allow all.",
 			},
 		},
@@ -230,10 +232,7 @@ func resourceListenerCreate(ctx context.Context, d *schema.ResourceData, meta in
 	opts.InsertHeaders = headers
 
 	if raw, ok := d.GetOk("allowed_cidrs"); ok {
-		allowedCidrs := make([]string, len(raw.([]interface{})))
-		for i, v := range raw.([]interface{}) {
-			allowedCidrs[i] = v.(string)
-		}
+		allowedCidrs := util.ExpandToStringSlice(raw.(*schema.Set).List())
 		opts.AllowedCIDRs = allowedCidrs
 	}
 
@@ -416,9 +415,7 @@ func resourceListenerUpdate(ctx context.Context, d *schema.ResourceData, meta in
 		hasChange = true
 		var allowedCidrs []string
 		if raw, ok := d.GetOk("allowed_cidrs"); ok {
-			for _, v := range raw.([]interface{}) {
-				allowedCidrs = append(allowedCidrs, v.(string))
-			}
+			allowedCidrs = util.ExpandToStringSlice(raw.(*schema.Set).List())
 		}
 		opts.AllowedCIDRs = &allowedCidrs
 	}
