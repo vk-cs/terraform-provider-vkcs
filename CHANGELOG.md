@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.8.1 (unreleased)
+- Fix an error when filtering by pool name in the vkcs_networking_floatingip data source in SDN Sprut
 
 #### v0.8.0
 - Add vkcs_dc_conntrack_helper resource
