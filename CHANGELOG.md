@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.8.1 (unreleased)
+- Add "k8s_config" attribute to vkcs_kubernetes_cluster resource
 - Fix order-induced changes in the plan for "allowed_cidrs" of the vkcs_lb_listener resource
 
 #### v0.8.0
