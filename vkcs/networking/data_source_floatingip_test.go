@@ -9,18 +9,20 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
-func TestAccNetworkingFloatingIPV2DataSource_address(t *testing.T) {
+func TestAccNetworkingFloatingIPDataSource_address(t *testing.T) {
+	baseConfig := acctest.AccTestRenderConfig(testAccNetworkingFloatingIPDataSourceBase)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
 		ProviderFactories: acctest.AccTestProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccNetworkingFloatingIPV2DataSourceFloatingIP),
+				Config: baseConfig,
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccNetworkingFloatingIPV2DataSourceAddress, map[string]string{"TestAccNetworkingFloatingIPV2DataSourceFloatingIP": acctest.AccTestRenderConfig(testAccNetworkingFloatingIPV2DataSourceFloatingIP)}),
+				Config: acctest.AccTestRenderConfig(testAccNetworkingFloatingIPDataSourceAddress, map[string]string{"TestAccNetworkingFloatingIPDataSourceFloatingIPBase": baseConfig}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingFloatingIPV2DataSourceID("data.vkcs_networking_floatingip.fip_1"),
+					testAccCheckNetworkingFloatingIPDataSourceID("data.vkcs_networking_floatingip.fip_1"),
 					resource.TestCheckResourceAttrSet(
 						"data.vkcs_networking_floatingip.fip_1", "address"),
 					resource.TestCheckResourceAttrSet(
@@ -35,7 +37,7 @@ func TestAccNetworkingFloatingIPV2DataSource_address(t *testing.T) {
 	})
 }
 
-func testAccCheckNetworkingFloatingIPV2DataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckNetworkingFloatingIPDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -50,18 +52,17 @@ func testAccCheckNetworkingFloatingIPV2DataSourceID(n string) resource.TestCheck
 	}
 }
 
-const testAccNetworkingFloatingIPV2DataSourceFloatingIP = `
+const testAccNetworkingFloatingIPDataSourceBase = `
 resource "vkcs_networking_floatingip" "fip_1" {
-  pool = "{{.ExtNetName}}"
-  description = "test fip"
+  pool        = "{{ .ExtNetName }}"
+  description = "tfacc-fip"
 }
 `
 
-const testAccNetworkingFloatingIPV2DataSourceAddress = `
-{{.TestAccNetworkingFloatingIPV2DataSourceFloatingIP}}
+const testAccNetworkingFloatingIPDataSourceAddress = `
+{{ .TestAccNetworkingFloatingIPDataSourceFloatingIPBase }}
 
 data "vkcs_networking_floatingip" "fip_1" {
   address = vkcs_networking_floatingip.fip_1.address
-  description = "test fip"
 }
 `
