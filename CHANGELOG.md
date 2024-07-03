@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.8.1 (unreleased)
+- Fix order-induced changes in the plan for "allowed_cidrs" of the vkcs_lb_listener resource
 
 #### v0.8.0
 - Add vkcs_dc_conntrack_helper resource
