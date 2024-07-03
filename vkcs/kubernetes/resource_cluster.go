@@ -245,6 +245,11 @@ func ResourceKubernetesCluster() *schema.Resource {
 				ForceNew:    true,
 				Description: "Availability zone of the cluster.",
 			},
+			"k8s_config": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Contents of the kubeconfig file. Use it to authenticate to Kubernetes cluster.",
+			},
 			"insecure_registries": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -386,6 +391,14 @@ func resourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("insecure_registries", cluster.InsecureRegistries)
 	d.Set("dns_domain", cluster.DNSDomain)
 	d.Set("sync_security_policy", cluster.SecurityPolicySyncEnabled)
+
+	k8sConfig, err := clusters.KubeConfigGet(containerInfraClient, cluster.UUID)
+	if err != nil {
+		log.Printf("[DEBUG] Unable to get k8s config for cluster %s: %s", cluster.UUID, err)
+		d.Set("k8s_config", "error")
+	} else {
+		d.Set("k8s_config", k8sConfig)
+	}
 
 	// Allow to read old api clusters
 	if cluster.NetworkID != "" {
