@@ -101,6 +101,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` *string* &rarr;  ID of the resource.
 
+- `k8s_config` *string* &rarr;  Contents of the kubeconfig file. Use it to authenticate to Kubernetes cluster.
+
 - `master_addresses` *string* &rarr;  IP addresses of the master node of the cluster.
 
 - `project_id` *string* &rarr;  The project of the cluster.

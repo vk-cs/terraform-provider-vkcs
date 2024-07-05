@@ -42,7 +42,7 @@ resource "vkcs_lb_listener" "app_terminated_https" {
 
 - `admin_state_up` optional *boolean* &rarr;  The administrative state of the Listener. A valid value is true (UP) or false (DOWN).
 
-- `allowed_cidrs` optional *string* &rarr;  A list of CIDR blocks that are permitted to connect to this listener, denying all other source addresses. If not present, defaults to allow all.
+- `allowed_cidrs` optional *set of* *string* &rarr;  A list of CIDR blocks that are permitted to connect to this listener, denying all other source addresses. If not present, defaults to allow all.
 
 - `connection_limit` optional *number* &rarr;  The maximum number of connections allowed for the Listener.
 
