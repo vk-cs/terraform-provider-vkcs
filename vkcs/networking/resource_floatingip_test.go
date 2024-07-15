@@ -210,6 +210,9 @@ resource "vkcs_networking_floatingip" "fip_1" {
   description = "test"
   port_id = vkcs_networking_port.port_1.id
   fixed_ip = vkcs_networking_port.port_1.fixed_ip.1.ip_address
+  depends_on = [
+	vkcs_networking_router_interface.router_interface_1,
+  ]
 }
 `
 
@@ -256,6 +259,9 @@ resource "vkcs_networking_floatingip" "fip_1" {
   pool = "{{.ExtNetName}}"
   port_id = vkcs_networking_port.port_1.id
   fixed_ip = vkcs_networking_port.port_1.fixed_ip.0.ip_address
+  depends_on = [
+	vkcs_networking_router_interface.router_interface_1,
+  ]
 }
 `
 
