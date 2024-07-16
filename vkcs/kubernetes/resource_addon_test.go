@@ -105,7 +105,7 @@ func testAccKubernetesAddonImportStateID(s *terraform.State) (string, error) {
 
 func uniqueKubernetesNodeGroupName() string {
 	t := time.Now()
-	return fmt.Sprintf("tfacc-default-ng-%dh-%dm", t.Hour(), t.Minute())
+	return fmt.Sprintf("tfacc-def-ng-%dh-%dm", t.Hour(), t.Minute())
 }
 
 const testAccKubernetesAddonNetworkingBase = `
@@ -149,7 +149,7 @@ data "vkcs_kubernetes_clustertemplate" "ct" {
 }
 
 resource "vkcs_kubernetes_cluster" "cluster" {
-  name                = "tfacc-cluster-{{.Suffix}}"
+  name                = "tfacc-cls-{{.Suffix}}"
   cluster_template_id = data.vkcs_kubernetes_clustertemplate.ct.id
   master_flavor       = data.vkcs_compute_flavor.base.id
   master_count        = 1
