@@ -1,7 +1,6 @@
 package routers
 
 import (
-	"context"
 	"errors"
 	"log"
 	"time"
@@ -28,18 +27,6 @@ func (opts RouterCreateOpts) ToRouterCreateMap() (map[string]interface{}, error)
 const creationRetriesNum = 3
 const creationRetryDelay = 3 * time.Second
 
-func RetryNetworkingRouterCreation(_ context.Context, _ string, _ string, _ *gophercloud.RequestOpts, err error, failCount uint) error {
-	if failCount >= creationRetriesNum {
-		return err
-	}
-
-	if needRetryOnNetworkingRouterCreationError(err) {
-		return nil
-	}
-
-	return err
-}
-
 func needRetryOnNetworkingRouterCreationError(err error) bool {
 	if errutil.IsNotFound(err) {
 		return true
@@ -64,11 +51,30 @@ func needRetryOnNetworkingRouterCreationError(err error) bool {
 	return false
 }
 
-func Create(c *gophercloud.ServiceClient, opts routers.CreateOptsBuilder) routers.CreateResult {
-	c.RetryFunc = RetryNetworkingRouterCreation
-	r := routers.Create(c, opts)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
-	return r
+func CreateWithRetry(c *gophercloud.ServiceClient, opts routers.CreateOptsBuilder) routers.CreateResult {
+	timer := time.NewTimer(time.Nanosecond)
+	defer timer.Stop()
+	for i := 0; i < creationRetriesNum; {
+		select {
+		case <-timer.C:
+			r := routers.Create(c, opts)
+			if r.Err == nil {
+				return r
+			}
+			if !needRetryOnNetworkingRouterCreationError(r.Err) {
+				r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+				return r
+			}
+			timer.Reset(creationRetryDelay)
+			i++
+		case <-c.Context.Done():
+			res := routers.CreateResult{}
+			res.Err = gophercloud.ErrTimeOut{}
+			return res
+		}
+	}
+
+	return routers.CreateResult{}
 }
 
 func Get(c *gophercloud.ServiceClient, id string) routers.GetResult {

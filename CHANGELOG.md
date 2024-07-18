@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.8.2 (unreleased)
+- Add retry on duplicate IpamAllocation error when creating a networking router
 - Stabilize vkcs_kubernetes_nodegroup creation
 
 #### v0.8.1
