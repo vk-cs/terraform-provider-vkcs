@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.8.0",
+  "provider_version": "v0.8.1",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -3351,6 +3351,12 @@
               "type": "TypeString"
             }
           },
+          "k8s_config": {
+            "type": "TypeString",
+            "description": "Contents of the kubeconfig file. Use it to authenticate to Kubernetes cluster.",
+            "computed": true,
+            "new_since": "v0.8.1"
+          },
           "keypair": {
             "type": "TypeString",
             "optional": true,
@@ -3800,9 +3806,10 @@
             "description": "The administrative state of the Listener. A valid value is true (UP) or false (DOWN)."
           },
           "allowed_cidrs": {
-            "type": "TypeList",
+            "type": "TypeSet",
             "optional": true,
             "description": "A list of CIDR blocks that are permitted to connect to this listener, denying all other source addresses. If not present, defaults to allow all.",
+            "computed": true,
             "elem": {
               "type": "TypeString"
             }
@@ -9183,17 +9190,20 @@
           "address": {
             "type": "TypeString",
             "optional": true,
-            "description": "The IP address of the floating IP."
+            "description": "The IP address of the floating IP.",
+            "computed": true
           },
           "description": {
             "type": "TypeString",
             "optional": true,
-            "description": "Human-readable description of the floating IP."
+            "description": "Human-readable description of the floating IP.",
+            "computed": true
           },
           "fixed_ip": {
             "type": "TypeString",
             "optional": true,
-            "description": "The specific IP address of the internal port which should be associated with the floating IP."
+            "description": "The specific IP address of the internal port which should be associated with the floating IP.",
+            "computed": true
           },
           "id": {
             "type": "TypeString",
@@ -9203,32 +9213,38 @@
           "pool": {
             "type": "TypeString",
             "optional": true,
-            "description": "The name of the pool from which the floating IP belongs to."
+            "description": "The name of the pool from which the floating IP belongs to.",
+            "computed": true
           },
           "port_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The ID of the port the floating IP is attached."
+            "description": "The ID of the port the floating IP is attached.",
+            "computed": true
           },
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The region in which to obtain the Network client. A Network client is needed to retrieve floating IP ids. If omitted, the `region` argument of the provider is used."
+            "description": "The region in which to obtain the Network client. A Network client is needed to retrieve floating IP ids. If omitted, the `region` argument of the provider is used.",
+            "computed": true
           },
           "sdn": {
             "type": "TypeString",
             "optional": true,
-            "description": "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN."
+            "description": "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
+            "computed": true
           },
           "status": {
             "type": "TypeString",
             "optional": true,
-            "description": "Status of the floating IP (ACTIVE/DOWN)."
+            "description": "Status of the floating IP (ACTIVE/DOWN).",
+            "computed": true
           },
           "tenant_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The owner of the floating IP."
+            "description": "The owner of the floating IP.",
+            "computed": true
           }
         },
         "description": "Use this data source to get the ID of an available VKCS floating IP."
