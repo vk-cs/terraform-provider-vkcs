@@ -52,6 +52,10 @@ func needRetryOnNetworkingRouterCreationError(err error) bool {
 }
 
 func CreateWithRetry(c *gophercloud.ServiceClient, opts routers.CreateOptsBuilder) routers.CreateResult {
+	done := make(<-chan struct{})
+	if c.Context != nil {
+		done = c.Context.Done()
+	}
 	timer := time.NewTimer(time.Nanosecond)
 	defer timer.Stop()
 	for i := 0; i < creationRetriesNum; {
@@ -67,7 +71,7 @@ func CreateWithRetry(c *gophercloud.ServiceClient, opts routers.CreateOptsBuilde
 			}
 			timer.Reset(creationRetryDelay)
 			i++
-		case <-c.Context.Done():
+		case <-done:
 			res := routers.CreateResult{}
 			res.Err = gophercloud.ErrTimeOut{}
 			return res
