@@ -1,9 +1,16 @@
 package routers
 
 import (
+	"context"
+	"errors"
+	"log"
+	"time"
+
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
+	inetworking "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 // RouterCreateOpts represents the attributes used when creating a new router.
@@ -18,7 +25,47 @@ func (opts RouterCreateOpts) ToRouterCreateMap() (map[string]interface{}, error)
 	return util.BuildRequest(opts, "router")
 }
 
+const creationRetriesNum = 3
+const creationRetryDelay = 3 * time.Second
+
+func RetryNetworkingRouterCreation(_ context.Context, _ string, _ string, _ *gophercloud.RequestOpts, err error, failCount uint) error {
+	if failCount >= creationRetriesNum {
+		return err
+	}
+
+	if needRetryOnNetworkingRouterCreationError(err) {
+		return nil
+	}
+
+	return err
+}
+
+func needRetryOnNetworkingRouterCreationError(err error) bool {
+	if errutil.IsNotFound(err) {
+		return true
+	}
+
+	var http409Err gophercloud.ErrDefault409
+
+	if errors.As(err, &http409Err) {
+		neutronError, decodeErr := inetworking.DecodeNeutronError(http409Err.ErrUnexpectedResponseCode.Body)
+		if decodeErr != nil {
+			log.Printf("[DEBUG] failed to decode a neutron error: %s", decodeErr)
+			return false
+		}
+		if neutronError.Type == "NeutronDbObjectDuplicateEntry" {
+			time.Sleep(creationRetryDelay)
+			return true
+		}
+
+		return false
+	}
+
+	return false
+}
+
 func Create(c *gophercloud.ServiceClient, opts routers.CreateOptsBuilder) routers.CreateResult {
+	c.RetryFunc = RetryNetworkingRouterCreation
 	r := routers.Create(c, opts)
 	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return r

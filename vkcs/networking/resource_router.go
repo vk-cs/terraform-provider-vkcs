@@ -193,7 +193,6 @@ func resourceNetworkingRouterCreate(ctx context.Context, d *schema.ResourceData,
 	var r *routers.Router
 	log.Printf("[DEBUG] vkcs_networking_router create options: %#v", createOpts)
 
-	// router creation without a retry
 	r, err = irouters.Create(networkingClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_networking_router: %s", err)

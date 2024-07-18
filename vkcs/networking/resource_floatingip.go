@@ -2,8 +2,12 @@ package networking
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
+
+	"github.com/gophercloud/gophercloud"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -172,7 +176,7 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 
 			err = ifloatingips.Create(networkingClient, finalCreateOpts).ExtractInto(&fip)
 			if err != nil {
-				if retryOn409(err) {
+				if needRetryOnFloatingIPCreationError(err) {
 					continue
 				}
 				return diag.Errorf("Error creating vkcs_networking_floatingip: %s", err)
@@ -209,6 +213,47 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 
 	log.Printf("[DEBUG] Created vkcs_networking_floatingip %s: %#v", fip.ID, fip)
 	return resourceNetworkFloatingIPRead(ctx, d, meta)
+}
+
+func needRetryOnFloatingIPCreationError(err error) bool {
+	if errutil.IsNotFound(err) {
+		return true
+	}
+
+	var http409Err gophercloud.ErrDefault409
+	var http400Err gophercloud.ErrDefault400
+
+	if errors.As(err, &http409Err) {
+		neutronError, decodeErr := inetworking.DecodeNeutronError(http409Err.ErrUnexpectedResponseCode.Body)
+		if decodeErr != nil {
+			// retry, when error type cannot be detected
+			log.Printf("[DEBUG] failed to decode a neutron error: %s", decodeErr)
+			return true
+		}
+		if neutronError.Type == "IpAddressGenerationFailure" {
+			return true
+		}
+
+		// don't retry on quota or other errors
+		return false
+	}
+
+	if errors.As(err, &http400Err) {
+		neutronError, decodeErr := inetworking.DecodeNeutronError(http400Err.ErrUnexpectedResponseCode.Body)
+		if decodeErr != nil {
+			// retry, when error type cannot be detected
+			log.Printf("[DEBUG] failed to decode a neutron error: %s", decodeErr)
+			return true
+		}
+		if neutronError.Type == "ExternalIpAddressExhausted" {
+			return true
+		}
+
+		// don't retry on quota or other errors
+		return false
+	}
+
+	return false
 }
 
 func resourceNetworkFloatingIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
