@@ -260,6 +260,7 @@ func resourceKubernetesNodeGroupCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf(
 			"error waiting for vkcs_kubernetes_cluster %s to become ready: %s", s.ClusterID, err)
 	}
+	time.Sleep(30 * time.Second)
 
 	log.Printf("[DEBUG] Created vkcs_kubernetes_node_group %s", s.UUID)
 	return resourceKubernetesNodeGroupRead(ctx, d, meta)

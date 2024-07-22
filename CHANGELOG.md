@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.8.2
+- Stabilize vkcs_kubernetes_nodegroup creation
+
 #### v0.8.1
 - Add "k8s_config" attribute to vkcs_kubernetes_cluster resource
 - Fix order-induced changes in the plan for "allowed_cidrs" of the vkcs_lb_listener resource
