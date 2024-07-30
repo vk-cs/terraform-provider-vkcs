@@ -2,6 +2,7 @@ package networking
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net"
 	"time"
@@ -417,10 +418,11 @@ func resourceNetworkingSubnetDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
+	var deleteErrDetails error
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"ACTIVE"},
 		Target:     []string{"DELETED"},
-		Refresh:    networkingSubnetStateRefreshFuncDelete(networkingClient, d.Id()),
+		Refresh:    networkingSubnetStateRefreshFuncDelete(networkingClient, d.Id(), &deleteErrDetails),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -428,6 +430,14 @@ func resourceNetworkingSubnetDelete(ctx context.Context, d *schema.ResourceData,
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
+		if deleteErrDetails != nil {
+			var timeoutErr *retry.TimeoutError
+			if errors.As(err, &timeoutErr) {
+				timeoutErr.LastError = deleteErrDetails
+				return diag.Errorf("Error waiting for vkcs_networking_subnet %s to become deleted: %s", d.Id(), timeoutErr)
+			}
+		}
+
 		return diag.Errorf("Error waiting for vkcs_networking_subnet %s to become deleted: %s", d.Id(), err)
 	}
 
