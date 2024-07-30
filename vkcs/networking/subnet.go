@@ -36,7 +36,7 @@ func networkingSubnetStateRefreshFunc(client *gophercloud.ServiceClient, subnetI
 }
 
 // networkingSubnetStateRefreshFuncDelete returns a special case retry.StateRefreshFunc to try to delete a subnet.
-func networkingSubnetStateRefreshFuncDelete(networkingClient *gophercloud.ServiceClient, subnetID string) retry.StateRefreshFunc {
+func networkingSubnetStateRefreshFuncDelete(networkingClient *gophercloud.ServiceClient, subnetID string, deleteErrDetails *error) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] Attempting to delete vkcs_networking_subnet %s", subnetID)
 
@@ -56,8 +56,11 @@ func networkingSubnetStateRefreshFuncDelete(networkingClient *gophercloud.Servic
 				log.Printf("[DEBUG] Successfully deleted vkcs_networking_subnet %s", subnetID)
 				return s, "DELETED", nil
 			}
+
 			// Subnet is still in use - we can retry.
 			if errutil.Is(err, 409) {
+				log.Printf("[DEBUG] Failed to delete vkcs_networking_subnet %s, subnet is still in use", subnetID)
+				*deleteErrDetails = err
 				return s, "ACTIVE", nil
 			}
 
