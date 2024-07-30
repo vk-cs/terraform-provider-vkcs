@@ -17,7 +17,7 @@ const (
 	creationRetryDelay = 3 * time.Second
 	creationTimeout    = 3 * time.Minute
 
-	NeutronErrTypeDbObjectDuplicateEntry = "NeutronDbObjectDuplicateEntry"
+	NeutronErrTypeDBObjectDuplicateEntry = "NeutronDbObjectDuplicateEntry"
 )
 
 // RouterCreateOpts represents the attributes used when creating a new router.
@@ -62,7 +62,7 @@ func retryNeutronError(actual error, retryableErrors []ExpectedNeutronError) boo
 func CreateWithRetry(c *gophercloud.ServiceClient, opts routers.CreateOptsBuilder) routers.CreateResult {
 	retryableErrors := []ExpectedNeutronError{
 		{ErrCode: 404},
-		{ErrCode: 409, ErrType: NeutronErrTypeDbObjectDuplicateEntry},
+		{ErrCode: 409, ErrType: NeutronErrTypeDBObjectDuplicateEntry},
 	}
 
 	var r routers.CreateResult
