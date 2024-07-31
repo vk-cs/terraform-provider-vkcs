@@ -1,5 +1,6 @@
 ---
 layout: "vkcs"
+page_title: "Building VPN Tunnel between VK Cloud private subnets"
 description: |-
   VPN Tunnel within VKCS.
 ---
