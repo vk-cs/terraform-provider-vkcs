@@ -5,6 +5,6 @@ data "vkcs_images_image" "debian" {
   # Use properties to distinguish between available images.
   properties = {
     mcs_os_distro  = "debian"
-    mcs_os_version = "10.1"
+    mcs_os_version = "12"
   }
 }
