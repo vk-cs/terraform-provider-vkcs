@@ -2,12 +2,8 @@ package networking
 
 import (
 	"context"
-	"errors"
 	"log"
 	"time"
-
-	"github.com/gophercloud/gophercloud"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -216,44 +212,19 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func needRetryOnFloatingIPCreationError(err error) bool {
-	if errutil.IsNotFound(err) {
-		return true
-	}
-
-	var http409Err gophercloud.ErrDefault409
-	var http400Err gophercloud.ErrDefault400
-
-	if errors.As(err, &http409Err) {
-		neutronError, decodeErr := inetworking.DecodeNeutronError(http409Err.ErrUnexpectedResponseCode.Body)
-		if decodeErr != nil {
-			// retry, when error type cannot be detected
-			log.Printf("[DEBUG] failed to decode a neutron error: %s", decodeErr)
-			return true
-		}
-		if neutronError.Type == "IpAddressGenerationFailure" {
-			return true
-		}
-
-		// don't retry on quota or other errors
-		return false
-	}
-
-	if errors.As(err, &http400Err) {
-		neutronError, decodeErr := inetworking.DecodeNeutronError(http400Err.ErrUnexpectedResponseCode.Body)
-		if decodeErr != nil {
-			// retry, when error type cannot be detected
-			log.Printf("[DEBUG] failed to decode a neutron error: %s", decodeErr)
-			return true
-		}
-		if neutronError.Type == "ExternalIpAddressExhausted" {
-			return true
-		}
-
-		// don't retry on quota or other errors
-		return false
-	}
-
-	return false
+	return inetworking.RetryNeutronError(err, []inetworking.ExpectedNeutronError{
+		{
+			ErrCode: 400,
+			ErrType: inetworking.NeutronErrExternalIpAddressExhausted,
+		},
+		{
+			ErrCode: 404,
+		},
+		{
+			ErrCode: 409,
+			ErrType: inetworking.NeutronErrIpAddressGenerationFailure,
+		},
+	}, true)
 }
 
 func resourceNetworkFloatingIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

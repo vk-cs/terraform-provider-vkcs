@@ -6,18 +6,14 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	inetworking "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 const (
-	creationRetriesNum = 3
-	creationRetryDelay = 3 * time.Second
-	creationTimeout    = 3 * time.Minute
-
-	NeutronErrTypeDBObjectDuplicateEntry = "NeutronDbObjectDuplicateEntry"
+	routerCreationRetriesNum = 3
+	routerCreationRetryDelay = 3 * time.Second
+	routerCreationTimeout    = 3 * time.Minute
 )
 
 // RouterCreateOpts represents the attributes used when creating a new router.
@@ -32,64 +28,30 @@ func (opts RouterCreateOpts) ToRouterCreateMap() (map[string]interface{}, error)
 	return util.BuildRequest(opts, "router")
 }
 
-type ExpectedNeutronError struct {
-	ErrCode int
-	ErrType string
-}
-
-func retryNeutronError(actual error, retryableErrors []ExpectedNeutronError) bool {
-	for _, expectedErr := range retryableErrors {
-		gophercloudErr, ok := errutil.As(actual, expectedErr.ErrCode)
-		if !ok {
-			continue
-		}
-		if expectedErr.ErrType == "" {
-			return true
-		}
-
-		neutronError, decodeErr := inetworking.DecodeNeutronError(gophercloudErr.Body)
-		if decodeErr != nil {
-			continue
-		}
-		if expectedErr.ErrType == neutronError.Type {
-			return true
-		}
+func Create(c *gophercloud.ServiceClient, opts routers.CreateOptsBuilder) routers.CreateResult {
+	retryableErrors := []inetworking.ExpectedNeutronError{
+		{
+			ErrCode: 404,
+		},
+		{
+			ErrCode: 409,
+			ErrType: inetworking.NeutronErrTypeDBObjectDuplicateEntry,
+		},
 	}
-
-	return false
-}
-
-func CreateWithRetry(c *gophercloud.ServiceClient, opts routers.CreateOptsBuilder) routers.CreateResult {
-	retryableErrors := []ExpectedNeutronError{
-		{ErrCode: 404},
-		{ErrCode: 409, ErrType: NeutronErrTypeDBObjectDuplicateEntry},
-	}
-
-	var r routers.CreateResult
-	var count int
 
 	ctx := context.Background()
 	if c.Context != nil {
 		ctx = c.Context
 	}
 
-	createErr := retry.RetryContext(ctx, creationTimeout, func() *retry.RetryError {
+	var r routers.CreateResult
+	createFunc := func() error {
 		r = routers.Create(c, opts)
-		if r.Err != nil {
-			if count++; count >= creationRetriesNum {
-				return retry.NonRetryableError(r.Err)
-			}
+		return r.Err
+	}
 
-			if retryNeutronError(r.Err, retryableErrors) {
-				time.Sleep(creationRetryDelay)
-				return retry.RetryableError(r.Err)
-			}
-
-			return retry.NonRetryableError(r.Err)
-		}
-
-		return nil
-	})
+	createErr := inetworking.CreateResourceWithRetry(ctx, createFunc, retryableErrors,
+		routerCreationRetriesNum, routerCreationRetryDelay, routerCreationTimeout)
 
 	if createErr != nil {
 		r.Err = util.ErrorWithRequestID(createErr, r.Header.Get(util.RequestIDHeader))
