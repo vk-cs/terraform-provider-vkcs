@@ -3,16 +3,17 @@ package networking
 import (
 	"context"
 	"encoding/json"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 	"log"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 const (
 	NeutronErrTypeDBObjectDuplicateEntry = "NeutronDbObjectDuplicateEntry"
-	NeutronErrIpAddressGenerationFailure = "IpAddressGenerationFailure"
-	NeutronErrExternalIpAddressExhausted = "ExternalIpAddressExhausted"
+	NeutronErrIPAddressGenerationFailure = "IpAddressGenerationFailure"
+	NeutronErrExternalIPAddressExhausted = "ExternalIpAddressExhausted"
 )
 
 type NeutronError struct {
