@@ -7,7 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.8.2
+#### v0.8.2 (unreleased)
 - Stabilize vkcs_kubernetes_nodegroup creation
 
 #### v0.8.1
