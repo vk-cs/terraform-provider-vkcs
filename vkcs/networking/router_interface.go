@@ -28,7 +28,7 @@ func resourceNetworkingRouterInterfaceStateRefreshFunc(networkingClient *gopherc
 	}
 }
 
-func resourceNetworkingRouterInterfaceDeleteRefreshFunc(networkingClient *gophercloud.ServiceClient, d *schema.ResourceData) retry.StateRefreshFunc {
+func resourceNetworkingRouterInterfaceDeleteRefreshFunc(networkingClient *gophercloud.ServiceClient, d *schema.ResourceData, deleteErrDetails *error) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		routerID := d.Get("router_id").(string)
 		routerInterfaceID := d.Id()
@@ -63,6 +63,7 @@ func resourceNetworkingRouterInterfaceDeleteRefreshFunc(networkingClient *gopher
 			}
 			if errutil.Is(err, 409) {
 				log.Printf("[DEBUG] vkcs_networking_router_interface %s is still in use", routerInterfaceID)
+				*deleteErrDetails = err
 				return r, "ACTIVE", nil
 			}
 

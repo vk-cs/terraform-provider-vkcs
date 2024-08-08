@@ -2,6 +2,7 @@ package networking
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
 
@@ -163,10 +164,11 @@ func resourceNetworkingRouterInterfaceDelete(ctx context.Context, d *schema.Reso
 		return diag.Errorf("Error creating VKCS networking client: %s", err)
 	}
 
+	var deleteErrDetails error
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"ACTIVE"},
 		Target:     []string{"DELETED"},
-		Refresh:    resourceNetworkingRouterInterfaceDeleteRefreshFunc(networkingClient, d),
+		Refresh:    resourceNetworkingRouterInterfaceDeleteRefreshFunc(networkingClient, d, &deleteErrDetails),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -174,7 +176,15 @@ func resourceNetworkingRouterInterfaceDelete(ctx context.Context, d *schema.Reso
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return diag.Errorf("Error waiting for vkcs_networking_router_interface %s to Delete:  %s", d.Id(), err)
+		if deleteErrDetails != nil {
+			var timeoutErr *retry.TimeoutError
+			if errors.As(err, &timeoutErr) {
+				timeoutErr.LastError = deleteErrDetails
+				return diag.Errorf("Error waiting for vkcs_networking_router_interface %s to become deleted: %s", d.Id(), timeoutErr)
+			}
+		}
+
+		return diag.Errorf("Error waiting for vkcs_networking_router_interface %s to become deleted:  %s", d.Id(), err)
 	}
 
 	d.SetId("")

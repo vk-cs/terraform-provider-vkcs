@@ -2,6 +2,7 @@ package networking
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
 
@@ -161,10 +162,11 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 
 	log.Printf("[DEBUG] Waiting for vkcs_networking_network %s to become available.", n.ID)
 
+	var createErrDetails error
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"BUILD"},
 		Target:     []string{"ACTIVE", "DOWN"},
-		Refresh:    resourceNetworkingNetworkStateRefreshFunc(networkingClient, n.ID),
+		Refresh:    resourceNetworkingNetworkStateRefreshFunc(networkingClient, n.ID, &createErrDetails),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -172,6 +174,14 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
+		if createErrDetails != nil {
+			var timeoutErr *retry.TimeoutError
+			if errors.As(err, &timeoutErr) {
+				timeoutErr.LastError = createErrDetails
+				return diag.Errorf("Error waiting for vkcs_networking_network %s to become available: %s", d.Id(), timeoutErr)
+			}
+		}
+
 		return diag.Errorf("Error waiting for vkcs_networking_network %s to become available: %s", n.ID, err)
 	}
 
@@ -297,10 +307,11 @@ func resourceNetworkingNetworkDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(util.CheckDeleted(d, err, "Error deleting vkcs_networking_network"))
 	}
 
+	var deleteErrDetails error
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"ACTIVE"},
 		Target:     []string{"DELETED"},
-		Refresh:    resourceNetworkingNetworkStateRefreshFunc(networkingClient, d.Id()),
+		Refresh:    resourceNetworkingNetworkStateRefreshFunc(networkingClient, d.Id(), &deleteErrDetails),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      5 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -308,7 +319,15 @@ func resourceNetworkingNetworkDelete(ctx context.Context, d *schema.ResourceData
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return diag.Errorf("Error waiting for vkcs_networking_network %s to Delete:  %s", d.Id(), err)
+		if deleteErrDetails != nil {
+			var timeoutErr *retry.TimeoutError
+			if errors.As(err, &timeoutErr) {
+				timeoutErr.LastError = deleteErrDetails
+				return diag.Errorf("Error waiting for vkcs_networking_network %s to become deleted: %s", d.Id(), timeoutErr)
+			}
+		}
+
+		return diag.Errorf("Error waiting for vkcs_networking_network %s to become deleted:  %s", d.Id(), err)
 	}
 
 	d.SetId("")
