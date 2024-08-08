@@ -1,19 +1,9 @@
 package routers
 
 import (
-	"context"
-	"time"
-
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
-	inetworking "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
-)
-
-const (
-	routerCreationRetriesNum = 3
-	routerCreationRetryDelay = 3 * time.Second
-	routerCreationTimeout    = 3 * time.Minute
 )
 
 // RouterCreateOpts represents the attributes used when creating a new router.
@@ -29,34 +19,8 @@ func (opts RouterCreateOpts) ToRouterCreateMap() (map[string]interface{}, error)
 }
 
 func Create(c *gophercloud.ServiceClient, opts routers.CreateOptsBuilder) routers.CreateResult {
-	retryableErrors := []inetworking.ExpectedNeutronError{
-		{
-			ErrCode: 404,
-		},
-		{
-			ErrCode: 409,
-			ErrType: inetworking.NeutronErrTypeDBObjectDuplicateEntry,
-		},
-	}
-
-	ctx := context.Background()
-	if c.Context != nil {
-		ctx = c.Context
-	}
-
-	var r routers.CreateResult
-	createFunc := func() error {
-		r = routers.Create(c, opts)
-		return r.Err
-	}
-
-	createErr := inetworking.CreateResourceWithRetry(ctx, createFunc, retryableErrors,
-		routerCreationRetriesNum, routerCreationRetryDelay, routerCreationTimeout)
-
-	if createErr != nil {
-		r.Err = util.ErrorWithRequestID(createErr, r.Header.Get(util.RequestIDHeader))
-	}
-
+	r := routers.Create(c, opts)
+	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
 	return r
 }
 
