@@ -103,7 +103,7 @@ func networkingNetworkName(d *schema.ResourceData, meta interface{}, networkID s
 	return networkName, err
 }
 
-func resourceNetworkingNetworkStateRefreshFunc(client *gophercloud.ServiceClient, networkID string) retry.StateRefreshFunc {
+func resourceNetworkingNetworkStateRefreshFunc(client *gophercloud.ServiceClient, networkID string, errDetails *error) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		n, err := inetworks.Get(client, networkID).Extract()
 		if err != nil {
@@ -111,6 +111,7 @@ func resourceNetworkingNetworkStateRefreshFunc(client *gophercloud.ServiceClient
 				return n, "DELETED", nil
 			}
 			if errutil.Is(err, 409) {
+				*errDetails = err
 				return n, "ACTIVE", nil
 			}
 
