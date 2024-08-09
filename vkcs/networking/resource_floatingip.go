@@ -172,7 +172,7 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 
 			err = ifloatingips.Create(networkingClient, finalCreateOpts).ExtractInto(&fip)
 			if err != nil {
-				if retryOn409(err) {
+				if needRetryOnFloatingIPCreationError(err) {
 					continue
 				}
 				return diag.Errorf("Error creating vkcs_networking_floatingip: %s", err)
@@ -209,6 +209,22 @@ func resourceNetworkFloatingIPCreate(ctx context.Context, d *schema.ResourceData
 
 	log.Printf("[DEBUG] Created vkcs_networking_floatingip %s: %#v", fip.ID, fip)
 	return resourceNetworkFloatingIPRead(ctx, d, meta)
+}
+
+func needRetryOnFloatingIPCreationError(err error) bool {
+	return inetworking.RetryNeutronError(err, []inetworking.ExpectedNeutronError{
+		{
+			ErrCode: 400,
+			ErrType: inetworking.NeutronErrExternalIPAddressExhausted,
+		},
+		{
+			ErrCode: 404,
+		},
+		{
+			ErrCode: 409,
+			ErrType: inetworking.NeutronErrIPAddressGenerationFailure,
+		},
+	}, true)
 }
 
 func resourceNetworkFloatingIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

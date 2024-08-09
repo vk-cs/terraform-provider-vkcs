@@ -51,6 +51,84 @@ func Is(err error, errorCode int) bool {
 	return false
 }
 
+func As(err error, errorCode int) (*gophercloud.ErrUnexpectedResponseCode, bool) {
+	if err == nil {
+		return nil, false
+	}
+
+	switch errorCode {
+	case 400:
+		var httpErr gophercloud.ErrDefault400
+		if errors.As(err, &httpErr) {
+			return &httpErr.ErrUnexpectedResponseCode, true
+		}
+		return nil, false
+	case 401:
+		var httpErr gophercloud.ErrDefault401
+		if errors.As(err, &httpErr) {
+			return &httpErr.ErrUnexpectedResponseCode, true
+		}
+		return nil, false
+	case 403:
+		var httpErr gophercloud.ErrDefault403
+		if errors.As(err, &httpErr) {
+			return &httpErr.ErrUnexpectedResponseCode, true
+		}
+		return nil, false
+	case 404:
+		var httpErr gophercloud.ErrDefault404
+		if errors.As(err, &httpErr) {
+			return &httpErr.ErrUnexpectedResponseCode, true
+		}
+		return nil, false
+	case 405:
+		var httpErr gophercloud.ErrDefault405
+		if errors.As(err, &httpErr) {
+			return &httpErr.ErrUnexpectedResponseCode, true
+		}
+		return nil, false
+	case 408:
+		var httpErr gophercloud.ErrDefault408
+		if errors.As(err, &httpErr) {
+			return &httpErr.ErrUnexpectedResponseCode, true
+		}
+		return nil, false
+	case 409:
+		var httpErr gophercloud.ErrDefault409
+		if errors.As(err, &httpErr) {
+			return &httpErr.ErrUnexpectedResponseCode, true
+		}
+		return nil, false
+	case 429:
+		var httpErr gophercloud.ErrDefault429
+		if errors.As(err, &httpErr) {
+			return &httpErr.ErrUnexpectedResponseCode, true
+		}
+		return nil, false
+	case 500:
+		var httpErr gophercloud.ErrDefault500
+		if errors.As(err, &httpErr) {
+			return &httpErr.ErrUnexpectedResponseCode, true
+		}
+		return nil, false
+	case 503:
+		var httpErr gophercloud.ErrDefault503
+		if errors.As(err, &httpErr) {
+			return &httpErr.ErrUnexpectedResponseCode, true
+		}
+		return nil, false
+	}
+
+	var unknownErr gophercloud.ErrUnexpectedResponseCode
+	if errors.As(err, &unknownErr) {
+		if unknownErr.Actual == errorCode {
+			return &unknownErr, true
+		}
+	}
+
+	return nil, false
+}
+
 func IsNotFound(err error) bool {
 	return Is(err, 404)
 }

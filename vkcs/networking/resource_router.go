@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,6 +18,12 @@ import (
 	iattributestags "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/attributestags"
 	irouters "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/routers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
+)
+
+const (
+	routerCreationRetriesNum = 3
+	routerCreationRetryDelay = 3 * time.Second
+	routerCreationTimeout    = 3 * time.Minute
 )
 
 func ResourceNetworkingRouter() *schema.Resource {
@@ -193,8 +200,7 @@ func resourceNetworkingRouterCreate(ctx context.Context, d *schema.ResourceData,
 	var r *routers.Router
 	log.Printf("[DEBUG] vkcs_networking_router create options: %#v", createOpts)
 
-	// router creation without a retry
-	r, err = irouters.Create(networkingClient, createOpts).Extract()
+	r, err = CreateRouterWithRetry(networkingClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_networking_router: %s", err)
 	}
@@ -244,6 +250,38 @@ func resourceNetworkingRouterCreate(ctx context.Context, d *schema.ResourceData,
 
 	log.Printf("[DEBUG] Created vkcs_networking_router %s: %#v", r.ID, r)
 	return resourceNetworkingRouterRead(ctx, d, meta)
+}
+
+func CreateRouterWithRetry(c *gophercloud.ServiceClient, opts routers.CreateOptsBuilder) routers.CreateResult {
+	retryableErrors := []inetworking.ExpectedNeutronError{
+		{
+			ErrCode: 404,
+		},
+		{
+			ErrCode: 409,
+			ErrType: inetworking.NeutronErrTypeDBObjectDuplicateEntry,
+		},
+	}
+
+	ctx := context.Background()
+	if c.Context != nil {
+		ctx = c.Context
+	}
+
+	var r routers.CreateResult
+	createFunc := func() error {
+		r = irouters.Create(c, opts)
+		return r.Err
+	}
+
+	createErr := inetworking.CreateResourceWithRetry(ctx, createFunc, retryableErrors,
+		routerCreationRetriesNum, routerCreationRetryDelay, routerCreationTimeout)
+
+	if createErr != nil {
+		r.Err = util.ErrorWithRequestID(createErr, r.Header.Get(util.RequestIDHeader))
+	}
+
+	return r
 }
 
 func resourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
