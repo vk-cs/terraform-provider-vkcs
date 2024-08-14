@@ -188,9 +188,14 @@ const testAccKubernetesClusterBasic = `
 {{ .TestAccKubernetesNetworkingBase }}
 {{ .TestAccKubernetesClusterBase }}
 
+data "vkcs_compute_flavor" "base" {
+  name = "Standard-2-8-50"
+}
+
 resource "vkcs_kubernetes_cluster" "basic" {
   name                = "{{ .ClusterName }}"
   cluster_template_id = data.vkcs_kubernetes_clustertemplate.base.id
+  master_flavor       = data.vkcs_compute_flavor.base.id
   master_count        = 1
   network_id          = vkcs_networking_network.base.id
   subnet_id           = vkcs_networking_subnet.base.id
@@ -231,9 +236,14 @@ const testAccKubernetesClusterUpdate = `
 {{ .TestAccKubernetesNetworkingBase }}
 {{ .TestAccKubernetesClusterBase }}
 
+data "vkcs_compute_flavor" "base" {
+  name = "Standard-4-12"
+}
+
 resource "vkcs_kubernetes_cluster" "update" {
   name                = "{{ .ClusterName }}"
   cluster_template_id = data.vkcs_kubernetes_clustertemplate.base.id
+  master_flavor       = data.vkcs_compute_flavor.base.id
   master_count        = 1
   network_id          = vkcs_networking_network.base.id
   subnet_id           = vkcs_networking_subnet.base.id
