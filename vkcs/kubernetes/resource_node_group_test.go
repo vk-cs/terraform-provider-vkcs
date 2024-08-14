@@ -111,7 +111,7 @@ resource "vkcs_kubernetes_cluster" "base" {
   name                = "{{ .ClusterName }}"
   cluster_template_id = data.vkcs_kubernetes_clustertemplate.base.id
   master_count        = 1
-
+  master_flavor       = data.vkcs_compute_flavor.base.id
   network_id          = vkcs_networking_network.base.id
   subnet_id           = vkcs_networking_subnet.base.id
   floating_ip_enabled = true

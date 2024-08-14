@@ -16,6 +16,14 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/randutil"
 )
 
+type nodeGroupStatus string
+
+var (
+	nodeGroupStatusCreating nodeGroupStatus = "CREATING"
+	nodeGroupStatusRunning  nodeGroupStatus = "RUNNING"
+	nodeGroupStatusDeleting nodeGroupStatus = "DELETING"
+)
+
 func ResourceKubernetesNodeGroup() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceKubernetesNodeGroupCreate,
@@ -248,9 +256,9 @@ func resourceKubernetesNodeGroupCreate(ctx context.Context, d *schema.ResourceDa
 	d.SetId(s.UUID)
 
 	stateConf := &retry.StateChangeConf{
-		Pending:      []string{string(clusterStatusReconciling)},
-		Target:       []string{string(clusterStatusRunning)},
-		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, s.ClusterID),
+		Pending:      []string{string(nodeGroupStatusCreating)},
+		Target:       []string{string(nodeGroupStatusRunning)},
+		Refresh:      kubernetesNodeGroupCreateStateRefreshFunc(containerInfraClient, s.UUID, s.ClusterID),
 		Timeout:      d.Timeout(schema.TimeoutCreate),
 		Delay:        createUpdateDelay * time.Minute,
 		PollInterval: createUpdatePollInterval * time.Second,
@@ -260,7 +268,6 @@ func resourceKubernetesNodeGroupCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf(
 			"error waiting for vkcs_kubernetes_cluster %s to become ready: %s", s.ClusterID, err)
 	}
-	time.Sleep(30 * time.Second)
 
 	log.Printf("[DEBUG] Created vkcs_kubernetes_node_group %s", s.UUID)
 	return resourceKubernetesNodeGroupRead(ctx, d, meta)
@@ -470,9 +477,9 @@ func resourceKubernetesNodeGroupDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:      []string{string(clusterStatusReconciling)},
+		Pending:      []string{string(nodeGroupStatusDeleting)},
 		Target:       []string{string(clusterStatusRunning)},
-		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, d.Get("cluster_id").(string)),
+		Refresh:      kubernetesNodeGroupDeleteStateRefreshFunc(containerInfraClient, d.Id(), d.Get("cluster_id").(string)),
 		Timeout:      d.Timeout(schema.TimeoutDelete),
 		Delay:        nodeGroupDeleteDelay * time.Second,
 		PollInterval: deletePollInterval * time.Second,

@@ -934,5 +934,5 @@ func databaseClusterUpdateProcessError(err error, clusterID string) diag.Diagnos
 	}
 
 	errMsg := strings.Replace(err.Error(), baseErr.Error(), newErrMsg, 1)
-	return diag.Errorf(errMsg)
+	return diag.Errorf("%s", errMsg)
 }

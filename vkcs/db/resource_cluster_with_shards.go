@@ -901,5 +901,5 @@ func databaseClusterWithShardsUpdateProcessError(err error, clusterID string, sh
 	}
 
 	errMsg := strings.Replace(err.Error(), baseErr.Error(), newErrMsg, 1)
-	return diag.Errorf(errMsg)
+	return diag.Errorf("%s", errMsg)
 }
