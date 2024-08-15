@@ -19,9 +19,9 @@ import (
 type nodeGroupStatus string
 
 var (
-	nodeGroupStatusCreating nodeGroupStatus = "CREATING"
+	nodeGroupStatusNotFound nodeGroupStatus = "NOT_FOUND"
 	nodeGroupStatusRunning  nodeGroupStatus = "RUNNING"
-	nodeGroupStatusDeleting nodeGroupStatus = "DELETING"
+	nodeGroupStatusError    nodeGroupStatus = "ERROR"
 )
 
 func ResourceKubernetesNodeGroup() *schema.Resource {
@@ -255,15 +255,30 @@ func resourceKubernetesNodeGroupCreate(ctx context.Context, d *schema.ResourceDa
 	// Store the node Group ID.
 	d.SetId(s.UUID)
 
-	stateConf := &retry.StateChangeConf{
-		Pending:      []string{string(nodeGroupStatusCreating)},
+	nodeGroupStateConf := &retry.StateChangeConf{
+		Pending:      []string{string(nodeGroupStatusNotFound)},
 		Target:       []string{string(nodeGroupStatusRunning)},
-		Refresh:      kubernetesNodeGroupCreateStateRefreshFunc(containerInfraClient, s.UUID, s.ClusterID),
+		Refresh:      kubernetesNodeGroupStateRefreshFunc(containerInfraClient, s.UUID),
 		Timeout:      d.Timeout(schema.TimeoutCreate),
 		Delay:        createUpdateDelay * time.Minute,
 		PollInterval: createUpdatePollInterval * time.Second,
 	}
-	_, err = stateConf.WaitForStateContext(ctx)
+
+	_, err = nodeGroupStateConf.WaitForStateContext(ctx)
+	if err != nil {
+		return diag.Errorf(
+			"error waiting for vkcs_kubernetes_node_group %s to become ready: %s", s.UUID, err)
+	}
+
+	clusterStateConf := &retry.StateChangeConf{
+		Pending:      []string{string(clusterStatusReconciling)},
+		Target:       []string{string(clusterStatusRunning)},
+		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, s.ClusterID),
+		Timeout:      d.Timeout(schema.TimeoutCreate),
+		Delay:        nodeGroupCreateDelay * time.Second,
+		PollInterval: createUpdatePollInterval * time.Second,
+	}
+	_, err = clusterStateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return diag.Errorf(
 			"error waiting for vkcs_kubernetes_cluster %s to become ready: %s", s.ClusterID, err)
@@ -476,18 +491,33 @@ func resourceKubernetesNodeGroupDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(util.CheckDeleted(d, err, "error deleting vkcs_kubernetes_node_group"))
 	}
 
-	stateConf := &retry.StateChangeConf{
-		Pending:      []string{string(nodeGroupStatusDeleting)},
+	nodeGroupStateConf := &retry.StateChangeConf{
+		Pending:      []string{string(nodeGroupStatusRunning)},
+		Target:       []string{string(nodeGroupStatusNotFound)},
+		Refresh:      kubernetesNodeGroupStateRefreshFunc(containerInfraClient, d.Id()),
+		Timeout:      d.Timeout(schema.TimeoutCreate),
+		Delay:        nodeGroupDeleteDelay * time.Second,
+		PollInterval: createUpdatePollInterval * time.Second,
+	}
+	_, err = nodeGroupStateConf.WaitForStateContext(ctx)
+	if err != nil {
+		return diag.Errorf(
+			"error waiting for vkcs_kubernetes_node_group %s to become deleted: %s", d.Id(), err)
+	}
+
+	clusterID := d.Get("cluster_id").(string)
+	clusterStateConf := &retry.StateChangeConf{
+		Pending:      []string{string(clusterStatusReconciling)},
 		Target:       []string{string(clusterStatusRunning)},
-		Refresh:      kubernetesNodeGroupDeleteStateRefreshFunc(containerInfraClient, d.Id(), d.Get("cluster_id").(string)),
+		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, clusterID),
 		Timeout:      d.Timeout(schema.TimeoutDelete),
 		Delay:        nodeGroupDeleteDelay * time.Second,
 		PollInterval: deletePollInterval * time.Second,
 	}
-	_, err = stateConf.WaitForStateContext(ctx)
+	_, err = clusterStateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return diag.Errorf(
-			"error waiting for vkcs_kubernetes_node_group %s to become deleted: %s", d.Id(), err)
+			"error waiting for vkcs_kubernetes_cluster %s to become ready: %s", clusterID, err)
 	}
 
 	return nil

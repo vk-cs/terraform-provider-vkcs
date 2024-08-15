@@ -23,6 +23,7 @@ const (
 	createUpdateDelay        = 1
 	createUpdatePollInterval = 20
 	deleteDelay              = 30
+	nodeGroupCreateDelay     = 30
 	nodeGroupDeleteDelay     = 10
 	deletePollInterval       = 10
 )
