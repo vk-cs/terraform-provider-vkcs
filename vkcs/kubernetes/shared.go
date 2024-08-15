@@ -104,58 +104,19 @@ func kubernetesStateRefreshFunc(client *gophercloud.ServiceClient, clusterID str
 	}
 }
 
-func kubernetesNodeGroupCreateStateRefreshFunc(client *gophercloud.ServiceClient, nodeGroupID string, clusterID string) retry.StateRefreshFunc {
+func kubernetesNodeGroupStateRefreshFunc(client *gophercloud.ServiceClient, nodeGroupID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		n, err := nodegroups.Get(client, nodeGroupID).Extract()
+		c, err := nodegroups.Get(client, nodeGroupID).Extract()
 		if err != nil {
 			if errutil.IsNotFound(err) {
-				return n, string(nodeGroupStatusCreating), nil
+				return c, string(nodeGroupStatusNotFound), nil
 			}
 			return nil, "", err
 		}
-		c, err := clusters.Get(client, clusterID).Extract()
-		if err != nil {
-			if errutil.IsNotFound(err) {
-				return c, string(clusterStatusNotFound), nil
-			}
-			return nil, "", err
+		if c.State == string(nodeGroupStatusError) {
+			err = fmt.Errorf("vkcs_kubernetes_node_group is in an error state")
+			return c, c.State, err
 		}
-		if c.NewStatus == string(clusterStatusError) {
-			err = fmt.Errorf("vkcs_kubernetes_cluster is in an error state: %s", c.StatusReason)
-			return c, c.NewStatus, err
-		}
-		if c.NewStatus == string(clusterStatusReconciling) {
-			return c, string(nodeGroupStatusCreating), nil
-		}
-		return c, c.NewStatus, nil
-	}
-}
-
-func kubernetesNodeGroupDeleteStateRefreshFunc(client *gophercloud.ServiceClient, nodeGroupID string, clusterID string) retry.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		n, err := nodegroups.Get(client, nodeGroupID).Extract()
-		if err == nil {
-			return n, string(nodeGroupStatusDeleting), nil
-		}
-
-		if !errutil.IsNotFound(err) {
-			return nil, "", err
-		}
-
-		c, err := clusters.Get(client, clusterID).Extract()
-		if err != nil {
-			if errutil.IsNotFound(err) {
-				return c, string(clusterStatusNotFound), nil
-			}
-			return nil, "", err
-		}
-		if c.NewStatus == string(clusterStatusError) {
-			err = fmt.Errorf("vkcs_kubernetes_cluster is in an error state: %s", c.StatusReason)
-			return c, c.NewStatus, err
-		}
-		if c.NewStatus == string(clusterStatusReconciling) {
-			return c, string(nodeGroupStatusDeleting), nil
-		}
-		return c, c.NewStatus, nil
+		return c, c.State, nil
 	}
 }
