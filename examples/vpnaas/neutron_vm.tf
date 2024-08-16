@@ -96,7 +96,7 @@ resource "terraform_data" "ssh_with_ping" {
 
     connection {
       type        = "ssh"
-      user        = "centos"
+      user        = "debian"
       private_key = vkcs_compute_keypair.key_pair.private_key
       host        = vkcs_compute_instance.vm_neutron.network[1].fixed_ip_v4
       timeout     = "7m"
