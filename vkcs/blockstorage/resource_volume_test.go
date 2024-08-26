@@ -122,14 +122,14 @@ func TestAccBlockStorageVolume_online_retype(t *testing.T) {
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeOnlineRetype),
+				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeOnlineRetype, map[string]string{"VolumeType": "ceph-hdd"}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"vkcs_blockstorage_volume.bootable", "volume_type", "ceph-hdd"),
 				),
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeOnlineRetypeUpdate),
+				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeOnlineRetype, map[string]string{"VolumeType": "ceph-ssd"}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"vkcs_blockstorage_volume.bootable", "volume_type", "ceph-ssd"),
@@ -332,33 +332,7 @@ const testAccBlockStorageVolumeOnlineRetype = `
 resource "vkcs_blockstorage_volume" "bootable" {
   name              = "bootable-tf-acc"
   size              = 10
-  volume_type       = "ceph-hdd"
-  image_id          = data.vkcs_images_image.base.id
-  availability_zone = "GZ1"
-}
-
-resource "vkcs_compute_instance" "basic" {
-  name 				= "instance_tf_acc"
-  flavor_name       = "{{.FlavorName}}"
-
-  block_device {
-    boot_index       = 0
-    source_type      = "volume"
-    destination_type = "volume"
-    uuid             = vkcs_blockstorage_volume.bootable.id
-  }
-
-   network_mode  = "none"
-}
-`
-
-const testAccBlockStorageVolumeOnlineRetypeUpdate = `
-{{.BaseImage}}
-
-resource "vkcs_blockstorage_volume" "bootable" {
-  name              = "bootable-tf-acc"
-  size              = 10
-  volume_type       = "ceph-ssd"
+  volume_type       = "{{.VolumeType}}"
   image_id          = data.vkcs_images_image.base.id
   availability_zone = "GZ1"
 }
