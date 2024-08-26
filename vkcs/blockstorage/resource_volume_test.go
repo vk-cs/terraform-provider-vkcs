@@ -115,6 +115,30 @@ func TestAccBlockStorageVolume_image(t *testing.T) {
 	})
 }
 
+func TestAccBlockStorageVolume_online_retype(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeOnlineRetype),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"vkcs_blockstorage_volume.bootable", "volume_type", "ceph-hdd"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeOnlineRetypeUpdate),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"vkcs_blockstorage_volume.bootable", "volume_type", "ceph-ssd"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckBlockStorageVolumeDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
 	blockStorageClient, err := config.BlockStorageV3Client(acctest.OsRegionName)
@@ -299,5 +323,57 @@ resource "vkcs_blockstorage_volume" "volume_1" {
   image_id = data.vkcs_images_image.base.id
   availability_zone = "{{.AvailabilityZone}}"
   volume_type = "{{.VolumeType}}"
+}
+`
+
+const testAccBlockStorageVolumeOnlineRetype = `
+{{.BaseImage}}
+
+resource "vkcs_blockstorage_volume" "bootable" {
+  name              = "bootable-tf-acc"
+  size              = 10
+  volume_type       = "ceph-hdd"
+  image_id          = data.vkcs_images_image.base.id
+  availability_zone = "GZ1"
+}
+
+resource "vkcs_compute_instance" "basic" {
+  name 				= "instance_tf_acc"
+  flavor_name       = "{{.FlavorName}}"
+
+  block_device {
+    boot_index       = 0
+    source_type      = "volume"
+    destination_type = "volume"
+    uuid             = vkcs_blockstorage_volume.bootable.id
+  }
+
+   network_mode  = "none"
+}
+`
+
+const testAccBlockStorageVolumeOnlineRetypeUpdate = `
+{{.BaseImage}}
+
+resource "vkcs_blockstorage_volume" "bootable" {
+  name              = "bootable-tf-acc"
+  size              = 10
+  volume_type       = "ceph-ssd"
+  image_id          = data.vkcs_images_image.base.id
+  availability_zone = "GZ1"
+}
+
+resource "vkcs_compute_instance" "basic" {
+  name 				= "instance_tf_acc"
+  flavor_name       = "{{.FlavorName}}"
+
+  block_device {
+    boot_index       = 0
+    source_type      = "volume"
+    destination_type = "volume"
+    uuid             = vkcs_blockstorage_volume.bootable.id
+  }
+
+   network_mode  = "none"
 }
 `
