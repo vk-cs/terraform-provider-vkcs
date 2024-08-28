@@ -14,6 +14,7 @@ description: |-
 - Add a new pending status for the vkcs_blocstorage_volume extending
 - Add all_metadata computed field to vkcs_blockstorage_volume resource
 - Suppress out-of-scope plan changes in vkcs_blockstorage_volume metadata
+- Increased the timeout for create and update operations for vkcs_sharedfilesystem_share
 
 #### v0.8.2
 - Add retry on duplicate IpamAllocation error when creating a networking router
