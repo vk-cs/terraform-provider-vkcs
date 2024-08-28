@@ -23,7 +23,10 @@ import (
 
 const (
 	// Major share functionality appeared in 2.14.
-	minManilaShareMicroversion = "2.14"
+	minManilaShareMicroversion  = "2.14"
+	shareOperationCreateTimeout = 40
+	shareOperationUpdateTimeout = 40
+	shareOperationDeleteTimeout = 20
 )
 
 func ResourceSharedFilesystemShare() *schema.Resource {
@@ -37,9 +40,9 @@ func ResourceSharedFilesystemShare() *schema.Resource {
 		},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(20 * time.Minute),
-			Update: schema.DefaultTimeout(20 * time.Minute),
-			Delete: schema.DefaultTimeout(20 * time.Minute),
+			Create: schema.DefaultTimeout(shareOperationCreateTimeout * time.Minute),
+			Update: schema.DefaultTimeout(shareOperationUpdateTimeout * time.Minute),
+			Delete: schema.DefaultTimeout(shareOperationDeleteTimeout * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
