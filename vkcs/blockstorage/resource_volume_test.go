@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-
-	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	ivolumes "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/blockstorage/v3/volumes"
 )
 
@@ -25,7 +24,7 @@ func TestAccBlockStorageVolume_basic(t *testing.T) {
 				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
-					testAccCheckBlockStorageVolumeMetadata(&volume, "foo", "bar"),
+					testAccCheckBlockStorageVolumeMetadata(&volume, map[string]string{"foo": "bar"}),
 					resource.TestCheckResourceAttr(
 						"vkcs_blockstorage_volume.volume_1", "name", "volume_1"),
 					resource.TestCheckResourceAttr(
@@ -36,7 +35,7 @@ func TestAccBlockStorageVolume_basic(t *testing.T) {
 				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeUpdate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
-					testAccCheckBlockStorageVolumeMetadata(&volume, "foo", "bar"),
+					testAccCheckBlockStorageVolumeMetadata(&volume, map[string]string{"foo": "bar"}),
 					resource.TestCheckResourceAttr(
 						"vkcs_blockstorage_volume.volume_1", "name", "volume_1-updated"),
 					resource.TestCheckResourceAttr(
@@ -139,6 +138,40 @@ func TestAccBlockStorageVolume_online_retype(t *testing.T) {
 	})
 }
 
+func TestAccBlockStorageVolume_metadata(t *testing.T) {
+	var volume volumes.Volume
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeMetadata),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
+					testAccCheckBlockStorageVolumeMetadata(&volume, map[string]string{"key1": "val0", "key2": "val2", "key3": "val3"}),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeMetadataUpdate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
+					resource.TestCheckNoResourceAttr("vkcs_blockstorage_volume.volume_1", "metadata.key2"),
+					testAccCheckBlockStorageVolumeMetadata(&volume, map[string]string{"key1": "val1", "key3": "val3", "key4": "val4"}),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeMetadataDelete),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBlockStorageVolumeExists("vkcs_blockstorage_volume.volume_1", &volume),
+					testAccCheckBlockStorageVolumeEmptyMetadata(&volume),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckBlockStorageVolumeDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
 	blockStorageClient, err := config.BlockStorageV3Client(acctest.OsRegionName)
@@ -192,26 +225,34 @@ func testAccCheckBlockStorageVolumeExists(n string, volume *volumes.Volume) reso
 	}
 }
 
-func testAccCheckBlockStorageVolumeMetadata(
-	volume *volumes.Volume, k string, v string) resource.TestCheckFunc {
+// testAccCheckBlockStorageVolumeMetadata checks that the cloud metadata contains all key-value pairs from the given metadata
+func testAccCheckBlockStorageVolumeMetadata(volume *volumes.Volume, metadata map[string]string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if volume.Metadata == nil {
 			return fmt.Errorf("No metadata")
 		}
 
-		for key, value := range volume.Metadata {
-			if k != key {
-				continue
+		for key, value := range metadata {
+			cloudVal, exists := volume.Metadata[key]
+			if !exists {
+				return fmt.Errorf("Metadata not found: %s", key)
 			}
-
-			if v == value {
-				return nil
+			if cloudVal != value {
+				return fmt.Errorf("Bad value for key %s: expected: %s, found: %s", key, value, cloudVal)
 			}
-
-			return fmt.Errorf("Bad value for %s: %s", k, value)
 		}
 
-		return fmt.Errorf("Metadata not found: %s", k)
+		return nil
+	}
+}
+
+func testAccCheckBlockStorageVolumeEmptyMetadata(volume *volumes.Volume) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if len(volume.Metadata) > 0 {
+			return fmt.Errorf("Metadata is not empty")
+		}
+
+		return nil
 	}
 }
 
@@ -351,3 +392,40 @@ resource "vkcs_compute_instance" "basic" {
    network_mode  = "none"
 }
 `
+
+const testAccBlockStorageVolumeMetadata = `
+resource "vkcs_blockstorage_volume" "volume_1" {
+  name = "volume_1"
+  description = "metadata test volume"
+  metadata = {
+    key1 = "val0"
+    key2 = "val2"
+    key3 = "val3"
+  }
+  size = 1
+  availability_zone = "{{.AvailabilityZone}}"
+  volume_type = "{{.VolumeType}}"
+}`
+
+const testAccBlockStorageVolumeMetadataUpdate = `
+resource "vkcs_blockstorage_volume" "volume_1" {
+  name = "volume_1"
+  description = "metadata test volume"
+  metadata = {
+    key1 = "val1"
+    key3 = "val3"
+    key4 = "val4"
+  }
+  size = 1
+  availability_zone = "{{.AvailabilityZone}}"
+  volume_type = "{{.VolumeType}}"
+}`
+
+const testAccBlockStorageVolumeMetadataDelete = `
+resource "vkcs_blockstorage_volume" "volume_1" {
+  name = "volume_1"
+  description = "metadata test volume"
+  size = 1
+  availability_zone = "{{.AvailabilityZone}}"
+  volume_type = "{{.VolumeType}}"
+}`

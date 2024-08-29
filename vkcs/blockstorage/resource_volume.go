@@ -101,8 +101,7 @@ func ResourceBlockStorageVolume() *schema.Resource {
 				},
 				Optional:    true,
 				ForceNew:    false,
-				Computed:    true,
-				Description: "Map of key-value metadata of the volume.",
+				Description: "Key-value map to configure metadata of the volume. _note_ Changes to keys that are not in scope, i.e. not configured here, will not be reflected in planned changes, if any, so those keys can be `silently` removed during an update.",
 			},
 
 			"snapshot_id": {
@@ -127,6 +126,15 @@ func ResourceBlockStorageVolume() *schema.Resource {
 				ForceNew:      true,
 				ConflictsWith: []string{"snapshot_id", "source_vol_id"},
 				Description:   "ID of the image to create volume with. Changing this creates a new volume. Only one of snapshot_id, source_volume_id, image_id fields may be set.",
+			},
+
+			"all_metadata": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed:    true,
+				Description: "Map of key-value metadata of the volume.",
 			},
 		},
 		Description: "Provides a blockstorage volume resource. This can be used to create, modify and delete blockstorage volume.",
@@ -201,8 +209,17 @@ func resourceBlockStorageVolumeRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("description", v.Description)
 	d.Set("snapshot_id", v.SnapshotID)
 	d.Set("source_vol_id", v.SourceVolID)
-	d.Set("metadata", v.Metadata)
 	d.Set("region", util.GetRegion(d, config))
+	d.Set("all_metadata", v.Metadata)
+
+	configMetadata := d.Get("metadata").(map[string]any)
+	intersectionMetadata := make(map[string]string, len(configMetadata))
+	for key := range configMetadata {
+		if _, exist := v.Metadata[key]; exist {
+			intersectionMetadata[key] = v.Metadata[key]
+		}
+	}
+	d.Set("metadata", intersectionMetadata)
 
 	return nil
 }
@@ -216,20 +233,18 @@ func resourceBlockStorageVolumeUpdate(ctx context.Context, d *schema.ResourceDat
 
 	name := d.Get("name").(string)
 	description := d.Get("description").(string)
-	updateOpts := volumes.UpdateOpts{
+	metadata := util.ExpandToMapStringString(d.Get("metadata").(map[string]any))
+	updateOpts := ivolumes.UpdateOpts{
 		Name:        &name,
 		Description: &description,
-	}
-
-	if d.HasChange("metadata") {
-		metadata := d.Get("metadata").(map[string]interface{})
-		updateOpts.Metadata = util.ExpandToMapStringString(metadata)
+		Metadata:    metadata,
 	}
 
 	_, err = ivolumes.Update(blockStorageClient, d.Id(), updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("error updating vkcs_blockstorage_volume")
 	}
+	d.Set("metadata", metadata)
 
 	if d.HasChange("size") {
 		extendOpts := volumeactions.ExtendSizeOpts{

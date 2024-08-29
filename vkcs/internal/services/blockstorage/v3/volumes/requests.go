@@ -24,6 +24,16 @@ func Get(client *gophercloud.ServiceClient, id string) volumes.GetResult {
 	return r
 }
 
+type UpdateOpts struct {
+	Name        *string           `json:"name,omitempty"`
+	Description *string           `json:"description,omitempty"`
+	Metadata    map[string]string `json:"metadata"`
+}
+
+func (opts UpdateOpts) ToVolumeUpdateMap() (map[string]any, error) {
+	return gophercloud.BuildRequestBody(opts, "volume")
+}
+
 func Update(client *gophercloud.ServiceClient, id string, opts volumes.UpdateOptsBuilder) volumes.UpdateResult {
 	r := volumes.Update(client, id, opts)
 	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
