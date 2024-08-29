@@ -9,6 +9,7 @@ description: |-
 
 #### v0.8.3 (unreleased)
 - Fix unexpected state error when updating volume_type of attached vkcs_blocstorage_volume
+- Add a new pending status for the vkcs_blocstorage_volume extending
 
 #### v0.8.2
 - Add retry on duplicate IpamAllocation error when creating a networking router
