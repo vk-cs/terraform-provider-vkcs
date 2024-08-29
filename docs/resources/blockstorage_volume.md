@@ -48,7 +48,7 @@ resource "vkcs_blockstorage_volume" "bootable" {
 
 - `image_id` optional *string* &rarr;  ID of the image to create volume with. Changing this creates a new volume. Only one of snapshot_id, source_volume_id, image_id fields may be set.
 
-- `metadata` optional *map of* *string* &rarr;  Map of key-value metadata of the volume.
+- `metadata` optional *map of* *string* &rarr;  Key-value map to configure metadata of the volume. <br>**Note:** Changes to keys that are not in scope, i.e. not configured here, will not be reflected in planned changes, if any, so those keys can be `silently` removed during an update.
 
 - `name` optional *string* &rarr;  The name of the volume.
 
@@ -61,6 +61,8 @@ resource "vkcs_blockstorage_volume" "bootable" {
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
+- `all_metadata` *map of* *string* &rarr;  Map of key-value metadata of the volume.
+
 - `id` *string* &rarr;  ID of the resource.
 
 
