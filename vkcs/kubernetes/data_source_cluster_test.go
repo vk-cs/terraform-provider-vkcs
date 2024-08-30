@@ -14,7 +14,11 @@ import (
 func TestAccKubernetesClusterDataSource_basic_big(t *testing.T) {
 	var cluster clusters.Cluster
 	clusterName := "tfacc-basic-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
-	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesClusterBasic, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesClusterBase": testAccKubernetesClusterBase, "ClusterName": clusterName})
+	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesClusterBasic, map[string]string{
+		"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
+		"TestAccKubernetesClusterBase":    testAccKubernetesClusterBase,
+		"ClusterName":                     clusterName,
+	})
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.AccTestPreCheck(t) },
@@ -31,6 +35,8 @@ func TestAccKubernetesClusterDataSource_basic_big(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_cluster.cluster", "name", "vkcs_kubernetes_cluster.basic", "name"),
 					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_cluster.cluster", "master_count", "vkcs_kubernetes_cluster.basic", "master_count"),
 					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_cluster.cluster", "cluster_template_id", "vkcs_kubernetes_cluster.basic", "cluster_template_id"),
+					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_cluster.cluster", "cluster_type", "vkcs_kubernetes_cluster.basic", "cluster_type"),
+					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_cluster.cluster", "availability_zone", "vkcs_kubernetes_cluster.basic", "availability_zone"),
 				),
 			},
 		},

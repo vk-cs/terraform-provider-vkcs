@@ -8,6 +8,8 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.8.3 (unreleased)
+- Add ability to choose type of kubernetes cluster, standard or regional
+- Add cluster_type and availability_zones argument to vkcs_kubernetes_cluster
 - Fix unexpected state error when updating volume_type of attached vkcs_blocstorage_volume
 - Add a new pending status for the vkcs_blocstorage_volume extending
 - Add all_metadata computed field to vkcs_blockstorage_volume resource

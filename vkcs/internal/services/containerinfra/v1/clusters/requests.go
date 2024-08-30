@@ -31,10 +31,12 @@ type CreateOpts struct {
 	APILBFIP                  string            `json:"api_lb_fip,omitempty"`
 	RegistryAuthPassword      string            `json:"registry_auth_password,omitempty"`
 	AvailabilityZone          string            `json:"availability_zone,omitempty"`
+	AvailabilityZones         []string          `json:"availability_zones,omitempty"`
 	LoadbalancerSubnetID      string            `json:"loadbalancer_subnet_id,omitempty"`
 	InsecureRegistries        []string          `json:"insecure_registries,omitempty"`
 	DNSDomain                 string            `json:"dns_domain,omitempty"`
 	SecurityPolicySyncEnabled *bool             `json:"security_policy_sync_enabled,omitempty"`
+	ClusterType               string            `json:"cluster_type,omitempty"`
 }
 
 type UpdateOp string
@@ -89,11 +91,13 @@ type Cluster struct {
 	APILBFIP                  string             `json:"api_lb_fip"`
 	IngressFloatingIP         string             `json:"ingress_floating_ip"`
 	RegistryAuthPassword      string             `json:"registry_auth_password"`
-	AvailabilityZone          string             `json:"availability_zone"`
+	AvailabilityZone          string             `json:"availability_zone,omitempty"`
+	AvailabilityZones         []string           `json:"availability_zones,omitempty"`
 	LoadbalancerSubnetID      string             `json:"loadbalancer_subnet_id"`
 	InsecureRegistries        []string           `json:"insecure_registries,omitempty"`
 	DNSDomain                 string             `json:"dns_domain,omitempty"`
 	SecurityPolicySyncEnabled *bool              `json:"security_policy_sync_enabled,omitempty"`
+	ClusterType               string             `json:"cluster_type,omitempty"`
 }
 
 // Map builds request params.

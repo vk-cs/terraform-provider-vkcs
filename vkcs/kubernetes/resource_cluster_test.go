@@ -24,7 +24,11 @@ func TestAccKubernetesCluster_basic_big(t *testing.T) {
 		ProviderFactories: acctest.AccTestProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterBasic, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesClusterBase": testAccKubernetesClusterBase, "ClusterName": clusterName}),
+				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterBasic, map[string]string{
+					"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
+					"TestAccKubernetesClusterBase":    testAccKubernetesClusterBase,
+					"ClusterName":                     clusterName,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckKubernetesClusterExists("vkcs_kubernetes_cluster.basic", &cluster),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_cluster.basic", "name", clusterName),
@@ -46,8 +50,14 @@ func TestAccKubernetesCluster_update_big(t *testing.T) {
 		ProviderFactories: acctest.AccTestProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterUpdate, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesClusterBase": testAccKubernetesClusterBase, "ClusterName": clusterName,
-					"EtcdVolumeSize": "10", "CleanVolumes": "false", "KubeLogLevel": "0"}),
+				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterUpdate, map[string]string{
+					"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
+					"TestAccKubernetesClusterBase":    testAccKubernetesClusterBase,
+					"ClusterName":                     clusterName,
+					"EtcdVolumeSize":                  "10",
+					"CleanVolumes":                    "false",
+					"KubeLogLevel":                    "0",
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckKubernetesClusterExists("vkcs_kubernetes_cluster.update", &cluster),
 					testAccCheckKubernetesClusterLabels("vkcs_kubernetes_cluster.update", map[string]string{
@@ -58,8 +68,14 @@ func TestAccKubernetesCluster_update_big(t *testing.T) {
 				),
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterUpdate, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesClusterBase": testAccKubernetesClusterBase, "ClusterName": clusterName,
-					"EtcdVolumeSize": "20", "CleanVolumes": "true", "KubeLogLevel": "8"}),
+				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterUpdate, map[string]string{
+					"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
+					"TestAccKubernetesClusterBase":    testAccKubernetesClusterBase,
+					"ClusterName":                     clusterName,
+					"EtcdVolumeSize":                  "20",
+					"CleanVolumes":                    "true",
+					"KubeLogLevel":                    "8",
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckKubernetesClusterExists("vkcs_kubernetes_cluster.update", &cluster),
 					testAccCheckKubernetesClusterLabels("vkcs_kubernetes_cluster.update", map[string]string{
@@ -82,8 +98,11 @@ func TestAccKubernetesCluster_resize_big(t *testing.T) {
 		ProviderFactories: acctest.AccTestProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterResize, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesClusterBase": testAccKubernetesClusterBase, "ClusterName": clusterName,
-					"FlavorName": "Standard-2-8-50",
+				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterResize, map[string]string{
+					"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
+					"TestAccKubernetesClusterBase":    testAccKubernetesClusterBase,
+					"ClusterName":                     clusterName,
+					"FlavorName":                      "Standard-2-8-50",
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckKubernetesClusterExists("vkcs_kubernetes_cluster.basic", &cluster),
@@ -92,8 +111,11 @@ func TestAccKubernetesCluster_resize_big(t *testing.T) {
 			},
 			acctest.ImportStep("vkcs_kubernetes_cluster.basic"),
 			{
-				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterResize, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesClusterBase": testAccKubernetesClusterBase, "ClusterName": clusterName,
-					"FlavorName": "Standard-4-12",
+				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterResize, map[string]string{
+					"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
+					"TestAccKubernetesClusterBase":    testAccKubernetesClusterBase,
+					"ClusterName":                     clusterName,
+					"FlavorName":                      "Standard-4-12",
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckKubernetesClusterExists("vkcs_kubernetes_cluster.basic", &cluster),
@@ -244,11 +266,11 @@ resource "vkcs_kubernetes_cluster" "update" {
   name                = "{{ .ClusterName }}"
   cluster_template_id = data.vkcs_kubernetes_clustertemplate.base.id
   master_flavor       = data.vkcs_compute_flavor.base.id
-  master_count        = 1
+  master_count        = 3
   network_id          = vkcs_networking_network.base.id
   subnet_id           = vkcs_networking_subnet.base.id
   floating_ip_enabled = false
-  availability_zone   = "MS1"
+  cluster_type 		  = "regional"
 
   labels = {
 	etcd_volume_size = "{{ .EtcdVolumeSize }}"
