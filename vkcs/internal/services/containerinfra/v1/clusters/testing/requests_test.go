@@ -12,13 +12,12 @@ import (
 )
 
 func TestClusterCreateOpts(t *testing.T) {
-
 	labels := map[string]string{
-		"cluster_node_volume_type": "ms1",
+		"cluster_node_volume_type": "ceph-ssd",
 		"container_infra_prefix":   "registry.infra.mail.ru:5010/",
 	}
 
-	mcount := 2
+	mcount := 3
 
 	createOpts := clusters.CreateOpts{
 		ClusterTemplateID:  "95663bae-6763-4a53-9424-831975285cc1",
@@ -33,13 +32,14 @@ func TestClusterCreateOpts(t *testing.T) {
 		FloatingIPEnabled:  false,
 		InsecureRegistries: []string{"1.2.3.4", "6.7.8.9:1234"},
 		DNSDomain:          "cluster.example",
+		ClusterType:        "standard",
 	}
 
 	b, _ := createOpts.Map()
 
-	assert.IsType(t, map[string]interface{}{}, b["labels"])
+	assert.IsType(t, map[string]any{}, b["labels"])
 	assert.Len(t, b["labels"], 2)
-	assert.Len(t, b, 12)
+	assert.Len(t, b, 13)
 }
 
 func k8sConfigFixture(t *testing.T, id string) {

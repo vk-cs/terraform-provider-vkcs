@@ -150,6 +150,12 @@ func DataSourceKubernetesCluster() *schema.Resource {
 				Computed:    true,
 				Description: "Availability zone of the cluster.",
 			},
+			"availability_zones": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
+				Description: "Availability zones of the regional cluster",
+			},
 			"k8s_config": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -178,6 +184,11 @@ func DataSourceKubernetesCluster() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Enables syncing of security policies of cluster.",
+			},
+			"cluster_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of the kubernetes cluster, may be `standard` or `regional`",
 			},
 		},
 		Description: "Use this data source to get the ID of an available VKCS kubernetes cluster.",
@@ -221,11 +232,13 @@ func dataSourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData
 	d.Set("api_lb_fip", c.APILBFIP)
 	d.Set("ingress_floating_ip", c.IngressFloatingIP)
 	d.Set("registry_auth_password", c.RegistryAuthPassword)
-	d.Set("availability_zone", c.AvailabilityZone)
 	d.Set("loadbalancer_subnet_id", c.LoadbalancerSubnetID)
 	d.Set("insecure_registries", c.InsecureRegistries)
 	d.Set("dns_domain", c.DNSDomain)
 	d.Set("sync_security_policy", c.SecurityPolicySyncEnabled)
+	d.Set("cluster_type", c.ClusterType)
+	d.Set("availability_zone", c.AvailabilityZone)
+	d.Set("availability_zones", c.AvailabilityZones)
 
 	k8sConfig, err := clusters.KubeConfigGet(containerInfraClient, c.UUID)
 	if err != nil {

@@ -7,9 +7,11 @@ import (
 	"time"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
@@ -39,6 +41,11 @@ var (
 	clusterStatusRunning      clusterStatus = "RUNNING"
 	clusterStatusError        clusterStatus = "ERROR"
 	clusterStatusShutoff      clusterStatus = "SHUTOFF"
+)
+
+var (
+	clusterTypeStandard = "standard"
+	clusterTypeRegional = "regional"
 )
 
 var stateStatusMap = map[clusterStatus]string{
@@ -146,7 +153,7 @@ func ResourceKubernetesCluster() *schema.Resource {
 					"  * `etcd_volume_size` to set etcd volume size in GB. Default 10.\n" +
 					"  * `kube_log_level` to set log level for kubelet in range 0 to 8. Default 0.\n" +
 					"  * `master_volume_size` to set master vm volume size in GB. Default 50.\n" +
-					"  * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.\n",
+					"  * `cluster_node_volume_type` to set master vm volume type. Default ceph-ssd.\n",
 			},
 			"all_labels": {
 				Type:        schema.TypeMap,
@@ -155,11 +162,12 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Description: "The read-only map of all cluster labels.",
 			},
 			"master_count": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
-				Description: "The number of master nodes for the cluster. Changing this creates a new cluster.",
+				Type:             schema.TypeInt,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				Description:      "The number of master nodes for the cluster. Changing this creates a new cluster.",
+				ValidateDiagFunc: validation.ToDiagFunc(validateMasterCount),
 			},
 			"master_addresses": {
 				Type:        schema.TypeList,
@@ -241,10 +249,21 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Description: "The UUID of the load balancer's subnet. Changing this creates new cluster.",
 			},
 			"availability_zone": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Availability zone of the cluster.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"availability_zones"},
+				Description:   "Availability zone of the cluster, set this argument only for cluster with type `standard`.",
+			},
+			"availability_zones": {
+				Type:          schema.TypeSet,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				MinItems:      3,
+				Optional:      true,
+				ForceNew:      true,
+				Computed:      true,
+				ConflictsWith: []string{"availability_zone"},
+				Description:   "Availability zones of the regional cluster, set this argument only for cluster with type `regional`. If you do not set this argument, the availability zones will be selected automatically.",
 			},
 			"k8s_config": {
 				Type:        schema.TypeString,
@@ -272,23 +291,85 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Computed:    true,
 				Description: "Enables syncing of security policies of cluster. Default value is false.",
 			},
+			"cluster_type": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          clusterTypeStandard,
+				ForceNew:         true,
+				Description:      "Type of the kubernetes cluster, may be `standard` or `regional`. Default type is `standard`.",
+				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{clusterTypeStandard, clusterTypeRegional}, false)),
+			},
 		},
-		Description: "Provides a kubernetes cluster resource. This can be used to create, modify and delete kubernetes clusters.",
+		CustomizeDiff: resourceKubernetesClusterCustomizeDiff,
+		Description:   "Provides a kubernetes cluster resource. This can be used to create, modify and delete kubernetes clusters.",
 	}
 }
 
+func validateMasterCount(i any, k string) (warnings []string, errors []error) {
+	v, ok := i.(int)
+	if !ok {
+		errors = append(errors, fmt.Errorf("expected type of %s to be integer", k))
+		return warnings, errors
+	}
+
+	if v < 1 {
+		errors = append(errors, fmt.Errorf("expected %s to be at least (%d), got %d", k, 1, v))
+		return warnings, errors
+	}
+
+	if v%2 == 0 {
+		errors = append(errors, fmt.Errorf("expected %s to be odd, got %d", k, v))
+		return warnings, errors
+	}
+
+	return warnings, errors
+}
+
+func resourceKubernetesClusterCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	newClusterType := diff.Get("cluster_type").(string)
+	switch newClusterType {
+	case clusterTypeStandard:
+		if _, ok := diff.GetOk("availability_zone"); !ok {
+			return fmt.Errorf("availability_zone must be specified for cluster with the type standard")
+		}
+
+		if !diff.GetRawConfig().GetAttr("availability_zones").IsNull() {
+			return fmt.Errorf("do not specify availability_zones for cluster with the type standard")
+		}
+	case clusterTypeRegional:
+		if masterCount, ok := diff.GetOk("master_count"); ok {
+			mCount := masterCount.(int)
+			if mCount < 3 {
+				return fmt.Errorf("master_count for regional cluster type if set must be greater than or equal to 3")
+			}
+		}
+
+		if !diff.GetRawConfig().GetAttr("availability_zone").IsNull() {
+			return fmt.Errorf("do not specify availability_zone for cluster with the type regional")
+		}
+	}
+
+	return nil
+}
+
 func resourceKubernetesClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// Get and check labels map.
+	rawLabels := d.Get("labels").(map[string]any)
+	labels, err := extractKubernetesLabelsMap(rawLabels)
+	if err != nil {
+		return diag.Diagnostics{diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  err.Error(),
+			AttributePath: cty.Path{
+				cty.GetAttrStep{Name: "labels"},
+			},
+		}}
+	}
+
 	config := meta.(clients.Config)
 	containerInfraClient, err := config.ContainerInfraV1Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("error creating container infra client: %s", err)
-	}
-
-	// Get and check labels map.
-	rawLabels := d.Get("labels").(map[string]interface{})
-	labels, err := extractKubernetesLabelsMap(rawLabels)
-	if err != nil {
-		return diag.FromErr(err)
 	}
 
 	createOpts := clusters.CreateOpts{
@@ -305,25 +386,25 @@ func resourceKubernetesClusterCreate(ctx context.Context, d *schema.ResourceData
 		APILBFIP:             d.Get("api_lb_fip").(string),
 		LoadbalancerSubnetID: d.Get("loadbalancer_subnet_id").(string),
 		RegistryAuthPassword: d.Get("registry_auth_password").(string),
-		AvailabilityZone:     d.Get("availability_zone").(string),
 		DNSDomain:            d.Get("dns_domain").(string),
+		ClusterType:          d.Get("cluster_type").(string),
+	}
+
+	switch createOpts.ClusterType {
+	case clusterTypeStandard:
+		createOpts.AvailabilityZone = d.Get("availability_zone").(string)
+	case clusterTypeRegional:
+		if availabilityZones, ok := d.GetOk("availability_zones"); ok {
+			createOpts.AvailabilityZones = util.ExpandToStringSlice(availabilityZones.(*schema.Set).List())
+		}
 	}
 
 	if masterCount, ok := d.GetOk("master_count"); ok {
-		mCount := masterCount.(int)
-		if mCount < 1 {
-			return diag.Errorf("master_count if set must be greater or equal 1: %s", err)
-		}
-		createOpts.MasterCount = mCount
+		createOpts.MasterCount = masterCount.(int)
 	}
 
 	if registriesRaw, ok := d.GetOk("insecure_registries"); ok {
-		registries := registriesRaw.([]interface{})
-		insecureRegistries := make([]string, 0, len(registries))
-		for _, val := range registries {
-			insecureRegistries = append(insecureRegistries, val.(string))
-		}
-		createOpts.InsecureRegistries = insecureRegistries
+		createOpts.InsecureRegistries = util.ExpandToStringSlice(registriesRaw.([]any))
 	}
 
 	if syncSecurityPolicyRaw, ok := d.GetOk("sync_security_policy"); ok {
@@ -387,11 +468,18 @@ func resourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("ingress_floating_ip", cluster.IngressFloatingIP)
 	d.Set("loadbalancer_subnet_id", cluster.LoadbalancerSubnetID)
 	d.Set("registry_auth_password", cluster.RegistryAuthPassword)
-	d.Set("availability_zone", cluster.AvailabilityZone)
 	d.Set("region", util.GetRegion(d, config))
 	d.Set("insecure_registries", cluster.InsecureRegistries)
 	d.Set("dns_domain", cluster.DNSDomain)
 	d.Set("sync_security_policy", cluster.SecurityPolicySyncEnabled)
+	d.Set("cluster_type", cluster.ClusterType)
+
+	switch cluster.ClusterType {
+	case clusterTypeStandard:
+		d.Set("availability_zone", cluster.AvailabilityZone)
+	case clusterTypeRegional:
+		d.Set("availability_zones", cluster.AvailabilityZones)
+	}
 
 	k8sConfig, err := clusters.KubeConfigGet(containerInfraClient, cluster.UUID)
 	if err != nil {

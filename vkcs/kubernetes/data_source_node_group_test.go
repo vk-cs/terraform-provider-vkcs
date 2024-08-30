@@ -53,6 +53,12 @@ func TestAccKubernetesNodeGroupDataSource_migrateToFramework_big(t *testing.T) {
 				Config: nodeGroupConfig,
 			},
 			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"vkcs": {
+						VersionConstraint: "0.4.0",
+						Source:            "vk-cs/vkcs",
+					},
+				},
 				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 				Config:                   acctest.AccTestRenderConfig(testAccKubernetesNodeGroupDataSourceBasic, map[string]string{"TestAccKubernetesNodeGroupBasic": nodeGroupConfig}),
 				PlanOnly:                 true,

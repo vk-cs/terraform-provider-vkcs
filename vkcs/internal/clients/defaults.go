@@ -4,5 +4,5 @@ const (
 	DefaultIdentityEndpoint   = "https://infra.mail.ru/identity/v3/"
 	DefaultUserDomainName     = "users"
 	DefaultRegionName         = "RegionOne"
-	CloudContainersAPIVersion = "1.31"
+	CloudContainersAPIVersion = "1.33"
 )

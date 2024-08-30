@@ -10,8 +10,12 @@ description: |-
 
 {{ .Description }}
 
-## Example Usage
-{{tffile .ExampleFile}}
+## Standard Kubernetes cluster
+{{tffile "examples/kubernetes/cluster/standard/main.tf"}}
+
+## Regional Kubernetes cluster
+{{tffile "examples/kubernetes/cluster/regional/main.tf"}}
+
 {{ .SchemaMarkdown }}
 
 ## Import

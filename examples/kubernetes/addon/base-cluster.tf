@@ -1,1 +1,1 @@
-../cluster/main.tf
+../cluster/standard/main.tf

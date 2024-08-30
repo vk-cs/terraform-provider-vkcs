@@ -1,1 +1,0 @@
-../clustertemplate/main.tf
