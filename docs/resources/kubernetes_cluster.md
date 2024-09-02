@@ -10,10 +10,11 @@ description: |-
 
 Provides a kubernetes cluster resource. This can be used to create, modify and delete kubernetes clusters.
 
-## Example Usage
+## Standard Kubernetes cluster
 ```terraform
 resource "vkcs_kubernetes_cluster" "k8s-cluster" {
-  name                = "k8s-cluster"
+  name                = "k8s-standard-cluster"
+  cluster_type        = "standard"
   cluster_template_id = data.vkcs_kubernetes_clustertemplate.k8s_24.id
   master_flavor       = data.vkcs_compute_flavor.basic.id
   master_count        = 1
@@ -39,9 +40,38 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
   ]
 }
 ```
-## Argument Reference
-- `availability_zone` **required** *string* &rarr;  Availability zone of the cluster.
 
+## Regional Kubernetes cluster
+```terraform
+resource "vkcs_kubernetes_cluster" "k8s-cluster" {
+  name                = "k8s-regional-cluster"
+  cluster_type        = "regional"
+  cluster_template_id = data.vkcs_kubernetes_clustertemplate.k8s_24.id
+  master_flavor       = data.vkcs_compute_flavor.basic.id
+  master_count        = 3
+
+  labels = {
+    cloud_monitoring         = "true"
+    kube_log_level           = "2"
+    clean_volumes            = "true"
+    master_volume_size       = "100"
+    cluster_node_volume_type = "ceph-ssd"
+  }
+
+  network_id          = vkcs_networking_network.app.id
+  subnet_id           = vkcs_networking_subnet.app.id
+  floating_ip_enabled = true
+
+  sync_security_policy = true
+  # If your configuration also defines a network for the instance,
+  # ensure it is attached to a router before creating of the instance
+  depends_on = [
+    vkcs_networking_router_interface.app,
+  ]
+}
+```
+
+## Argument Reference
 - `cluster_template_id` **required** *string* &rarr;  The UUID of the Kubernetes cluster template. It can be obtained using the cluster_template data source.
 
 - `floating_ip_enabled` **required** *boolean* &rarr;  Floating ip is enabled.
@@ -55,6 +85,12 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 - `api_lb_fip` optional *string* &rarr;  API LoadBalancer fip. IP address field.
 
 - `api_lb_vip` optional *string* &rarr;  API LoadBalancer vip. IP address field.
+
+- `availability_zone` optional *string* &rarr;  Availability zone of the cluster, set this argument only for cluster with type `standard`.
+
+- `availability_zones` optional *set of* *string* &rarr;  Availability zones of the regional cluster, set this argument only for cluster with type `regional`. If you do not set this argument, the availability zones will be selected automatically.
+
+- `cluster_type` optional *string* &rarr;  Type of the kubernetes cluster, may be `standard` or `regional`. Default type is `standard`.
 
 - `dns_domain` optional *string* &rarr;  Custom DNS cluster domain. Changing this creates a new cluster.
 
@@ -72,7 +108,7 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
   * `etcd_volume_size` to set etcd volume size in GB. Default 10.
   * `kube_log_level` to set log level for kubelet in range 0 to 8. Default 0.
   * `master_volume_size` to set master vm volume size in GB. Default 50.
-  * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.
+  * `cluster_node_volume_type` to set master vm volume type. Default ceph-ssd.
 
 - `loadbalancer_subnet_id` optional *string* &rarr;  The UUID of the load balancer's subnet. Changing this creates new cluster.
 
