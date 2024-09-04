@@ -7,11 +7,11 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.8.3 (unreleased)
+#### v0.8.3
 - Add ability to choose type of kubernetes cluster, standard or regional
 - Add cluster_type and availability_zones argument to vkcs_kubernetes_cluster
-- Fix unexpected state error when updating volume_type of attached vkcs_blocstorage_volume
-- Add a new pending status for the vkcs_blocstorage_volume extending
+- Fix unexpected state error when updating volume_type of attached vkcs_blockstorage_volume
+- Add a new pending status for the vkcs_blockstorage_volume extending
 - Add all_metadata computed field to vkcs_blockstorage_volume resource
 - Suppress out-of-scope plan changes in vkcs_blockstorage_volume metadata
 - Increased the timeout for create and update operations for vkcs_sharedfilesystem_share
