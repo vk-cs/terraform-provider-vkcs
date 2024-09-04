@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.8.2",
+  "provider_version": "v0.8.3",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -149,6 +149,15 @@
       },
       "vkcs_blockstorage_volume": {
         "schema": {
+          "all_metadata": {
+            "type": "TypeMap",
+            "description": "Map of key-value metadata of the volume.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            },
+            "new_since": "v0.8.3"
+          },
           "availability_zone": {
             "type": "TypeString",
             "required": true,
@@ -168,8 +177,7 @@
           "metadata": {
             "type": "TypeMap",
             "optional": true,
-            "description": "Map of key-value metadata of the volume.",
-            "computed": true,
+            "description": "Key-value map to configure metadata of the volume. _note_ Changes to keys that are not in scope, i.e. not configured here, will not be reflected in planned changes, if any, so those keys can be `silently` removed during an update.",
             "elem": {
               "type": "TypeString"
             }
@@ -3308,14 +3316,34 @@
           },
           "availability_zone": {
             "type": "TypeString",
-            "required": true,
-            "description": "Availability zone of the cluster.",
+            "optional": true,
+            "description": "Availability zone of the cluster, set this argument only for cluster with type `standard`.",
             "force_new": true
+          },
+          "availability_zones": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "Availability zones of the regional cluster, set this argument only for cluster with type `regional`. If you do not set this argument, the availability zones will be selected automatically.",
+            "computed": true,
+            "force_new": true,
+            "elem": {
+              "type": "TypeString"
+            },
+            "min_items": 3,
+            "new_since": "v0.8.3"
           },
           "cluster_template_id": {
             "type": "TypeString",
             "required": true,
             "description": "The UUID of the Kubernetes cluster template. It can be obtained using the cluster_template data source."
+          },
+          "cluster_type": {
+            "type": "TypeString",
+            "optional": true,
+            "default": "standard",
+            "description": "Type of the kubernetes cluster, may be `standard` or `regional`. Default type is `standard`.",
+            "force_new": true,
+            "new_since": "v0.8.3"
           },
           "created_at": {
             "type": "TypeString",
@@ -3366,7 +3394,7 @@
           "labels": {
             "type": "TypeMap",
             "optional": true,
-            "description": "The list of optional key value pairs representing additional properties of the cluster. _note_ Updating this attribute will not immediately apply the changes; these options will be used when recreating or deleting cluster nodes, for example, during an upgrade operation.\n\n  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16. _note_ Updating this value while the cluster is running is dangerous because it can lead to loss of connectivity of the cluster nodes.\n  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False. _note_ Changes to this value will be applied immediately.\n  * `cloud_monitoring` to enable cloud monitoring feature. Default False.\n  * `etcd_volume_size` to set etcd volume size in GB. Default 10.\n  * `kube_log_level` to set log level for kubelet in range 0 to 8. Default 0.\n  * `master_volume_size` to set master vm volume size in GB. Default 50.\n  * `cluster_node_volume_type` to set master vm volume type. Default ceph-hdd.\n",
+            "description": "The list of optional key value pairs representing additional properties of the cluster. _note_ Updating this attribute will not immediately apply the changes; these options will be used when recreating or deleting cluster nodes, for example, during an upgrade operation.\n\n  * `calico_ipv4pool` to set subnet where pods will be created. Default 10.100.0.0/16. _note_ Updating this value while the cluster is running is dangerous because it can lead to loss of connectivity of the cluster nodes.\n  * `clean_volumes` to remove pvc volumes when deleting a cluster. Default False. _note_ Changes to this value will be applied immediately.\n  * `cloud_monitoring` to enable cloud monitoring feature. Default False.\n  * `etcd_volume_size` to set etcd volume size in GB. Default 10.\n  * `kube_log_level` to set log level for kubelet in range 0 to 8. Default 0.\n  * `master_volume_size` to set master vm volume size in GB. Default 50.\n  * `cluster_node_volume_type` to set master vm volume type. Default ceph-ssd.\n",
             "computed": true,
             "elem": {
               "type": "TypeString"
@@ -6105,9 +6133,9 @@
           }
         },
         "timeouts": {
-          "create": 20,
+          "create": 40,
           "delete": 20,
-          "update": 20
+          "update": 40
         },
         "description": "Use this resource to configure a share."
       },
@@ -8528,6 +8556,15 @@
             "description": "Availability zone of the cluster.",
             "computed": true
           },
+          "availability_zones": {
+            "type": "TypeSet",
+            "description": "Availability zones of the regional cluster",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            },
+            "new_since": "v0.8.3"
+          },
           "cluster_id": {
             "type": "TypeString",
             "optional": true,
@@ -8538,6 +8575,12 @@
             "type": "TypeString",
             "description": "The UUID of the V1 Container Infra cluster template.",
             "computed": true
+          },
+          "cluster_type": {
+            "type": "TypeString",
+            "description": "Type of the kubernetes cluster, may be `standard` or `regional`",
+            "computed": true,
+            "new_since": "v0.8.3"
           },
           "created_at": {
             "type": "TypeString",
