@@ -88,9 +88,9 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 
 - `availability_zone` optional *string* &rarr;  Availability zone of the cluster, set this argument only for cluster with type `standard`.
 
-- `availability_zones` optional *set of* *string* &rarr;  Availability zones of the regional cluster, set this argument only for cluster with type `regional`. If you do not set this argument, the availability zones will be selected automatically.
+- `availability_zones` optional *set of* *string* &rarr;  Availability zones of the regional cluster, set this argument only for cluster with type `regional`. If you do not set this argument, the availability zones will be selected automatically.<br>**New since v0.8.3**.
 
-- `cluster_type` optional *string* &rarr;  Type of the kubernetes cluster, may be `standard` or `regional`. Default type is `standard`.
+- `cluster_type` optional *string* &rarr;  Type of the kubernetes cluster, may be `standard` or `regional`. Default type is `standard`.<br>**New since v0.8.3**.
 
 - `dns_domain` optional *string* &rarr;  Custom DNS cluster domain. Changing this creates a new cluster.
 

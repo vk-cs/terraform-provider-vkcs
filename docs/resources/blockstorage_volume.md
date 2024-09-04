@@ -61,7 +61,7 @@ resource "vkcs_blockstorage_volume" "bootable" {
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
-- `all_metadata` *map of* *string* &rarr;  Map of key-value metadata of the volume.
+- `all_metadata` *map of* *string* &rarr;  Map of key-value metadata of the volume.<br>**New since v0.8.3**.
 
 - `id` *string* &rarr;  ID of the resource.
 
