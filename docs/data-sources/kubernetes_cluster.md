@@ -37,11 +37,11 @@ In addition to all arguments above, the following attributes are exported:
 
 - `availability_zone` *string* &rarr;  Availability zone of the cluster.
 
-- `availability_zones` *set of* *string* &rarr;  Availability zones of the regional cluster
+- `availability_zones` *set of* *string* &rarr;  Availability zones of the regional cluster<br>**New since v0.8.3**.
 
 - `cluster_template_id` *string* &rarr;  The UUID of the V1 Container Infra cluster template.
 
-- `cluster_type` *string* &rarr;  Type of the kubernetes cluster, may be `standard` or `regional`
+- `cluster_type` *string* &rarr;  Type of the kubernetes cluster, may be `standard` or `regional`<br>**New since v0.8.3**.
 
 - `created_at` *string* &rarr;  The time at which cluster was created.
 
