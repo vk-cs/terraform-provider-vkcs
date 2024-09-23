@@ -30,6 +30,7 @@ func TestAccKubernetesSecurityPolicy_basic_big(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_kubernetes_security_policy.basic", "enabled", "true"),
 				),
 			},
+			acctest.ImportStep("vkcs_kubernetes_security_policy.basic"),
 		},
 	})
 }

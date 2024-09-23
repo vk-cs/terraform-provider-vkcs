@@ -19,8 +19,11 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
-var _ resource.Resource = &SecurityPolicyResource{}
-var _ resource.ResourceWithConfigure = &SecurityPolicyResource{}
+var (
+	_ resource.Resource                = &SecurityPolicyResource{}
+	_ resource.ResourceWithConfigure   = &SecurityPolicyResource{}
+	_ resource.ResourceWithImportState = &SecurityPolicyResource{}
+)
 
 func NewSecurityPolicyResource() resource.Resource {
 	return &SecurityPolicyResource{}
@@ -310,4 +313,8 @@ func (r *SecurityPolicyResource) Delete(ctx context.Context, req resource.Delete
 		resp.Diagnostics.AddError("Error deleting vkcs_kubernetes_security_policy", err.Error())
 		return
 	}
+}
+
+func (r *SecurityPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
