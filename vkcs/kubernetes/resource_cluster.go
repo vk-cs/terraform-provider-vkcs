@@ -473,13 +473,8 @@ func resourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("dns_domain", cluster.DNSDomain)
 	d.Set("sync_security_policy", cluster.SecurityPolicySyncEnabled)
 	d.Set("cluster_type", cluster.ClusterType)
-
-	switch cluster.ClusterType {
-	case clusterTypeStandard:
-		d.Set("availability_zone", cluster.AvailabilityZone)
-	case clusterTypeRegional:
-		d.Set("availability_zones", cluster.AvailabilityZones)
-	}
+	d.Set("availability_zone", cluster.AvailabilityZone)
+	d.Set("availability_zones", cluster.AvailabilityZones)
 
 	k8sConfig, err := clusters.KubeConfigGet(containerInfraClient, cluster.UUID)
 	if err != nil {
