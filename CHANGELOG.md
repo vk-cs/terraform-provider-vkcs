@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.8.4 (unreleased)
+- Fix forced re-creation of the vkcs_kubernetes_cluster due to redundant planned changes for availability_zones argument
+
 #### v0.8.3
 - Add ability to choose type of kubernetes cluster, standard or regional
 - Add cluster_type and availability_zones argument to vkcs_kubernetes_cluster
