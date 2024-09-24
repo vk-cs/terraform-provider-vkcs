@@ -10,6 +10,7 @@ description: |-
 #### v0.8.4 (unreleased)
 - Add ability to import vkcs_kubernetes_security_policy into the state 
 - Fix forced re-creation of the vkcs_kubernetes_cluster due to redundant planned changes for availability_zones argument
+- Fix order-induced changes in the plan for "availability_zones" of the vkcs_kubernetes_node_group resource
 
 #### v0.8.3
 - Add ability to choose type of kubernetes cluster, standard or regional
