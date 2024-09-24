@@ -37,9 +37,9 @@ func TestAccKubernetesNodeGroup_basic_big(t *testing.T) {
 	})
 }
 
-func TestAccKubernetesNodeGroup_resize_big(t *testing.T) {
+func TestAccKubernetesNodeGroup_fullUpdate_big(t *testing.T) {
 	var nodeGroup nodegroups.NodeGroup
-	clusterName := "tfacc-ng-resize-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+	clusterName := "tfacc-ng-basic-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesNodeGroupClusterBase, map[string]string{"ClusterName": clusterName})
 
 	resource.Test(t, resource.TestCase{
@@ -47,22 +47,79 @@ func TestAccKubernetesNodeGroup_resize_big(t *testing.T) {
 		ProviderFactories: acctest.AccTestProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupResize, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesNodeGroupClusterBase": clusterConfig,
-					"FlavorName": "Standard-2-8-50"}),
+				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupFullUpdateOld, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesNodeGroupClusterBase": clusterConfig}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckKubernetesNodeGroupExists("vkcs_kubernetes_node_group.resize", &nodeGroup),
-					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.resize", "flavor_id", "data.vkcs_compute_flavor.resize", "id"),
+					testAccCheckKubernetesNodeGroupExists("vkcs_kubernetes_node_group.full", &nodeGroup),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.full", "cluster_id", "vkcs_kubernetes_cluster.base", "id"),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.full", "flavor_id", "data.vkcs_compute_flavor.node_flavor", "id"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "availability_zones.#", "3"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "node_count", "1"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "max_nodes", "5"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "min_nodes", "1"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "autoscaling_enabled", "false"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "labels.#", "1"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "taints.#", "2"),
 				),
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupResize, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesNodeGroupClusterBase": clusterConfig,
-					"FlavorName": "Standard-4-12"}),
+				ResourceName:            "vkcs_kubernetes_node_group.full",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"labels", "taints"},
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupFullUpdateNew, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesNodeGroupClusterBase": clusterConfig}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckKubernetesNodeGroupExists("vkcs_kubernetes_node_group.resize", &nodeGroup),
-					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.resize", "flavor_id", "data.vkcs_compute_flavor.resize", "id"),
+					testAccCheckKubernetesNodeGroupExists("vkcs_kubernetes_node_group.full", &nodeGroup),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.full", "cluster_id", "vkcs_kubernetes_cluster.base", "id"),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.full", "flavor_id", "data.vkcs_compute_flavor.node_flavor", "id"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "availability_zones.#", "3"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "max_nodes", "10"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "min_nodes", "2"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "autoscaling_enabled", "true"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "labels.#", "2"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "taints.#", "1"),
 				),
 			},
-			acctest.ImportStep("vkcs_kubernetes_node_group.resize"),
+			{
+				ResourceName:            "vkcs_kubernetes_node_group.full",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"labels", "taints"},
+			},
+		},
+	})
+}
+
+func TestAccKubernetesNodeGroup_scale_big(t *testing.T) {
+	var nodeGroup nodegroups.NodeGroup
+	clusterName := "tfacc-ng-scale-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesNodeGroupClusterBase, map[string]string{"ClusterName": clusterName})
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupScale, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesNodeGroupClusterBase": clusterConfig,
+					"NodeCount": "1"}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKubernetesNodeGroupExists("vkcs_kubernetes_node_group.scale", &nodeGroup),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.scale", "flavor_id", "data.vkcs_compute_flavor.base", "id"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.scale", "node_count", "1"),
+				),
+			},
+			acctest.ImportStep("vkcs_kubernetes_node_group.scale"),
+			{
+				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupScale, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesNodeGroupClusterBase": clusterConfig,
+					"NodeCount": "2"}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKubernetesNodeGroupExists("vkcs_kubernetes_node_group.scale", &nodeGroup),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.scale", "flavor_id", "data.vkcs_compute_flavor.base", "id"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.scale", "node_count", "2"),
+				),
+			},
+			acctest.ImportStep("vkcs_kubernetes_node_group.scale"),
 		},
 	})
 }
@@ -139,21 +196,85 @@ resource "vkcs_kubernetes_node_group" "basic" {
 }
 `
 
-const testAccKubernetesNodeGroupResize = `
+const testAccKubernetesNodeGroupScale = `
 {{ .TestAccKubernetesNetworkingBase }}
 {{ .TestAccKubernetesNodeGroupClusterBase }}
 
-data "vkcs_compute_flavor" "resize" {
-  name = "{{ .FlavorName }}"
+resource "vkcs_kubernetes_node_group" "scale" {
+  cluster_id          = vkcs_kubernetes_cluster.base.id
+  name                = "tfacc-scale"
+  flavor_id           = data.vkcs_compute_flavor.base.id
+  node_count          = {{ .NodeCount }}
+  max_nodes           = 5
+  min_nodes           = 1
+  autoscaling_enabled = false
+}
+`
+
+const testAccKubernetesNodeGroupFullUpdateOld = `
+{{ .TestAccKubernetesNetworkingBase }}
+{{ .TestAccKubernetesNodeGroupClusterBase }}
+
+data "vkcs_compute_flavor" "node_flavor" {
+  name = "STD2-2-8"
 }
 
-resource "vkcs_kubernetes_node_group" "resize" {
+resource "vkcs_kubernetes_node_group" "full" {
   cluster_id          = vkcs_kubernetes_cluster.base.id
-  name                = "tfacc-resize"
-  flavor_id           = data.vkcs_compute_flavor.resize.id
+  name                = "tfacc-full-update"
+  flavor_id           = data.vkcs_compute_flavor.node_flavor.id
+  availability_zones  = ["ME1", "GZ1", "MS1"]
   node_count          = 1
   max_nodes           = 5
   min_nodes           = 1
   autoscaling_enabled = false
+  labels {
+    key   = "label1"
+    value = "test1"
+  }
+  taints {
+    key    = "taint1"
+    value  = "test1"
+    effect = "PreferNoSchedule"
+  }
+  taints {
+    key    = "taint2"
+    value  = "test2"
+    effect = "NoSchedule"
+  }
+}
+`
+
+const testAccKubernetesNodeGroupFullUpdateNew = `
+{{ .TestAccKubernetesNetworkingBase }}
+{{ .TestAccKubernetesNodeGroupClusterBase }}
+
+data "vkcs_compute_flavor" "node_flavor" {
+  name = "STD3-4-12"
+}
+
+resource "vkcs_kubernetes_node_group" "full" {
+  cluster_id           = vkcs_kubernetes_cluster.base.id
+  name                 = "tfacc-full-update"
+  flavor_id            = data.vkcs_compute_flavor.node_flavor.id
+  availability_zones   = ["ME1", "GZ1", "MS1"]
+  node_count           = 2
+  max_nodes            = 10
+  min_nodes            = 2
+  max_node_unavailable = 1
+  autoscaling_enabled  = true
+  labels {
+    key   = "label2"
+    value = "test3"
+  }
+  labels {
+    key   = "label3"
+    value = "test3"
+  }
+  taints {
+    key    = "taint3"
+    value  = "test3"
+    effect = "NoExecute"
+  }
 }
 `

@@ -170,13 +170,13 @@ func ResourceKubernetesNodeGroup() *schema.Resource {
 				Description: "The time at which node group was created.",
 			},
 			"availability_zones": {
-				Type:     schema.TypeList,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Description: "The list of availability zones of the node group. Zones `MS1` and  `GZ1` are available. By default, node group is being created at cluster's zone.\n" +
-					"**Important:** Receiving default AZ add it manually to your main.tf config to sync it with state to avoid node groups force recreation in the future.",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "The list of availability zones of the node group. By default, a node group is created at cluster's zone.",
 			},
 			"max_node_unavailable": {
 				Type:        schema.TypeInt,
@@ -208,13 +208,7 @@ func resourceKubernetesNodeGroupCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if zonesRaw, ok := d.GetOk("availability_zones"); ok {
-		zones := zonesRaw.([]interface{})
-		az := make([]string, 0, len(zones))
-		for _, zone := range zones {
-			z := zone.(string)
-			az = append(az, z)
-		}
-		createOpts.AvailabilityZones = az
+		createOpts.AvailabilityZones = util.ExpandToStringSlice(zonesRaw.(*schema.Set).List())
 	}
 
 	if ngName, ok := d.GetOk("name"); ok {
