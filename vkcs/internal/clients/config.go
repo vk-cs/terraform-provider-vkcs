@@ -88,7 +88,7 @@ func ConfigureSdkProvider(d *schema.ResourceData, terraformVersion string) (Conf
 			AllowReauth:      true,
 			MaxRetries:       maxRetriesCount,
 			TerraformVersion: terraformVersion,
-			SDKVersion:       meta.SDKVersionString(),
+			SDKVersion:       meta.SDKVersionString(), // nolint:staticcheck
 			MutexKV:          mutexkv.NewMutexKV(),
 		},
 		containerInfraV1MicroVersion,
