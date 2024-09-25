@@ -7,7 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.8.4 (unreleased)
+#### v0.8.4
 - Add ability to import vkcs_kubernetes_security_policy into the state 
 - Fix forced re-creation of the vkcs_kubernetes_cluster due to redundant planned changes for availability_zones argument
 - Fix order-induced changes in the plan for "availability_zones" of the vkcs_kubernetes_node_group resource
