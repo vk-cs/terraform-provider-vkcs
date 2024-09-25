@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.8.3",
+  "provider_version": "v0.8.4",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -3521,9 +3521,9 @@
             "description": "Determines whether the autoscaling is enabled."
           },
           "availability_zones": {
-            "type": "TypeList",
+            "type": "TypeSet",
             "optional": true,
-            "description": "The list of availability zones of the node group. Zones `MS1` and  `GZ1` are available. By default, node group is being created at cluster's zone.\n**Important:** Receiving default AZ add it manually to your main.tf config to sync it with state to avoid node groups force recreation in the future.",
+            "description": "The list of availability zones of the node group. By default, a node group is created at cluster's zone.",
             "computed": true,
             "force_new": true,
             "elem": {
