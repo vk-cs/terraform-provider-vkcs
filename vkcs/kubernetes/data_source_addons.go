@@ -138,7 +138,7 @@ func (d *AddonsDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	availableAddons = removeInstalledAddons(availableAddons, installedAddons)
 
-	flattenedAddons, diags := flattenAddons(ctx, availableAddons, installedAddons)
+	flattenedAddons, diags := flattenAddons(availableAddons, installedAddons)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -153,7 +153,7 @@ func (d *AddonsDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func flattenAddons(ctx context.Context, availableAddons, installedAddons []v1.Addon) (r []AddonModel, diags diag.Diagnostics) {
+func flattenAddons(availableAddons, installedAddons []v1.Addon) (r []AddonModel, diags diag.Diagnostics) {
 	for _, a := range availableAddons {
 		r = append(r, AddonModel{
 			ID:        types.StringValue(a.ID),
