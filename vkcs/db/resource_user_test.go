@@ -70,8 +70,7 @@ func TestAccDatabaseUser_full(t *testing.T) {
 					resource.TestCheckResourceAttrPair("vkcs_db_user.user", "dbms_id", "vkcs_db_instance.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_user.user", "host", "192.168.0.1"),
 					resource.TestCheckResourceAttr("vkcs_db_user.user", "databases.#", "2"),
-					resource.TestCheckResourceAttr("vkcs_db_user.user", "databases.0", "tfacc-db_1"),
-					resource.TestCheckResourceAttr("vkcs_db_user.user", "databases.1", "tfacc-db_2"),
+					testAccCheckUserDatabases(&user, []string{"tfacc-db_1", "tfacc-db_2"}),
 					resource.TestCheckResourceAttr("vkcs_db_user.user", "dbms_type", "instance"),
 				),
 			},
@@ -113,8 +112,7 @@ func TestAccDatabaseUser_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_db_user.user", "name", "tfacc-user"),
 					resource.TestCheckResourceAttr("vkcs_db_user.user", "host", "192.168.0.1"),
 					resource.TestCheckResourceAttr("vkcs_db_user.user", "databases.#", "2"),
-					resource.TestCheckResourceAttr("vkcs_db_user.user", "databases.0", "tfacc-db_1"),
-					resource.TestCheckResourceAttr("vkcs_db_user.user", "databases.1", "tfacc-db_2"),
+					testAccCheckUserDatabases(&user, []string{"tfacc-db_1", "tfacc-db_2"}),
 				),
 			},
 			{
@@ -136,8 +134,7 @@ func TestAccDatabaseUser_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_db_user.user", "name", "tfacc-new_user"),
 					resource.TestCheckResourceAttr("vkcs_db_user.user", "host", "192.168.0.2"),
 					resource.TestCheckResourceAttr("vkcs_db_user.user", "databases.#", "2"),
-					resource.TestCheckResourceAttr("vkcs_db_user.user", "databases.0", "tfacc-db_3"),
-					resource.TestCheckResourceAttr("vkcs_db_user.user", "databases.1", "tfacc-db_2"),
+					testAccCheckUserDatabases(&user, []string{"tfacc-db_2", "tfacc-db_3"}),
 				),
 			},
 			{
@@ -229,6 +226,29 @@ func testAccCheckDatabaseUserExists(n string, instance *instances.InstanceResp, 
 		}
 
 		return fmt.Errorf("user %s does not exist", n)
+	}
+}
+
+func testAccCheckUserDatabases(user *users.User, databases []string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if len(user.Databases) == 0 {
+			return fmt.Errorf("user does not have databases")
+		}
+
+		for _, database := range databases {
+			exist := false
+			for _, userDatabase := range user.Databases {
+				if userDatabase.Name == database {
+					exist = true
+					break
+				}
+			}
+			if !exist {
+				return fmt.Errorf("database with name: %s not found in user databases list", database)
+			}
+		}
+
+		return nil
 	}
 }
 

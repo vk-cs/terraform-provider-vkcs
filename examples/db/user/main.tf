@@ -4,5 +4,5 @@ resource "vkcs_db_user" "mysql-user" {
 
   dbms_id     = vkcs_db_instance.mysql.id
 
-  databases   = [vkcs_db_database.mysql-db.name]
+  databases   = [vkcs_db_database.mysql-db-1.name, vkcs_db_database.mysql-db-2.name]
 }
