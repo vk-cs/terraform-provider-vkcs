@@ -9,18 +9,18 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/users"
 )
 
-func extractDatabaseUserDatabases(v []interface{}) ([]db.CreateOpts, error) {
+func extractDatabaseUserDatabases(v []string) ([]db.CreateOpts, error) {
 	Batch := make([]db.CreateOpts, len(v))
 	for i, databaseName := range v {
 		var C db.CreateOpts
-		C.Name = databaseName.(string)
+		C.Name = databaseName
 		Batch[i] = C
 	}
 	return Batch, nil
 }
 
-func flattenDatabaseUserDatabases(v []db.Database) []interface{} {
-	databases := make([]interface{}, len(v))
+func flattenDatabaseUserDatabases(v []db.Database) []string {
+	databases := make([]string, len(v))
 	for i, db := range v {
 		databases[i] = db.Name
 	}

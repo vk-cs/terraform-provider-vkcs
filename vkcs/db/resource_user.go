@@ -62,7 +62,7 @@ func ResourceDatabaseUser() *schema.Resource {
 			},
 
 			"databases": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
 				ForceNew: false,
@@ -107,8 +107,11 @@ func resourceDatabaseUserCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	userName := d.Get("name").(string)
-	rawDatabases := d.Get("databases").([]interface{})
 	dbmsID := d.Get("dbms_id").(string)
+	var databases []string
+	if rawDatabases, ok := d.GetOk("databases"); ok {
+		databases = util.ExpandToStringSlice(rawDatabases.(*schema.Set).List())
+	}
 
 	dbmsResp, err := getDBMSResource(DatabaseV1Client, dbmsID)
 	if err != nil {
@@ -138,7 +141,7 @@ func resourceDatabaseUserCreate(ctx context.Context, d *schema.ResourceData, met
 		Password: d.Get("password").(string),
 		Host:     d.Get("host").(string),
 	}
-	u.Databases, err = extractDatabaseUserDatabases(rawDatabases)
+	u.Databases, err = extractDatabaseUserDatabases(databases)
 	if err != nil {
 		return diag.Errorf("unable to determine user`s databases")
 	}
@@ -246,32 +249,22 @@ func resourceDatabaseUserUpdate(ctx context.Context, d *schema.ResourceData, met
 			MinTimeout: dbUserMinTimeout,
 		}
 
-		oldDatabases, newDatabases := d.GetChange("databases")
-		databasesForDeletion := make([]interface{}, 0)
-		var exists bool
-		for _, oldDatabase := range oldDatabases.([]interface{}) {
-			exists = false
-			for _, newDatabase := range newDatabases.([]interface{}) {
-				if oldDatabase.(string) == newDatabase.(string) {
-					exists = true
-					break
-				}
-			}
-			if !exists {
-				databasesForDeletion = append(databasesForDeletion, oldDatabase)
-			}
-		}
+		oldDatabasesRaw, newDatabasesRaw := d.GetChange("databases")
+		oldDatabasesSet := oldDatabasesRaw.(*schema.Set)
+		newDatabasesSet := newDatabasesRaw.(*schema.Set)
+		databasesForDeletion := util.ExpandToStringSlice(oldDatabasesSet.Difference(newDatabasesSet).List())
 
-		for _, databaseForDeletion := range databasesForDeletion {
-			databaseName := databaseForDeletion.(string)
+		for _, databaseName := range databasesForDeletion {
 			err = users.DeleteDatabase(DatabaseV1Client, dbmsID, userName, databaseName, dbmsType).ExtractErr()
 			if err != nil {
 				return diag.Errorf("error deleting database from vkcs_db_user: %s", err)
 			}
 		}
-		newDatabasesOpts := make([]map[string]string, len(newDatabases.([]interface{})))
-		for i, newDatabase := range newDatabases.([]interface{}) {
-			newDatabasesOpts[i] = map[string]string{"name": newDatabase.(string)}
+
+		newDatabases := util.ExpandToStringSlice(newDatabasesSet.List())
+		newDatabasesOpts := make([]map[string]string, len(newDatabases))
+		for i, newDatabase := range newDatabases {
+			newDatabasesOpts[i] = map[string]string{"name": newDatabase}
 		}
 		userUpdateDatabasesOpts := users.UpdateDatabasesOpts{
 			Databases: newDatabasesOpts,
