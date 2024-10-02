@@ -21,7 +21,7 @@ data "vkcs_db_user" "db-user" {
 ## Argument Reference
 - `id` **required** *string* &rarr;  The id of the user in form "dbms_id/user_name".
 
-- `databases` optional *string* &rarr;  List of names of the databases, that user is created for.
+- `databases` optional *set of* *string* &rarr;  List of names of the databases, that user is created for.
 
 - `dbms_id` optional *string* &rarr;  ID of the instance or cluster that user is created for.
 
