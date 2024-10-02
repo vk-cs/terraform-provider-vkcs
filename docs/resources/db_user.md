@@ -19,7 +19,7 @@ resource "vkcs_db_user" "mysql-user" {
 
   dbms_id     = vkcs_db_instance.mysql.id
 
-  databases   = [vkcs_db_database.mysql-db.name]
+  databases   = [vkcs_db_database.mysql-db-1.name, vkcs_db_database.mysql-db-2.name]
 }
 ```
 ## Argument Reference
@@ -29,7 +29,7 @@ resource "vkcs_db_user" "mysql-user" {
 
 - `password` **required** sensitive *string* &rarr;  The password of the user.
 
-- `databases` optional *string* &rarr;  List of names of the databases, that user is created for.
+- `databases` optional *set of* *string* &rarr;  List of names of the databases, that user is created for.
 
 - `host` optional *string* &rarr;  IP address of the host that user will be accessible from.
 
