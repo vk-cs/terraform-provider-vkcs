@@ -9,7 +9,9 @@ import (
 )
 
 var (
-	_ datasource.DataSource = &DataSourceWrapper{}
+	_ datasource.DataSource                     = (*DataSourceWrapper)(nil)
+	_ datasource.DataSourceWithConfigValidators = (*DataSourceWrapper)(nil)
+	_ datasource.DataSourceWithValidateConfig   = (*DataSourceWrapper)(nil)
 )
 
 func NewDataSourceWrapper(dataSource datasource.DataSource, dataSourceJSON jsonschema.ResourceJSON) *DataSourceWrapper {
