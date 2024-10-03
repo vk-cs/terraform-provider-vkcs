@@ -1,0 +1,17 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Get information on a VKCS CDN shielding point of presence (POP).
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+{{tffile "examples/cdn/shielding_pop/main-datasource.tf"}}
+
+{{ .SchemaMarkdown }}

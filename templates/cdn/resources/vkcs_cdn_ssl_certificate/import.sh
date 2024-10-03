@@ -1,0 +1,1 @@
+terraform import vkcs_cdn_ssl_certificate.certificate <certificate_id>
