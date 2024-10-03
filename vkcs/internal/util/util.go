@@ -313,3 +313,17 @@ func GetFirstNotEmpty(values ...string) string {
 
 	return ""
 }
+
+func ErrorWithRequestID(err error, requestID string) error {
+	if err == nil {
+		return nil
+	}
+	if requestID == "" {
+		return err
+	}
+	return fmt.Errorf("%w\nRequest ID: %s", err, requestID)
+}
+
+func PointerOf[T any](v T) *T {
+	return &v
+}

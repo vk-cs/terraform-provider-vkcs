@@ -1,0 +1,28 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a CDN resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Notes
+
+### Specifying an ACL option
+All ACL (Access Control List) options follow the same structure, and its meaning depends on `policy_type` value. When `policy_type` 
+is "allow", it means that CDN will allow access for all possible values of ACL subject except for those specified in `excepted_values` argument, and when `policy_type` is
+"deny", CDN will deny access for all values of ACL subject except for values listed in `excepted_values` argument.
+
+## Import
+
+A CDN resource can be imported using the `id`, e.g.
+{{codefile "shell" "templates/cdn/resources/vkcs_cdn_resource/import.sh"}}

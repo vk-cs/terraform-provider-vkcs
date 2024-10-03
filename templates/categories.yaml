@@ -16,3 +16,4 @@ subCategoryMapping:
   dc: Direct Connect
   mlplatform: ML Platform
   monitoring: Cloud Monitoring
+  cdn: CDN

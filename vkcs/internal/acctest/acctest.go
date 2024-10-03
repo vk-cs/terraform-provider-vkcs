@@ -189,11 +189,12 @@ func AccTestGetStepsWithMigrationCases(steps []resource.TestStep) (migrationStep
 	return append(migrationSteps, steps...)
 }
 
-func ImportStep(resourceName string) resource.TestStep {
+func ImportStep(resourceName string, verifyIgnore ...string) resource.TestStep {
 	return resource.TestStep{
-		ResourceName:      resourceName,
-		ImportState:       true,
-		ImportStateVerify: true,
+		ResourceName:            resourceName,
+		ImportState:             true,
+		ImportStateVerify:       true,
+		ImportStateVerifyIgnore: verifyIgnore,
 	}
 }
 

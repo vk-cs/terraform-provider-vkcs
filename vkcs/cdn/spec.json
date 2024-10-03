@@ -1,0 +1,1521 @@
+{
+    "provider": {
+        "name": "vkcs"
+    },
+    "datasources": [
+        {
+            "name": "origin_group",
+            "description": "Use this data source to get information about a CDN origin group.",
+            "schema": {
+                "attributes": [
+                    {
+                        "name": "id",
+                        "int64": {
+                            "computed_optional_required": "computed",
+                            "description": "ID of the origin group."
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "description": "Name of the origin group."
+                        }
+                    },
+                    {
+                        "name": "origins",
+                        "list_nested": {
+                            "computed_optional_required": "computed",
+                            "description": "List of origin sources in the origin group.",
+                            "nested_object": {
+                                "attributes": [
+                                    {
+                                        "name": "source",
+                                        "string": {
+                                            "computed_optional_required": "computed",
+                                            "description": "IP address or domain name of the origin and the port, if custom port is used."
+                                        }
+                                    },
+                                    {
+                                        "name": "backup",
+                                        "bool": {
+                                            "computed_optional_required": "computed",
+                                            "description": "Defines whether the origin is a backup, meaning that it will not be used until one of active origins become unavailable."
+                                        }
+                                    },
+                                    {
+                                        "name": "enabled",
+                                        "bool": {
+                                            "computed_optional_required": "computed",
+                                            "description": "Enables or disables an origin source in the origin group."
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "region",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used."
+                        }
+                    },
+                    {
+                        "name": "use_next",
+                        "bool": {
+                            "computed_optional_required": "computed",
+                            "description": "Defines whether to use the next origin from the origin group if origin responds with 4XX or 5XX codes."
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "shielding_pop",
+            "description": "Use this data source to get ID of an available CDN origin shielding point of presence (PoP).",
+            "schema": {
+                "attributes": [
+                    {
+                        "name": "id",
+                        "int64": {
+                            "computed_optional_required": "computed",
+                            "description": "ID of the origin shielding location."
+                        }
+                    },
+                    {
+                        "name": "datacenter",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "Name of origin shielding location datacenter."
+                        }
+                    },
+                    {
+                        "name": "country",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "Country of origin shielding location."
+                        }
+                    },
+                    {
+                        "name": "city",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "City of origin shielding location."
+                        }
+                    },
+                    {
+                        "name": "region",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used."
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "shielding_pops",
+            "description": "Use this data source to get list of available CDN origin shielding points of presence (PoPs).",
+            "schema": {
+                "attributes": [
+                    {
+                        "name": "id",
+                        "string": {
+                            "computed_optional_required": "computed",
+                            "description": "ID of the resource."
+                        }
+                    },
+                    {
+                        "name": "region",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used."
+                        }
+                    },
+                    {
+                        "name": "shielding_pops",
+                        "list_nested": {
+                            "computed_optional_required": "computed",
+                            "description": "List of available origin shielding points of precense.",
+                            "nested_object": {
+                                "attributes": [
+                                    {
+                                        "name": "id",
+                                        "int64": {
+                                            "computed_optional_required": "computed",
+                                            "description": "ID of the origin shielding location."
+                                        }
+                                    },
+                                    {
+                                        "name": "datacenter",
+                                        "string": {
+                                            "computed_optional_required": "computed",
+                                            "description": "Name of origin shielding location datacenter."
+                                        }
+                                    },
+                                    {
+                                        "name": "country",
+                                        "string": {
+                                            "computed_optional_required": "computed",
+                                            "description": "Country of origin shielding location."
+                                        }
+                                    },
+                                    {
+                                        "name": "city",
+                                        "string": {
+                                            "computed_optional_required": "computed",
+                                            "description": "City of origin shielding location."
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "ssl_certificate",
+            "description": "Use this data source to get information about a CDN SSL certificate.",
+            "schema": {
+                "attributes": [
+                    {
+                        "name": "id",
+                        "int64": {
+                            "computed_optional_required": "computed",
+                            "description": "ID of the SSL certificate."
+                        }
+                    },
+                    {
+                        "name": "region",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used."
+                        }
+                    },
+                    {
+                        "name": "issuer",
+                        "string": {
+                            "computed_optional_required": "computed",
+                            "description": "Name of the certification center issued the SSL certificate."
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "description": "SSL certificate name."
+                        }
+                    },
+                    {
+                        "name": "subject_cn",
+                        "string": {
+                            "computed_optional_required": "computed",
+                            "description": "Domain name that the SSL certificate secures."
+                        }
+                    },
+                    {
+                        "name": "validity_not_after",
+                        "string": {
+                            "computed_optional_required": "computed",
+                            "description": "Date when certificate become untrusted (ISO 8601/RFC 3339 format, UTC.)."
+                        }
+                    },
+                    {
+                        "name": "validity_not_before",
+                        "string": {
+                            "computed_optional_required": "computed",
+                            "description": "Date when certificate become valid (ISO 8601/RFC 3339 format, UTC.)."
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "resources": [
+        {
+            "name": "origin_group",
+            "description": "Manages a CDN origin group resource within VKCS.",
+            "schema": {
+                "attributes": [
+                    {
+                        "name": "id",
+                        "int64": {
+                            "computed_optional_required": "computed",
+                            "description": "ID of the origin group."
+                        }
+                    },
+                    {
+                        "name": "region",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplaceIfConfigured()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "description": "Name of the origin group."
+                        }
+                    },
+                    {
+                        "name": "origins",
+                        "list_nested": {
+                            "computed_optional_required": "required",
+                            "description": "List of origin sources in the origin group.",
+                            "nested_object": {
+                                "attributes": [
+                                    {
+                                        "name": "source",
+                                        "string": {
+                                            "computed_optional_required": "required",
+                                            "description": "IP address or domain name of the origin and the port, if custom port is used."
+                                        }
+                                    },
+                                    {
+                                        "name": "backup",
+                                        "bool": {
+                                            "computed_optional_required": "computed_optional",
+                                            "description": "Defines whether the origin is a backup, meaning that it will not be used until one of active origins become unavailable. Defaults to false.",
+                                            "default": {
+                                                "static": false
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "enabled",
+                                        "bool": {
+                                            "computed_optional_required": "computed_optional",
+                                            "description": "Enables or disables an origin source in the origin group. Enabled by default.",
+                                            "default": {
+                                                "static": true
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "use_next",
+                        "bool": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "Defines whether to use the next origin from the origin group if origin responds with 4XX or 5XX codes. Defaults to false.",
+                            "default": {
+                                "static": false
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "resource",
+            "description": "Manages a CDN resource within VKCS.",
+            "schema": {
+                "attributes": [
+                    {
+                        "name": "id",
+                        "int64": {
+                            "computed_optional_required": "computed",
+                            "description": "ID of the CDN resource."
+                        }
+                    },
+                    {
+                        "name": "region",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplaceIfConfigured()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "active",
+                        "bool": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "Enables or disables a CDN resource."
+                        }
+                    },
+                    {
+                        "name": "cname",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "description": "Delivery domain that will be used for content delivery through a CDN. Use `secondary_hostnames` to add extra domains. _note_ Delivery domains should be added to your DNS settings.",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplace()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "options",
+                        "single_nested": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "Options that configure a CDN resource.",
+                            "attributes": [
+                                {
+                                    "name": "allowed_http_methods",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "HTTP methods allowed for content requests from the CDN.",
+                                        "attributes": [
+                                            {
+                                                "name": "value",
+                                                "list": {
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "description": "List of HTTP methods.",
+                                                    "computed_optional_required": "computed_optional",
+                                                    "validators": [
+                                                        {
+                                                            "custom": {
+                                                                "imports": [
+                                                                    {
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+                                                                    },
+                                                                    {
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+                                                                    },
+                                                                    {
+                                                                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/cdn/v1/resources"
+                                                                    }
+                                                                ],
+                                                                "schema_definition": "listvalidator.ValueStringsAre(stringvalidator.OneOf(resources.ResourceAllowedHttpMethodValues()...))"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "brotli_compression",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Compresses content with Brotli on the CDN side. CDN servers will request only uncompressed content from the origin.",
+                                        "attributes": [
+                                            {
+                                                "name": "value",
+                                                "set": {
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "List of content types to be compressed. It's required to specify text/html here."
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "browser_cache_settings",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Cache settings for users browsers.\nCache expiration time is applied to the following response codes: 200, 201, 204, 206, 301, 302, 303, 304, 307, 308. Responses with other codes will not be cached.",
+                                        "attributes": [
+                                            {
+                                                "name": "value",
+                                                "string": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Cache expiration time. Use '0s' to disable caching.",
+                                                    "validators": [
+                                                        {
+                                                            "custom": {
+                                                                "imports": [
+                                                                    {
+                                                                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/validators",
+                                                                        "alias": "resource_validators"
+                                                                    }
+                                                                ],
+                                                                "schema_definition": "resource_validators.NginxTime()"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "cors",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Enables or disables CORS (Cross-Origin Resource Sharing) header support.\nCORS header support allows the CDN to add the Access-Control-Allow-Origin header to a response to a browser.",
+                                        "attributes": [
+                                            {
+                                                "name": "value",
+                                                "list": {
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Value of the Access-Control-Allow-Origin header.\nPossible values:\n* [\"*\"] - adds \"*\" as the header value, content will be uploaded for requests from any domain.\n*[\"domain.com\", \"second.dom.com\"] - adds \"$http_origin\" as the header value if the origin matches one of the listed domains, content will be uploaded only for requests from the domains specified in the field.\n* [\"$http_origin\"] - adds \"$http_origin\" as the header value, content will be uploaded for requests from any domain, and the domain from which the request was sent will be added to the header in the response."
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "edge_cache_settings",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Cache settings for CDN servers.",
+                                        "attributes": [
+                                            {
+                                                "name": "custom_values",
+                                                "map": {
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "A map representing the caching time for a response with a specific response code.\nThese settings have a higher priority than the value field.\n* Use `any` key to specify caching time for all response codes.\n* Use `0s` value to disable caching for a specific response code.",
+                                                    "validators": [
+                                                        {
+                                                            "custom": {
+                                                                "imports": [
+                                                                    {
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
+                                                                    },
+                                                                    {
+                                                                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/validators",
+                                                                        "alias": "resource_validators"
+                                                                    }
+                                                                ],
+                                                                "schema_definition": "mapvalidator.ValueStringsAre(resource_validators.NginxTime())"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "default",
+                                                "string": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Enables content caching according to the origin cache settings.",
+                                                    "validators": [
+                                                        {
+                                                            "custom": {
+                                                                "imports": [
+                                                                    {
+                                                                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/validators",
+                                                                        "alias": "resource_validators"
+                                                                    }
+                                                                ],
+                                                                "schema_definition": "resource_validators.NginxTime()"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "string": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Caching time. The value is applied to the following response codes: 200, 206, 301, 302.\nResponses with codes 4xx, 5xx will not be cached. Use `0s` to disable caching.",
+                                                    "validators": [
+                                                        {
+                                                            "custom": {
+                                                                "imports": [
+                                                                    {
+                                                                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/validators",
+                                                                        "alias": "resource_validators"
+                                                                    }
+                                                                ],
+                                                                "schema_definition": "resource_validators.NginxTime()"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "fetch_compressed",
+                                    "bool": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "If enabled, CDN servers request and cache compressed content from the origin. The origin server should support compression. CDN servers will not decompress your content even if a user browser does not accept compression. Conflicts with `gzip_on` if both enabled simultaneously.",
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "boolplanmodifier.UseStateForUnknown()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "force_return",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Allows to apply custom HTTP code to the CDN content.\nSpecify HTTP-code you need and text or URL if you're going to set up redirection.",
+                                        "attributes": [
+                                            {
+                                                "name": "body",
+                                                "string": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "URL for redirection or text."
+                                                }
+                                            },
+                                            {
+                                                "name": "code",
+                                                "int64": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Status code value."
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "forward_host_header",
+                                    "bool": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Forwards the Host header from a end-user request to an origin server. Conflicts with `host_header` if both enabled simultaneously.",
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "boolplanmodifier.UseStateForUnknown()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "gzip_on",
+                                    "bool": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Enables content compression using gzip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed` if both enabled simultaneously.",
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "boolplanmodifier.UseStateForUnknown()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "host_header",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Use this option to specify the Host header that CDN servers use when request content from an origin server. If the option is not set, the header value is equal to the first CNAME. Conflicts with `forward_host_header` if both enabled simultaneously.",
+                                        "attributes": [
+                                            {
+                                                "name": "value",
+                                                "string": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Host Header value."
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "ignore_query_string",
+                                    "bool": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Allows to specify how a file with different query strings is cached: either as one object (option is enabled) or as different objects (option is disabled.). `ignore_query_string`, `query_params_whitelist` and `query_params_blacklist` options cannot be enabled simultaneously.",
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "boolplanmodifier.UseStateForUnknown()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "ignore_cookie",
+                                    "bool": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Defines whether the files with the Set-Cookies header are cached as one file or as different ones."
+                                    }
+                                },
+                                {
+                                    "name": "query_params_blacklist",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Use this option to specify query parameters, so files with these query strings will be cached as one object, and files with other parameters will be cached as different objects. `ignore_query_string`, `query_params_whitelist` and `query_params_blacklist` options cannot be enabled simultaneously.",
+                                        "attributes": [
+                                            {
+                                                "name": "value",
+                                                "list": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "description": "List of query parameters."
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "query_params_whitelist",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Use this option to specify query parameters, so files with these query strings will be cached as different objects, and files with other parameters will be cached as one object. `ignore_query_string`, `query_params_whitelist` and `query_params_blacklist` options cannot be enabled simultaneously.",
+                                        "attributes": [
+                                            {
+                                                "name": "value",
+                                                "list": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "description": "List of query parameters."
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "country_acl",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Use this option to control access to the content for specified countries.",
+                                        "attributes": [
+                                            {
+                                                "name": "excepted_values",
+                                                "list": {
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "List of countries according to ISO-3166-1. The meaning of the argument depends on `policy_type` value."
+                                                }
+                                            },
+                                            {
+                                                "name": "policy_type",
+                                                "string": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "The type of CDN resource access policy. Must be one of following: \"allow\", \"deny\".",
+                                                    "validators": [
+                                                        {
+                                                            "custom": {
+                                                                "imports": [
+                                                                    {
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+                                                                    },
+                                                                    {
+                                                                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/cdn/v1/resources"
+                                                                    }
+                                                                ],
+                                                                "schema_definition": "stringvalidator.OneOf(resources.ResourceACLPolicyTypeValues()...)"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "referrer_acl",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Use this option to control access to the CDN resource content for specified domain names.",
+                                        "attributes": [
+                                            {
+                                                "name": "excepted_values",
+                                                "list": {
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "List of domain names or wildcard domains, without protocol. The meaning of the argument depends on `policy_type` value."
+                                                }
+                                            },
+                                            {
+                                                "name": "policy_type",
+                                                "string": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "The type of CDN resource access policy. Must be one of following: \"allow\", \"deny\".",
+                                                    "validators": [
+                                                        {
+                                                            "custom": {
+                                                                "imports": [
+                                                                    {
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+                                                                    },
+                                                                    {
+                                                                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/cdn/v1/resources"
+                                                                    }
+                                                                ],
+                                                                "schema_definition": "stringvalidator.OneOf(resources.ResourceACLPolicyTypeValues()...)"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "ip_address_acl",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "The option allows to control access to the CDN Resource content for specific IP addresses.",
+                                        "attributes": [
+                                            {
+                                                "name": "excepted_values",
+                                                "list": {
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "List of IP addresses with a subnet mask. The meaning of the argument depends on `policy_type` value."
+                                                }
+                                            },
+                                            {
+                                                "name": "policy_type",
+                                                "string": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "The type of CDN resource access policy. Must be one of following: \"allow\", \"deny\".",
+                                                    "validators": [
+                                                        {
+                                                            "custom": {
+                                                                "imports": [
+                                                                    {
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+                                                                    },
+                                                                    {
+                                                                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/cdn/v1/resources"
+                                                                    }
+                                                                ],
+                                                                "schema_definition": "stringvalidator.OneOf(resources.ResourceACLPolicyTypeValues()...)"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "slice",
+                                    "bool": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "If enabled, CDN servers request and cache files larger than 10 MB in parts. Origins must support HTTP Range requests.",
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "boolplanmodifier.UseStateForUnknown()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "stale",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "If enabled, CDN serves stale cached content in case of origin unavailability.",
+                                        "attributes": [
+                                            {
+                                                "name": "value",
+                                                "list": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "description": "The list of errors to which the option is applied."
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "static_headers",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Custom HTTP Headers that a CDN server adds to a response.",
+                                        "attributes": [
+                                            {
+                                                "name": "value",
+                                                "map": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "description": "A map of static headers in the format \"header_name\": \"header_value\"."
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "static_request_headers",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Custom HTTP Headers for a CDN server to add to a request.",
+                                        "attributes": [
+                                            {
+                                                "name": "value",
+                                                "map": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "description": "A map of static headers in the format \"header_name\": \"header_value\"."
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "origin_group",
+                        "int64": {
+                            "computed_optional_required": "required",
+                            "description": "Origin group ID with which the CDN resource is associated."
+                        }
+                    },
+                    {
+                        "name": "origin_protocol",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "Protocol used by CDN servers to request content from an origin source. If protocol is not specified, HTTP is used to connect to an origin server."
+                        }
+                    },
+                    {
+                        "name": "preset_applied",
+                        "bool": {
+                            "computed_optional_required": "computed",
+                            "description": "Protocol used by CDN servers to request content from an origin source. "
+                        }
+                    },
+                    {
+                        "name": "secondary_hostnames",
+                        "list": {
+                            "element_type": {
+                                "string": {}
+                            },
+                            "computed_optional_required": "computed_optional",
+                            "description": "Additional delivery domains (CNAMEs) that will be used to deliver content via the CDN.",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "listplanmodifier.RequiresReplace()"
+                                    }
+                                }
+                            ],
+                            "default": {
+                                "custom": {
+                                    "imports": [
+                                        {
+                                            "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+                                        },
+                                        {
+                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/types",
+                                            "alias": "fwtypes"
+                                        }
+                                    ],
+                                    "schema_definition": "listdefault.StaticValue(fwtypes.ListEmpty(types.StringType))"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "shielding",
+                        "single_nested": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "Use this attribute to configure origin shielding.",
+                            "attributes": [
+                                {
+                                    "name": "pop_id",
+                                    "int64": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "ID of the origin shielding point of presence."
+                                    }
+                                },
+                                {
+                                    "name": "enabled",
+                                    "bool": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Defines whether origin shielding feature is enabled for the resource."
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "ssl_certificate",
+                        "single_nested": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "SSL certificate settings for content delivery over HTTPS protocol.",
+                            "attributes": [
+                                {
+                                    "name": "type",
+                                    "string": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Type of the SSL certificate. Must be one of following: \"not_used\", \"own\", \"lets_encrypt\"."
+                                    }
+                                },
+                                {
+                                    "name": "id",
+                                    "int64": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "ID of the SSL certificate linked to the CDN resource. Must be configured when `type` is \"own\"."
+                                    }
+                                },
+                                {
+                                    "name": "status",
+                                    "string": {
+                                        "computed_optional_required": "computed",
+                                        "description": "Status of the SSL certificate."
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "string": {
+                            "computed_optional_required": "computed",
+                            "description": "CDN resource status."
+                        }
+                    },
+                    {
+                        "name": "vp_enabled",
+                        "bool": {
+                            "computed_optional_required": "computed",
+                            "description": "Defines whether the CDN resource is integrated with the Streaming Platform."
+                        }
+                    },
+                    {
+                        "name": "timeouts",
+                        "single_nested": {
+                            "computed_optional_required": "optional",
+                            "attributes": [
+                                {
+                                    "name": "create",
+                                    "string": {
+                                        "computed_optional_required": "optional",
+                                        "validators": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/validators",
+                                                            "alias": "fwvalidators"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "fwvalidators.TimeDuration()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "update",
+                                    "string": {
+                                        "computed_optional_required": "optional",
+                                        "validators": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/validators",
+                                                            "alias": "fwvalidators"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "fwvalidators.TimeDuration()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            ],
+                            "custom_type": {
+                                "import": {
+                                    "path": "github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+                                },
+                                "type": "timeouts.Type{ObjectType: types.ObjectType{AttrTypes: map[string]attr.Type{\"create\": types.StringType, \"update\": types.StringType}}}",
+                                "value_type": "timeouts.Value"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "ssl_certificate",
+            "description": "Manages a CDN SSL certificate resource within VKCS.",
+            "schema": {
+                "attributes": [
+                    {
+                        "name": "id",
+                        "int64": {
+                            "computed_optional_required": "computed",
+                            "description": "ID of the SSL certificate."
+                        }
+                    },
+                    {
+                        "name": "region",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplaceIfConfigured()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "certificate",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "description": "Public part of the SSL certificate. All chain of the SSL certificate should be added.",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplace()"
+                                    }
+                                }
+                            ],
+                            "sensitive": true
+                        }
+                    },
+                    {
+                        "name": "issuer",
+                        "string": {
+                            "computed_optional_required": "computed",
+                            "description": "Name of the certification center issued the SSL certificate."
+                        }
+                    },
+                    {
+                        "name": "subject_cn",
+                        "string": {
+                            "computed_optional_required": "computed",
+                            "description": "Domain name that the SSL certificate secures."
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "description": "SSL certificate name."
+                        }
+                    },
+                    {
+                        "name": "private_key",
+                        "string": {
+                            "computed_optional_required": "required",
+                            "description": "Private key of the SSL certificate.",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplace()"
+                                    }
+                                }
+                            ],
+                            "sensitive": true
+                        }
+                    },
+                    {
+                        "name": "validity_not_after",
+                        "string": {
+                            "computed_optional_required": "computed",
+                            "description": "Date when certificate become untrusted (ISO 8601/RFC 3339 format, UTC.)."
+                        }
+                    },
+                    {
+                        "name": "validity_not_before",
+                        "string": {
+                            "computed_optional_required": "computed",
+                            "description": "Date when certificate become valid (ISO 8601/RFC 3339 format, UTC.)."
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "version": "0.1"
+}

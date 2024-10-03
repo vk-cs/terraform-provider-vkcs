@@ -14,11 +14,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	sdkdiag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	icapabilities "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/imagecapabilities"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/templater"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/modutil"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/version"
 )
 
@@ -50,6 +50,7 @@ type Config interface {
 	MLPlatformV1Client(region string) (*gophercloud.ServiceClient, error)
 	ICSV1Client(region string) (*gophercloud.ServiceClient, error)
 	TemplaterV2Client(region string, projectID string) (*gophercloud.ServiceClient, error)
+	CDNV1Client(region string) (*gophercloud.ServiceClient, error)
 	GetMutex() *mutexkv.MutexKV
 }
 
@@ -79,6 +80,8 @@ func ConfigureSdkProvider(d *schema.ResourceData, terraformVersion string) (Conf
 		containerInfraV1MicroVersion = CloudContainersAPIVersion
 	}
 
+	sdkVersion, _ := modutil.GetDependencyModuleVersion("github.com/hashicorp/terraform-plugin-sdk/v2")
+
 	config := &configer{
 		auth.Config{
 			Username:         getConfigParam(d, "username", "OS_USERNAME", ""),
@@ -92,7 +95,7 @@ func ConfigureSdkProvider(d *schema.ResourceData, terraformVersion string) (Conf
 			AllowReauth:      true,
 			MaxRetries:       maxRetriesCount,
 			TerraformVersion: terraformVersion,
-			SDKVersion:       meta.SDKVersionString(),
+			SDKVersion:       sdkVersion,
 			MutexKV:          mutexkv.NewMutexKV(),
 		},
 		containerInfraV1MicroVersion,
@@ -241,6 +244,11 @@ func (c *configer) TemplaterV2Client(region string, projectID string) (*gophercl
 	}
 
 	return client, nil
+}
+
+func (c *configer) CDNV1Client(region string) (*gophercloud.ServiceClient, error) {
+	client, err := c.CommonServiceClientInit(newCDNV1, region, "cdn")
+	return client, err
 }
 
 func (c *configer) GetMutex() *mutexkv.MutexKV {

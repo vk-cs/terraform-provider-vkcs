@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/backup"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/dc"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/images"
@@ -98,6 +98,10 @@ func (p *vkcsProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 // DataSources defines the data sources implemented in the provider.
 func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		cdn.NewOriginGroupDataSource,
+		cdn.NewShieldingPopDataSource,
+		cdn.NewShieldingPopsDataSource,
+		cdn.NewSslCertificateDataSource,
 		db.NewBackupDataSource,
 		db.NewConfigGroupDataSource,
 		db.NewDatastoreDataSource,
@@ -125,10 +129,11 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 // Resources defines the resources implemented in the provider.
 func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		db.NewBackupResource,
-		kubernetes.NewAddonResource,
-		kubernetes.NewSecurityPolicyResource,
 		backup.NewPlanResource,
+		cdn.NewOriginGroupResource,
+		cdn.NewResourceResource,
+		cdn.NewSslCertificateResource,
+		db.NewBackupResource,
 		dc.NewRouterResource,
 		dc.NewInterfaceResource,
 		dc.NewBGPInstanceResource,
@@ -140,6 +145,8 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		dc.NewVRRPAddressResource,
 		dc.NewConntrackHelperResource,
 		dc.NewIPPortForwardingResource,
+		kubernetes.NewAddonResource,
+		kubernetes.NewSecurityPolicyResource,
 		mlplatform.NewJupyterHubResource,
 		mlplatform.NewMLFlowResource,
 		mlplatform.NewMLFlowDeployResource,
