@@ -1,5 +1,6 @@
 *.dll
 *.exe
+.gitconfig
 .DS_Store
 example.tf
 .terraform*
