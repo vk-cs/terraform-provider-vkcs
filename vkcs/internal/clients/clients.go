@@ -113,3 +113,8 @@ func findBaseMonitoringURL(client *gophercloud.ProviderClient, eo gophercloud.En
 
 	return baseURL, nil
 }
+
+func newCDNV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
+	sc, err := initClientOpts(client, eo, "cdn")
+	return sc, err
+}
