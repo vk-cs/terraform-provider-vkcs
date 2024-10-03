@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/backup"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/dc"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/images"
@@ -39,7 +39,7 @@ type vkcsProvider struct{}
 
 // Metadata returns the provider type name.
 func (p *vkcsProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "vkcs_framework"
+	resp.TypeName = "vkcs"
 }
 
 // Schema defines the provider-level schema for configuration data.
@@ -83,7 +83,7 @@ func (p *vkcsProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp 
 	}
 }
 
-// Configure prepares a HashiCups API client for data sources and resources.
+// Configure prepares VKCS API clients for data sources and resources.
 func (p *vkcsProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	config, diags := clients.ConfigureProvider(ctx, req)
 	resp.Diagnostics.Append(diags...)
@@ -97,6 +97,10 @@ func (p *vkcsProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 // DataSources defines the data sources implemented in the provider.
 func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		cdn.NewOriginGroupDataSource,
+		cdn.NewShieldingPopDataSource,
+		cdn.NewShieldingPopsDataSource,
+		cdn.NewSslCertificateDataSource,
 		db.NewBackupDataSource,
 		db.NewConfigGroupDataSource,
 		db.NewDatastoreDataSource,
@@ -124,10 +128,11 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 // Resources defines the resources implemented in the provider.
 func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		db.NewBackupResource,
-		kubernetes.NewAddonResource,
-		kubernetes.NewSecurityPolicyResource,
 		backup.NewPlanResource,
+		cdn.NewOriginGroupResource,
+		cdn.NewResourceResource,
+		cdn.NewSslCertificateResource,
+		db.NewBackupResource,
 		dc.NewRouterResource,
 		dc.NewInterfaceResource,
 		dc.NewBGPInstanceResource,
@@ -139,6 +144,8 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		dc.NewVRRPAddressResource,
 		dc.NewConntrackHelperResource,
 		dc.NewIPPortForwardingResource,
+		kubernetes.NewAddonResource,
+		kubernetes.NewSecurityPolicyResource,
 		mlplatform.NewJupyterHubResource,
 		mlplatform.NewMLFlowResource,
 		mlplatform.NewMLFlowDeployResource,

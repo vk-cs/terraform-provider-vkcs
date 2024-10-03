@@ -315,3 +315,7 @@ func ErrorWithRequestID(err error, requestID string) error {
 	}
 	return fmt.Errorf("%w\nRequest ID: %s", err, requestID)
 }
+
+func PointerOf[T any](v T) *T {
+	return &v
+}

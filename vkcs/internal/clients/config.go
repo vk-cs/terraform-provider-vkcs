@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	sdkdiag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/modutil"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/version"
 )
 
@@ -46,6 +46,7 @@ type Config interface {
 	LoadBalancerV2Client(region string) (*gophercloud.ServiceClient, error)
 	BackupV1Client(region string, tenantID string) (*gophercloud.ServiceClient, error)
 	MLPlatformV1Client(region string) (*gophercloud.ServiceClient, error)
+	CDNV1Client(region string) (*gophercloud.ServiceClient, error)
 	GetMutex() *mutexkv.MutexKV
 }
 
@@ -75,6 +76,8 @@ func ConfigureSdkProvider(d *schema.ResourceData, terraformVersion string) (Conf
 		containerInfraV1MicroVersion = CloudContainersAPIVersion
 	}
 
+	sdkVersion, _ := modutil.GetDependencyModuleVersion("github.com/hashicorp/terraform-plugin-sdk/v2")
+
 	config := &configer{
 		auth.Config{
 			Username:         getConfigParam(d, "username", "OS_USERNAME", ""),
@@ -88,7 +91,7 @@ func ConfigureSdkProvider(d *schema.ResourceData, terraformVersion string) (Conf
 			AllowReauth:      true,
 			MaxRetries:       maxRetriesCount,
 			TerraformVersion: terraformVersion,
-			SDKVersion:       meta.SDKVersionString(),
+			SDKVersion:       sdkVersion,
 			MutexKV:          mutexkv.NewMutexKV(),
 		},
 		containerInfraV1MicroVersion,
@@ -202,6 +205,11 @@ func (c *configer) BackupV1Client(region string, tenantID string) (*gophercloud.
 
 func (c *configer) MLPlatformV1Client(region string) (*gophercloud.ServiceClient, error) {
 	client, err := c.CommonServiceClientInit(newMLPlatformV1, region, "mlplatform")
+	return client, err
+}
+
+func (c *configer) CDNV1Client(region string) (*gophercloud.ServiceClient, error) {
+	client, err := c.CommonServiceClientInit(newCDNV1, region, "cdn")
 	return client, err
 }
 
