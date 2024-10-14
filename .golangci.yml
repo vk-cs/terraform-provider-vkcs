@@ -5,6 +5,10 @@ run:
 issues:
   max-per-linter: 0
   max-same-issues: 0
+  exclude-rules:
+    - linters:
+        - stylecheck
+      text: "ST1003:"
 
 linters:
   disable-all: true

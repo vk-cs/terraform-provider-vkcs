@@ -41,3 +41,12 @@ func newMLPlatformV1(client *gophercloud.ProviderClient, eo gophercloud.Endpoint
 	sc.ResourceBase = sc.Endpoint + "v1_0/"
 	return sc, err
 }
+
+// TODO(m.speshilov): retrieve client's endpoint from catalog
+func newCDNV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
+	sc := new(gophercloud.ServiceClient)
+	eo.ApplyDefaults("cdn")
+	sc.ProviderClient = client
+	sc.Endpoint = "https://msk.cloud.vk.com/api/cdn/api/v1/"
+	return sc, nil
+}

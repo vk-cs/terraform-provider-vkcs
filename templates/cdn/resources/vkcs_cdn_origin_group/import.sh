@@ -1,0 +1,1 @@
+terraform import vkcs_cdn_origin_group.origin_group <origin_group_id>

@@ -9,7 +9,14 @@ import (
 )
 
 var (
-	_ resource.Resource = &ResourceWrapper{}
+	_ resource.Resource                     = (*ResourceWrapper)(nil)
+	_ resource.ResourceWithConfigValidators = (*ResourceWrapper)(nil)
+	_ resource.ResourceWithConfigure        = (*ResourceWrapper)(nil)
+	_ resource.ResourceWithImportState      = (*ResourceWrapper)(nil)
+	_ resource.ResourceWithModifyPlan       = (*ResourceWrapper)(nil)
+	_ resource.ResourceWithMoveState        = (*ResourceWrapper)(nil)
+	_ resource.ResourceWithUpgradeState     = (*ResourceWrapper)(nil)
+	_ resource.ResourceWithValidateConfig   = (*ResourceWrapper)(nil)
 )
 
 func NewResourceWrapper(resource resource.Resource, resourceJSON jsonschema.ResourceJSON) *ResourceWrapper {
@@ -79,9 +86,22 @@ func (rw *ResourceWrapper) ModifyPlan(ctx context.Context, req resource.ModifyPl
 	}
 }
 
+func (rw *ResourceWrapper) MoveState(ctx context.Context) []resource.StateMover {
+	if rs, ok := rw.resource.(resource.ResourceWithMoveState); ok {
+		return rs.MoveState(ctx)
+	}
+	return nil
+}
+
 func (rw *ResourceWrapper) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	if rs, ok := rw.resource.(resource.ResourceWithUpgradeState); ok {
 		return rs.UpgradeState(ctx)
 	}
 	return make(map[int64]resource.StateUpgrader, 0)
+}
+
+func (rw *ResourceWrapper) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	if rs, ok := rw.resource.(resource.ResourceWithValidateConfig); ok {
+		rs.ValidateConfig(ctx, req, resp)
+	}
 }
