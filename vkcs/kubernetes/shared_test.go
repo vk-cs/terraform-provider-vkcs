@@ -96,15 +96,15 @@ func TestExtractNodeGroupLabelsList(t *testing.T) {
 }
 
 func TestExtractNodeGroupTaintsList(t *testing.T) {
-	taints := []interface{}{
-		map[string]interface{}{
+	taints := []any{
+		map[string]any{
 			"key":    "key1",
 			"value":  "val1",
 			"effect": "effect1",
 		},
-		map[string]interface{}{
+		map[string]any{
 			"key":    "key2",
-			"value":  "val2",
+			"value":  "",
 			"effect": "effect2",
 		},
 	}
@@ -117,15 +117,30 @@ func TestExtractNodeGroupTaintsList(t *testing.T) {
 		},
 		{
 			Key:    "key2",
-			Value:  "val2",
+			Value:  "",
 			Effect: "effect2",
 		},
 	}
 
 	actualTaints, err := extractNodeGroupTaintsList(taints)
+	assert.Nil(t, err)
 	sort.Slice(actualTaints, func(i, j int) bool {
 		return actualTaints[i].Key < actualTaints[j].Key
 	})
-	assert.Equal(t, err, nil)
 	assert.Equal(t, expectedTaints, actualTaints)
+}
+
+func TestExtractNodeGroupTaintsListError(t *testing.T) {
+	taints := []any{
+		nil,
+		map[string]any{
+			"key":    "key2",
+			"value":  "",
+			"effect": "effect2",
+		},
+	}
+
+	actualTaints, err := extractNodeGroupTaintsList(taints)
+	assert.Empty(t, actualTaints)
+	assert.EqualError(t, err, "empty node group taint with index: 0")
 }

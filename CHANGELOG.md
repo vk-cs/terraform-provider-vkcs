@@ -8,7 +8,8 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.8.5 (unreleased)
--  Fix order-induced changes in the plan for "databases" of the vkcs_db_user resource
+- Fix panic on empty taint to vkcs_kubernetes_node_group resource
+- Fix order-induced changes in the plan for "databases" of the vkcs_db_user resource
 
 #### v0.8.4
 - Add ability to import vkcs_kubernetes_security_policy into the state 

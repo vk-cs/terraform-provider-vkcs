@@ -56,16 +56,22 @@ func extractNodeGroupLabelsList(v []interface{}) ([]nodegroups.Label, error) {
 	return labels, nil
 }
 
-func extractNodeGroupTaintsList(v []interface{}) ([]nodegroups.Taint, error) {
-	taints := make([]nodegroups.Taint, len(v))
-	for i, taint := range v {
-		var T nodegroups.Taint
-		err := mapstructure.Decode(taint.(map[string]interface{}), &T)
-		if err != nil {
-			return nil, err
+func extractNodeGroupTaintsList(rawTaints []any) ([]nodegroups.Taint, error) {
+	taints := make([]nodegroups.Taint, len(rawTaints))
+	for i, rawTaint := range rawTaints {
+		taint, ok := rawTaint.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("empty node group taint with index: %d", i)
 		}
-		taints[i] = T
+
+		var resTaint nodegroups.Taint
+		if err := mapstructure.Decode(taint, &resTaint); err != nil {
+			return nil, fmt.Errorf("failed to read node group taint with index %d: %s", i, err)
+		}
+
+		taints[i] = resTaint
 	}
+
 	return taints, nil
 }
 
