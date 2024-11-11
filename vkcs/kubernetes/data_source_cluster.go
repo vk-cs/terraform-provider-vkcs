@@ -77,6 +77,7 @@ func DataSourceKubernetesCluster() *schema.Resource {
 			"keypair": {
 				Type:        schema.TypeString,
 				Computed:    true,
+				Deprecated:  "This argument is deprecated, please do not use it.",
 				Description: "The name of the Compute service SSH keypair.",
 			},
 			"labels": {

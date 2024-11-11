@@ -137,6 +137,7 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Optional:    true,
+				Deprecated:  "This argument is deprecated, please do not use it.",
 				Description: "The name of the Compute service SSH keypair. Changing this creates a new cluster.",
 			},
 			"labels": {
