@@ -115,7 +115,7 @@ func ResourceNetworkingSubnet() *schema.Resource {
 				Optional:      true,
 				ForceNew:      false,
 				Computed:      true,
-				Description:   "Default gateway used by devices in this subnet. Leaving this blank and not setting `no_gateway` will cause a default gateway of `.1` to be used. Changing this updates the gateway IP of the existing subnet.",
+				Description:   "Default gateway used by devices in this subnet. Leaving this blank and not setting `no_gateway` will cause a default value. For the Sprut SDN, this field cannot be changed after creation.",
 			},
 
 			"no_gateway": {
