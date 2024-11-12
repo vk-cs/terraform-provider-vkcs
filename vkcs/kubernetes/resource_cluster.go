@@ -232,6 +232,7 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
+				Deprecated:  "This argument is deprecated as Ingress controller is not currently installed by default.",
 				Description: "Floating IP created for ingress service.",
 			},
 			"registry_auth_password": {
