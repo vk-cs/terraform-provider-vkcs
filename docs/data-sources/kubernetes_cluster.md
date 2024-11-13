@@ -51,7 +51,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` *string* &rarr;  ID of the resource.
 
-- `ingress_floating_ip` *string* &rarr;  Floating IP created for ingress service.
+- `ingress_floating_ip` *string* &rarr;  Floating IP created for ingress service. **Deprecated** This argument is deprecated as Ingress controller is not currently installed by default.
 
 - `insecure_registries` *string* &rarr;  Addresses of registries from which you can download images without checking certificates.
 
