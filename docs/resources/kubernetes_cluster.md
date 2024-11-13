@@ -94,7 +94,7 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 
 - `dns_domain` optional *string* &rarr;  Custom DNS cluster domain. Changing this creates a new cluster.
 
-- `ingress_floating_ip` optional *string* &rarr;  Floating IP created for ingress service.
+- `ingress_floating_ip` optional deprecated *string* &rarr;  Floating IP created for ingress service. **Deprecated** This argument is deprecated as Ingress controller is not currently installed by default.
 
 - `insecure_registries` optional *string* &rarr;  Addresses of registries from which you can download images without checking certificates. Changing this creates a new cluster.
 
