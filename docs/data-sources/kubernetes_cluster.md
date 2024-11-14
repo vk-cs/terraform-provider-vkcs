@@ -57,7 +57,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `k8s_config` *string* &rarr;  Kubeconfig for cluster
 
-- `keypair` *string* &rarr;  The name of the Compute service SSH keypair.
+- `keypair` *string* &rarr;  The name of the Compute service SSH keypair. **Deprecated** This argument is deprecated, please do not use it.
 
 - `labels` *map of* *string* &rarr;  The list of key value pairs representing additional properties of the cluster.
 
