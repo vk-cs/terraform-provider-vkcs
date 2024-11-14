@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.8.5 (unreleased)
+- Fix an issue with marking subnet as ready while DHCP service is not configured yet
 - Fix panic on empty taint to vkcs_kubernetes_node_group resource
 - Fix order-induced changes in the plan for "databases" of the vkcs_db_user resource
 - Deprecate ingress_floating_ip field of vkcs_kubernetes_cluster resource and data source

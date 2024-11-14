@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
@@ -21,14 +22,48 @@ type subnetExtended struct {
 
 // networkingSubnetStateRefreshFunc returns a standard retry.StateRefreshFunc to wait for subnet status.
 func networkingSubnetStateRefreshFunc(client *gophercloud.ServiceClient, subnetID string) retry.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		subnet, err := isubnets.Get(client, subnetID).Extract()
+	return func() (any, string, error) {
+		var subnet subnetExtended
+		err := isubnets.ExtractSubnetInto(isubnets.Get(client, subnetID), &subnet)
 		if err != nil {
 			if errutil.IsNotFound(err) {
 				return subnet, "DELETED", nil
 			}
 
 			return nil, "", err
+		}
+		if !subnet.EnableDHCP || subnet.SDN != networking.NeutronSDN {
+			return subnet, "ACTIVE", nil
+		}
+
+		// check dhcp ports
+		var listOpts ports.ListOptsBuilder = ports.ListOpts{
+			ProjectID:   subnet.ProjectID,
+			NetworkID:   subnet.NetworkID,
+			DeviceOwner: "network:dhcp",
+			Status:      "ACTIVE",
+			FixedIPs: []ports.FixedIPOpts{
+				{
+					SubnetID: subnetID,
+				},
+			},
+		}
+
+		allPages, err := ports.List(client, listOpts).AllPages()
+		if err != nil {
+			return nil, "", fmt.Errorf("error listing ports of subnet: %s", err)
+		}
+
+		var allPorts []struct {
+			ID string `json:"id"`
+		}
+		err = ports.ExtractPortsInto(allPages, &allPorts)
+		if err != nil {
+			return nil, "", fmt.Errorf("error reading VKCS Networking API response: %s", err)
+		}
+
+		if len(allPorts) < 2 {
+			return subnet, "WAITING_DHCP_PORTS", nil
 		}
 
 		return subnet, "ACTIVE", nil
