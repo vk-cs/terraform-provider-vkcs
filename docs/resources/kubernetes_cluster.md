@@ -98,7 +98,7 @@ resource "vkcs_kubernetes_cluster" "k8s-cluster" {
 
 - `insecure_registries` optional *string* &rarr;  Addresses of registries from which you can download images without checking certificates. Changing this creates a new cluster.
 
-- `keypair` optional *string* &rarr;  The name of the Compute service SSH keypair. Changing this creates a new cluster.
+- `keypair` optional deprecated *string* &rarr;  The name of the Compute service SSH keypair. Changing this creates a new cluster. **Deprecated** This argument is deprecated, please do not use it.
 
 - `labels` optional *map of* *string* &rarr;  The list of optional key value pairs representing additional properties of the cluster. <br>**Note:** Updating this attribute will not immediately apply the changes; these options will be used when recreating or deleting cluster nodes, for example, during an upgrade operation.
 
