@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -19,6 +20,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/utils"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/validators"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"golang.org/x/exp/slices"
 )
 
@@ -194,7 +196,8 @@ func (d *PortDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "ID of the found port.",
+				Optional:    true,
+				Description: "The ID of the port.",
 			},
 
 			"mac_address": schema.StringAttribute{
@@ -216,9 +219,15 @@ func (d *PortDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 			},
 
 			"port_id": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The ID of the port.",
+				Optional:           true,
+				Computed:           true,
+				Description:        "The ID of the port.",
+				DeprecationMessage: "This argument is deprecated, please, use the `id` attribute instead.",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(
+						path.MatchRelative().AtParent().AtName("id"),
+					),
+				},
 			},
 
 			"project_id": schema.StringAttribute{
@@ -295,7 +304,7 @@ func (d *PortDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		MACAddress:  data.MACAddress.ValueString(),
 		Name:        data.Name.ValueString(),
 		NetworkID:   data.NetworkID.ValueString(),
-		ID:          data.PortID.ValueString(),
+		ID:          util.GetFirstNotEmpty(data.ID.ValueString(), data.PortID.ValueString()),
 		ProjectID:   data.ProjectID.ValueString(),
 		Status:      data.Status.ValueString(),
 		TenantID:    data.TenantID.ValueString(),
@@ -397,6 +406,7 @@ func (d *PortDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	tflog.Debug(ctx, "Retrieved port", map[string]interface{}{"port": fmt.Sprintf("%#v", port)})
 
 	data.ID = types.StringValue(port.ID)
+	data.PortID = types.StringValue(port.ID)
 	data.Region = types.StringValue(region)
 	data.SDN = types.StringValue(port.SDN)
 
@@ -432,7 +442,6 @@ func (d *PortDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	data.MACAddress = types.StringValue(port.MACAddress)
 	data.Name = types.StringValue(port.Name)
 	data.NetworkID = types.StringValue(port.NetworkID)
-	data.PortID = types.StringValue(port.ID)
 	data.ProjectID = types.StringValue(port.ProjectID)
 	data.Status = types.StringValue(port.Status)
 	data.TenantID = types.StringValue(port.TenantID)
