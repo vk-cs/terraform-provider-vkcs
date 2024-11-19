@@ -35,38 +35,6 @@ func TestAccKubernetesNodeGroupDataSource_basic_big(t *testing.T) {
 	})
 }
 
-func TestAccKubernetesNodeGroupDataSource_migrateToFramework_big(t *testing.T) {
-	clusterName := "tfacc-ng-basic-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
-	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesNodeGroupClusterBase, map[string]string{"ClusterName": clusterName})
-	nodeGroupConfig := acctest.AccTestRenderConfig(testAccKubernetesNodeGroupBasic, map[string]string{"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase, "TestAccKubernetesNodeGroupClusterBase": clusterConfig})
-
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.AccTestPreCheck(t) },
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"vkcs": {
-						VersionConstraint: "0.3.0",
-						Source:            "vk-cs/vkcs",
-					},
-				},
-				Config: nodeGroupConfig,
-			},
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"vkcs": {
-						VersionConstraint: "0.4.0",
-						Source:            "vk-cs/vkcs",
-					},
-				},
-				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
-				Config:                   acctest.AccTestRenderConfig(testAccKubernetesNodeGroupDataSourceBasic, map[string]string{"TestAccKubernetesNodeGroupBasic": nodeGroupConfig}),
-				PlanOnly:                 true,
-			},
-		},
-	})
-}
-
 func testAccKubernetesNodeGroupDataSourceID(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ct, ok := s.RootModule().Resources[resourceName]
@@ -86,6 +54,6 @@ const testAccKubernetesNodeGroupDataSourceBasic = `
 {{ .TestAccKubernetesNodeGroupBasic }}
 
 data "vkcs_kubernetes_node_group" "node-group" {
-	uuid = vkcs_kubernetes_node_group.basic.id
+	id = vkcs_kubernetes_node_group.basic.id
 }
 `

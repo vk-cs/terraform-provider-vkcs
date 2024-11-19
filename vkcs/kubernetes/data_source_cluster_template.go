@@ -20,13 +20,21 @@ func DataSourceKubernetesClusterTemplate() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Kubernetes version of the cluster.",
+				Description: "Kubernetes version of the cluster. _note_ Only one of `name`, `version` or `id` must be specified.",
 			},
-			"cluster_template_uuid": {
+			"id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The UUID of the cluster template. _note_ Only one of `name` or `version` or `cluster_template_uuid` must be specified.",
+				Description: "The UUID of the cluster template. _note_ Only one of `name`, `version` or `id` must be specified.",
+			},
+			"cluster_template_uuid": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"id"},
+				Deprecated:    "This argument is deprecated, please, use the `id` attribute instead.",
+				Description:   "The UUID of the cluster template. _note_ Only one of `name`, `version`, or `cluster_template_uuid` must be specified.",
 			},
 			"region": {
 				Type:        schema.TypeString,
@@ -38,7 +46,7 @@ func DataSourceKubernetesClusterTemplate() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The name of the cluster template. _note_ Only one of `name` or `version` or `cluster_template_uuid` must be specified.",
+				Description: "The name of the cluster template. _note_ Only one of `name`, `version` or `id` must be specified.",
 			},
 			"project_id": {
 				Type:        schema.TypeString,
@@ -181,7 +189,7 @@ func dataSourceKubernetesClusterTemplateRead(ctx context.Context, d *schema.Reso
 	if err != nil {
 		return diag.Errorf("error creating VKCS container infra client: %s", err)
 	}
-	templateIdentifierKey, err := util.EnsureOnlyOnePresented(d, "name", "version", "cluster_template_uuid")
+	templateIdentifierKey, err := util.EnsureOnlyOnePresented(d, "name", "version", "id", "cluster_template_uuid")
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -193,7 +201,7 @@ func dataSourceKubernetesClusterTemplateRead(ctx context.Context, d *schema.Reso
 	}
 
 	d.SetId(ct.UUID)
-
+	d.Set("cluster_template_uuid", ct.UUID)
 	d.Set("project_id", ct.ProjectID)
 	d.Set("user_id", ct.UserID)
 	d.Set("apiserver_port", ct.APIServerPort)
