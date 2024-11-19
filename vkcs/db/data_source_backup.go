@@ -4,11 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/utils"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/backups"
 )
@@ -52,8 +56,9 @@ func (d *BackupDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
+				Optional:    true,
 				Computed:    true,
-				Description: "ID of the resource.",
+				Description: "The UUID of the backup.",
 			},
 
 			"region": schema.StringAttribute{
@@ -63,8 +68,15 @@ func (d *BackupDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 			},
 
 			"backup_id": schema.StringAttribute{
-				Required:    true,
-				Description: "The UUID of the backup.",
+				Optional:           true,
+				Computed:           true,
+				Description:        "The UUID of the backup.",
+				DeprecationMessage: "This argument is deprecated, please, use the `id` attribute instead.",
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(
+						path.MatchRelative().AtParent().AtName("id"),
+					),
+				},
 			},
 
 			"created": schema.StringAttribute{
@@ -168,15 +180,17 @@ func (d *BackupDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	tflog.Debug(ctx, "Calling Databases API to get the backup")
 
-	backup, err := backups.Get(client, data.BackupID.ValueString()).Extract()
+	backupID := utils.GetFirstNotEmptyValue(data.ID, data.BackupID)
+	backup, err := backups.Get(client, backupID).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error calling VKCS Databases API", err.Error())
 		return
 	}
 
-	tflog.Debug(ctx, "Called Databases API to get the backup", map[string]interface{}{"backup": fmt.Sprintf("%#v", backup)})
+	tflog.Debug(ctx, "Called Databases API to get the backup", map[string]any{"backup": fmt.Sprintf("%#v", backup)})
 
 	data.ID = types.StringValue(backup.ID)
+	data.BackupID = data.ID
 	data.Region = types.StringValue(region)
 	data.Created = types.StringValue(backup.Created)
 	data.Datastore = flattenBackupDatastore(ctx, *backup.Datastore, &resp.Diagnostics)
