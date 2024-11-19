@@ -28,6 +28,12 @@ func DataSourceImagesImage() *schema.Resource {
 				Description: "The region in which to obtain the Image client. An Image client is needed to create an Image that can be used with a compute instance. If omitted, the `region` argument of the provider is used.",
 			},
 
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The UUID of the image.",
+			},
+
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
