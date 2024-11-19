@@ -30,6 +30,12 @@ func DataSourceSharedFilesystemShareNetwork() *schema.Resource {
 				Description: "The owner of the share network.",
 			},
 
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The UUID of the share network.",
+			},
+
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
