@@ -16,6 +16,7 @@ func DataSourceVkcsRegion() *schema.Resource {
 			"id": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "ID of the region to learn or use. Use empty value to learn current region on the provider.",
 			},
 			"parent_region": {
