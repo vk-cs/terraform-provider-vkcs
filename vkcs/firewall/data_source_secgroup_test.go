@@ -100,7 +100,7 @@ const testAccFirewallSecGroupDataSourceSecGroupID = `
 {{.TestAccFirewallSecGroupDataSourceGroup}}
 
 data "vkcs_networking_secgroup" "secgroup_1" {
-  secgroup_id = vkcs_networking_secgroup.secgroup_1.id
+  id = vkcs_networking_secgroup.secgroup_1.id
   tags = [
     "foo",
   ]
