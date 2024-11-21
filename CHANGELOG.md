@@ -11,6 +11,7 @@ description: |-
 - Fix an issue with marking subnet as ready while DHCP service is not configured yet
 - Fix panic on empty taint to vkcs_kubernetes_node_group resource
 - Fix order-induced changes in the plan for "databases" of the vkcs_db_user resource
+- Fix panic on VKCS Kubernetes API error in vkcs_kubernetes_clustertemplates data source
 - Deprecate ingress_floating_ip field of vkcs_kubernetes_cluster resource and data source
 - Deprecate keypair field of vkcs_kubernetes_cluster resource and data source
 

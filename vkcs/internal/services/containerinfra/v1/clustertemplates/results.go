@@ -21,5 +21,9 @@ func (r clusterTemplateResult) Extract() (*ClusterTemplate, error) {
 func (r clusterTemplatesResult) Extract() ([]ClusterTemplate, error) {
 	var s *ClusterTemplates
 	err := r.ExtractInto(&s)
+	if err != nil {
+		return nil, err
+	}
+
 	return s.Templates, err
 }
