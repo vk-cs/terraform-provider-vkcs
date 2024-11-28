@@ -2,6 +2,7 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -56,7 +57,6 @@ func ResourceKubernetesNodeGroup() *schema.Resource {
 			"labels": {
 				Type:     schema.TypeList,
 				Optional: true,
-				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
@@ -74,7 +74,6 @@ func ResourceKubernetesNodeGroup() *schema.Resource {
 			"taints": {
 				Type:     schema.TypeList,
 				Optional: true,
-				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
@@ -96,7 +95,6 @@ func ResourceKubernetesNodeGroup() *schema.Resource {
 			"node_count": {
 				Type:     schema.TypeInt,
 				Required: true,
-				ForceNew: false,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					// Suppress diff if node_count is managed by autoscaler when updating
 					if d.Get("autoscaling_enabled").(bool) && old != "" {
@@ -109,14 +107,12 @@ func ResourceKubernetesNodeGroup() *schema.Resource {
 			"max_nodes": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				ForceNew:    false,
 				Computed:    true,
 				Description: "The maximum allowed nodes for this node group.",
 			},
 			"min_nodes": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				ForceNew:    false,
 				Computed:    true,
 				Description: "The minimum allowed nodes for this node group. Default to 0 if not set.",
 			},
@@ -143,7 +139,6 @@ func ResourceKubernetesNodeGroup() *schema.Resource {
 			"autoscaling_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				ForceNew:    false,
 				Default:     false,
 				Description: "Determines whether the autoscaling is enabled.",
 			},
@@ -155,7 +150,6 @@ func ResourceKubernetesNodeGroup() *schema.Resource {
 			},
 			"state": {
 				Type:        schema.TypeString,
-				ForceNew:    false,
 				Computed:    true,
 				Description: "Determines current state of node group (RUNNING, SHUTOFF, ERROR).",
 			},
@@ -346,13 +340,29 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("error creating container infra client: %s", err)
 	}
 
+	clusterID := d.Get("cluster_id").(string)
 	stateConf := &retry.StateChangeConf{
-		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, d.Get("cluster_id").(string)),
+		Refresh:      kubernetesStateRefreshFunc(containerInfraClient, clusterID),
 		Timeout:      d.Timeout(schema.TimeoutUpdate),
 		Delay:        createUpdateDelay * time.Minute,
 		PollInterval: createUpdatePollInterval * time.Second,
 		Pending:      []string{string(clusterStatusReconciling)},
 		Target:       []string{string(clusterStatusRunning)},
+	}
+
+	mutex := config.GetMutex()
+	locked := false
+	lockMutex := func() {
+		if !locked {
+			mutex.Lock(clusterMutexKey(clusterID))
+			locked = true
+		}
+	}
+	unlockMutex := func() {
+		if locked {
+			mutex.Unlock(clusterMutexKey(clusterID))
+			locked = false
+		}
 	}
 
 	if d.HasChange("flavor_id") {
@@ -361,6 +371,9 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		log.Printf("[DEBUG] Resizing vkcs_kubernetes_node_group with opts %#v", resizeOpts)
+
+		lockMutex()
+		defer unlockMutex()
 
 		_, err := nodegroups.Resize(containerInfraClient, d.Id(), &resizeOpts).Extract()
 		if err != nil {
@@ -382,6 +395,9 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 		scaleOpts := nodegroups.ScaleOpts{
 			Delta: d.Get("node_count").(int) - s.NodeCount,
 		}
+
+		lockMutex()
+		defer unlockMutex()
 
 		_, err = nodegroups.Scale(containerInfraClient, d.Id(), &scaleOpts).Extract()
 		if err != nil {
@@ -481,6 +497,11 @@ func resourceKubernetesNodeGroupDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("error creating container infra client: %s", err)
 	}
 
+	clusterID := d.Get("cluster_id").(string)
+	mutex := config.GetMutex()
+	mutex.Lock(clusterMutexKey(clusterID))
+	defer mutex.Unlock(clusterMutexKey(clusterID))
+
 	if err := nodegroups.Delete(containerInfraClient, d.Id()).ExtractErr(); err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "error deleting vkcs_kubernetes_node_group"))
 	}
@@ -499,7 +520,6 @@ func resourceKubernetesNodeGroupDelete(ctx context.Context, d *schema.ResourceDa
 			"error waiting for vkcs_kubernetes_node_group %s to become deleted: %s", d.Id(), err)
 	}
 
-	clusterID := d.Get("cluster_id").(string)
 	clusterStateConf := &retry.StateChangeConf{
 		Pending:      []string{string(clusterStatusReconciling)},
 		Target:       []string{string(clusterStatusRunning)},
@@ -515,4 +535,8 @@ func resourceKubernetesNodeGroupDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	return nil
+}
+
+func clusterMutexKey(clusterID string) string {
+	return fmt.Sprintf("vkcs_kubernetes_cluster/%s", clusterID)
 }
