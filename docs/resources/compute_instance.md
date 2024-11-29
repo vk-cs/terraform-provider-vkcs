@@ -217,6 +217,38 @@ resource "vkcs_compute_instance" "basic" {
 Also, the user_data option can be set to the contents of a script file using the file() function:
   user_data = file("${path.module}/userdata.sh")
 
+### Instance with cloud monitoring
+
+~> **Attention:** If you enable cloud monitoring and use user_data, the terraform provider will try to merge monitoring
+script and user_data into one file
+
+```terraform
+resource "vkcs_compute_instance" "cloud_monitoring" {
+  name              = "cloud-monitoring-tf-example"
+  availability_zone = "GZ1"
+  flavor_name       = "Basic-1-2-20"
+  block_device {
+    source_type           = "image"
+    uuid                  = data.vkcs_images_image.debian.id
+    destination_type      = "volume"
+    volume_size           = 10
+    delete_on_termination = true
+  }
+  network {
+    uuid = vkcs_networking_network.app.id
+  }
+
+  cloud_monitoring {
+    service_user_id = vkcs_cloud_monitoring.basic.service_user_id
+    script          = vkcs_cloud_monitoring.basic.script
+  }
+
+  depends_on = [
+    vkcs_networking_router_interface.app
+  ]
+}
+```
+
 ## Argument Reference
 - `name` **required** *string* &rarr;  A unique name for the resource.
 
@@ -246,6 +278,12 @@ Also, the user_data option can be set to the contents of a script file using the
   - `volume_size` optional *number* &rarr;  The size of the volume to create (in gigabytes). Required in the following combinations: source=image and destination=volume, source=blank and destination=local, and source=blank and destination=volume. Changing this creates a new server.
 
   - `volume_type` optional *string* &rarr;  The volume type that will be used. Changing this creates a new server.
+
+- `cloud_monitoring` optional &rarr; The settings of the cloud monitoring, it is recommended to set this field with the
+  values of `vkcs_cloud_monitoring` resource fields. Changing this creates a new server.
+  - `script` **required** sensitive *string* &rarr; The script of the cloud monitoring.
+
+  - `service_user_id` **required** *string* &rarr; The id of the service monitoring user.
 
 - `config_drive` optional *boolean* &rarr;  Whether to use the config_drive feature to configure the instance. Changing this creates a new server.
 
@@ -296,7 +334,8 @@ Also, the user_data option can be set to the contents of a script file using the
 
 - `tags` optional *set of* *string* &rarr;  A set of string tags for the instance. Changing this updates the existing instance tags.
 
-- `user_data` optional *string* &rarr;  The user data to provide when launching the instance.	Changing this creates a new server.
+- `user_data` optional *string* &rarr; The user data to provide when launching the instance. When cloud_monitoring
+  enabled only #!/bin/bash, #cloud-config, #ps1 user_data formats are supported. Changing this creates a new server.
 
 - `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below.
   - `detach_ports_before_destroy` optional *boolean* &rarr;  Whether to try to detach all attached ports to the vm before destroying it to make sure the port state is correct after the vm destruction. This is helpful when the port is not deleted.
