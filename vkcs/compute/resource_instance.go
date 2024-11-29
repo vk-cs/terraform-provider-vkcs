@@ -701,12 +701,7 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 
 	// Set the current power_state
 	currentStatus := strings.ToLower(server.Status)
-	switch currentStatus {
-	case "active", "shutoff", "error", "migrating", "shelved_offloaded", "shelved":
-		d.Set("power_state", currentStatus)
-	default:
-		return diag.Errorf("Invalid power_state for instance %s: %s", d.Id(), server.Status)
-	}
+	d.Set("power_state", currentStatus)
 
 	// Populate tags.
 	instanceTags, err := itags.List(computeClient, server.ID).Extract()

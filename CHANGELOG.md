@@ -13,6 +13,7 @@ description: |-
 - Fix order-induced changes in the plan for "databases" of the vkcs_db_user resource
 - Fix panic on VKCS Kubernetes API error in vkcs_kubernetes_clustertemplates data source
 - Fix an error when changing several Kubernetes cluster node groups in parallel
+- Fix an error when reading the state of a compute instance with the build status
 - Deprecate ingress_floating_ip field of vkcs_kubernetes_cluster resource and data source
 - Deprecate keypair field of vkcs_kubernetes_cluster resource and data source
 
