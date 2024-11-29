@@ -1,0 +1,29 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a cloud monitoring for the given image within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+~> **Attention:**
+If you create a virtual machine with cloud monitoring enabled, then take a disk snapshot and create a new instance from
+it,
+monitoring will also be enabled on the new one. If you then delete the `vkcs_cloud_monitoring` resource,
+the monitoring service user will be deleted along with it, causing cloud monitoring to stop working.
+
+## Example Usage
+
+{{tffile "examples/monitoring/main.tf"}}
+
+{{ .SchemaMarkdown }}
+
+~> **Note:**
+You can use this resource for multiple compute instances in the same project with the same image.
+
+~> **Note:**
+Monitoring script may be in bash or powershell format, depending on the OS.

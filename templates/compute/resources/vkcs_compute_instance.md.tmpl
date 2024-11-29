@@ -39,6 +39,13 @@ This feature is used to provide initialization scripts or configurations to inst
 Also, the user_data option can be set to the contents of a script file using the file() function:
   user_data = file("${path.module}/userdata.sh")
 
+### Instance with cloud monitoring
+
+~> **Attention:** If you enable cloud monitoring and use user_data, the terraform provider will try to merge monitoring
+script and user_data into one file
+
+{{tffile "examples/compute/instance/cloud_monitoring/main.tf"}}
+
 {{ .SchemaMarkdown }}
 
 ## Notes
