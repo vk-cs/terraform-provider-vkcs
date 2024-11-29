@@ -2,7 +2,7 @@ package zones
 
 import (
 	"github.com/gophercloud/gophercloud"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type CreateOptsBuilder interface {
@@ -94,7 +94,7 @@ func List(client *gophercloud.ServiceClient, opts ListOptsBuilder) (r ListResult
 	}
 	resp, err := client.Get(url, &r.Body, nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 

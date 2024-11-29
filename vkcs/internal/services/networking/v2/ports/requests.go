@@ -4,6 +4,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 // PortCreateOpts represents the attributes used when creating a new port.
@@ -20,23 +21,23 @@ func (opts PortCreateOpts) ToPortCreateMap() (map[string]interface{}, error) {
 
 func Get(c *gophercloud.ServiceClient, id string) ports.GetResult {
 	r := ports.Get(c, id)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return r
 }
 
 func Create(c *gophercloud.ServiceClient, opts ports.CreateOptsBuilder) ports.CreateResult {
 	r := ports.Create(c, opts)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return r
 }
 func Update(c *gophercloud.ServiceClient, id string, opts ports.UpdateOptsBuilder) ports.UpdateResult {
 	r := ports.Update(c, id, opts)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return r
 }
 
 func Delete(c *gophercloud.ServiceClient, id string) ports.DeleteResult {
 	r := ports.Delete(c, id)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return r
 }

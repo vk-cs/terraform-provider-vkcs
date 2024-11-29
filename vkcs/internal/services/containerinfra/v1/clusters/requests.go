@@ -8,7 +8,7 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clusters"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type OptsBuilder interface {
@@ -149,7 +149,7 @@ func Create(client *gophercloud.ServiceClient, opts OptsBuilder) (r clusters.Cre
 		OkCodes: []int{202},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 
@@ -160,7 +160,7 @@ func Get(client *gophercloud.ServiceClient, id string) (r clusterConfigResult) {
 		OkCodes: []int{200},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 
@@ -170,12 +170,12 @@ func KubeConfigGet(client *gophercloud.ServiceClient, id string) (string, error)
 		KeepResponseBody: true,
 	})
 	if err != nil {
-		return "", util.ErrorWithRequestID(err, resp.Header.Get(util.RequestIDHeader))
+		return "", errutil.ErrorWithRequestID(err, resp.Header.Get(errutil.RequestIDHeader))
 	}
 	buf := bytes.NewBuffer(make([]byte, 0, resp.ContentLength))
 	_, err = io.Copy(buf, resp.Body)
 	if err != nil {
-		return "", util.ErrorWithRequestID(err, resp.Header.Get(util.RequestIDHeader))
+		return "", errutil.ErrorWithRequestID(err, resp.Header.Get(errutil.RequestIDHeader))
 	}
 	return buf.String(), nil
 }
@@ -194,7 +194,7 @@ func Update(client *gophercloud.ServiceClient, id string, opts []OptsBuilder) (r
 		OkCodes: []int{200, 202},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 
@@ -208,7 +208,7 @@ func Upgrade(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r 
 		OkCodes: []int{200, 202},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 
@@ -222,7 +222,7 @@ func UpdateMasters(client *gophercloud.ServiceClient, id string, opts OptsBuilde
 		OkCodes: []int{200, 202},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 
@@ -236,13 +236,13 @@ func SwitchState(client *gophercloud.ServiceClient, id string, opts OptsBuilder)
 		OkCodes: []int{202},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 
 func Delete(client *gophercloud.ServiceClient, id string) (r clusterDeleteResult) {
 	resp, err := client.Delete(clusterURL(client, id), &gophercloud.RequestOpts{})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }

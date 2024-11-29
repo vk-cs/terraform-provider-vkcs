@@ -4,6 +4,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 // SubnetCreateOpts represents the attributes used when creating a new subnet.
@@ -29,24 +30,24 @@ func (opts SubnetCreateOpts) ToSubnetCreateMap() (map[string]interface{}, error)
 
 func Get(c *gophercloud.ServiceClient, id string) subnets.GetResult {
 	r := subnets.Get(c, id)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return r
 }
 
 func Create(c *gophercloud.ServiceClient, opts subnets.CreateOptsBuilder) subnets.CreateResult {
 	r := subnets.Create(c, opts)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return r
 }
 
 func Update(c *gophercloud.ServiceClient, id string, opts subnets.UpdateOptsBuilder) subnets.UpdateResult {
 	r := subnets.Update(c, id, opts)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return r
 }
 
 func Delete(c *gophercloud.ServiceClient, id string) subnets.DeleteResult {
 	r := subnets.Delete(c, id)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return r
 }
