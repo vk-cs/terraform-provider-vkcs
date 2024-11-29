@@ -4,7 +4,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/databases"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type OptsBuilder interface {
@@ -88,7 +88,7 @@ func Update(client *gophercloud.ServiceClient, id string, name string, opts Opts
 		OkCodes: []int{202},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 
@@ -103,7 +103,7 @@ func UpdateDatabases(client *gophercloud.ServiceClient, id string, name string, 
 		OkCodes: []int{202},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 
@@ -111,7 +111,7 @@ func UpdateDatabases(client *gophercloud.ServiceClient, id string, name string, 
 func DeleteDatabase(client *gophercloud.ServiceClient, id string, userName string, dbName string, dbmsType string) (r DeleteDatabaseResult) {
 	resp, err := client.Delete(userDatabaseURL(client, dbmsType, id, userName, dbName), &gophercloud.RequestOpts{})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 
@@ -119,6 +119,6 @@ func DeleteDatabase(client *gophercloud.ServiceClient, id string, userName strin
 func Delete(client *gophercloud.ServiceClient, id string, userName string, dbmsType string) (r DeleteResult) {
 	resp, err := client.Delete(userURL(client, dbmsType, id, userName), &gophercloud.RequestOpts{})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }

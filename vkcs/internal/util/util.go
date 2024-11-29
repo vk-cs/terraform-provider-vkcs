@@ -19,8 +19,6 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
-const RequestIDHeader = "X-Openstack-Request-Id"
-
 var DecoderConfig = &mapstructure.DecoderConfig{
 	TagName: "json",
 }
@@ -304,14 +302,4 @@ func ValueKnownBoolPointer(v basetypes.BoolValue) *bool {
 		return nil
 	}
 	return v.ValueBoolPointer()
-}
-
-func ErrorWithRequestID(err error, requestID string) error {
-	if err == nil {
-		return nil
-	}
-	if requestID == "" {
-		return err
-	}
-	return fmt.Errorf("%w\nRequest ID: %s", err, requestID)
 }

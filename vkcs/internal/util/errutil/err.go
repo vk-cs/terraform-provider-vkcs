@@ -2,9 +2,12 @@ package errutil
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/gophercloud/gophercloud"
 )
+
+const RequestIDHeader = "X-Openstack-Request-Id"
 
 func Is(err error, errorCode int) bool {
 	if err == nil {
@@ -140,4 +143,15 @@ func Any(err error, errorCodes []int) bool {
 		}
 	}
 	return false
+}
+
+func ErrorWithRequestID(err error, requestID string) error {
+	if err == nil {
+		return nil
+	}
+	if requestID == "" {
+		return err
+	}
+
+	return fmt.Errorf("%w\nRequest ID: %s", err, requestID)
 }

@@ -278,7 +278,7 @@ func CreateRouterWithRetry(c *gophercloud.ServiceClient, opts routers.CreateOpts
 		routerCreationRetriesNum, routerCreationRetryDelay, routerCreationTimeout)
 
 	if createErr != nil {
-		r.Err = util.ErrorWithRequestID(createErr, r.Header.Get(util.RequestIDHeader))
+		r.Err = errutil.ErrorWithRequestID(createErr, r.Header.Get(errutil.RequestIDHeader))
 	}
 
 	return r

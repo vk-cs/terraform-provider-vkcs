@@ -3,7 +3,7 @@ package databases
 import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/pagination"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type CreateOptsBuilder interface {
@@ -39,7 +39,7 @@ func Create(client *gophercloud.ServiceClient, id string, opts CreateOptsBuilder
 		OkCodes: []int{202},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 
@@ -58,6 +58,6 @@ func Delete(client *gophercloud.ServiceClient, id string, dbName string, dbmsTyp
 	}
 	resp, err := client.Delete(url, &gophercloud.RequestOpts{})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-	r.Err = util.ErrorWithRequestID(r.Err, r.Header.Get(util.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
