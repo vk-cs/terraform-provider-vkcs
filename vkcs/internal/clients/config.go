@@ -15,7 +15,9 @@ import (
 	sdkdiag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
+	icapabilities "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/imagecapabilities"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/templater"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/version"
 )
@@ -46,6 +48,8 @@ type Config interface {
 	LoadBalancerV2Client(region string) (*gophercloud.ServiceClient, error)
 	BackupV1Client(region string, tenantID string) (*gophercloud.ServiceClient, error)
 	MLPlatformV1Client(region string) (*gophercloud.ServiceClient, error)
+	ICSV1Client(region string) (*gophercloud.ServiceClient, error)
+	TemplaterV2Client(region string, projectID string) (*gophercloud.ServiceClient, error)
 	GetMutex() *mutexkv.MutexKV
 }
 
@@ -203,6 +207,40 @@ func (c *configer) BackupV1Client(region string, tenantID string) (*gophercloud.
 func (c *configer) MLPlatformV1Client(region string) (*gophercloud.ServiceClient, error) {
 	client, err := c.CommonServiceClientInit(newMLPlatformV1, region, "mlplatform")
 	return client, err
+}
+
+func (c *configer) ICSV1Client(region string) (*gophercloud.ServiceClient, error) {
+	client, err := c.CommonServiceClientInit(newICSV1, region, "ics")
+	if err != nil {
+		return client, err
+	}
+
+	if err = icapabilities.HealthCheck(client).ExtractErr(); err != nil {
+		if errutil.IsNotFound(err) {
+			return nil, NewErrEndpointNotFound("ics")
+		}
+
+		return nil, err
+	}
+
+	return client, nil
+}
+
+func (c *configer) TemplaterV2Client(region string, projectID string) (*gophercloud.ServiceClient, error) {
+	client, err := c.CommonServiceClientInit(newTemplaterV2, region, "templater")
+	if err != nil {
+		return nil, err
+	}
+
+	if err = templater.ListUsers(client, projectID).ExtractErr(); err != nil {
+		if errutil.IsNotFound(err) {
+			return nil, NewErrEndpointNotFound("templater")
+		}
+
+		return nil, err
+	}
+
+	return client, nil
 }
 
 func (c *configer) GetMutex() *mutexkv.MutexKV {

@@ -7,7 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.8.5 (unreleased)
+#### v0.9.0 (unreleased)
+- Add vkcs_cloud_monitoring resource
+- Add cloud_monitoring argument to vkcs_compute_instance
 - Fix an issue with marking subnet as ready while DHCP service is not configured yet
 - Fix panic on empty taint to vkcs_kubernetes_node_group resource
 - Fix order-induced changes in the plan for "databases" of the vkcs_db_user resource
