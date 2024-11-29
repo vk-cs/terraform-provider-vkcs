@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
+	imonitoring "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/templater"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/monitoring"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
@@ -109,7 +111,7 @@ func ResourceComputeInstance() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				// just stash the hash for state & diff comparisons
-				StateFunc: func(v interface{}) string {
+				StateFunc: func(v any) string {
 					switch v := v.(type) {
 					case string:
 						hash := sha1.Sum([]byte(v))
@@ -118,7 +120,30 @@ func ResourceComputeInstance() *schema.Resource {
 						return ""
 					}
 				},
-				Description: "The user data to provide when launching the instance.	Changing this creates a new server.",
+				Description: "The user data to provide when launching the instance. When cloud_monitoring enabled only #!/bin/bash, #cloud-config, #ps1 user_data formats are supported. Changing this creates a new server.",
+			},
+			"cloud_monitoring": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				ForceNew: true,
+				MinItems: 1,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"script": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Sensitive:   true,
+							Description: "The script of the cloud monitoring.",
+						},
+						"service_user_id": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The id of the service monitoring user.",
+						},
+					},
+				},
+				Description: "The settings of the cloud monitoring, it is recommended to set this field with the values of `vkcs_cloud_monitoring` resource fields. Changing this creates a new server.",
 			},
 			"security_groups": {
 				Type:          schema.TypeSet,
@@ -485,6 +510,34 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		availabilityZone = v.(string)
 	}
 
+	monitoringSettings, err := resourceInstanceCloudMonitoring(d)
+	if err != nil {
+		return diag.Diagnostics{{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("Error creating VKCS server: %s", err),
+			AttributePath: cty.Path{
+				cty.GetAttrStep{Name: "cloud_monitoring"},
+			},
+		}}
+	}
+
+	metadata := resourceInstanceMetadataV2(d)
+	if err = addServiceUserIDToMetadata(metadata, monitoringSettings); err != nil {
+		return diag.Diagnostics{{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("Error creating VKCS server: %s", err),
+			AttributePath: cty.Path{
+				cty.GetAttrStep{Name: "metadata"},
+				cty.IndexStep{Key: cty.StringVal("service_user_id")},
+			},
+		}}
+	}
+
+	userData, err := resourceInstanceUserData(d, monitoringSettings)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	createOpts = &servers.CreateOpts{
 		Name:             d.Get("name").(string),
 		ImageRef:         imageID,
@@ -492,10 +545,10 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		SecurityGroups:   resourceInstanceSecGroupsV2(d),
 		AvailabilityZone: availabilityZone,
 		Networks:         networks,
-		Metadata:         resourceInstanceMetadataV2(d),
+		Metadata:         metadata,
 		ConfigDrive:      &configDrive,
 		AdminPass:        d.Get("admin_pass").(string),
-		UserData:         []byte(d.Get("user_data").(string)),
+		UserData:         []byte(userData),
 		Personality:      resourceInstancePersonalityV2(d),
 		Tags:             instanceTags,
 	}
@@ -810,19 +863,36 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChange("metadata") {
-		oldMetadata, newMetadata := d.GetChange("metadata")
+		oldMetadata, newMetadataRaw := d.GetChange("metadata")
+
+		newMetadata := util.ExpandToMapStringString(newMetadataRaw.(map[string]any))
+		monitoringSettings, err := resourceInstanceCloudMonitoring(d)
+		if err != nil {
+			return diag.Diagnostics{{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("Error updating VKCS server (%s): %s", d.Id(), err),
+				AttributePath: cty.Path{
+					cty.GetAttrStep{Name: "cloud_monitoring"},
+				},
+			}}
+		}
+		if err = addServiceUserIDToMetadata(newMetadata, monitoringSettings); err != nil {
+			return diag.Diagnostics{{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("Error updating VKCS server (%s) metadata: %s", d.Id(), err),
+				AttributePath: cty.Path{
+					cty.GetAttrStep{Name: "metadata"},
+					cty.IndexStep{Key: cty.StringVal("service_user_id")},
+				},
+			}}
+		}
+
 		var metadataToDelete []string
 
 		// Determine if any metadata keys were removed from the configuration.
 		// Then request those keys to be deleted.
-		for oldKey := range oldMetadata.(map[string]interface{}) {
-			var found bool
-			for newKey := range newMetadata.(map[string]interface{}) {
-				if oldKey == newKey {
-					found = true
-				}
-			}
-
+		for oldKey := range oldMetadata.(map[string]any) {
+			_, found := newMetadata[oldKey]
 			if !found {
 				metadataToDelete = append(metadataToDelete, oldKey)
 			}
@@ -837,11 +907,11 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 
 		// Update existing metadata and add any new metadata.
 		metadataOpts := make(servers.MetadataOpts)
-		for k, v := range newMetadata.(map[string]interface{}) {
-			metadataOpts[k] = v.(string)
+		for k, v := range newMetadata {
+			metadataOpts[k] = v
 		}
 
-		_, err := iservers.UpdateMetadata(computeClient, d.Id(), metadataOpts).Extract()
+		_, err = iservers.UpdateMetadata(computeClient, d.Id(), metadataOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error updating VKCS server (%s) metadata: %s", d.Id(), err)
 		}
@@ -1242,6 +1312,20 @@ func resourceInstanceMetadataV2(d *schema.ResourceData) map[string]string {
 	return m
 }
 
+func addServiceUserIDToMetadata(metadata map[string]string, monitoringSettings *imonitoring.Settings) error {
+	if monitoringSettings == nil {
+		return nil
+	}
+
+	if _, ok := metadata["service_user_id"]; ok {
+		return fmt.Errorf("use of the \"service_user_id\" key is prohibited when cloud monitoring is enabled")
+	}
+
+	metadata["service_user_id"] = monitoringSettings.UserID
+
+	return nil
+}
+
 func ResourceInstanceBlockDevicesV2(_ *schema.ResourceData, bds []interface{}) ([]bootfromvolume.BlockDevice, error) {
 	blockDeviceOpts := make([]bootfromvolume.BlockDevice, len(bds))
 	for i, bd := range bds {
@@ -1564,4 +1648,52 @@ func suppressPowerStateDiffs(_, old, _ string, _ *schema.ResourceData) bool {
 	}
 
 	return false
+}
+
+func resourceInstanceCloudMonitoring(d *schema.ResourceData) (*imonitoring.Settings, error) {
+	val, ok := d.GetOk("cloud_monitoring")
+	if !ok {
+		return nil, nil
+	}
+
+	settingsSet, ok := val.(*schema.Set)
+	if !ok || settingsSet.Len() == 0 {
+		return nil, fmt.Errorf("failed to read cloud_monitoring argument")
+	}
+
+	m, ok := settingsSet.List()[0].(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("cloud_monitoring must be a map")
+	}
+
+	var settings imonitoring.Settings
+	settings.UserID, ok = m["service_user_id"].(string)
+	if !ok {
+		return nil, fmt.Errorf("cloud_monitoring.service_user_id must be a string")
+	}
+
+	settings.Script, ok = m["script"].(string)
+	if !ok {
+		return nil, fmt.Errorf("cloud_monitoring.script must be a string")
+	}
+
+	return &settings, nil
+}
+
+func resourceInstanceUserData(d *schema.ResourceData, monitoringSettings *imonitoring.Settings) (string, error) {
+	userData := d.Get("user_data").(string)
+	userData = strings.TrimSpace(userData)
+	if len(userData) > 0 && monitoringSettings != nil {
+		return monitoring.MergeConfigs(monitoringSettings.Script, userData)
+	}
+
+	if len(userData) > 0 {
+		return userData, nil
+	}
+
+	if monitoringSettings != nil {
+		return monitoringSettings.Script, nil
+	}
+
+	return "", nil
 }

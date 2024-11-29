@@ -1,6 +1,7 @@
 package compute_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -11,16 +12,15 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	iservers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servers"
-
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/compute"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	iservers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servers"
 )
 
 func TestAccComputeInstance_basic(t *testing.T) {
@@ -760,8 +760,81 @@ func TestResourceInstanceBlockDevicesV2(t *testing.T) {
 	}
 }
 
+func TestAccComputeInstance_cloudMonitoringBasic(t *testing.T) {
+	var instance servers.Server
+	resourceName := "vkcs_compute_instance.instance_1"
+	monitoringResourceName := "vkcs_cloud_monitoring.basic"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceCloudMonitoring, map[string]string{"Metadata": testMetadataEmpty}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists(resourceName, &instance),
+					resource.TestCheckResourceAttrSet(monitoringResourceName, "service_user_id"),
+					resource.TestCheckResourceAttrSet(monitoringResourceName, "script"),
+					resource.TestCheckResourceAttrPair(
+						resourceName, "all_metadata.service_user_id", monitoringResourceName, "service_user_id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccComputeInstance_cloudMonitoringMetadata(t *testing.T) {
+	var instance servers.Server
+	resourceName := "vkcs_compute_instance.instance_1"
+	monitoringResourceName := "vkcs_cloud_monitoring.basic"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceCloudMonitoring, map[string]string{"Metadata": testMetadata}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists(resourceName, &instance),
+					testAccCheckComputeInstanceMetadata(&instance, "key1", "value1"),
+					testAccCheckComputeInstanceMetadata(&instance, "key2", "value2"),
+					resource.TestCheckResourceAttrPair(
+						resourceName, "all_metadata.service_user_id", monitoringResourceName, "service_user_id"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceCloudMonitoring, map[string]string{"Metadata": testMetadataUpdate}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists(resourceName, &instance),
+					testAccCheckComputeInstanceMetadata(&instance, "key1", "value1"),
+					testAccCheckComputeInstanceMetadata(&instance, "key3", "value3"),
+					testAccCheckComputeInstanceNoMetadataKey(&instance, "key2"),
+					resource.TestCheckResourceAttrPair(
+						resourceName, "all_metadata.service_user_id", monitoringResourceName, "service_user_id"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceCloudMonitoring, map[string]string{"Metadata": testMetadataEmpty}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists(resourceName, &instance),
+					testAccCheckComputeInstanceNoMetadataKey(&instance, "key1"),
+					testAccCheckComputeInstanceNoMetadataKey(&instance, "key3"),
+					resource.TestCheckResourceAttrPair(
+						resourceName, "all_metadata.service_user_id", monitoringResourceName, "service_user_id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckComputeInstanceDestroy(s *terraform.State) error {
-	config := acctest.AccTestProvider.Meta().(clients.Config)
+	config, err := clients.ConfigureFromEnv(context.Background())
+	if err != nil {
+		return fmt.Errorf("Error authenticating clients from environment: %s", err)
+	}
+
 	computeClient, err := config.ComputeV2Client(acctest.OsRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS compute client: %s", err)
@@ -783,18 +856,22 @@ func testAccCheckComputeInstanceDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckComputeInstanceExists(n string, instance *servers.Server) resource.TestCheckFunc {
+func testAccCheckComputeInstanceExists(resourceName string, instance *servers.Server) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
+		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("Not found: %s", resourceName)
 		}
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := acctest.AccTestProvider.Meta().(clients.Config)
+		config, err := clients.ConfigureFromEnv(context.Background())
+		if err != nil {
+			return fmt.Errorf("Error authenticating clients from environment: %s", err)
+		}
+
 		computeClient, err := config.ComputeV2Client(acctest.OsRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS compute client: %s", err)
@@ -816,39 +893,25 @@ func testAccCheckComputeInstanceExists(n string, instance *servers.Server) resou
 }
 
 func testAccCheckComputeInstanceMetadata(
-	instance *servers.Server, k string, v string) resource.TestCheckFunc {
+	instance *servers.Server, key string, value string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if instance.Metadata == nil {
-			return fmt.Errorf("No metadata")
+		actual, ok := instance.Metadata[key]
+		if !ok {
+			return fmt.Errorf("Metadata not found: %s", key)
+		}
+		if value != actual {
+			return fmt.Errorf("Bad value for key %s, expected: %s, actual: %s", key, value, actual)
 		}
 
-		for key, value := range instance.Metadata {
-			if k != key {
-				continue
-			}
-
-			if v == value {
-				return nil
-			}
-
-			return fmt.Errorf("Bad value for %s: %s", k, value)
-		}
-
-		return fmt.Errorf("Metadata not found: %s", k)
+		return nil
 	}
 }
 
 func testAccCheckComputeInstanceNoMetadataKey(
-	instance *servers.Server, k string) resource.TestCheckFunc {
+	instance *servers.Server, key string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if instance.Metadata == nil {
-			return nil
-		}
-
-		for key := range instance.Metadata {
-			if k == key {
-				return fmt.Errorf("Metadata found: %s", k)
-			}
+		if _, ok := instance.Metadata[key]; ok {
+			return fmt.Errorf("Unexpected metadata found: %s", key)
 		}
 
 		return nil
@@ -1791,4 +1854,75 @@ resource "vkcs_compute_instance" "instance_1" {
   image_id = data.vkcs_images_image.base.id
   flavor_id = data.vkcs_compute_flavor.base.id
 }
+`
+
+const testAccComputeInstanceCloudMonitoring = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
+
+data "vkcs_images_image" "base" {
+  visibility = "public"
+  default    = true
+  properties = {
+    mcs_os_distro  = "ubuntu"
+    mcs_os_version = "24.04"
+  }
+}
+
+resource "vkcs_cloud_monitoring" "basic" {
+  image_id = data.vkcs_images_image.base.id
+}
+
+resource "vkcs_compute_instance" "instance_1" {
+  name              = "instance_with_monitoring"
+  image_id          = data.vkcs_images_image.base.id
+  flavor_id         = data.vkcs_compute_flavor.base.id
+  availability_zone = "{{.AvailabilityZone}}"
+  security_groups   = ["default"]
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+
+  cloud_monitoring {
+    service_user_id = vkcs_cloud_monitoring.basic.service_user_id
+    script          = vkcs_cloud_monitoring.basic.script
+  }
+
+  {{.Metadata}}
+
+  user_data = <<EOF
+#cloud-config
+runcmd:
+  - echo "Hello, world!" > /etc/motd
+  - [ sh, -c, "echo 'Second command executed successfully!' >> /run/testing.txt" ]
+write_files:
+  - path: /etc/example_config.conf
+    content: |
+      [example-config]
+      key=value
+final_message: "The system is up, after $UPTIME seconds"
+  EOF
+
+  depends_on = [
+    vkcs_networking_router_interface.base
+  ]
+}
+`
+
+const testMetadata = `
+metadata = {
+  key1 = "value1"
+  key2 = "value2"
+}
+`
+
+const testMetadataUpdate = `
+metadata = {
+  key1 = "value1"
+  key3 = "value3"
+}
+`
+
+const testMetadataEmpty = `
+metadata = {}
 `
