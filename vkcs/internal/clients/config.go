@@ -102,7 +102,7 @@ func ConfigureSdkProvider(d *schema.ResourceData, terraformVersion string) (Conf
 		return nil, sdkdiag.FromErr(err)
 	}
 
-	config.OsClient.UserAgent.Prepend(fmt.Sprintf("VKCS Terraform Provider %s", version.ProviderVersion))
+	config.OsClient.UserAgent.Prepend(fmt.Sprintf("VKCS Terraform Provider/%s", version.ProviderVersion))
 	config.OsClient.RetryFunc = retryFunc
 
 	return config, nil
@@ -285,7 +285,7 @@ func ConfigureProvider(ctx context.Context, req provider.ConfigureRequest) (Conf
 		return nil, diags
 	}
 
-	config.OsClient.UserAgent.Prepend(fmt.Sprintf("VKCS Terraform Provider %s", version.ProviderVersion))
+	config.OsClient.UserAgent.Prepend(fmt.Sprintf("VKCS Terraform Provider/%s", version.ProviderVersion))
 	config.OsClient.RetryFunc = retryFunc
 
 	return &config, diags
