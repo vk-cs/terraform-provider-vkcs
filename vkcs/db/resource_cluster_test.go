@@ -174,7 +174,7 @@ func testAccCheckDatabaseClusterDestroy(s *terraform.State) error {
 func testAccCheckDatabaseClusterLeaderExists(cluster *clusters.ClusterResp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, inst := range cluster.Instances {
-			if inst.Role == db.DBClusterInstanceRoleLeader {
+			if inst.Role == db.ClusterInstanceRoleLeader {
 				return nil
 			}
 		}
