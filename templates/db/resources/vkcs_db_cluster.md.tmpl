@@ -12,13 +12,14 @@ description: |-
 
 ## Example Usage
 ### Basic cluster
-{{tffile .ExampleFile}}
+{{tffile "examples/db/cluster/postgres/main.tf"}}
 
 ### Cluster restored from backup
 {{tffile "templates/db/resources/vkcs_db_cluster/cluster_from_backup/main.tf"}}
 
 ### Cluster with scheduled PITR backup
-{{tffile "templates/db/resources/vkcs_db_cluster/cluster_with_pitr/main.tf"}}
+{{tffile "examples/db/cluster/with_scheduled_pitr_backup/main.tf"}}
+
 {{ .SchemaMarkdown }}
 
 ## Import

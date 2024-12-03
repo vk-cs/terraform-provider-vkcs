@@ -1,5 +1,5 @@
 resource "vkcs_db_instance" "db_instance" {
-  name = "db-instance"
+  name = "db-instance-tf-example"
 
   availability_zone = "GZ1"
 

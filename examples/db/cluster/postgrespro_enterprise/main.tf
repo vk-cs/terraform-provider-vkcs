@@ -1,5 +1,5 @@
 resource "vkcs_db_cluster" "pg_cluster" {
-  name = "pg-cluster"
+  name = "pg-cluster-tf-example"
 
   availability_zone = "GZ1"
   datastore {
