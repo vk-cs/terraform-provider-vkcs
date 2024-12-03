@@ -18,24 +18,25 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
-type dbClusterStatus string
+type clusterStatus string
 
 var (
-	dbClusterStatusActive             dbClusterStatus = "CLUSTER_ACTIVE"
-	dbClusterStatusBuild              dbClusterStatus = "BUILDING"
-	dbClusterStatusDeleted            dbClusterStatus = "DELETED"
-	dbClusterStatusDeleting           dbClusterStatus = "DELETING"
-	dbClusterStatusGrow               dbClusterStatus = "GROWING_CLUSTER"
-	dbClusterStatusResize             dbClusterStatus = "RESIZING_CLUSTER"
-	dbClusterStatusShrink             dbClusterStatus = "SHRINKING_CLUSTER"
-	dbClusterStatusUpdating           dbClusterStatus = "UPDATING_CLUSTER"
-	dbClusterStatusCapabilityApplying dbClusterStatus = "CAPABILITY_APPLYING"
-	dbClusterStatusBackup             dbClusterStatus = "BACKUP"
-	dbClusterStatusError              dbClusterStatus = "ERROR"
+	clusterStatusActive             clusterStatus = "CLUSTER_ACTIVE"
+	clusterStatusBackup             clusterStatus = "BACKUP"
+	clusterStatusBackuping          clusterStatus = "BACKUPING_CLUSTER"
+	clusterStatusBuild              clusterStatus = "BUILDING"
+	clusterStatusCapabilityApplying clusterStatus = "CAPABILITY_APPLYING"
+	clusterStatusDeleted            clusterStatus = "DELETED"
+	clusterStatusDeleting           clusterStatus = "DELETING"
+	clusterStatusError              clusterStatus = "ERROR"
+	clusterStatusGrow               clusterStatus = "GROWING_CLUSTER"
+	clusterStatusResize             clusterStatus = "RESIZING_CLUSTER"
+	clusterStatusShrink             clusterStatus = "SHRINKING_CLUSTER"
+	clusterStatusUpdating           clusterStatus = "UPDATING_CLUSTER"
 )
 
 const (
-	DBClusterInstanceRoleLeader string = "leader"
+	ClusterInstanceRoleLeader string = "leader"
 )
 
 func ResourceDatabaseCluster() *schema.Resource {
@@ -588,8 +589,8 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 	log.Printf("[DEBUG] Waiting for vkcs_db_cluster %s to become available", cluster.ID)
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(dbClusterStatusBuild), string(dbClusterStatusBackup)},
-		Target:     []string{string(dbClusterStatusActive)},
+		Pending:    []string{string(clusterStatusBuild), string(clusterStatusBackup), string(clusterStatusBackuping)},
+		Target:     []string{string(clusterStatusActive)},
 		Refresh:    databaseClusterStateRefreshFunc(DatabaseV1Client, cluster.ID, checkCapabilities),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      dbInstanceDelay,
@@ -622,8 +623,8 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 
 		stateConf := &retry.StateChangeConf{
-			Pending:    []string{string(dbClusterStatusUpdating)},
-			Target:     []string{string(dbClusterStatusActive)},
+			Pending:    []string{string(clusterStatusUpdating)},
+			Target:     []string{string(clusterStatusActive)},
 			Refresh:    databaseClusterStateRefreshFunc(DatabaseV1Client, cluster.ID, checkCapabilities),
 			Timeout:    d.Timeout(schema.TimeoutCreate),
 			Delay:      dbInstanceDelay,
@@ -732,8 +733,8 @@ func resourceDatabaseClusterUpdate(ctx context.Context, d *schema.ResourceData, 
 
 	clusterID := d.Id()
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(dbClusterStatusBuild)},
-		Target:     []string{string(dbClusterStatusActive)},
+		Pending:    []string{string(clusterStatusBuild)},
+		Target:     []string{string(clusterStatusActive)},
 		Refresh:    databaseClusterStateRefreshFunc(dbClient, d.Id(), nil),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      dbInstanceDelay,
@@ -820,8 +821,8 @@ func resourceDatabaseClusterUpdate(ctx context.Context, d *schema.ResourceData, 
 			return diag.Errorf("error updating backup schedule for vkcs_db_cluster %s: %s", d.Id(), err)
 		}
 
-		stateConf.Pending = []string{string(dbClusterStatusUpdating), string(dbClusterStatusBackup)}
-		stateConf.Target = []string{string(dbClusterStatusActive)}
+		stateConf.Pending = []string{string(clusterStatusUpdating), string(clusterStatusBackup), string(clusterStatusBackuping)}
+		stateConf.Target = []string{string(clusterStatusActive)}
 
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
@@ -839,8 +840,8 @@ func resourceDatabaseClusterUpdate(ctx context.Context, d *schema.ResourceData, 
 	diags := make(diag.Diagnostics, 0)
 
 	if d.HasChange("root_enabled") {
-		_, new := d.GetChange("root_enabled")
-		if new == true {
+		_, newValue := d.GetChange("root_enabled")
+		if newValue == true {
 			err := databaseClusterActionEnableRoot(updateCtx)
 			if err.HasError() {
 				return err
@@ -869,8 +870,8 @@ func resourceDatabaseClusterDelete(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(dbClusterStatusActive), string(dbClusterStatusDeleting)},
-		Target:     []string{string(dbClusterStatusDeleted)},
+		Pending:    []string{string(clusterStatusActive), string(clusterStatusDeleting), string(clusterStatusBackuping)},
+		Target:     []string{string(clusterStatusDeleted)},
 		Refresh:    databaseClusterStateRefreshFunc(DatabaseV1Client, d.Id(), nil),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      dbInstanceDelay,

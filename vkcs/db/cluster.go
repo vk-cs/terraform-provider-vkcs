@@ -98,7 +98,7 @@ func databaseClusterDetermineShrinkedInstances(toDelete int, shrinkOptions []str
 	foundIDs := 0
 	if len(shrinkOptions) == 0 {
 		for _, instance := range instances {
-			if instance.Role != DBClusterInstanceRoleLeader && instance.ShardID == shardID {
+			if instance.Role != ClusterInstanceRoleLeader && instance.ShardID == shardID {
 				ids = append(ids, clusters.ShrinkOpts{ID: instance.ID})
 				foundIDs++
 				if foundIDs == toDelete {
@@ -263,8 +263,8 @@ func databaseClusterActionUpdateConfigurationBase(updateCtx *dbResourceUpdateCon
 		return fmt.Errorf("%w: %s", errDBClusterActionUpdateConfiguration, err)
 	}
 
-	updateCtx.StateConf.Pending = []string{string(dbClusterStatusUpdating)}
-	updateCtx.StateConf.Target = []string{string(dbClusterStatusActive)}
+	updateCtx.StateConf.Pending = []string{string(clusterStatusUpdating)}
+	updateCtx.StateConf.Target = []string{string(clusterStatusActive)}
 
 	log.Printf("[DEBUG] Detaching configuration %s from cluster %s", detachOpts.ConfigurationDetach.ConfigurationID, clusterID)
 	err = updateCtx.WaitForStateContext()
@@ -311,8 +311,8 @@ func databaseClusterUpdateDiskAutoexpandBase(updateCtx *dbResourceUpdateContext,
 		return fmt.Errorf("%w: %s", errDBClusterUpdateDiskAutoexpand, err)
 	}
 
-	updateCtx.StateConf.Pending = []string{string(dbClusterStatusUpdating)}
-	updateCtx.StateConf.Target = []string{string(dbClusterStatusActive)}
+	updateCtx.StateConf.Pending = []string{string(clusterStatusUpdating)}
+	updateCtx.StateConf.Target = []string{string(clusterStatusActive)}
 
 	log.Printf("[DEBUG] Waiting for cluster %s to become ready after updating disk_autoexpand", clusterID)
 	return updateCtx.WaitForStateContext()
@@ -344,8 +344,8 @@ func databaseClusterUpdateWalDiskAutoexpandBase(updateCtx *dbResourceUpdateConte
 		return fmt.Errorf("%w: %s", errDBClusterUpdateWalDiskAutoexpand, err)
 	}
 
-	updateCtx.StateConf.Pending = []string{string(dbClusterStatusUpdating)}
-	updateCtx.StateConf.Target = []string{string(dbClusterStatusActive)}
+	updateCtx.StateConf.Pending = []string{string(clusterStatusUpdating)}
+	updateCtx.StateConf.Target = []string{string(clusterStatusActive)}
 
 	log.Printf("[DEBUG] Waiting for cluster %s to become ready after updating wal_disk_autoexpand", clusterID)
 	return updateCtx.WaitForStateContext()
@@ -393,8 +393,8 @@ func databaseClusterActionApplyCapabilitiesBase(updateCtx *dbResourceUpdateConte
 		return fmt.Errorf("%w: %s", errDBClusterActionApplyCapabitilies, err)
 	}
 
-	updateCtx.StateConf.Pending = []string{string(dbClusterStatusCapabilityApplying), string(dbClusterStatusBuild)}
-	updateCtx.StateConf.Target = []string{string(dbClusterStatusActive)}
+	updateCtx.StateConf.Pending = []string{string(clusterStatusCapabilityApplying), string(clusterStatusBuild)}
+	updateCtx.StateConf.Target = []string{string(clusterStatusActive)}
 
 	log.Printf("[DEBUG] Waiting for cluster %s to become ready after applying capability", clusterID)
 	return updateCtx.WaitForStateContext()
@@ -436,11 +436,11 @@ func databaseClusterActionGrow(updateCtx *dbResourceUpdateContext, shardID strin
 	growSize := new.(int) - old.(int)
 
 	if shardID != "" {
-		updateCtx.StateConf.Pending = []string{string(dbClusterStatusGrow), string(dbClusterStatusBuild)}
+		updateCtx.StateConf.Pending = []string{string(clusterStatusGrow), string(clusterStatusBuild)}
 	} else {
-		updateCtx.StateConf.Pending = []string{string(dbClusterStatusGrow)}
+		updateCtx.StateConf.Pending = []string{string(clusterStatusGrow)}
 	}
-	updateCtx.StateConf.Target = []string{string(dbClusterStatusActive)}
+	updateCtx.StateConf.Target = []string{string(clusterStatusActive)}
 
 	return databaseClusterActionGrowBase(updateCtx, growOpts, growSize)
 }
@@ -495,11 +495,11 @@ func databaseClusterActionShrink(updateCtx *dbResourceUpdateContext, shardID str
 	}
 
 	if shardID != "" {
-		updateCtx.StateConf.Pending = []string{string(dbClusterStatusShrink), string(dbClusterStatusBuild)}
+		updateCtx.StateConf.Pending = []string{string(clusterStatusShrink), string(clusterStatusBuild)}
 	} else {
-		updateCtx.StateConf.Pending = []string{string(dbClusterStatusShrink)}
+		updateCtx.StateConf.Pending = []string{string(clusterStatusShrink)}
 	}
-	updateCtx.StateConf.Target = []string{string(dbClusterStatusActive)}
+	updateCtx.StateConf.Target = []string{string(clusterStatusActive)}
 
 	return databaseClusterActionShrinkBase(updateCtx, ids)
 }
@@ -531,8 +531,8 @@ func databaseClusterActionResizeVolume(updateCtx *dbResourceUpdateContext, shard
 	resizeVolumeOpts.Resize.Volume.Size = volumeSize.(int)
 	resizeVolumeOpts.Resize.ShardID = shardID
 
-	updateCtx.StateConf.Pending = []string{string(dbClusterStatusResize)}
-	updateCtx.StateConf.Target = []string{string(dbClusterStatusActive)}
+	updateCtx.StateConf.Pending = []string{string(clusterStatusResize)}
+	updateCtx.StateConf.Target = []string{string(clusterStatusActive)}
 
 	return databaseClusterActionResizeVolumeBase(updateCtx, resizeVolumeOpts)
 }
@@ -571,8 +571,8 @@ func databaseClusterActionResizeWalVolume(updateCtx *dbResourceUpdateContext, sh
 		resizeWalVolumeOpts.Resize.Volume.Kind = "wal"
 		resizeWalVolumeOpts.Resize.ShardID = shardID
 
-		updateCtx.StateConf.Pending = []string{string(dbClusterStatusResize)}
-		updateCtx.StateConf.Target = []string{string(dbClusterStatusActive)}
+		updateCtx.StateConf.Pending = []string{string(clusterStatusResize)}
+		updateCtx.StateConf.Target = []string{string(clusterStatusActive)}
 
 		return databaseClusterActionResizeWalVolumeBase(updateCtx, resizeWalVolumeOpts)
 	}
@@ -601,8 +601,8 @@ func databaseClusterActionResizeFlavor(updateCtx *dbResourceUpdateContext, shard
 	resizeOpts.Resize.FlavorRef = d.Get(pathPrefix + "flavor_id").(string)
 	resizeOpts.Resize.ShardID = shardID
 
-	updateCtx.StateConf.Pending = []string{string(dbClusterStatusResize)}
-	updateCtx.StateConf.Target = []string{string(dbClusterStatusActive)}
+	updateCtx.StateConf.Pending = []string{string(clusterStatusResize)}
+	updateCtx.StateConf.Target = []string{string(clusterStatusActive)}
 
 	return databaseClusterActionResizeFlavorBase(updateCtx, resizeOpts)
 }
@@ -650,15 +650,15 @@ func getClusterStatus(c *clusters.ClusterResp) string {
 	}
 	if c.Task.Name == "NONE" {
 		if len(c.Instances) == 0 {
-			return string(dbClusterStatusError)
+			return string(clusterStatusError)
 		}
 		switch instancesStatus {
 		case string(dbInstanceStatusActive):
-			return string(dbClusterStatusActive)
+			return string(clusterStatusActive)
 		case string(dbInstanceStatusBuild):
-			return string(dbClusterStatusBuild)
+			return string(clusterStatusBuild)
 		case string(dbInstanceStatusResize):
-			return string(dbClusterStatusResize)
+			return string(clusterStatusResize)
 		}
 	}
 
@@ -676,10 +676,10 @@ func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterI
 		}
 
 		clusterStatus := getClusterStatus(c)
-		if clusterStatus == string(dbClusterStatusError) {
+		if clusterStatus == string(clusterStatusError) {
 			return c, clusterStatus, fmt.Errorf("there was an error creating the database cluster")
 		}
-		if clusterStatus != string(dbClusterStatusActive) {
+		if clusterStatus != string(clusterStatusActive) {
 			return c, clusterStatus, nil
 		}
 
@@ -694,7 +694,7 @@ func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterI
 					return nil, "", err
 				}
 				if !capabilitiesReady {
-					return c, string(dbClusterStatusBuild), nil
+					return c, string(clusterStatusBuild), nil
 				}
 			}
 		}
@@ -702,7 +702,7 @@ func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterI
 		if util.StrSliceContains(getClusterDatastores(), c.DataStore.Type) {
 			for _, instance := range c.Instances {
 				if instance.Role == "unknown" {
-					return c, string(dbClusterStatusBuild), nil
+					return c, string(clusterStatusBuild), nil
 				}
 			}
 		}

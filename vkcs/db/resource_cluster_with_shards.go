@@ -547,8 +547,8 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 	log.Printf("[DEBUG] Waiting for vkcs_db_cluster_with_shards %s to become available", cluster.ID)
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(dbClusterStatusBuild)},
-		Target:     []string{string(dbClusterStatusActive)},
+		Pending:    []string{string(clusterStatusBuild)},
+		Target:     []string{string(clusterStatusActive)},
 		Refresh:    databaseClusterStateRefreshFunc(DatabaseV1Client, cluster.ID, checkCapabilities),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      dbInstanceDelay,
@@ -579,8 +579,8 @@ func resourceDatabaseClusterWithShardsCreate(ctx context.Context, d *schema.Reso
 		}
 
 		stateConf := &retry.StateChangeConf{
-			Pending:    []string{string(dbClusterStatusUpdating)},
-			Target:     []string{string(dbClusterStatusActive)},
+			Pending:    []string{string(clusterStatusUpdating)},
+			Target:     []string{string(clusterStatusActive)},
 			Refresh:    databaseClusterStateRefreshFunc(DatabaseV1Client, cluster.ID, checkCapabilities),
 			Timeout:    d.Timeout(schema.TimeoutCreate),
 			Delay:      dbInstanceDelay,
@@ -712,8 +712,8 @@ func resourceDatabaseClusterWithShardsUpdate(ctx context.Context, d *schema.Reso
 
 	clusterID := d.Id()
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(dbClusterStatusBuild)},
-		Target:     []string{string(dbClusterStatusActive)},
+		Pending:    []string{string(clusterStatusBuild)},
+		Target:     []string{string(clusterStatusActive)},
 		Refresh:    databaseClusterStateRefreshFunc(dbClient, clusterID, nil),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      dbInstanceDelay,
@@ -834,8 +834,8 @@ func resourceDatabaseClusterWithShardsDelete(ctx context.Context, d *schema.Reso
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(dbClusterStatusActive), string(dbClusterStatusDeleting)},
-		Target:     []string{string(dbClusterStatusDeleted)},
+		Pending:    []string{string(clusterStatusActive), string(clusterStatusDeleting)},
+		Target:     []string{string(clusterStatusDeleted)},
 		Refresh:    databaseClusterStateRefreshFunc(DatabaseV1Client, d.Id(), nil),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      dbInstanceDelay,
