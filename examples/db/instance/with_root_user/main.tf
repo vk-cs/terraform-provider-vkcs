@@ -1,11 +1,11 @@
 resource "vkcs_db_instance" "db_instance" {
-  name = "db-instance"
+  name = "db-instance-tf-example"
 
   availability_zone = "GZ1"
 
   datastore {
     type    = "postgresql"
-    version = "13"
+    version = "16"
   }
 
   flavor_id = data.vkcs_compute_flavor.db.id
