@@ -279,11 +279,10 @@ resource "vkcs_compute_instance" "cloud_monitoring" {
 
   - `volume_type` optional *string* &rarr;  The volume type that will be used. Changing this creates a new server.
 
-- `cloud_monitoring` optional &rarr; The settings of the cloud monitoring, it is recommended to set this field with the
-  values of `vkcs_cloud_monitoring` resource fields. Changing this creates a new server.
-  - `script` **required** sensitive *string* &rarr; The script of the cloud monitoring.
+- `cloud_monitoring` optional &rarr;  The settings of the cloud monitoring, it is recommended to set this field with the values of `vkcs_cloud_monitoring` resource fields. Changing this creates a new server.
+  - `script` **required** sensitive *string* &rarr;  The script of the cloud monitoring.
 
-  - `service_user_id` **required** *string* &rarr; The id of the service monitoring user.
+  - `service_user_id` **required** *string* &rarr;  The id of the service monitoring user.
 
 - `config_drive` optional *boolean* &rarr;  Whether to use the config_drive feature to configure the instance. Changing this creates a new server.
 
@@ -334,8 +333,7 @@ resource "vkcs_compute_instance" "cloud_monitoring" {
 
 - `tags` optional *set of* *string* &rarr;  A set of string tags for the instance. Changing this updates the existing instance tags.
 
-- `user_data` optional *string* &rarr; The user data to provide when launching the instance. When cloud_monitoring
-  enabled only #!/bin/bash, #cloud-config, #ps1 user_data formats are supported. Changing this creates a new server.
+- `user_data` optional *string* &rarr;  The user data to provide when launching the instance. When cloud_monitoring enabled only #!/bin/bash, #cloud-config, #ps1 user_data formats are supported. Changing this creates a new server.
 
 - `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below.
   - `detach_ports_before_destroy` optional *boolean* &rarr;  Whether to try to detach all attached ports to the vm before destroying it to make sure the port state is correct after the vm destruction. This is helpful when the port is not deleted.

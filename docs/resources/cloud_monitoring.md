@@ -20,26 +20,25 @@ the monitoring service user will be deleted along with it, causing cloud monitor
 
 ```terraform
 resource "vkcs_cloud_monitoring" "basic" {
-  image_id = data.vkcs_images_image.ubuntu.id
+  image_id = data.vkcs_images_image.debian.id
 }
 ```
 
 ## Argument Reference
+- `image_id` **required** *string* &rarr;  ID of the image to create cloud monitoring for.
 
-- `image_id` **required** *string* &rarr; ID of the image to create cloud monitoring for.
+- `region` optional *string* &rarr;  The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.
 
-- `region` optional *string* &rarr; The region in which to obtain the service client. If omitted, the `region` argument
-  of the provider is used.
 
 ## Attributes Reference
-
 In addition to all arguments above, the following attributes are exported:
+- `id` *string* &rarr;  ID of the resource.
 
-- `id` *string* &rarr; ID of the resource.
+- `script` *string* &rarr;  Shell script of the cloud monitoring.
 
-- `script` *string* &rarr; Shell script of the cloud monitoring.
+- `service_user_id` *string* &rarr;  ID of the service monitoring user.
 
-- `service_user_id` *string* &rarr; ID of the service monitoring user.
+
 
 ~> **Note:**
 You can use this resource for multiple compute instances in the same project with the same image.
