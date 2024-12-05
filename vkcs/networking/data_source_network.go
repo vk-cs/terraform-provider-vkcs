@@ -31,9 +31,12 @@ func DataSourceNetworkingNetwork() *schema.Resource {
 			},
 
 			"network_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The ID of the network.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"id"},
+				Deprecated:    "This argument is deprecated, please, use the `id` attribute instead.",
+				Description:   "The ID of the network.",
 			},
 
 			"name": {
@@ -126,8 +129,9 @@ func DataSourceNetworkingNetwork() *schema.Resource {
 
 			"id": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
-				Description: "ID of the found network.",
+				Description: "The ID of the network.",
 			},
 		},
 		Description: "Use this data source to get the ID of an available VKCS network.",
@@ -150,7 +154,7 @@ func dataSourceNetworkingNetworkRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	listOpts = networks.ListOpts{
-		ID:          d.Get("network_id").(string),
+		ID:          util.GetFirstNotEmpty(d.Get("id").(string), d.Get("network_id").(string)),
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 		TenantID:    d.Get("tenant_id").(string),
@@ -228,6 +232,7 @@ func dataSourceNetworkingNetworkRead(ctx context.Context, d *schema.ResourceData
 
 	log.Printf("[DEBUG] Retrieved vkcs_networking_network %s: %+v", network.ID, network)
 	d.SetId(network.ID)
+	d.Set("network_id", network.ID)
 
 	d.Set("name", network.Name)
 	d.Set("description", network.Description)

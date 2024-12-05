@@ -303,3 +303,13 @@ func ValueKnownBoolPointer(v basetypes.BoolValue) *bool {
 	}
 	return v.ValueBoolPointer()
 }
+
+func GetFirstNotEmpty(values ...string) string {
+	for _, value := range values {
+		if len(value) != 0 {
+			return value
+		}
+	}
+
+	return ""
+}

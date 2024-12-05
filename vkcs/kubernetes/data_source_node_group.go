@@ -4,12 +4,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/utils"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/nodegroups"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
@@ -63,8 +67,9 @@ func (d *NodeGroupDataSource) Schema(ctx context.Context, req datasource.SchemaR
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
+				Optional:    true,
 				Computed:    true,
-				Description: "ID of the resource.",
+				Description: "The UUID of the cluster's node group.",
 			},
 
 			"region": schema.StringAttribute{
@@ -165,8 +170,15 @@ func (d *NodeGroupDataSource) Schema(ctx context.Context, req datasource.SchemaR
 			},
 
 			"uuid": schema.StringAttribute{
-				Required:    true,
-				Description: "The UUID of the cluster's node group.",
+				Optional:           true,
+				Computed:           true,
+				Description:        "The UUID of the cluster's node group.",
+				DeprecationMessage: "This argument is deprecated, please, use the `id` attribute instead.",
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(
+						path.MatchRelative().AtParent().AtName("id"),
+					),
+				},
 			},
 
 			"volume_size": schema.Int64Attribute{
@@ -212,7 +224,7 @@ func (d *NodeGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 
-	id := data.UUID.ValueString()
+	id := utils.GetFirstNotEmptyValue(data.ID, data.UUID)
 	ctx = tflog.SetField(ctx, "id", id)
 
 	tflog.Debug(ctx, "Calling Kubernetes API to get the node group")
@@ -223,9 +235,10 @@ func (d *NodeGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 
-	tflog.Debug(ctx, "Called Kubernetes API to get the node group", map[string]interface{}{"node_group": fmt.Sprintf("%#v", nGroup)})
+	tflog.Debug(ctx, "Called Kubernetes API to get the node group", map[string]any{"node_group": fmt.Sprintf("%#v", nGroup)})
 
 	data.ID = types.StringValue(id)
+	data.UUID = data.ID
 	data.Region = types.StringValue(region)
 	data.AutoscalingEnabled = types.BoolValue(nGroup.Autoscaling)
 	data.AvailabilityZones, diags = types.ListValueFrom(ctx, types.StringType, nGroup.AvailabilityZones)

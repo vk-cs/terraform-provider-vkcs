@@ -271,7 +271,7 @@ const testAccNetworkingPortSecGroupAssociateManifestUpdate5 = `
 {{.TestAccNetworkingPortSecGroupAssociate}}
 
 data "vkcs_networking_port" "port_1" {
-  port_id = vkcs_networking_port_secgroup_associate.port_1.id
+  id = vkcs_networking_port_secgroup_associate.port_1.id
 }
 
 resource "vkcs_networking_port_secgroup_associate" "port_1" {

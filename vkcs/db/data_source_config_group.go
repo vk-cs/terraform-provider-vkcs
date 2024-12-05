@@ -4,12 +4,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/utils"
 	configgroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/config_groups"
 )
 
@@ -52,8 +56,9 @@ func (d *ConfigGroupDataSource) Schema(ctx context.Context, req datasource.Schem
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
+				Optional:    true,
 				Computed:    true,
-				Description: "ID of the resource.",
+				Description: "The UUID of the config_group.",
 			},
 
 			"region": schema.StringAttribute{
@@ -63,8 +68,15 @@ func (d *ConfigGroupDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 
 			"config_group_id": schema.StringAttribute{
-				Required:    true,
-				Description: "The UUID of the config_group.",
+				Optional:           true,
+				Computed:           true,
+				Description:        "The UUID of the config_group.",
+				DeprecationMessage: "This argument is deprecated, please, use the `id` attribute instead.",
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(
+						path.MatchRelative().AtParent().AtName("id"),
+					),
+				},
 			},
 
 			"created": schema.StringAttribute{
@@ -141,8 +153,8 @@ func (d *ConfigGroupDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	configGroupID := data.ConfigGroupID.ValueString()
-	ctx = tflog.SetField(ctx, "config_group_id", configGroupID)
+	configGroupID := utils.GetFirstNotEmptyValue(data.ID, data.ConfigGroupID)
+	ctx = tflog.SetField(ctx, "id", configGroupID)
 
 	tflog.Debug(ctx, "Calling Databases API to read the config group")
 
@@ -152,9 +164,10 @@ func (d *ConfigGroupDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	tflog.Debug(ctx, "Called Databases API to read the config group", map[string]interface{}{"config_group": fmt.Sprintf("%#v", configGroup)})
+	tflog.Debug(ctx, "Called Databases API to read the config group", map[string]any{"config_group": fmt.Sprintf("%#v", configGroup)})
 
 	data.ID = types.StringValue(configGroupID)
+	data.ConfigGroupID = data.ID
 	data.Region = types.StringValue(region)
 	data.Created = types.StringValue(configGroup.Created)
 	data.Datastore = flattenConfigGroupDatastore(configGroup)

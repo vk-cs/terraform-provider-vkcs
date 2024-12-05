@@ -199,6 +199,6 @@ const testAccNetworkingNetworkDataSourceNetworkID = `
 {{.TestAccNetworkingNetworkDataSourceNetwork}}
 
 data "vkcs_networking_network" "network_1" {
-  network_id = vkcs_networking_network.network_1.id
+  id = vkcs_networking_network.network_1.id
 }
 `

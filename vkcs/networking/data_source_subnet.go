@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -162,7 +163,8 @@ func (d *SubnetDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "ID of the found subnet.",
+				Optional:    true,
+				Description: "The ID of the subnet.",
 			},
 
 			"name": schema.StringAttribute{
@@ -178,9 +180,15 @@ func (d *SubnetDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 			},
 
 			"subnet_id": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The ID of the subnet.",
+				Optional:           true,
+				Computed:           true,
+				Description:        "The ID of the subnet.",
+				DeprecationMessage: "This argument is deprecated, please, use the `id` attribute instead.",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(
+						path.MatchRelative().AtParent().AtName("id"),
+					),
+				},
 			},
 
 			"subnetpool_id": schema.StringAttribute{
@@ -243,7 +251,7 @@ func (d *SubnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		TenantID:     data.TenantID.ValueString(),
 		GatewayIP:    data.GatewayIP.ValueString(),
 		CIDR:         data.CIDR.ValueString(),
-		ID:           data.SubnetID.ValueString(),
+		ID:           utils.GetFirstNotEmptyValue(data.ID, data.SubnetID),
 		SubnetPoolID: data.SubnetPoolID.ValueString(),
 	}
 
@@ -289,6 +297,7 @@ func (d *SubnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	tflog.Debug(ctx, "Retrieved the subnet", map[string]interface{}{"subnet": fmt.Sprintf("%#v", subnet)})
 
 	data.ID = types.StringValue(subnet.ID)
+	data.SubnetID = types.StringValue(subnet.ID)
 	data.Region = types.StringValue(region)
 	data.SDN = types.StringValue(subnet.SDN)
 

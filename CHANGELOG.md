@@ -16,6 +16,8 @@ description: |-
 - Fix panic on VKCS Kubernetes API error in vkcs_kubernetes_clustertemplates data source
 - Fix an error when changing several Kubernetes cluster node groups in parallel
 - Fix an error when reading the state of a compute instance with the build status
+- Add the ability to specify the id field instead of \<resource\>_id in data sources.
+- Deprecate \<resource\>_id field of data sources.
 - Deprecate ingress_floating_ip field of vkcs_kubernetes_cluster resource and data source
 - Deprecate keypair field of vkcs_kubernetes_cluster resource and data source
 

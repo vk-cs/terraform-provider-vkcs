@@ -62,6 +62,6 @@ data "vkcs_kubernetes_clustertemplate" "template" {
 
 const testAccKubernetesClusterTemplateDataSourceQueryUUID = `
 data "vkcs_kubernetes_clustertemplate" "template" {
-	cluster_template_uuid = "42777b6f-e9ea-4fc4-899a-eef08b8b0380"
+	id = "42777b6f-e9ea-4fc4-899a-eef08b8b0380"
 }
 `

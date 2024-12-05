@@ -26,13 +26,21 @@ func DataSourceKubernetesCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The name of the cluster. _note_ Only one of `name` or `cluster_id` must be specified.",
+				Description: "The name of the cluster. _note_ Only one of `name` or `id` must be specified.",
 			},
-			"cluster_id": {
+			"id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The UUID of the Kubernetes cluster template. _note_ Only one of `name` or `cluster_id` must be specified.",
+				Description: "The UUID of the Kubernetes cluster template. _note_ Only one of `name` or `id` must be specified.",
+			},
+			"cluster_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"id"},
+				Deprecated:    "This argument is deprecated, please, use the `id` attribute instead.",
+				Description:   "The UUID of the Kubernetes cluster template. _note_ Only one of `name` or `cluster_id` must be specified.",
 			},
 			"project_id": {
 				Type:        schema.TypeString,
@@ -203,17 +211,18 @@ func dataSourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.Errorf("error creating container infra client: %s", err)
 	}
-	clusterIdentifierName, err := util.EnsureOnlyOnePresented(d, "cluster_id", "name")
+	clusterIdentifierField, err := util.EnsureOnlyOnePresented(d, "id", "cluster_id", "name")
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	clusterIdentifier := d.Get(clusterIdentifierName).(string)
+	clusterIdentifier := d.Get(clusterIdentifierField).(string)
 	c, err := clusters.Get(containerInfraClient, clusterIdentifier).Extract()
 	if err != nil {
 		return diag.Errorf("error getting vkcs_kubernetes_cluster %s: %s", clusterIdentifier, err)
 	}
 
 	d.SetId(c.UUID)
+	d.Set("cluster_id", c.UUID)
 	d.Set("name", c.Name)
 	d.Set("project_id", c.ProjectID)
 	d.Set("user_id", c.UserID)

@@ -29,7 +29,7 @@ data "vkcs_lb_loadbalancer" "loadbalancer" {
 }
 
 data "vkcs_networking_port" "loadbalancer-port" {
-  port_id = data.vkcs_lb_loadbalancer.loadbalancer.vip_port_id
+  id = data.vkcs_lb_loadbalancer.loadbalancer.vip_port_id
 }
 
 output "cluster_ips" {

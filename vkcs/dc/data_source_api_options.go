@@ -48,7 +48,7 @@ func (d *APIOptionsDataSource) Schema(ctx context.Context, req datasource.Schema
 			"availability_zones": schema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
-				Description: "List of avalability zone options",
+				Description: "List of availability zone options",
 			},
 
 			"flavors": schema.ListAttribute{

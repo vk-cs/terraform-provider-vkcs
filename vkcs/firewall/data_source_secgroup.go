@@ -28,9 +28,12 @@ func DataSourceNetworkingSecGroup() *schema.Resource {
 				Description: "The region in which to obtain the Network client. A Network client is needed to retrieve security groups ids. If omitted, the `region` argument of the provider is used.",
 			},
 			"secgroup_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The ID of the security group.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"id"},
+				Deprecated:    "This argument is deprecated, please, use the `id` attribute instead.",
+				Description:   "The ID of the security group.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -72,7 +75,8 @@ func DataSourceNetworkingSecGroup() *schema.Resource {
 			"id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "ID of the found security group.",
+				Optional:    true,
+				Description: "The ID of the security group.",
 			},
 		},
 		Description: "Use this data source to get the ID of an available VKCS security group.",
@@ -87,7 +91,7 @@ func dataSourceNetworkingSecGroupRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	listOpts := groups.ListOpts{
-		ID:          d.Get("secgroup_id").(string),
+		ID:          util.GetFirstNotEmpty(d.Get("id").(string), d.Get("secgroup_id").(string)),
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 		TenantID:    d.Get("tenant_id").(string),
@@ -121,6 +125,7 @@ func dataSourceNetworkingSecGroupRead(ctx context.Context, d *schema.ResourceDat
 
 	log.Printf("[DEBUG] Retrieved Security Group %s: %+v", secGroup.ID, secGroup)
 	d.SetId(secGroup.ID)
+	d.Set("secgroup_id", secGroup.ID)
 
 	d.Set("name", secGroup.Name)
 	d.Set("description", secGroup.Description)

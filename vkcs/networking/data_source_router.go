@@ -25,9 +25,12 @@ func DataSourceNetworkingRouter() *schema.Resource {
 				Description: "The region in which to obtain the Network client. A Network client is needed to retrieve router ids. If omitted, the `region` argument of the provider is used.",
 			},
 			"router_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The UUID of the router resource.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"id"},
+				Deprecated:    "This argument is deprecated, please, use the `id` attribute instead.",
+				Description:   "The UUID of the router resource.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -88,7 +91,8 @@ func DataSourceNetworkingRouter() *schema.Resource {
 			"id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "ID of the found router.",
+				Optional:    true,
+				Description: "The UUID of the router resource.",
 			},
 
 			"external_fixed_ips": {
@@ -124,9 +128,7 @@ func dataSourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData,
 
 	listOpts := routers.ListOpts{}
 
-	if v, ok := d.GetOk("router_id"); ok {
-		listOpts.ID = v.(string)
-	}
+	listOpts.ID = util.GetFirstNotEmpty(d.Get("id").(string), d.Get("router_id").(string))
 
 	if v, ok := d.GetOk("name"); ok {
 		listOpts.Name = v.(string)
@@ -178,6 +180,7 @@ func dataSourceNetworkingRouterRead(ctx context.Context, d *schema.ResourceData,
 
 	log.Printf("[DEBUG] Retrieved Router %s: %+v", router.ID, router)
 	d.SetId(router.ID)
+	d.Set("router_id", router.ID)
 
 	d.Set("name", router.Name)
 	d.Set("description", router.Description)

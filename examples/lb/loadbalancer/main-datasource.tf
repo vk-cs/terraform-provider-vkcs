@@ -6,7 +6,7 @@ data "vkcs_lb_loadbalancer" "app" {
 }
 
 data "vkcs_networking_port" "app-port" {
-  port_id = data.vkcs_lb_loadbalancer.app.vip_port_id
+  id = data.vkcs_lb_loadbalancer.app.vip_port_id
 }
 
 output "used_vips" {
