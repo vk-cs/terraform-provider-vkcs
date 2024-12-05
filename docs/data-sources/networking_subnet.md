@@ -31,6 +31,8 @@ data "vkcs_networking_subnet" "subnet_one_of_internal" {
 
 - `gateway_ip` optional *string* &rarr;  The IP of the subnet's gateway.
 
+- `id` optional *string* &rarr;  The ID of the subnet.
+
 - `name` optional *string* &rarr;  The name of the subnet.
 
 - `network_id` optional *string* &rarr;  The ID of the network the subnet belongs to.
@@ -39,7 +41,7 @@ data "vkcs_networking_subnet" "subnet_one_of_internal" {
 
 - `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
-- `subnet_id` optional *string* &rarr;  The ID of the subnet.
+- `subnet_id` optional deprecated *string* &rarr;  The ID of the subnet. **Deprecated** This argument is deprecated, please, use the `id` attribute instead.
 
 - `subnetpool_id` optional *string* &rarr;  The ID of the subnetpool associated with the subnet.
 
@@ -67,7 +69,5 @@ In addition to all arguments above, the following attributes are exported:
 
   - `next_hop` *string*
 
-
-- `id` *string* &rarr;  ID of the found subnet.
 
 

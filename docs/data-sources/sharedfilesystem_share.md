@@ -42,7 +42,7 @@ data "vkcs_sharedfilesystem_share" "data" {
 In addition to all arguments above, the following attributes are exported:
 - `availability_zone` *string* &rarr;  The share availability zone.
 
-- `id` *string* &rarr;  ID of the resource.
+- `id` *string* &rarr;  The UUID of the share.
 
 - `project_id` *string* &rarr;  The owner of the share.
 

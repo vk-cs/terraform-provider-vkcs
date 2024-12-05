@@ -26,7 +26,7 @@ data "vkcs_dc_api_options" "dc_api_options" {}
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
-- `availability_zones` *string* &rarr;  List of avalability zone options
+- `availability_zones` *string* &rarr;  List of availability zone options
 
 - `flavors` *string* &rarr;  List of flavor options for vkcs_dc_router resource
 

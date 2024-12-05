@@ -14,14 +14,16 @@ Use this data source to get the information on a db backup resource.
 
 ```terraform
 data "vkcs_db_backup" "db-backup" {
-  backup_id = "d27fbf1a-373a-479c-b951-31041756f289"
+  id = "d27fbf1a-373a-479c-b951-31041756f289"
 }
 ```
 
 ## Argument Reference
-- `backup_id` **required** *string* &rarr;  The UUID of the backup.
+- `backup_id` optional deprecated *string* &rarr;  The UUID of the backup. **Deprecated** This argument is deprecated, please, use the `id` attribute instead.
 
 - `description` optional *string* &rarr;  The description of the backup
+
+- `id` optional *string* &rarr;  The UUID of the backup.
 
 - `region` optional *string* &rarr;  The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.<br>**New since v0.4.0**.
 
@@ -39,8 +41,6 @@ In addition to all arguments above, the following attributes are exported:
 - `dbms_id` *string* &rarr;  ID of the backed up instance or cluster
 
 - `dbms_type` *string* &rarr;  Type of dbms of the backup, can be "instance" or "cluster".
-
-- `id` *string* &rarr;  ID of the resource.
 
 - `location_ref` *string* &rarr;  Location of backup data on backup storage
 

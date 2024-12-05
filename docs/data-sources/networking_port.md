@@ -35,13 +35,15 @@ data "vkcs_networking_port" "persistent_etcd" {
 
 - `fixed_ip` optional *string* &rarr;  The port IP address filter.
 
+- `id` optional *string* &rarr;  The ID of the port.
+
 - `mac_address` optional *string* &rarr;  The MAC address of the port.
 
 - `name` optional *string* &rarr;  The name of the port.
 
 - `network_id` optional *string* &rarr;  The ID of the network the port belongs to.
 
-- `port_id` optional *string* &rarr;  The ID of the port.
+- `port_id` optional deprecated *string* &rarr;  The ID of the port. **Deprecated** This argument is deprecated, please, use the `id` attribute instead.
 
 - `project_id` optional *string* &rarr;  The project_id of the owner of the port.
 
@@ -79,7 +81,5 @@ In addition to all arguments above, the following attributes are exported:
 
   - `value` *string* &rarr;  Value of the DHCP option.
 
-
-- `id` *string* &rarr;  ID of the found port.
 
 

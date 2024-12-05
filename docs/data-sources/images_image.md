@@ -76,7 +76,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `file` *string* &rarr;  The trailing path after the endpoint that represent the location of the image or the path to retrieve it.
 
-- `id` *string* &rarr;  ID of the resource.
+- `id` *string* &rarr;  The UUID of the image.
 
 - `metadata` *map of* *string* &rarr;  The metadata associated with the image. Image metadata allow for meaningfully define the image properties and tags. See https://docs.openstack.org/glance/latest/user/metadefs-concepts.html.
 

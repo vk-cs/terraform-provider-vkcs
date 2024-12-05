@@ -13,15 +13,15 @@ Use this data source to get information on VKCS Kubernetes cluster's node group.
 ## Example Usage
 ```terraform
 data "vkcs_kubernetes_node_group" "k8s-node-group" {
-  uuid = vkcs_kubernetes_node_group.default_ng.id
+  id = vkcs_kubernetes_node_group.default_ng.id
 }
 ```
 ## Argument Reference
-- `uuid` **required** *string* &rarr;  The UUID of the cluster's node group.
-
 - `autoscaling_enabled` optional *boolean* &rarr;  Determines whether the autoscaling is enabled.
 
 - `flavor_id` optional *string* &rarr;  The id of the flavor.
+
+- `id` optional *string* &rarr;  The UUID of the cluster's node group.
 
 - `max_node_unavailable` optional *number* &rarr;  Specified as a percentage. The maximum number of nodes that can fail during an upgrade.
 
@@ -35,6 +35,8 @@ data "vkcs_kubernetes_node_group" "k8s-node-group" {
 
 - `region` optional *string* &rarr;  The region to obtain the service client. If omitted, the `region` argument of the provider is used.<br>**New since v0.4.0**.
 
+- `uuid` optional deprecated *string* &rarr;  The UUID of the cluster's node group. **Deprecated** This argument is deprecated, please, use the `id` attribute instead.
+
 - `volume_size` optional *number* &rarr;  The amount of memory in the volume in GB
 
 - `volume_type` optional *string* &rarr;  The type of the volume.
@@ -45,8 +47,6 @@ In addition to all arguments above, the following attributes are exported:
 - `availability_zones` *string* &rarr;  The list of availability zones of the node group.
 
 - `cluster_id` *string* &rarr;  The UUID of cluster that node group belongs.
-
-- `id` *string* &rarr;  ID of the resource.
 
 - `nodes`  *list* &rarr;  The list of node group's node objects.
   - `created_at` *string* &rarr;  Time when a node was created.

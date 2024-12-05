@@ -23,11 +23,13 @@ data "vkcs_networking_network" "extnet" {
 
 - `external` optional *boolean* &rarr;  The external routing facility of the network.
 
+- `id` optional *string* &rarr;  The ID of the network.
+
 - `matching_subnet_cidr` optional *string* &rarr;  The CIDR of a subnet within the network.
 
 - `name` optional *string* &rarr;  The name of the network.
 
-- `network_id` optional *string* &rarr;  The ID of the network.
+- `network_id` optional deprecated *string* &rarr;  The ID of the network. **Deprecated** This argument is deprecated, please, use the `id` attribute instead.
 
 - `region` optional *string* &rarr;  The region in which to obtain the Network client. A Network client is needed to retrieve networks ids. If omitted, the `region` argument of the provider is used.
 
@@ -47,8 +49,6 @@ In addition to all arguments above, the following attributes are exported:
 - `admin_state_up` *string* &rarr;  The administrative state of the network.
 
 - `all_tags` *set of* *string* &rarr;  The set of string tags applied on the network.
-
-- `id` *string* &rarr;  ID of the found network.
 
 - `private_dns_domain` *string* &rarr;  Private dns domain name
 
