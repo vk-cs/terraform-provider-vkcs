@@ -29,11 +29,13 @@ data "vkcs_networking_router" "router" {
 
 - `enable_snat` optional *boolean* &rarr;  The value that points out if the Source NAT is enabled on the router.
 
+- `id` optional *string* &rarr;  The UUID of the router resource.
+
 - `name` optional *string* &rarr;  The name of the router.
 
 - `region` optional *string* &rarr;  The region in which to obtain the Network client. A Network client is needed to retrieve router ids. If omitted, the `region` argument of the provider is used.
 
-- `router_id` optional *string* &rarr;  The UUID of the router resource.
+- `router_id` optional deprecated *string* &rarr;  The UUID of the router resource. **Deprecated** This argument is deprecated, please, use the `id` attribute instead.
 
 - `sdn` optional *string* &rarr;  SDN to use for this resource. Must be one of following: "neutron", "sprut". Default value is project's default SDN.
 
@@ -51,7 +53,5 @@ In addition to all arguments above, the following attributes are exported:
 - `external_fixed_ips` *object* &rarr;  List of external gateways of the router.<br>**New since v0.7.4**.
 
 - `external_network_id` *string* &rarr;  The network UUID of an external gateway for the router.
-
-- `id` *string* &rarr;  ID of the found router.
 
 

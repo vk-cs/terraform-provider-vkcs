@@ -13,16 +13,18 @@ Use this data source to get the ID of an available VKCS kubernetes cluster.
 ## Example Usage
 ```terraform
 data "vkcs_kubernetes_cluster" "k8s-cluster" {
-  cluster_id = vkcs_kubernetes_cluster.k8s-cluster.id
+  id = vkcs_kubernetes_cluster.k8s-cluster.id
 }
 ```
 
 ## Argument Reference
-- `cluster_id` optional *string* &rarr;  The UUID of the Kubernetes cluster template. <br>**Note:** Only one of `name` or `cluster_id` must be specified.
+- `cluster_id` optional deprecated *string* &rarr;  The UUID of the Kubernetes cluster template. <br>**Note:** Only one of `name` or `cluster_id` must be specified. **Deprecated** This argument is deprecated, please, use the `id` attribute instead.
 
 - `dns_domain` optional *string* &rarr;  Custom DNS cluster domain.
 
-- `name` optional *string* &rarr;  The name of the cluster. <br>**Note:** Only one of `name` or `cluster_id` must be specified.
+- `id` optional *string* &rarr;  The UUID of the Kubernetes cluster template. <br>**Note:** Only one of `name` or `id` must be specified.
+
+- `name` optional *string* &rarr;  The name of the cluster. <br>**Note:** Only one of `name` or `id` must be specified.
 
 - `region` optional *string* &rarr;  The region in which to obtain the Container Infra client. If omitted, the `region` argument of the provider is used.
 
@@ -48,8 +50,6 @@ In addition to all arguments above, the following attributes are exported:
 - `discovery_url` *string* &rarr;  The URL used for cluster node discovery.
 
 - `floating_ip_enabled` *boolean* &rarr;  Indicates whether floating ip is enabled for cluster.
-
-- `id` *string* &rarr;  ID of the resource.
 
 - `ingress_floating_ip` *string* &rarr;  Floating IP created for ingress service. **Deprecated** This argument is deprecated as Ingress controller is not currently installed by default.
 

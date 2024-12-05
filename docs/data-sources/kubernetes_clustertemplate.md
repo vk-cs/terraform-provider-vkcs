@@ -18,13 +18,15 @@ data "vkcs_kubernetes_clustertemplate" "k8s_24" {
 }
 ```
 ## Argument Reference
-- `cluster_template_uuid` optional *string* &rarr;  The UUID of the cluster template. <br>**Note:** Only one of `name` or `version` or `cluster_template_uuid` must be specified.
+- `cluster_template_uuid` optional deprecated *string* &rarr;  The UUID of the cluster template. <br>**Note:** Only one of `name`, `version`, or `cluster_template_uuid` must be specified. **Deprecated** This argument is deprecated, please, use the `id` attribute instead.
 
-- `name` optional *string* &rarr;  The name of the cluster template. <br>**Note:** Only one of `name` or `version` or `cluster_template_uuid` must be specified.
+- `id` optional *string* &rarr;  The UUID of the cluster template. <br>**Note:** Only one of `name`, `version` or `id` must be specified.
+
+- `name` optional *string* &rarr;  The name of the cluster template. <br>**Note:** Only one of `name`, `version` or `id` must be specified.
 
 - `region` optional *string* &rarr;  The region in which to obtain the V1 Container Infra client. If omitted, the `region` argument of the provider is used.
 
-- `version` optional *string* &rarr;  Kubernetes version of the cluster.
+- `version` optional *string* &rarr;  Kubernetes version of the cluster. <br>**Note:** Only one of `name`, `version` or `id` must be specified.
 
 
 ## Attributes Reference
@@ -48,8 +50,6 @@ In addition to all arguments above, the following attributes are exported:
 - `flavor` *string* &rarr;  The ID of flavor for the nodes of the cluster.
 
 - `floating_ip_enabled` *boolean* &rarr;  Indicates whether created cluster should create IP floating IP for every node or not.
-
-- `id` *string* &rarr;  ID of the resource.
 
 - `image` *string* &rarr;  The reference to an image that is used for nodes of the cluster.
 
