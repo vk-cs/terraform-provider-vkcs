@@ -13,7 +13,7 @@ description: |-
 ## Example Usage
 ```terraform
 resource "vkcs_cdn_resource" "resource" {
-  cname        = "tfexample-resource.vk.com"
+  cname        = local.cname
   origin_group = vkcs_cdn_origin_group.origin_group.id
   options = {
     edge_cache_settings = {
