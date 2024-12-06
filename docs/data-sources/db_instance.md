@@ -13,7 +13,7 @@ Use this data source to get the information on a db instance resource.
 ## Example Usage
 
 ```terraform
-data "vkcs_db_instance" "db-instance" {
+data "vkcs_db_instance" "db_instance" {
   id = "e7da2869-2ae2-4900-99e3-a44fec2b11ac"
 }
 ```

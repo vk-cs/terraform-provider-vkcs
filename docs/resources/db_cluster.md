@@ -13,8 +13,8 @@ Provides a db cluster resource. This can be used to create, modify and delete db
 ## Example Usage
 ### Basic cluster
 ```terraform
-resource "vkcs_db_cluster" "pg-cluster" {
-  name        = "pg-cluster"
+resource "vkcs_db_cluster" "pg_cluster" {
+  name = "pg-cluster"
 
   availability_zone = "GZ1"
   datastore {
@@ -24,7 +24,7 @@ resource "vkcs_db_cluster" "pg-cluster" {
 
   cluster_size = 3
 
-  flavor_id   = data.vkcs_compute_flavor.basic.id
+  flavor_id                = data.vkcs_compute_flavor.basic.id
   cloud_monitoring_enabled = true
 
   volume_size = 10
@@ -40,23 +40,23 @@ resource "vkcs_db_cluster" "pg-cluster" {
 }
 
 data "vkcs_lb_loadbalancer" "loadbalancer" {
-  id = vkcs_db_cluster.pg-cluster.loadbalancer_id
+  id = vkcs_db_cluster.pg_cluster.loadbalancer_id
 }
 
-data "vkcs_networking_port" "loadbalancer-port" {
+data "vkcs_networking_port" "loadbalancer_port" {
   id = data.vkcs_lb_loadbalancer.loadbalancer.vip_port_id
 }
 
 output "cluster_ips" {
-  value = data.vkcs_networking_port.loadbalancer-port.all_fixed_ips
+  value       = data.vkcs_networking_port.loadbalancer_port.all_fixed_ips
   description = "IP addresses of the cluster."
 }
 ```
 
 ### Cluster restored from backup
 ```terraform
-resource "vkcs_db_cluster" "mydb-cluster" {
-  name        = "mydb-cluster"
+resource "vkcs_db_cluster" "mydb_cluster" {
+  name = "mydb-cluster"
 
   datastore {
     type    = "postgresql"
@@ -65,7 +65,7 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
   cluster_size = 3
 
-  flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
+  flavor_id = "9e931469-1490-489e-88af-29a289681c53"
 
   volume_size = 10
   volume_type = "MS1"
@@ -82,8 +82,8 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
 ### Cluster with scheduled PITR backup
 ```terraform
-resource "vkcs_db_cluster" "mydb-cluster" {
-  name        = "mydb-cluster"
+resource "vkcs_db_cluster" "mydb_cluster" {
+  name = "mydb-cluster"
 
   datastore {
     type    = "postgresql"
@@ -92,7 +92,7 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
   cluster_size = 3
 
-  flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
+  flavor_id = "9e931469-1490-489e-88af-29a289681c53"
 
   volume_size = 10
   volume_type = "MS1"
@@ -102,11 +102,11 @@ resource "vkcs_db_cluster" "mydb-cluster" {
   }
 
   backup_schedule {
-    name = three_hours_backup
-    start_hours = 16
-    start_minutes = 20
+    name           = three_hours_backup
+    start_hours    = 16
+    start_minutes  = 20
     interval_hours = 3
-    keep_count = 3
+    keep_count     = 3
   }
 }
 ```

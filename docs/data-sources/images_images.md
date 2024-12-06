@@ -17,7 +17,7 @@ Use this data source to get information on VKCS images.
 ```terraform
 data "vkcs_images_images" "images" {
   visibility = "public"
-  default = true
+  default    = true
   properties = {
     mcs_os_distro = "debian"
   }

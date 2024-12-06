@@ -31,15 +31,15 @@ Manages a public DNS zone record resource within VKCS.
 ### Single record
 ```terraform
 resource "vkcs_publicdns_record" "srv" {
-  zone_id = vkcs_publicdns_zone.zone.id
-  type = "SRV"
-  service = "_sip"
-  proto = "_udp"
+  zone_id  = vkcs_publicdns_zone.zone.id
+  type     = "SRV"
+  service  = "_sip"
+  proto    = "_udp"
   priority = 10
-  weight = 5
-  host = "siptarget.com"
-  port = 5060
-  ttl = 60
+  weight   = 5
+  host     = "siptarget.com"
+  port     = 5060
+  ttl      = 60
 }
 ```
 
@@ -52,13 +52,13 @@ locals {
   })
 }
 
-resource "vkcs_publicdns_record" "multi-a" {
+resource "vkcs_publicdns_record" "multi_a" {
   for_each = local.google_public_dns_ips
-  zone_id = vkcs_publicdns_zone.zone.id
-  type = "A"
-  name = "google-dns-servers"
-  ip = each.value
-  ttl = 60
+  zone_id  = vkcs_publicdns_zone.zone.id
+  type     = "A"
+  name     = "google-dns-servers"
+  ip       = each.value
+  ttl      = 60
 }
 ```
 
