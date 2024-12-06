@@ -1,5 +1,6 @@
 resource "vkcs_networking_network" "sfs" {
   name = "network"
+  sdn  = "sprut"
 }
 
 resource "vkcs_networking_subnet" "sfs" {

@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+### v0.9.1 (unreleased)
+- Fix an issue with marking share as deleted while share's port in subnet is still active
+
 #### v0.9.0
 - Add vkcs_cloud_monitoring resource
 - Add cloud_monitoring argument to vkcs_compute_instance

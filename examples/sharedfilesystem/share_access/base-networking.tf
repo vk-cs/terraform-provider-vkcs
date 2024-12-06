@@ -1,1 +1,1 @@
-../../networking/main.tf
+../base.tf
