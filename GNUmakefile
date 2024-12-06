@@ -90,4 +90,14 @@ lint:
 update_release_schema:
 	go run helpers/schema-api/main.go -export .release/provider-schema.json
 
+tflint_fix_examples:
+	tflint --chdir=examples --recursive -f compact --config="$(CURDIR)/.tflint.hcl" --fix
+
+tffmt_examples:
+	terraform fmt --recursive examples
+
+check_examples:
+	tflint --chdir=examples --recursive -f compact --config="$(CURDIR)/.tflint.hcl"
+	terraform fmt --check --recursive examples
+
 .PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test lint update_release_schema
