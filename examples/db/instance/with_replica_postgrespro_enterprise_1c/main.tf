@@ -46,7 +46,7 @@ resource "vkcs_db_instance" "postgrespro_enterprise_1c_replica" {
     version = "12"
   }
 
-  replica_of  = vkcs_db_instance.postgrespro_enterprise_1c.id
+  replica_of = vkcs_db_instance.postgrespro_enterprise_1c.id
 
   network {
     uuid            = vkcs_networking_network.db.id
@@ -55,7 +55,7 @@ resource "vkcs_db_instance" "postgrespro_enterprise_1c_replica" {
 
   size        = 8
   volume_type = "ceph-ssd"
-  
+
 
   capabilities {
     name = "node_exporter"

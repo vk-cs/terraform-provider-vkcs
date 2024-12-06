@@ -5,9 +5,9 @@ resource "vkcs_networking_network" "neutron" {
 }
 
 resource "vkcs_networking_subnet" "neutron" {
-  name        = "neutron-subnet-tf-example"
-  network_id  = vkcs_networking_network.neutron.id
-  cidr        = local.neutron_cidr
+  name       = "neutron-subnet-tf-example"
+  network_id = vkcs_networking_network.neutron.id
+  cidr       = local.neutron_cidr
 }
 
 # Get external network with Internet access

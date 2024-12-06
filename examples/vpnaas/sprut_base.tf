@@ -5,9 +5,9 @@ resource "vkcs_networking_network" "sprut" {
 }
 
 resource "vkcs_networking_subnet" "sprut" {
-  name        = "sprut-subnet-tf-example"
-  network_id  = vkcs_networking_network.sprut.id
-  cidr        = local.sprut_cidr
+  name       = "sprut-subnet-tf-example"
+  network_id = vkcs_networking_network.sprut.id
+  cidr       = local.sprut_cidr
 }
 
 # Get external network with Internet access

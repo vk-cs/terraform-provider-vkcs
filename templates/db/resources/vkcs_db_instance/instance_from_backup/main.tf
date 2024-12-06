@@ -1,4 +1,4 @@
-resource "vkcs_db_instance" "db-instance" {
+resource "vkcs_db_instance" "db_instance" {
   name = "db-instance"
 
   datastore {

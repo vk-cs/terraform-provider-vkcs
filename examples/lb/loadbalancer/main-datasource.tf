@@ -5,11 +5,11 @@ data "vkcs_lb_loadbalancer" "app" {
   depends_on = [vkcs_lb_loadbalancer.app]
 }
 
-data "vkcs_networking_port" "app-port" {
+data "vkcs_networking_port" "app_port" {
   id = data.vkcs_lb_loadbalancer.app.vip_port_id
 }
 
 output "used_vips" {
-  value = data.vkcs_networking_port.app-port.all_fixed_ips
+  value       = data.vkcs_networking_port.app_port.all_fixed_ips
   description = "IP addresses of the app"
 }

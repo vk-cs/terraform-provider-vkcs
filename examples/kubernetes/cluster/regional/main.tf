@@ -1,4 +1,4 @@
-resource "vkcs_kubernetes_cluster" "k8s-cluster" {
+resource "vkcs_kubernetes_cluster" "k8s_cluster" {
   name                = "k8s-regional-cluster"
   cluster_type        = "regional"
   cluster_template_id = data.vkcs_kubernetes_clustertemplate.k8s_24.id

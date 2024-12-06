@@ -1,4 +1,4 @@
-resource "vkcs_db_instance" "db-instance" {
+resource "vkcs_db_instance" "db_instance" {
   name = "db-instance"
 
   datastore {
@@ -31,10 +31,10 @@ resource "vkcs_db_instance" "db-instance" {
   }
 
   backup_schedule {
-    name = three_hours_backup
-    start_hours = 16
-    start_minutes = 20
+    name           = three_hours_backup
+    start_hours    = 16
+    start_minutes  = 20
     interval_hours = 3
-    keep_count = 3
+    keep_count     = 3
   }
 }

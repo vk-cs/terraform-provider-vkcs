@@ -1,7 +1,7 @@
 resource "vkcs_compute_instance" "front_worker" {
   name      = "front-worker-tf-example"
   flavor_id = data.vkcs_compute_flavor.basic.id
-  
+
   block_device {
     source_type      = "image"
     uuid             = data.vkcs_images_image.debian.id

@@ -1,5 +1,5 @@
-resource "vkcs_db_instance" "db-instance" {
-  name        = "db-instance"
+resource "vkcs_db_instance" "db_instance" {
+  name = "db-instance"
 
   availability_zone = "GZ1"
 
@@ -8,7 +8,7 @@ resource "vkcs_db_instance" "db-instance" {
     version = "11"
   }
 
-  flavor_id   = data.vkcs_compute_flavor.db.id
+  flavor_id = data.vkcs_compute_flavor.db.id
 
   size        = 10
   volume_type = "ceph-ssd"
@@ -17,12 +17,12 @@ resource "vkcs_db_instance" "db-instance" {
     max_disk_size = 1000
   }
   wal_volume {
-    size          = 10
-    volume_type   = "ceph-ssd"
+    size        = 10
+    volume_type = "ceph-ssd"
   }
 
   wal_disk_autoexpand {
-    autoexpand = true
+    autoexpand    = true
     max_disk_size = 20
   }
 

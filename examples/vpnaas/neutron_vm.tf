@@ -31,8 +31,8 @@ resource "vkcs_networking_secgroup_rule" "ssh_rule_neutron" {
 }
 
 resource "vkcs_networking_port" "neutron_vm_port" {
-  name       = "port_for_neutron_vm"
-  network_id = vkcs_networking_network.neutron.id
+  name                         = "port_for_neutron_vm"
+  network_id                   = vkcs_networking_network.neutron.id
   full_security_groups_control = true
   security_group_ids = [
     vkcs_networking_secgroup.ssh_neutron.id,

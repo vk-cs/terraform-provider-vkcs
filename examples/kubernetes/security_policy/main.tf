@@ -10,7 +10,7 @@ locals {
 }
 
 resource "vkcs_kubernetes_security_policy" "replicalimits" {
-  cluster_id                  = vkcs_kubernetes_cluster.k8s-cluster.id
+  cluster_id                  = vkcs_kubernetes_cluster.k8s_cluster.id
   enabled                     = true
   namespace                   = "*"
   policy_settings             = jsonencode(local.policy_settings)
