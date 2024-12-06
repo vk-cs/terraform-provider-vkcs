@@ -26,7 +26,7 @@ resource "vkcs_mlplatform_k8s_registry" "k8s_registry" {
   networks = [
     {
       network_id = vkcs_networking_network.app.id
-      ip_pool = data.vkcs_networking_network.extnet.id
+      ip_pool    = data.vkcs_networking_network.extnet.id
     },
   ]
 }

@@ -15,7 +15,7 @@ Use this data source to get backup plan info
 ## Example Usage
 
 ```terraform
-data "vkcs_backup_plan" "plan-datasource" {
+data "vkcs_backup_plan" "plan_datasource" {
   name = vkcs_backup_plan.backup_plan.name
 }
 ```

@@ -15,7 +15,7 @@ Use this data source to get backup provider info
 ## Example Usage
 
 ```terraform
-data "vkcs_backup_provider" "cloud-servers" {
+data "vkcs_backup_provider" "cloud_servers" {
   name = "cloud_servers"
 }
 ```

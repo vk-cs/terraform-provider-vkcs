@@ -15,7 +15,7 @@ Manages a keypair resource within VKCS.
 ## Example Usage
 ### Import an Existing Public Key
 ```terraform
-resource "vkcs_compute_keypair" "existing-key" {
+resource "vkcs_compute_keypair" "existing_key" {
   name       = "existing-key-tf-example"
   public_key = file("${path.module}/public_key.key")
 }
@@ -23,16 +23,16 @@ resource "vkcs_compute_keypair" "existing-key" {
 
 ### Generate a Public/Private Key Pair
 ```terraform
-resource "vkcs_compute_keypair" "generated-key" {
+resource "vkcs_compute_keypair" "generated_key" {
   name = "generated-key-tf-example"
 }
 
 output "public_key" {
-  value = vkcs_compute_keypair.generated-key.public_key
+  value = vkcs_compute_keypair.generated_key.public_key
 }
 
 output "private_key" {
-  value = vkcs_compute_keypair.generated-key.private_key
+  value     = vkcs_compute_keypair.generated_key.private_key
   sensitive = true
 }
 ```

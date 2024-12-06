@@ -36,7 +36,7 @@ resource "vkcs_db_instance" "mysql" {
     max_disk_size = 1000
   }
   # Specify required db capabilities
-  configuration_id = vkcs_db_config_group.mysql-80.id
+  configuration_id = vkcs_db_config_group.mysql_80.id
   capabilities {
     name = "node_exporter"
     settings = {
@@ -55,7 +55,7 @@ resource "vkcs_db_instance" "mysql" {
 
 ### Instance restored from backup
 ```terraform
-resource "vkcs_db_instance" "db-instance" {
+resource "vkcs_db_instance" "db_instance" {
   name = "db-instance"
 
   datastore {
@@ -95,7 +95,7 @@ resource "vkcs_db_instance" "db-instance" {
 
 ### Postgresql instance with scheduled PITR backup
 ```terraform
-resource "vkcs_db_instance" "db-instance" {
+resource "vkcs_db_instance" "db_instance" {
   name = "db-instance"
 
   datastore {
@@ -128,11 +128,11 @@ resource "vkcs_db_instance" "db-instance" {
   }
 
   backup_schedule {
-    name = three_hours_backup
-    start_hours = 16
-    start_minutes = 20
+    name           = three_hours_backup
+    start_hours    = 16
+    start_minutes  = 20
     interval_hours = 3
-    keep_count = 3
+    keep_count     = 3
   }
 }
 ```

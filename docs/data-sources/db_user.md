@@ -13,7 +13,7 @@ Use this data source to get the information on a db user resource.
 ## Example Usage
 
 ```terraform
-data "vkcs_db_user" "db-user" {
+data "vkcs_db_user" "db_user" {
   id = "d0438c95-1854-4ced-806c-c3b4125b586d/myuser"
 }
 ```

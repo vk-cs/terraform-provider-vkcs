@@ -12,11 +12,11 @@ Associates a floating IP to a port. This can be done only if port is assigned to
 
 ## Example Usage
 ```terraform
-resource "vkcs_networking_floatingip_associate" "floatingip-associate" {
+resource "vkcs_networking_floatingip_associate" "floatingip_associate" {
   floating_ip = vkcs_networking_floatingip.base_fip.address
   port_id     = vkcs_networking_port.persistent_etcd.id
   # Ensure the router interface is up
-  depends_on  = [vkcs_networking_router_interface.db]
+  depends_on = [vkcs_networking_router_interface.db]
 }
 ```
 ## Argument Reference

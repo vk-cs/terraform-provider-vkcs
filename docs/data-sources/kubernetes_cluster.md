@@ -12,8 +12,8 @@ Use this data source to get the ID of an available VKCS kubernetes cluster.
 
 ## Example Usage
 ```terraform
-data "vkcs_kubernetes_cluster" "k8s-cluster" {
-  id = vkcs_kubernetes_cluster.k8s-cluster.id
+data "vkcs_kubernetes_cluster" "k8s_cluster" {
+  id = vkcs_kubernetes_cluster.k8s_cluster.id
 }
 ```
 

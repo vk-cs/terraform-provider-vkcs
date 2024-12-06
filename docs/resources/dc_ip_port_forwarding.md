@@ -16,7 +16,7 @@ Manages a direct connect ip port forwarding resource.
 
 ## Example Usage
 ```terraform
-resource "vkcs_dc_ip_port_forwarding" "dc-ip-port-forwarding" {
+resource "vkcs_dc_ip_port_forwarding" "dc_ip_port_forwarding" {
   dc_interface_id = vkcs_dc_interface.dc_interface.id
   name            = "tf-example"
   description     = "tf-example-description"
