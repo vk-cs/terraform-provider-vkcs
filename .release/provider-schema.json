@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.8.4",
+  "provider_version": "v0.9.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -222,6 +222,222 @@
         },
         "description": "Provides a blockstorage volume resource. This can be used to create, modify and delete blockstorage volume."
       },
+      "vkcs_cdn_origin_group": {
+        "schema": {
+          "id": {
+            "type": "TypeInt",
+            "description": "ID of the origin group.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Name of the origin group."
+          },
+          "origins": {
+            "type": "TypeList",
+            "required": true,
+            "description": "List of origin sources in the origin group.",
+            "elem": {
+              "schema": {
+                "backup": {
+                  "type": "TypeBool",
+                  "optional": true,
+                  "description": "Defines whether the origin is a backup, meaning that it will not be used until one of active origins become unavailable. Defaults to false.",
+                  "computed": true
+                },
+                "enabled": {
+                  "type": "TypeBool",
+                  "optional": true,
+                  "description": "Enables or disables an origin source in the origin group. Enabled by default.",
+                  "computed": true
+                },
+                "source": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "IP address or domain name of the origin and the port, if custom port is used."
+                }
+              }
+            }
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+            "computed": true
+          },
+          "use_next": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Defines whether to use the next origin from the origin group if origin responds with 4XX or 5XX codes. Defaults to false.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.9.0"
+      },
+      "vkcs_cdn_resource": {
+        "schema": {
+          "active": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Enables or disables a CDN resource.",
+            "computed": true
+          },
+          "cname": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Delivery domain that will be used for content delivery through a CDN. Use `secondary_hostnames` to add extra domains. _note_ Delivery domains should be added to your DNS settings."
+          },
+          "id": {
+            "type": "TypeInt",
+            "description": "ID of the CDN resource.",
+            "computed": true
+          },
+          "options": {
+            "optional": true,
+            "description": "Options that configure a CDN resource.",
+            "computed": true
+          },
+          "origin_group": {
+            "type": "TypeInt",
+            "required": true,
+            "description": "Origin group ID with which the CDN resource is associated."
+          },
+          "origin_protocol": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Protocol used by CDN servers to request content from an origin source. If protocol is not specified, HTTP is used to connect to an origin server.",
+            "computed": true
+          },
+          "preset_applied": {
+            "type": "TypeBool",
+            "description": "Protocol used by CDN servers to request content from an origin source. ",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+            "computed": true
+          },
+          "secondary_hostnames": {
+            "type": "TypeList",
+            "optional": true,
+            "description": "Additional delivery domains (CNAMEs) that will be used to deliver content via the CDN.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "shielding": {
+            "optional": true,
+            "description": "Use this attribute to configure origin shielding.",
+            "computed": true
+          },
+          "ssl_certificate": {
+            "optional": true,
+            "description": "SSL certificate settings for content delivery over HTTPS protocol.",
+            "computed": true
+          },
+          "status": {
+            "type": "TypeString",
+            "description": "CDN resource status.",
+            "computed": true
+          },
+          "timeouts": {
+            "optional": true
+          },
+          "vp_enabled": {
+            "type": "TypeBool",
+            "description": "Defines whether the CDN resource is integrated with the Streaming Platform.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.9.0"
+      },
+      "vkcs_cdn_ssl_certificate": {
+        "schema": {
+          "certificate": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Public part of the SSL certificate. All chain of the SSL certificate should be added."
+          },
+          "id": {
+            "type": "TypeInt",
+            "description": "ID of the SSL certificate.",
+            "computed": true
+          },
+          "issuer": {
+            "type": "TypeString",
+            "description": "Name of the certification center issued the SSL certificate.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "SSL certificate name."
+          },
+          "private_key": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Private key of the SSL certificate."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+            "computed": true
+          },
+          "subject_cn": {
+            "type": "TypeString",
+            "description": "Domain name that the SSL certificate secures.",
+            "computed": true
+          },
+          "validity_not_after": {
+            "type": "TypeString",
+            "description": "Date when certificate become untrusted (ISO 8601/RFC 3339 format, UTC.).",
+            "computed": true
+          },
+          "validity_not_before": {
+            "type": "TypeString",
+            "description": "Date when certificate become valid (ISO 8601/RFC 3339 format, UTC.).",
+            "computed": true
+          }
+        },
+        "new_since": "v0.9.0"
+      },
+      "vkcs_cloud_monitoring": {
+        "schema": {
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource.",
+            "computed": true
+          },
+          "image_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "ID of the image to create cloud monitoring for."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          },
+          "script": {
+            "type": "TypeString",
+            "description": "Shell script of the cloud monitoring.",
+            "computed": true
+          },
+          "service_user_id": {
+            "type": "TypeString",
+            "description": "ID of the service monitoring user.",
+            "computed": true
+          }
+        },
+        "description": "Receives settings for cloud monitoring for the `vkcs_compute_instance'.",
+        "new_since": "v0.9.0"
+      },
       "vkcs_compute_floatingip_associate": {
         "schema": {
           "fixed_ip": {
@@ -364,6 +580,29 @@
                 }
               }
             }
+          },
+          "cloud_monitoring": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "The settings of the cloud monitoring, it is recommended to set this field with the values of `vkcs_cloud_monitoring` resource fields. Changing this creates a new server.",
+            "force_new": true,
+            "elem": {
+              "schema": {
+                "script": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "The script of the cloud monitoring."
+                },
+                "service_user_id": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "The id of the service monitoring user."
+                }
+              }
+            },
+            "max_items": 1,
+            "min_items": 1,
+            "new_since": "v0.9.0"
           },
           "config_drive": {
             "type": "TypeBool",
@@ -560,7 +799,7 @@
           "user_data": {
             "type": "TypeString",
             "optional": true,
-            "description": "The user data to provide when launching the instance.\tChanging this creates a new server.",
+            "description": "The user data to provide when launching the instance. When cloud_monitoring enabled only #!/bin/bash, #cloud-config, #ps1 user_data formats are supported. Changing this creates a new server.",
             "force_new": true
           },
           "vendor_options": {
@@ -1958,7 +2197,7 @@
       "vkcs_db_user": {
         "schema": {
           "databases": {
-            "type": "TypeList",
+            "type": "TypeSet",
             "optional": true,
             "description": "List of names of the databases, that user is created for.",
             "computed": true,
@@ -3367,7 +3606,8 @@
             "type": "TypeString",
             "optional": true,
             "description": "Floating IP created for ingress service.",
-            "computed": true
+            "computed": true,
+            "deprecated": "This argument is deprecated as Ingress controller is not currently installed by default."
           },
           "insecure_registries": {
             "type": "TypeList",
@@ -3389,7 +3629,8 @@
             "type": "TypeString",
             "optional": true,
             "description": "The name of the Compute service SSH keypair. Changing this creates a new cluster.",
-            "force_new": true
+            "force_new": true,
+            "deprecated": "This argument is deprecated, please do not use it."
           },
           "labels": {
             "type": "TypeMap",
@@ -5729,7 +5970,7 @@
           "gateway_ip": {
             "type": "TypeString",
             "optional": true,
-            "description": "Default gateway used by devices in this subnet. Leaving this blank and not setting `no_gateway` will cause a default gateway of `.1` to be used. Changing this updates the gateway IP of the existing subnet.",
+            "description": "Default gateway used by devices in this subnet. Leaving this blank and not setting `no_gateway` will cause a default value. For the Sprut SDN, this field cannot be changed after creation.",
             "computed": true
           },
           "name": {
@@ -6888,6 +7129,176 @@
         },
         "description": "Use this data source to get information about an existing volume."
       },
+      "vkcs_cdn_origin_group": {
+        "schema": {
+          "id": {
+            "type": "TypeInt",
+            "description": "ID of the origin group.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Name of the origin group."
+          },
+          "origins": {
+            "type": "TypeList",
+            "description": "List of origin sources in the origin group.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "backup": {
+                  "type": "TypeBool",
+                  "description": "Defines whether the origin is a backup, meaning that it will not be used until one of active origins become unavailable.",
+                  "computed": true
+                },
+                "enabled": {
+                  "type": "TypeBool",
+                  "description": "Enables or disables an origin source in the origin group.",
+                  "computed": true
+                },
+                "source": {
+                  "type": "TypeString",
+                  "description": "IP address or domain name of the origin and the port, if custom port is used.",
+                  "computed": true
+                }
+              }
+            }
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          },
+          "use_next": {
+            "type": "TypeBool",
+            "description": "Defines whether to use the next origin from the origin group if origin responds with 4XX or 5XX codes.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.9.0"
+      },
+      "vkcs_cdn_shielding_pop": {
+        "schema": {
+          "city": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "City of origin shielding location.",
+            "computed": true
+          },
+          "country": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Country of origin shielding location.",
+            "computed": true
+          },
+          "datacenter": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of origin shielding location datacenter.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeInt",
+            "description": "ID of the origin shielding location.",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.9.0"
+      },
+      "vkcs_cdn_shielding_pops": {
+        "schema": {
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource.",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          },
+          "shielding_pops": {
+            "type": "TypeList",
+            "description": "List of available origin shielding points of precense.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "city": {
+                  "type": "TypeString",
+                  "description": "City of origin shielding location.",
+                  "computed": true
+                },
+                "country": {
+                  "type": "TypeString",
+                  "description": "Country of origin shielding location.",
+                  "computed": true
+                },
+                "datacenter": {
+                  "type": "TypeString",
+                  "description": "Name of origin shielding location datacenter.",
+                  "computed": true
+                },
+                "id": {
+                  "type": "TypeInt",
+                  "description": "ID of the origin shielding location.",
+                  "computed": true
+                }
+              }
+            }
+          }
+        },
+        "new_since": "v0.9.0"
+      },
+      "vkcs_cdn_ssl_certificate": {
+        "schema": {
+          "id": {
+            "type": "TypeInt",
+            "description": "ID of the SSL certificate.",
+            "computed": true
+          },
+          "issuer": {
+            "type": "TypeString",
+            "description": "Name of the certification center issued the SSL certificate.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "SSL certificate name."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          },
+          "subject_cn": {
+            "type": "TypeString",
+            "description": "Domain name that the SSL certificate secures.",
+            "computed": true
+          },
+          "validity_not_after": {
+            "type": "TypeString",
+            "description": "Date when certificate become untrusted (ISO 8601/RFC 3339 format, UTC.).",
+            "computed": true
+          },
+          "validity_not_before": {
+            "type": "TypeString",
+            "description": "Date when certificate become valid (ISO 8601/RFC 3339 format, UTC.).",
+            "computed": true
+          }
+        },
+        "new_since": "v0.9.0"
+      },
       "vkcs_compute_availability_zones": {
         "schema": {
           "id": {
@@ -7231,8 +7642,10 @@
         "schema": {
           "backup_id": {
             "type": "TypeString",
-            "required": true,
-            "description": "The UUID of the backup."
+            "optional": true,
+            "description": "The UUID of the backup.",
+            "computed": true,
+            "deprecated": "This argument is deprecated, please, use the `id` attribute instead."
           },
           "created": {
             "type": "TypeString",
@@ -7275,7 +7688,8 @@
           },
           "id": {
             "type": "TypeString",
-            "description": "ID of the resource.",
+            "optional": true,
+            "description": "The UUID of the backup.",
             "computed": true
           },
           "location_ref": {
@@ -7322,8 +7736,10 @@
         "schema": {
           "config_group_id": {
             "type": "TypeString",
-            "required": true,
-            "description": "The UUID of the config_group."
+            "optional": true,
+            "description": "The UUID of the config_group.",
+            "computed": true,
+            "deprecated": "This argument is deprecated, please, use the `id` attribute instead."
           },
           "created": {
             "type": "TypeString",
@@ -7356,7 +7772,8 @@
           },
           "id": {
             "type": "TypeString",
-            "description": "ID of the resource.",
+            "optional": true,
+            "description": "The UUID of the config_group.",
             "computed": true
           },
           "name": {
@@ -7841,7 +8258,7 @@
       "vkcs_db_user": {
         "schema": {
           "databases": {
-            "type": "TypeList",
+            "type": "TypeSet",
             "optional": true,
             "description": "List of names of the databases, that user is created for.",
             "elem": {
@@ -7880,7 +8297,7 @@
         "schema": {
           "availability_zones": {
             "type": "TypeList",
-            "description": "List of avalability zone options",
+            "description": "List of availability zone options",
             "computed": true,
             "elem": {
               "type": "TypeString"
@@ -7940,6 +8357,11 @@
           "file": {
             "type": "TypeString",
             "description": "The trailing path after the endpoint that represent the location of the image or the path to retrieve it.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "The UUID of the image.",
             "computed": true
           },
           "member_status": {
@@ -8569,7 +8991,8 @@
             "type": "TypeString",
             "optional": true,
             "description": "The UUID of the Kubernetes cluster template. _note_ Only one of `name` or `cluster_id` must be specified.",
-            "computed": true
+            "computed": true,
+            "deprecated": "This argument is deprecated, please, use the `id` attribute instead."
           },
           "cluster_template_id": {
             "type": "TypeString",
@@ -8603,10 +9026,17 @@
             "description": "Indicates whether floating ip is enabled for cluster.",
             "computed": true
           },
+          "id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The UUID of the Kubernetes cluster template. _note_ Only one of `name` or `id` must be specified.",
+            "computed": true
+          },
           "ingress_floating_ip": {
             "type": "TypeString",
             "description": "Floating IP created for ingress service.",
-            "computed": true
+            "computed": true,
+            "deprecated": "This argument is deprecated as Ingress controller is not currently installed by default."
           },
           "insecure_registries": {
             "type": "TypeList",
@@ -8624,7 +9054,8 @@
           "keypair": {
             "type": "TypeString",
             "description": "The name of the Compute service SSH keypair.",
-            "computed": true
+            "computed": true,
+            "deprecated": "This argument is deprecated, please do not use it."
           },
           "labels": {
             "type": "TypeMap",
@@ -8657,7 +9088,7 @@
           "name": {
             "type": "TypeString",
             "optional": true,
-            "description": "The name of the cluster. _note_ Only one of `name` or `cluster_id` must be specified.",
+            "description": "The name of the cluster. _note_ Only one of `name` or `id` must be specified.",
             "computed": true
           },
           "network_id": {
@@ -8735,8 +9166,9 @@
           "cluster_template_uuid": {
             "type": "TypeString",
             "optional": true,
-            "description": "The UUID of the cluster template. _note_ Only one of `name` or `version` or `cluster_template_uuid` must be specified.",
-            "computed": true
+            "description": "The UUID of the cluster template. _note_ Only one of `name`, `version`, or `cluster_template_uuid` must be specified.",
+            "computed": true,
+            "deprecated": "This argument is deprecated, please, use the `id` attribute instead."
           },
           "created_at": {
             "type": "TypeString",
@@ -8778,6 +9210,12 @@
             "description": "Indicates whether created cluster should create IP floating IP for every node or not.",
             "computed": true
           },
+          "id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The UUID of the cluster template. _note_ Only one of `name`, `version` or `id` must be specified.",
+            "computed": true
+          },
           "image": {
             "type": "TypeString",
             "description": "The reference to an image that is used for nodes of the cluster.",
@@ -8811,7 +9249,7 @@
           "name": {
             "type": "TypeString",
             "optional": true,
-            "description": "The name of the cluster template. _note_ Only one of `name` or `version` or `cluster_template_uuid` must be specified.",
+            "description": "The name of the cluster template. _note_ Only one of `name`, `version` or `id` must be specified.",
             "computed": true
           },
           "network_driver": {
@@ -8868,7 +9306,7 @@
           "version": {
             "type": "TypeString",
             "optional": true,
-            "description": "Kubernetes version of the cluster.",
+            "description": "Kubernetes version of the cluster. _note_ Only one of `name`, `version` or `id` must be specified.",
             "computed": true
           },
           "volume_driver": {
@@ -8949,7 +9387,8 @@
           },
           "id": {
             "type": "TypeString",
-            "description": "ID of the resource.",
+            "optional": true,
+            "description": "The UUID of the cluster's node group.",
             "computed": true
           },
           "max_node_unavailable": {
@@ -9030,8 +9469,10 @@
           },
           "uuid": {
             "type": "TypeString",
-            "required": true,
-            "description": "The UUID of the cluster's node group."
+            "optional": true,
+            "description": "The UUID of the cluster's node group.",
+            "computed": true,
+            "deprecated": "This argument is deprecated, please, use the `id` attribute instead."
           },
           "volume_size": {
             "type": "TypeInt",
@@ -9319,7 +9760,8 @@
           },
           "id": {
             "type": "TypeString",
-            "description": "ID of the found network.",
+            "optional": true,
+            "description": "The ID of the network.",
             "computed": true
           },
           "matching_subnet_cidr": {
@@ -9335,7 +9777,9 @@
           "network_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The ID of the network."
+            "description": "The ID of the network.",
+            "computed": true,
+            "deprecated": "This argument is deprecated, please, use the `id` attribute instead."
           },
           "private_dns_domain": {
             "type": "TypeString",
@@ -9502,7 +9946,8 @@
           },
           "id": {
             "type": "TypeString",
-            "description": "ID of the found port.",
+            "optional": true,
+            "description": "The ID of the port.",
             "computed": true
           },
           "mac_address": {
@@ -9527,7 +9972,8 @@
             "type": "TypeString",
             "optional": true,
             "description": "The ID of the port.",
-            "computed": true
+            "computed": true,
+            "deprecated": "This argument is deprecated, please, use the `id` attribute instead."
           },
           "project_id": {
             "type": "TypeString",
@@ -9630,7 +10076,8 @@
           },
           "id": {
             "type": "TypeString",
-            "description": "ID of the found router.",
+            "optional": true,
+            "description": "The UUID of the router resource.",
             "computed": true
           },
           "name": {
@@ -9646,7 +10093,9 @@
           "router_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The UUID of the router resource."
+            "description": "The UUID of the router resource.",
+            "computed": true,
+            "deprecated": "This argument is deprecated, please, use the `id` attribute instead."
           },
           "sdn": {
             "type": "TypeString",
@@ -9705,7 +10154,8 @@
           },
           "id": {
             "type": "TypeString",
-            "description": "ID of the found security group.",
+            "optional": true,
+            "description": "The ID of the security group.",
             "computed": true
           },
           "name": {
@@ -9728,7 +10178,9 @@
           "secgroup_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The ID of the security group."
+            "description": "The ID of the security group.",
+            "computed": true,
+            "deprecated": "This argument is deprecated, please, use the `id` attribute instead."
           },
           "tags": {
             "type": "TypeSet",
@@ -9832,7 +10284,8 @@
           },
           "id": {
             "type": "TypeString",
-            "description": "ID of the found subnet.",
+            "optional": true,
+            "description": "The ID of the subnet.",
             "computed": true
           },
           "name": {
@@ -9863,7 +10316,8 @@
             "type": "TypeString",
             "optional": true,
             "description": "The ID of the subnet.",
-            "computed": true
+            "computed": true,
+            "deprecated": "This argument is deprecated, please, use the `id` attribute instead."
           },
           "subnetpool_id": {
             "type": "TypeString",
@@ -9970,7 +10424,8 @@
           "id": {
             "type": "TypeString",
             "optional": true,
-            "description": "ID of the region to learn or use. Use empty value to learn current region on the provider."
+            "description": "ID of the region to learn or use. Use empty value to learn current region on the provider.",
+            "computed": true
           },
           "parent_region": {
             "type": "TypeString",
@@ -10015,6 +10470,11 @@
             "type": "TypeString",
             "optional": true,
             "description": "The export location path of the share.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "The UUID of the share.",
             "computed": true
           },
           "name": {
@@ -10075,6 +10535,11 @@
             "type": "TypeString",
             "optional": true,
             "description": "The human-readable description of the share network.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "The UUID of the share network.",
             "computed": true
           },
           "name": {
