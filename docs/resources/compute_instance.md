@@ -279,7 +279,7 @@ resource "vkcs_compute_instance" "cloud_monitoring" {
 
   - `volume_type` optional *string* &rarr;  The volume type that will be used. Changing this creates a new server.
 
-- `cloud_monitoring` optional &rarr;  The settings of the cloud monitoring, it is recommended to set this field with the values of `vkcs_cloud_monitoring` resource fields. Changing this creates a new server.
+- `cloud_monitoring` optional &rarr;  The settings of the cloud monitoring, it is recommended to set this field with the values of `vkcs_cloud_monitoring` resource fields. Changing this creates a new server.<br>**New since v0.9.0**.
   - `script` **required** sensitive *string* &rarr;  The script of the cloud monitoring.
 
   - `service_user_id` **required** *string* &rarr;  The id of the service monitoring user.
