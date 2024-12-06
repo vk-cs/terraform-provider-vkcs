@@ -1,0 +1,47 @@
+name: Check Examples
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - master
+  pull_request:
+    paths:
+      - 'examples/**'
+      - '.tflint.hcl'
+jobs:
+  check-terraform-fmt:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Terraform with specified version on the runner
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Check Terraform formatting
+        id: fmt
+        run: terraform fmt --check --recursive examples
+  lint-terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: terraform-linters/setup-tflint@v4
+        name: Setup TFLint
+        with:
+          tflint_version: latest
+
+      - name: Show version
+        run: tflint --version
+
+      - name: Init TFLint
+        run: tflint --init
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Run TFLint
+        run: tflint --chdir=examples --recursive -f compact --config="$(pwd -P)/.tflint.hcl"
