@@ -14,12 +14,12 @@ Provides a db cluster resource. This can be used to create, modify and delete db
 ### Basic cluster
 ```terraform
 resource "vkcs_db_cluster" "pg_cluster" {
-  name = "pg-cluster"
+  name = "pg-cluster-tf-example"
 
   availability_zone = "GZ1"
   datastore {
     type    = "postgresql"
-    version = "12"
+    version = "16"
   }
 
   cluster_size = 3
@@ -60,7 +60,7 @@ resource "vkcs_db_cluster" "mydb_cluster" {
 
   datastore {
     type    = "postgresql"
-    version = "12"
+    version = "16"
   }
 
   cluster_size = 3
@@ -68,7 +68,7 @@ resource "vkcs_db_cluster" "mydb_cluster" {
   flavor_id = "9e931469-1490-489e-88af-29a289681c53"
 
   volume_size = 10
-  volume_type = "MS1"
+  volume_type = "ceph-ssd"
 
   network {
     uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
@@ -82,34 +82,40 @@ resource "vkcs_db_cluster" "mydb_cluster" {
 
 ### Cluster with scheduled PITR backup
 ```terraform
-resource "vkcs_db_cluster" "mydb_cluster" {
-  name = "mydb-cluster"
+resource "vkcs_db_cluster" "pg_with_backup" {
+  name = "pg-with-backup-tf-example"
 
+  availability_zone = "GZ1"
   datastore {
     type    = "postgresql"
-    version = "12"
+    version = "16"
   }
 
   cluster_size = 3
 
-  flavor_id = "9e931469-1490-489e-88af-29a289681c53"
+  flavor_id = data.vkcs_compute_flavor.basic.id
 
   volume_size = 10
-  volume_type = "MS1"
+  volume_type = "ceph-ssd"
 
   network {
-    uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
+    uuid = vkcs_networking_network.db.id
   }
 
   backup_schedule {
-    name           = three_hours_backup
+    name           = "three_hours_backup_tf_example"
     start_hours    = 16
     start_minutes  = 20
     interval_hours = 3
     keep_count     = 3
   }
+
+  depends_on = [
+    vkcs_networking_router_interface.db
+  ]
 }
 ```
+
 ## Argument Reference
 - `cluster_size` **required** *number* &rarr;  The number of instances in the cluster.
 

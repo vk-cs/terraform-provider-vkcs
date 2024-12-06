@@ -62,10 +62,12 @@ resource "vkcs_db_cluster_with_shards" "clickhouse_cluster" {
 locals {
   cluster = vkcs_db_cluster_with_shards.clickhouse_cluster
   shards_ips = {
-    for shard in local.cluster.shard : shard.shard_id => [for i in shard.instances : {
-      "internal_ip" = i.ip[0]
-      "external_ip" = length(i.ip) > 1 ? i.ip[1] : null
-    }]
+    for shard in local.cluster.shard : shard.shard_id => [
+      for i in shard.instances : {
+        "internal_ip" = i.ip[0]
+        "external_ip" = length(i.ip) > 1 ? i.ip[1] : null
+      }
+    ]
   }
 }
 
