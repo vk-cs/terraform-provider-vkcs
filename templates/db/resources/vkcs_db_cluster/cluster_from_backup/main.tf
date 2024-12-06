@@ -1,5 +1,5 @@
-resource "vkcs_db_cluster" "mydb-cluster" {
-  name        = "mydb-cluster"
+resource "vkcs_db_cluster" "mydb_cluster" {
+  name = "mydb-cluster"
 
   datastore {
     type    = "postgresql"
@@ -8,7 +8,7 @@ resource "vkcs_db_cluster" "mydb-cluster" {
 
   cluster_size = 3
 
-  flavor_id   = "9e931469-1490-489e-88af-29a289681c53"
+  flavor_id = "9e931469-1490-489e-88af-29a289681c53"
 
   volume_size = 10
   volume_type = "MS1"

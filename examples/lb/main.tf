@@ -1,7 +1,7 @@
 resource "vkcs_compute_instance" "compute_1" {
-  name            = "compute-instance-1"
-  flavor_id       = data.vkcs_compute_flavor.compute.id
-  image_id        = data.vkcs_images_image.compute.id
+  name      = "compute-instance-1"
+  flavor_id = data.vkcs_compute_flavor.compute.id
+  image_id  = data.vkcs_images_image.compute.id
 
   network {
     uuid        = vkcs_networking_network.lb.id
@@ -15,9 +15,9 @@ resource "vkcs_compute_instance" "compute_1" {
 }
 
 resource "vkcs_compute_instance" "compute_2" {
-  name            = "compute-instance-2"
-  flavor_id       = data.vkcs_compute_flavor.compute.id
-  image_id        = data.vkcs_images_image.compute.id
+  name      = "compute-instance-2"
+  flavor_id = data.vkcs_compute_flavor.compute.id
+  image_id  = data.vkcs_images_image.compute.id
 
   network {
     uuid        = vkcs_networking_network.lb.id

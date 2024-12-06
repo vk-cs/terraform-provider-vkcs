@@ -1,6 +1,6 @@
 resource "vkcs_backup_plan" "backup_plan" {
-  name          = "backup-plan-tf-example"
-  provider_name = "cloud_servers"
+  name               = "backup-plan-tf-example"
+  provider_name      = "cloud_servers"
   incremental_backup = false
   # Backup the instance three times in week at 23:00 (02:00 MSK next day)
   schedule = {
@@ -13,5 +13,5 @@ resource "vkcs_backup_plan" "backup_plan" {
     gfs_monthly = 11
     gfs_yearly  = 2
   }
-  instance_ids       = [vkcs_compute_instance.basic.id]
+  instance_ids = [vkcs_compute_instance.basic.id]
 }

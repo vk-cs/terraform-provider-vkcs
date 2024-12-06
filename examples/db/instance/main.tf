@@ -21,7 +21,7 @@ resource "vkcs_db_instance" "mysql" {
     max_disk_size = 1000
   }
   # Specify required db capabilities
-  configuration_id = vkcs_db_config_group.mysql-80.id
+  configuration_id = vkcs_db_config_group.mysql_80.id
   capabilities {
     name = "node_exporter"
     settings = {

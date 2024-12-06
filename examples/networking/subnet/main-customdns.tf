@@ -1,4 +1,4 @@
-resource "vkcs_networking_subnet" "subnet-with-dns-tf-example" {
+resource "vkcs_networking_subnet" "subnet_with_dns_tf_example" {
   name       = "subnet-with-dns-tf-example"
   network_id = vkcs_networking_network.app.id
   # here we set DNS'es instead of built in ones.

@@ -1,5 +1,5 @@
-resource "vkcs_db_instance" "db-instance" {
-  name        = "db-instance"
+resource "vkcs_db_instance" "db_instance" {
+  name = "db-instance"
 
   availability_zone = "GZ1"
 
@@ -8,8 +8,8 @@ resource "vkcs_db_instance" "db-instance" {
     version = "5.7"
   }
 
-  flavor_id   = data.vkcs_compute_flavor.db.id
-  
+  flavor_id = data.vkcs_compute_flavor.db.id
+
   size        = 8
   volume_type = "ceph-ssd"
   disk_autoexpand {
@@ -33,15 +33,15 @@ resource "vkcs_db_instance" "db-instance" {
   ]
 }
 
-resource "vkcs_db_instance" "db-replica" {
-  name        = "db-instance-replica"
+resource "vkcs_db_instance" "db_replica" {
+  name = "db-instance-replica"
   datastore {
     type    = "mysql"
     version = "5.7"
   }
-  replica_of  = vkcs_db_instance.db-instance.id
+  replica_of = vkcs_db_instance.db_instance.id
 
-  flavor_id   = data.vkcs_compute_flavor.db.id
+  flavor_id = data.vkcs_compute_flavor.db.id
 
   size        = 8
   volume_type = "ceph-ssd"

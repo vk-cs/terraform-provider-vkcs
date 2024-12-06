@@ -15,8 +15,8 @@ resource "vkcs_networking_secgroup_rule" "ping_rule_sprut" {
 }
 
 resource "vkcs_networking_port" "sprut_vm_port" {
-  name       = "port_for_sprut_vm"
-  network_id = vkcs_networking_network.sprut.id
+  name                         = "port_for_sprut_vm"
+  network_id                   = vkcs_networking_network.sprut.id
   full_security_groups_control = true
   security_group_ids = [
     vkcs_networking_secgroup.ping_sprut.id

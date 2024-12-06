@@ -7,5 +7,5 @@ locals {
   encryption_algorithm    = "aes-128"
   psk_key                 = "2382djdAS#ISDH13821h_f213"
   sprut_cidr              = "172.16.0.0/24"
-  neutron_cidr            =  "10.0.0.0/24"
+  neutron_cidr            = "10.0.0.0/24"
 }
