@@ -95,47 +95,41 @@ resource "vkcs_db_instance" "db_instance" {
 
 ### Postgresql instance with scheduled PITR backup
 ```terraform
-resource "vkcs_db_instance" "db_instance" {
-  name = "db-instance"
+resource "vkcs_db_instance" "pg_with_backup" {
+  name              = "pg-with-backup-tf-example"
+  availability_zone = "GZ1"
+  flavor_id         = data.vkcs_compute_flavor.basic.id
 
   datastore {
     type    = "postgresql"
-    version = "13"
+    version = "16"
   }
 
-  floating_ip_enabled = true
-
-  flavor_id         = "9e931469-1490-489e-88af-29a289681c53"
-  availability_zone = "MS1"
+  network {
+    uuid = vkcs_networking_network.db.id
+  }
 
   size        = 8
-  volume_type = "MS1"
+  volume_type = "ceph-ssd"
   disk_autoexpand {
     autoexpand    = true
     max_disk_size = 1000
   }
 
-  network {
-    uuid = "3ee9b184-3311-4d85-840b-7a9c48e7beac"
-  }
-
-  capabilities {
-    name = "node_exporter"
-  }
-
-  capabilities {
-    name = "postgres_extensions"
-  }
-
   backup_schedule {
-    name           = three_hours_backup
+    name           = "three_hours_backup_tf_example"
     start_hours    = 16
     start_minutes  = 20
     interval_hours = 3
     keep_count     = 3
   }
+
+  depends_on = [
+    vkcs_networking_router_interface.db,
+  ]
 }
 ```
+
 ## Argument Reference
 - `datastore` **required** &rarr;  Object that represents datastore of the instance. Changing this creates a new instance.
   - `type` **required** *string* &rarr;  Type of the datastore. Changing this creates a new instance.
