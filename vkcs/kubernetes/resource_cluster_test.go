@@ -173,7 +173,7 @@ func testAccCheckKubernetesClusterLabels(name string, labels map[string]string) 
 
 const testAccKubernetesNetworkingBase = `
 resource "vkcs_networking_network" "base" {
-  name           = "tfacc-base-net"
+  name           = "tfacc-base-net2"
   admin_state_up = true
 }
 
