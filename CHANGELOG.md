@@ -9,7 +9,7 @@ description: |-
 
 #### v0.9.1 (unreleased)
 
-- TEST CI
+- Fix panic on VKCS Kubernetes API error in vkcs_kubernetes_security_policy
 
 #### v0.9.0
 - Add vkcs_cloud_monitoring resource
