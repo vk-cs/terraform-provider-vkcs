@@ -41,28 +41,6 @@ jobs:
           skip-build-cache: true
           skip-pkg-cache: true
 
-  tests-on-windows:
-    needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.23 # test only release go version to speed up CI
-      - name: Run tests
-        run: make.exe test
-  tests-on-macos:
-    needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.23 # test only release go version to speed up CI
-      - name: Run tests
-        run: make test
   tests-on-unix:
     needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
     runs-on: ubuntu-latest

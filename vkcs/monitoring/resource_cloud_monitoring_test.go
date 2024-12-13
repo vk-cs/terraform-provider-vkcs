@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccCloudMonitoring_basic(t *testing.T) {
-	resourceName := "vkcs_cloud_monitoring.basic"
+	resourceName := "vkcs_cloud_monitoring.basic2"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
@@ -27,7 +27,7 @@ func TestAccCloudMonitoring_basic(t *testing.T) {
 const testAccCloudMonitoringBase = `
 {{.BaseImageDataSource}}
 
-resource "vkcs_cloud_monitoring" "basic" {
+resource "vkcs_cloud_monitoring" "basic2" {
   image_id = data.vkcs_images_image.basic.id
 }
 `
