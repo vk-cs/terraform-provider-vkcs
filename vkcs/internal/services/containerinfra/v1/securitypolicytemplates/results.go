@@ -28,6 +28,9 @@ type SecurityPolicyTemplates struct {
 func (r securityPolicyTemplatesResult) Extract() ([]SecurityPolicyTemplate, error) {
 	var s *SecurityPolicyTemplates
 	err := r.ExtractInto(&s)
+	if err != nil {
+		return nil, err
+	}
 
 	for i, t := range s.SecurityPolicyTemplates {
 		if t.SettingsDescription != "" {
