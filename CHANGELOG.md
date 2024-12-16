@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+### v0.9.1 (unreleased)
+- Change sdn in share example to sprut
+
 #### v0.9.0
 - Add vkcs_cloud_monitoring resource
 - Add cloud_monitoring argument to vkcs_compute_instance
