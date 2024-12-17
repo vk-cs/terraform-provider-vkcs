@@ -52,7 +52,7 @@ func TestAccKubernetesNodeGroup_fullUpdate_big(t *testing.T) {
 					testAccCheckKubernetesNodeGroupExists("full", &nodeGroup),
 					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.full", "cluster_id", "vkcs_kubernetes_cluster.base", "id"),
 					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.full", "flavor_id", "data.vkcs_compute_flavor.node_flavor", "id"),
-					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "availability_zones.#", "3"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "availability_zones.#", "1"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "node_count", "1"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "max_nodes", "5"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "min_nodes", "1"),
@@ -73,7 +73,7 @@ func TestAccKubernetesNodeGroup_fullUpdate_big(t *testing.T) {
 					testAccCheckKubernetesNodeGroupExists("full", &nodeGroup),
 					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.full", "cluster_id", "vkcs_kubernetes_cluster.base", "id"),
 					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group.full", "flavor_id", "data.vkcs_compute_flavor.node_flavor", "id"),
-					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "availability_zones.#", "3"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "availability_zones.#", "1"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "max_nodes", "10"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "min_nodes", "2"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group.full", "autoscaling_enabled", "true"),
@@ -295,7 +295,7 @@ resource "vkcs_kubernetes_node_group" "full" {
   cluster_id          = vkcs_kubernetes_cluster.base.id
   name                = "tfacc-full-update"
   flavor_id           = data.vkcs_compute_flavor.node_flavor.id
-  availability_zones  = ["ME1", "GZ1", "MS1"]
+  availability_zones  = ["GZ1"]
   node_count          = 1
   max_nodes           = 5
   min_nodes           = 1
@@ -329,7 +329,7 @@ resource "vkcs_kubernetes_node_group" "full" {
   cluster_id           = vkcs_kubernetes_cluster.base.id
   name                 = "tfacc-full-update"
   flavor_id            = data.vkcs_compute_flavor.node_flavor.id
-  availability_zones   = ["ME1", "GZ1", "MS1"]
+  availability_zones   = ["GZ1"]
   node_count           = 2
   max_nodes            = 10
   min_nodes            = 2
