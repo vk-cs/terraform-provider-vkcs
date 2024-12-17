@@ -37,31 +37,6 @@ func TestAccDatabaseBackupCluster_basic_big(t *testing.T) {
 	})
 }
 
-func TestAccDatabaseBackupResource_migrateToFramework(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.AccTestPreCheck(t) },
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"vkcs": {
-						VersionConstraint: "0.3.0",
-						Source:            "vk-cs/vkcs",
-					},
-				},
-				Config: acctest.AccTestRenderConfig(testAccDatabaseBackupBasic, map[string]string{"TestAccDatabaseInstanceBasic": acctest.AccTestRenderConfig(testAccDatabaseInstanceBasic)}),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("vkcs_db_backup.basic", "name", "basic"),
-				),
-			},
-			{
-				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
-				Config:                   acctest.AccTestRenderConfig(testAccDatabaseBackupBasic, map[string]string{"TestAccDatabaseInstanceBasic": acctest.AccTestRenderConfig(testAccDatabaseInstanceBasic)}),
-				PlanOnly:                 true,
-			},
-		},
-	})
-}
-
 const testAccDatabaseBackupBasic = `
 {{.TestAccDatabaseInstanceBasic}}
 

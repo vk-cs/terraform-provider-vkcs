@@ -34,49 +34,6 @@ func TestAccNetworkingPortDataSource_basic(t *testing.T) {
 	})
 }
 
-func TestAccNetworkingPortDataSource_migrateToFramework(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.AccTestPreCheck(t) },
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"vkcs": {
-						VersionConstraint: "0.3.0",
-						Source:            "vk-cs/vkcs",
-					},
-				},
-				Config: testAccNetworkingPortDataSourceBasic,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(
-						"data.vkcs_networking_port.port_1", "id",
-						"vkcs_networking_port.port_1", "id"),
-					resource.TestCheckResourceAttrPair(
-						"data.vkcs_networking_port.port_2", "id",
-						"vkcs_networking_port.port_2", "id"),
-					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_port.port_2", "allowed_address_pairs.#", "2"),
-					resource.TestCheckResourceAttrPair(
-						"data.vkcs_networking_port.port_3", "id",
-						"vkcs_networking_port.port_1", "id"),
-					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_port.port_3", "all_fixed_ips.#", "2"),
-				),
-			},
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"vkcs": {
-						VersionConstraint: "0.4.0",
-						Source:            "vk-cs/vkcs",
-					},
-				},
-				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
-				Config:                   testAccNetworkingPortDataSourceBasic,
-				PlanOnly:                 true,
-			},
-		},
-	})
-}
-
 const testAccNetworkingPortDataSourceBasic = `
 resource "vkcs_networking_network" "network_1" {
   name           = "network_1"

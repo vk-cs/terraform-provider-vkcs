@@ -25,31 +25,6 @@ func TestAccKubernetesClusterTemplatesDataSource_basic(t *testing.T) {
 	})
 }
 
-func TestAccKubernetesClusterTemplatesDataSource_migrateToFramework(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.AccTestPreCheck(t) },
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"vkcs": {
-						VersionConstraint: "0.2.2",
-						Source:            "vk-cs/vkcs",
-					},
-				},
-				Config: testAccKubernetesClusterTemplatesDataSourceBasic,
-				Check: resource.ComposeTestCheckFunc(
-					testAccKubernetesClusterTemplatesCheckNotEmpty("data.vkcs_kubernetes_clustertemplates.templates"),
-				),
-			},
-			{
-				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
-				Config:                   testAccKubernetesClusterTemplatesDataSourceBasic,
-				PlanOnly:                 true,
-			},
-		},
-	})
-}
-
 func testAccKubernetesClusterTemplatesCheckNotEmpty(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
