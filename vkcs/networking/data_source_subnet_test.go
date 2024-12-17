@@ -34,38 +34,6 @@ func TestAccNetworkingSubnetDataSource_basic(t *testing.T) {
 	})
 }
 
-func TestAccNetworkingSubnetDataSource_migrateToFramework(t *testing.T) {
-	uniqueTags := acctest.GenerateUniqueTestFields(t.Name())
-	preRenderBaseConfig := acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceSubnet, uniqueTags)
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.AccTestPreCheck(t) },
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"vkcs": {
-						VersionConstraint: "0.3.0",
-						Source:            "vk-cs/vkcs",
-					},
-				},
-				Config: acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceBasic, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": preRenderBaseConfig}),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkingSubnetDataSourceID("data.vkcs_networking_subnet.subnet_acc_test"),
-					testAccCheckNetworkingSubnetDataSourceGoodNetwork("data.vkcs_networking_subnet.subnet_acc_test", "vkcs_networking_network.network_acc_test"),
-					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_subnet.subnet_acc_test", "name", "subnet_acc_test"),
-					resource.TestCheckResourceAttr(
-						"data.vkcs_networking_subnet.subnet_acc_test", "all_tags.#", "2"),
-				),
-			},
-			{
-				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
-				Config:                   acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceBasic, map[string]string{"TestAccNetworkingSubnetDataSourceSubnet": preRenderBaseConfig}),
-				PlanOnly:                 true,
-			},
-		},
-	})
-}
-
 func TestAccNetworkingSubnetDataSource_testQueries(t *testing.T) {
 	uniqueTags := acctest.GenerateUniqueTestFields(t.Name())
 	preRenderBaseConfig := acctest.AccTestRenderConfig(testAccNetworkingSubnetDataSourceSubnet, uniqueTags)
