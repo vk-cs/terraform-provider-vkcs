@@ -147,7 +147,6 @@ func (r *resourceResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	if sslOpts := data.SslCertificate.ToSslOpts(); sslOpts != nil {
-		createOpts.SSLAutomated = sslOpts.Automated
 		createOpts.SSLEnabled = sslOpts.Enabled
 		createOpts.SSLData = sslOpts.Data
 	}
@@ -214,6 +213,11 @@ func (r *resourceResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	resp.Diagnostics.Append(updateFromLetsEncryptStatus(ctx, client, projectID, id, &data.SslCertificate)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -255,6 +259,11 @@ func (r *resourceResource) Read(ctx context.Context, req resource.ReadRequest, r
 	tflog.Trace(ctx, "Called CDN API to retrieve CDN resource", map[string]interface{}{"resource": fmt.Sprintf("%#v", resource)})
 
 	resp.Diagnostics.Append(data.UpdateFromResource(ctx, resource)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(updateFromLetsEncryptStatus(ctx, client, projectID, id, &data.SslCertificate)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -335,7 +344,6 @@ func (r *resourceResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	if sslOpts := plan.SslCertificate.ToSslOpts(); sslOpts != nil {
-		updateOpts.SSLAutomated = &sslOpts.Automated
 		updateOpts.SSLEnabled = &sslOpts.Enabled
 		updateOpts.SSLData = sslOpts.Data
 	}
@@ -395,6 +403,11 @@ func (r *resourceResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	resp.Diagnostics.Append(data.UpdateFromResource(ctx, resource)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(updateFromLetsEncryptStatus(ctx, client, projectID, id, &data.SslCertificate)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -466,6 +479,28 @@ func issueLetsEncrypt(ctx context.Context, client *gophercloud.ServiceClient, pr
 	}
 
 	tflog.Trace(ctx, "Called CDN API to issue a Let's Encrypt certificate")
+	return diags
+}
+
+func updateFromLetsEncryptStatus(ctx context.Context, client *gophercloud.ServiceClient, projectID string, resourceID int, sslCertificateData *resource_resource.SslCertificateValue) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	tflog.Trace(ctx, "Calling CDN API to get Let's Encrypt certificate issuing details")
+
+	leStatus, err := resources.GetLetsEncryptStatus(client, projectID, resourceID).Extract()
+	if err != nil {
+		if !errutil.IsNotFound(err) {
+			diags.AddError("Error calling CDN API to get Let's Encrypt certificate issuing details", err.Error())
+		}
+		return diags
+	}
+
+	if leStatus.Active {
+		sslCertificateData.SslCertificateType = types.StringValue(string(resource_resource.SslCertificateProviderTypeLetsEncrypt))
+		sslCertificateData.Status = types.StringValue(string(resource_resource.SslCertificateStatusBeingIssued))
+	}
+
+	tflog.Trace(ctx, "Called CDN API to get Let's Encrypt certificate issuing details", map[string]any{"status": fmt.Sprintf("%#v", leStatus)})
 	return diags
 }
 

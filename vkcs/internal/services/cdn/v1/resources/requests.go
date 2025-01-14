@@ -140,6 +140,15 @@ func IssueLetsEncrypt(client *gophercloud.ServiceClient, projectID string, resou
 	return
 }
 
+// GetLetsEncryptStatus returns details on Let's Encrypt certificate issuance.
+func GetLetsEncryptStatus(client *gophercloud.ServiceClient, projectID string, id int) (r GetLetsEncryptStatusResult) {
+	resp, err := client.Get(getLetsEncryptStatusURL(client, projectID, id), &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	return
+}
+
 type PrefetchContentOptsBuilder interface {
 	Map() (map[string]interface{}, error)
 }

@@ -40,7 +40,7 @@ func (m *ResourceModel) UpdateFromResource(ctx context.Context, resource *resour
 
 	m.SecondaryHostnames = secondaryHostnamesV
 	m.SslCertificate = SslCertificateValue{}.FromSslOpts(ctx, &SslOpts{
-		Automated: resource.SSLAutomated,
+		LeEnabled: resource.SSLLeEnabled,
 		Enabled:   resource.SSLEnabled,
 		Data:      resource.SSLData,
 	})
@@ -802,7 +802,7 @@ func (v ShieldingValue) ToUpdateShieldingOpts() *resources.UpdateShieldingOpts {
 }
 
 type SslOpts struct {
-	Automated bool
+	LeEnabled bool
 	Enabled   bool
 	Data      int
 }
@@ -819,9 +819,8 @@ func (v SslCertificateValue) ToSslOpts() *SslOpts {
 		return &SslOpts{}
 	case string(SslCertificateProviderTypeOwn):
 		return &SslOpts{
-			Automated: false,
-			Enabled:   true,
-			Data:      int(v.Id.ValueInt64()),
+			Enabled: true,
+			Data:    int(v.Id.ValueInt64()),
 		}
 	}
 
@@ -836,16 +835,12 @@ func (v SslCertificateValue) FromSslOpts(ctx context.Context, opts *SslOpts) Ssl
 	var sslType string
 	var status string
 	switch {
-	case opts.Automated:
-		sslType = string(SslCertificateProviderTypeLetsEncrypt)
-		if opts.Enabled {
-			status = string(SslCertificateStatusReady)
-		} else {
-			status = string(SslCertificateStatusBeingIssued)
-		}
-	case opts.Enabled:
-		sslType = string(SslCertificateProviderTypeOwn)
+	case opts.Enabled && opts.Data != 0:
 		status = string(SslCertificateStatusReady)
+		sslType = string(SslCertificateProviderTypeOwn)
+	case opts.LeEnabled:
+		status = string(SslCertificateStatusReady)
+		sslType = string(SslCertificateProviderTypeLetsEncrypt)
 	default:
 		sslType = string(SslCertificateProviderTypeNotUsed)
 	}
