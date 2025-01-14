@@ -61,6 +61,19 @@ type IssueLetsEncryptResult struct {
 	gophercloud.ErrResult
 }
 
+// GetLetsEncryptStatusResult is the result of a request to get Let's Encrypt
+// certificate issuing detauls. Call its Extract method to interpret a result
+// as a ResourceLetsEncryptStatus.
+type GetLetsEncryptStatusResult struct {
+	gophercloud.Result
+}
+
+func (r GetLetsEncryptStatusResult) Extract() (*ResourceLetsEncryptStatus, error) {
+	var res ResourceLetsEncryptStatus
+	err := r.ExtractInto(&res)
+	return &res, err
+}
+
 // PrefetchContentResult is the result of a request to prefetch content for a CDN
 // resource. Call its ExtractErr method to determine if a request succeeded or failed.
 type PrefetchContentResult struct {
@@ -94,6 +107,7 @@ type Resource struct {
 	SSLData            int                    `json:"sslData"`
 	SSLEnabled         bool                   `json:"sslEnabled"`
 	SSLAutomated       bool                   `json:"ssl_automated"`
+	SSLLeEnabled       bool                   `json:"ssl_le_enabled"`
 	Status             string                 `json:"status"`
 	Updated            string                 `json:"updated"`
 	VPEnabled          bool                   `json:"vp_enabled"`
@@ -102,4 +116,22 @@ type Resource struct {
 // ResourceShielding represents origin shielding options applied to the resource.
 type ResourceShielding struct {
 	ShieldingPop *int `json:"shielding_pop"`
+}
+
+// ResourceLetsEncryptStatus represents Let's Encrypt issuing details.
+type ResourceLetsEncryptStatus struct {
+	ID       int                                      `json:"id"`
+	Statuses []ResourceLetsEncryptStatusAttemptStatus `json:"statuses"`
+	Started  string                                   `json:"started"`
+	Finished string                                   `json:"finished"`
+	Active   bool                                     `json:"active"`
+	Resource int                                      `json:"resource"`
+}
+
+// ResourceLetsEncryptStatus represents Let's Encrypt issuance attempt details.
+type ResourceLetsEncryptStatusAttemptStatus struct {
+	ID      int    `json:"id"`
+	Status  string `json:"status"`
+	Error   string `json:"error"`
+	Details string `json:"details"`
 }

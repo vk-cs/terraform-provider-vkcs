@@ -27,6 +27,10 @@ func issueLetsEncryptURL(c *gophercloud.ServiceClient, projectID string, resourc
 	return c.ServiceURL(baseURL(projectID), strconv.Itoa(resourceID), "ssl", "le", "issue")
 }
 
+func getLetsEncryptStatusURL(c *gophercloud.ServiceClient, projectID string, resourceID int) string {
+	return c.ServiceURL(baseURL(projectID), strconv.Itoa(resourceID), "ssl", "le", "status")
+}
+
 func prefetchContentURL(c *gophercloud.ServiceClient, projectID string, resourceID int) string {
 	return c.ServiceURL(baseURL(projectID), strconv.Itoa(resourceID), "prefetch")
 }
