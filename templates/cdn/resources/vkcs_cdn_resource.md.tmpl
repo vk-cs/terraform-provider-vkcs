@@ -15,12 +15,39 @@ description: |-
 
 {{ .SchemaMarkdown }}
 
-## Notes
+## Using a Let's Encrypt certificate
 
-### Specifying an ACL option
-All ACL (Access Control List) options follow the same structure, and its meaning depends on `policy_type` value. When `policy_type` 
-is "allow", it means that CDN will allow access for all possible values of ACL subject except for those specified in `excepted_values` argument, and when `policy_type` is
-"deny", CDN will deny access for all values of ACL subject except for values listed in `excepted_values` argument.
+To issue a free [Let's Encrypt](https://letsencrypt.org/) certificate, specify "lets_encrypt" as 
+the value for `ssl_certificate.type` argument. The certificate will be issued after the CDN 
+resource is established, once the origin servers are available and DNS changes involving the 
+CNAME records for personal domains have propagated.
+
+~> **Note:** The option is only available for an active CDN resource, to achieve this, set the 
+value of `active` argument to "true".
+
+## Configuring ACLs
+
+To enhance security, you can specify Access Control Lists (ACLs) options. All of the follow the 
+same principles: when `policy_type` is "allow", it means that CDN server will allow access for all 
+possible values of ACL subject except for those specified in `excepted_values` argument, and when 
+`policy_type` is "deny", CDN will deny access with the same logic for excepted values.
+
+### Example Configuration
+
+For example, to protect content from unauthorized access from certain countries, you could use 
+`country_acl` option:
+
+```hcl
+resource "vkcs_cdn_resource" "resource" {
+  ...
+  options = {
+    country_acl = {
+      policy_type     = "allow"
+      excepted_values = ["GB", "DE"]
+    }
+  }
+  ...
+}
 
 ## Import
 
