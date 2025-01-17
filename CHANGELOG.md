@@ -7,7 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.9.1 (unreleased)
+#### v0.9.1
 - Fix panic on VKCS Kubernetes API error in vkcs_kubernetes_security_policy
 - Update Let's Encrypt certificate issuance process in vkcs_cdn_resource
 
