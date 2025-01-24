@@ -6,17 +6,15 @@ import (
 	"log"
 	"time"
 
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/blockstorage"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
-
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
 	ivolumeattach "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/volumeattach"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
 func ResourceComputeVolumeAttach() *schema.Resource {
@@ -90,10 +88,6 @@ func resourceComputeVolumeAttachCreate(ctx context.Context, d *schema.ResourceDa
 	err = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
 		attachment, err = ivolumeattach.Create(computeClient, instanceID, attachOpts).Extract()
 		if err != nil {
-			if errutil.Is(err, 400) {
-				return retry.RetryableError(err)
-			}
-
 			return retry.NonRetryableError(err)
 		}
 

@@ -9,6 +9,7 @@ description: |-
 
 #### v0.9.2 (unreleased)
 - Reduce the minimum number of DHCP ports to wait for a subnet to be ready from 2 to 1
+- Remove retries for bad request error when attaching a volume to a Compute instance
 
 #### v0.9.1
 - Fix panic on VKCS Kubernetes API error in vkcs_kubernetes_security_policy
