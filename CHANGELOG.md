@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.9.2 (unreleased)
+- Reduce the minimum number of DHCP ports to wait for a subnet to be ready from 2 to 1
+
 #### v0.9.1
 - Fix panic on VKCS Kubernetes API error in vkcs_kubernetes_security_policy
 - Update Let's Encrypt certificate issuance process in vkcs_cdn_resource

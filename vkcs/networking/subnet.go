@@ -62,7 +62,7 @@ func networkingSubnetStateRefreshFunc(client *gophercloud.ServiceClient, subnetI
 			return nil, "", fmt.Errorf("error reading VKCS Networking API response: %s", err)
 		}
 
-		if len(allPorts) < 2 {
+		if len(allPorts) == 0 {
 			return subnet, "WAITING_DHCP_PORTS", nil
 		}
 
