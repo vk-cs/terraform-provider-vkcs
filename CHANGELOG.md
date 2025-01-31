@@ -6,6 +6,8 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.10.0
+- Add vkcs_networking_anycastip resource
 
 #### v0.9.2
 - Reduce the minimum number of DHCP ports to wait for a subnet to be ready from 2 to 1

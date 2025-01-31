@@ -153,5 +153,6 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		mlplatform.NewSparkK8SResource,
 		mlplatform.NewK8SRegistryResource,
 		monitoring.NewResource,
+		networking.NewAnycastIPResource,
 	}
 }
