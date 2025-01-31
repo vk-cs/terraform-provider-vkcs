@@ -1,0 +1,23 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a anycast IP resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+### Anycast IP association with two octavia loadbalancers
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+Anycast IPs can be imported using the `id`, e.g.
+
+{{codefile "shell" "templates/networking/resources/vkcs_networking_anycastip/import.sh"}}
