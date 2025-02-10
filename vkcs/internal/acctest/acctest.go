@@ -26,23 +26,25 @@ var (
 	OsRegionName       = os.Getenv("OS_REGION_NAME")
 	OsProjectID        = os.Getenv("OS_PROJECT_ID")
 	OsExtNetName       = os.Getenv("OS_EXT_NET_NAME")
+	OsExtNetSprutName  = os.Getenv("OS_EXT_NET_SPRUT_NAME")
 	OsAvailabilityZone = os.Getenv("OS_AVAILABILITY_ZONE")
 	OsVolumeType       = os.Getenv("OS_VOLUME_TYPE")
 )
 
 var AccTestValues map[string]string = map[string]string{
-	"BaseNetwork":      AccTestBaseNetwork,
-	"BaseExtNetwork":   AccTestBaseExtNetwork(),
-	"BaseImage":        AccTestBaseImage(),
-	"BaseFlavor":       AccTestBaseFlavor(),
-	"BaseNewFlavor":    AccTestBaseNewFlavor(),
-	"AvailabilityZone": OsAvailabilityZone,
-	"VolumeType":       OsVolumeType,
-	"FlavorName":       OsFlavorName,
-	"NewFlavorName":    OsNewFlavorName,
-	"ImageName":        OsImageName,
-	"ExtNetName":       OsExtNetName,
-	"ProjectID":        OsProjectID,
+	"BaseNetwork":         AccTestBaseNetwork,
+	"BaseExtNetwork":      AccTestBaseExtNetwork(),
+	"BaseExtSprutNetwork": AccTestBaseExtNetworkSprut(),
+	"BaseImage":           AccTestBaseImage(),
+	"BaseFlavor":          AccTestBaseFlavor(),
+	"BaseNewFlavor":       AccTestBaseNewFlavor(),
+	"AvailabilityZone":    OsAvailabilityZone,
+	"VolumeType":          OsVolumeType,
+	"FlavorName":          OsFlavorName,
+	"NewFlavorName":       OsNewFlavorName,
+	"ImageName":           OsImageName,
+	"ExtNetName":          OsExtNetName,
+	"ProjectID":           OsProjectID,
 }
 
 var AccTestProviders map[string]func() (*schema.Provider, error)
@@ -82,13 +84,14 @@ func init() {
 
 func AccTestPreCheck(t *testing.T) {
 	vars := map[string]interface{}{
-		"OS_VOLUME_TYPE":       OsVolumeType,
-		"OS_AVAILABILITY_ZONE": OsAvailabilityZone,
-		"OS_FLAVOR_NAME":       OsFlavorName,
-		"OS_NEW_FLAVOR_NAME":   OsNewFlavorName,
-		"OS_IMAGE_NAME":        OsImageName,
-		"OS_EXT_NET_NAME":      OsExtNetName,
-		"OS_PROJECT_ID":        OsProjectID,
+		"OS_VOLUME_TYPE":        OsVolumeType,
+		"OS_AVAILABILITY_ZONE":  OsAvailabilityZone,
+		"OS_FLAVOR_NAME":        OsFlavorName,
+		"OS_NEW_FLAVOR_NAME":    OsNewFlavorName,
+		"OS_IMAGE_NAME":         OsImageName,
+		"OS_EXT_NET_NAME":       OsExtNetName,
+		"OS_EXT_NET_SPRUT_NAME": OsExtNetSprutName,
+		"OS_PROJECT_ID":         OsProjectID,
 	}
 	for k, v := range vars {
 		if v == "" {
@@ -103,6 +106,14 @@ func AccTestBaseExtNetwork() string {
 		name = "%s"
 	  }
 	`, OsExtNetName)
+}
+
+func AccTestBaseExtNetworkSprut() string {
+	return fmt.Sprintf(`
+	data "vkcs_networking_network" "extnet" {
+		name = "%s"
+	}
+	`, OsExtNetSprutName)
 }
 
 func AccTestBaseFlavor() string {
