@@ -42,6 +42,29 @@ func TestAccDatabaseCluster_basic_big(t *testing.T) {
 	})
 }
 
+func TestAccDatabaseCluster_multiAZ_big(t *testing.T) {
+	var cluster clusters.ClusterResp
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccDatabaseClusterMultiAZ),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDatabaseClusterExists(
+						"vkcs_db_cluster.cluster", &cluster),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_db_cluster.cluster", "name", &cluster.Name),
+					acctest.TestCheckResourceListAttr("vkcs_db_cluster.cluster", "availability_zones", []string{"GZ1", "MS1"}),
+					resource.TestCheckResourceAttrSet("vkcs_db_cluster.cluster", "vrrp_port_id"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDatabaseCluster_wal_big(t *testing.T) {
 	var cluster clusters.ClusterResp
 
@@ -340,4 +363,29 @@ var testAccDatabaseClusterShrinkUpdated = `
    availability_zone = "GZ1"
    depends_on = [vkcs_networking_router_interface.base]
  }
+`
+
+const testAccDatabaseClusterMultiAZ = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
+
+resource "vkcs_db_cluster" "cluster" {
+  name               = "cluster-tf-acctest"
+  availability_zones = ["GZ1", "MS1"]
+  flavor_id          = data.vkcs_compute_flavor.base.id
+  volume_size        = 10
+  volume_type        = "{{.VolumeType}}"
+  cluster_size       = 3
+  datastore {
+    version = "16"
+    type    = "postgresql_multiaz"
+  }
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+
+  depends_on = [
+    vkcs_networking_router_interface.base
+  ]
+}
 `
