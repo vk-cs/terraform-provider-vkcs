@@ -23,6 +23,7 @@ type ClusterResp struct {
 	Updated         db.DateTimeWithoutTZFormat `json:"updated"`
 	AutoExpand      int                        `json:"volume_autoresize_enabled"`
 	MaxDiskSize     int                        `json:"volume_autoresize_max_size"`
+	VRRPPortID      string                     `json:"vrrp_port_id"`
 	WalAutoExpand   int                        `json:"wal_autoresize_enabled"`
 	WalMaxDiskSize  int                        `json:"wal_autoresize_max_size"`
 }
