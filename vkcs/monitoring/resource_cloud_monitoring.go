@@ -72,7 +72,7 @@ func (r *сloudMonitoringResource) Schema(_ context.Context, _ resource.SchemaRe
 			"script": schema.StringAttribute{
 				Computed:    true,
 				Sensitive:   true,
-				Description: "Shell script of the cloud monitoring.",
+				Description: "Shell script of the cloud monitoring. 2",
 			},
 
 			"service_user_id": schema.StringAttribute{

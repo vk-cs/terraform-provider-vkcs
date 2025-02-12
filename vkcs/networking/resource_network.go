@@ -48,7 +48,7 @@ func ResourceNetworkingNetwork() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    false,
-				Description: "The name of the network. Changing this updates the name of the existing network.",
+				Description: "The name of the network. Changing this updates the name of the existing network. 2",
 			},
 
 			"description": {
