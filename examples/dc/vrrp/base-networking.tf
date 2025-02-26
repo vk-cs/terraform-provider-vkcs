@@ -21,9 +21,9 @@ resource "vkcs_networking_subnet" "db" {
   cidr       = "192.168.166.0/24"
 }
 
-# Get external network with Inernet access
+# Get external network with Internet access
 data "vkcs_networking_network" "extnet" {
-  name = "ext-net"
+  name = "internet"
 }
 
 # Create a router to connect netwoks

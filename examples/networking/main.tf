@@ -23,7 +23,7 @@ resource "vkcs_networking_subnet" "db" {
 
 # Get external network with Internet access
 data "vkcs_networking_network" "extnet" {
-  name = "ext-net"
+  name = "internet"
 }
 
 # Create a router to connect networks

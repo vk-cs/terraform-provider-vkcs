@@ -3,7 +3,7 @@ data "vkcs_compute_flavor" "db" {
 }
 
 data "vkcs_networking_network" "extnet" {
-  name = "ext-net"
+  name = "internet"
 }
 
 resource "vkcs_networking_network" "db" {
