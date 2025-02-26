@@ -12,7 +12,7 @@ const (
 	NeutronSDN      = "neutron"
 	SprutSDN        = "sprut"
 	SearchInAllSDNs = "all"
-	DefaultSDN      = NeutronSDN
+	DefaultSDN      = SprutSDN
 )
 
 type SDNExt struct {

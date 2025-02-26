@@ -36,7 +36,7 @@ func TestAccVPNaaSService_basic(t *testing.T) {
 
 func testAccCheckServiceDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
+	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.NeutronSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -67,7 +67,7 @@ func testAccCheckServiceExists(n string, serv *services.Service) resource.TestCh
 		}
 
 		config := acctest.AccTestProvider.Meta().(clients.Config)
-		networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
+		networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.NeutronSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}
@@ -85,7 +85,7 @@ func testAccCheckServiceExists(n string, serv *services.Service) resource.TestCh
 }
 
 const testAccServiceBasic = `
-{{.BaseExtNetwork}}
+{{.BaseExtNetworkNeutron}}
 
 	resource "vkcs_networking_router" "router_1" {
 	  name = "router_1"
