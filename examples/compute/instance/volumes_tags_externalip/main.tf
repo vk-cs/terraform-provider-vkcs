@@ -27,6 +27,6 @@ resource "vkcs_compute_instance" "volumes_tags_externalip" {
   # Create the instance in external network to get external IP automatically
   # instead of using FIP on private network
   network {
-    name = "ext-net"
+    name = "internet"
   }
 }

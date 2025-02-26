@@ -185,7 +185,7 @@ resource "vkcs_networking_subnet" "base" {
 }
 
 data "vkcs_networking_network" "base-extnet" {
-  name = "ext-net"
+  name = "internet"
 }
 
 resource "vkcs_networking_router" "base" {
