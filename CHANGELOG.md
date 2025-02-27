@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.9.3 (unreleased)
+- Update version of kubernetes cluster template and addons in examples and tests
+
 #### v0.9.2
 - Reduce the minimum number of DHCP ports to wait for a subnet to be ready from 2 to 1
 - Remove retries for bad request error when attaching a volume to a Compute instance

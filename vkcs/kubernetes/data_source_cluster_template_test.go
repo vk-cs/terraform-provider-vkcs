@@ -56,7 +56,7 @@ func testAccCheckKubernetesClusterTemplateDataSourceID(n string) resource.TestCh
 
 const testAccKubernetesClusterTemplateDataSourceBasic = `
 data "vkcs_kubernetes_clustertemplate" "template" {
-	version = "1.27"
+	version = "1.31"
 }
 `
 
