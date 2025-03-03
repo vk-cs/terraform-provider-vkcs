@@ -145,7 +145,7 @@ data "vkcs_compute_flavor" "base" {
 }
 
 data "vkcs_kubernetes_clustertemplate" "ct" {
-  version = "1.27"
+  version = "1.31"
 }
 
 resource "vkcs_kubernetes_cluster" "cluster" {
@@ -180,7 +180,7 @@ const testAccKubernetesAddonBasic = `
 data "vkcs_kubernetes_addon" "ingress-nginx" {
   cluster_id = vkcs_kubernetes_cluster.cluster.id
   name       = "ingress-nginx"
-  version    = "4.7.1"
+  version    = "4.12.0"
 }
 
 resource "vkcs_kubernetes_addon" "addon" {
@@ -196,7 +196,7 @@ const testAccKubernetesAddonFull = `
 data "vkcs_kubernetes_addon" "ingress-nginx" {
   cluster_id = vkcs_kubernetes_cluster.cluster.id
   name       = "ingress-nginx"
-  version    = "4.7.1"
+  version    = "4.12.0"
 }
 
 resource "vkcs_kubernetes_addon" "addon" {
