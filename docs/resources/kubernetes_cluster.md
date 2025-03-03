@@ -15,7 +15,7 @@ Provides a kubernetes cluster resource. This can be used to create, modify and d
 resource "vkcs_kubernetes_cluster" "k8s_cluster" {
   name                = "k8s-standard-cluster"
   cluster_type        = "standard"
-  cluster_template_id = data.vkcs_kubernetes_clustertemplate.k8s_24.id
+  cluster_template_id = data.vkcs_kubernetes_clustertemplate.k8s_31.id
   master_flavor       = data.vkcs_compute_flavor.basic.id
   master_count        = 1
 
@@ -46,7 +46,7 @@ resource "vkcs_kubernetes_cluster" "k8s_cluster" {
 resource "vkcs_kubernetes_cluster" "k8s_cluster" {
   name                = "k8s-regional-cluster"
   cluster_type        = "regional"
-  cluster_template_id = data.vkcs_kubernetes_clustertemplate.k8s_24.id
+  cluster_template_id = data.vkcs_kubernetes_clustertemplate.k8s_31.id
   master_flavor       = data.vkcs_compute_flavor.basic.id
   master_count        = 3
 
