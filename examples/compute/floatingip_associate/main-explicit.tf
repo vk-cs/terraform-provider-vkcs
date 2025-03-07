@@ -1,5 +1,5 @@
 resource "vkcs_networking_floatingip" "fip_explicit" {
-  pool = "ext-net"
+  pool = "internet"
 }
 
 resource "vkcs_compute_floatingip_associate" "fip_explicit" {

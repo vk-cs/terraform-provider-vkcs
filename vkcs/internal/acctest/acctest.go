@@ -20,29 +20,32 @@ import (
 )
 
 var (
-	OsFlavorName       = os.Getenv("OS_FLAVOR_NAME")
-	OsNewFlavorName    = os.Getenv("OS_NEW_FLAVOR_NAME")
-	OsImageName        = os.Getenv("OS_IMAGE_NAME")
-	OsRegionName       = os.Getenv("OS_REGION_NAME")
-	OsProjectID        = os.Getenv("OS_PROJECT_ID")
-	OsExtNetName       = os.Getenv("OS_EXT_NET_NAME")
-	OsAvailabilityZone = os.Getenv("OS_AVAILABILITY_ZONE")
-	OsVolumeType       = os.Getenv("OS_VOLUME_TYPE")
+	OsFlavorName        = os.Getenv("OS_FLAVOR_NAME")
+	OsNewFlavorName     = os.Getenv("OS_NEW_FLAVOR_NAME")
+	OsImageName         = os.Getenv("OS_IMAGE_NAME")
+	OsRegionName        = os.Getenv("OS_REGION_NAME")
+	OsProjectID         = os.Getenv("OS_PROJECT_ID")
+	OsExtNetName        = os.Getenv("OS_EXT_NET_NAME")
+	OsExtNetNameNeutron = os.Getenv("OS_EXT_NET_NAME_NEUTRON")
+	OsAvailabilityZone  = os.Getenv("OS_AVAILABILITY_ZONE")
+	OsVolumeType        = os.Getenv("OS_VOLUME_TYPE")
 )
 
 var AccTestValues map[string]string = map[string]string{
-	"BaseNetwork":      AccTestBaseNetwork,
-	"BaseExtNetwork":   AccTestBaseExtNetwork(),
-	"BaseImage":        AccTestBaseImage(),
-	"BaseFlavor":       AccTestBaseFlavor(),
-	"BaseNewFlavor":    AccTestBaseNewFlavor(),
-	"AvailabilityZone": OsAvailabilityZone,
-	"VolumeType":       OsVolumeType,
-	"FlavorName":       OsFlavorName,
-	"NewFlavorName":    OsNewFlavorName,
-	"ImageName":        OsImageName,
-	"ExtNetName":       OsExtNetName,
-	"ProjectID":        OsProjectID,
+	"BaseNetwork":           AccTestBaseNetwork,
+	"BaseExtNetwork":        AccTestBaseExtNetwork(),
+	"BaseExtNetworkNeutron": AccTestBaseExtNetworkNeutron(),
+	"BaseImage":             AccTestBaseImage(),
+	"BaseFlavor":            AccTestBaseFlavor(),
+	"BaseNewFlavor":         AccTestBaseNewFlavor(),
+	"AvailabilityZone":      OsAvailabilityZone,
+	"VolumeType":            OsVolumeType,
+	"FlavorName":            OsFlavorName,
+	"NewFlavorName":         OsNewFlavorName,
+	"ImageName":             OsImageName,
+	"ExtNetName":            OsExtNetName,
+	"ExtNetNameNeutron":     OsExtNetNameNeutron,
+	"ProjectID":             OsProjectID,
 }
 
 var AccTestProviders map[string]func() (*schema.Provider, error)
@@ -82,13 +85,14 @@ func init() {
 
 func AccTestPreCheck(t *testing.T) {
 	vars := map[string]interface{}{
-		"OS_VOLUME_TYPE":       OsVolumeType,
-		"OS_AVAILABILITY_ZONE": OsAvailabilityZone,
-		"OS_FLAVOR_NAME":       OsFlavorName,
-		"OS_NEW_FLAVOR_NAME":   OsNewFlavorName,
-		"OS_IMAGE_NAME":        OsImageName,
-		"OS_EXT_NET_NAME":      OsExtNetName,
-		"OS_PROJECT_ID":        OsProjectID,
+		"OS_VOLUME_TYPE":          OsVolumeType,
+		"OS_AVAILABILITY_ZONE":    OsAvailabilityZone,
+		"OS_FLAVOR_NAME":          OsFlavorName,
+		"OS_NEW_FLAVOR_NAME":      OsNewFlavorName,
+		"OS_IMAGE_NAME":           OsImageName,
+		"OS_EXT_NET_NAME":         OsExtNetName,
+		"OS_EXT_NET_NAME_NEUTRON": OsExtNetNameNeutron,
+		"OS_PROJECT_ID":           OsProjectID,
 	}
 	for k, v := range vars {
 		if v == "" {
@@ -103,6 +107,14 @@ func AccTestBaseExtNetwork() string {
 		name = "%s"
 	  }
 	`, OsExtNetName)
+}
+
+func AccTestBaseExtNetworkNeutron() string {
+	return fmt.Sprintf(`
+	data "vkcs_networking_network" "extnet" {
+		name = "%s"
+	  }
+	`, OsExtNetNameNeutron)
 }
 
 func AccTestBaseFlavor() string {
@@ -132,7 +144,7 @@ func AccTestBaseImage() string {
 const AccTestBaseNetwork string = `
 
 data "vkcs_networking_network" "extnet" {
-	name = "ext-net"
+	name = "internet"
   }
   
   resource "vkcs_networking_network" "base" {
