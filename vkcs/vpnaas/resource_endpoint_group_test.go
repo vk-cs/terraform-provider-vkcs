@@ -65,7 +65,7 @@ func TestAccVPNaaSGroup_update(t *testing.T) {
 
 func testAccCheckEndpointGroupDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
+	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.NeutronSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -96,7 +96,7 @@ func testAccCheckEndpointGroupExists(n string, group *endpointgroups.EndpointGro
 		}
 
 		config := acctest.AccTestProvider.Meta().(clients.Config)
-		networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
+		networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.NeutronSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}

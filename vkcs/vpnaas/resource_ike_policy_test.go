@@ -99,7 +99,7 @@ func TestAccVPNaaSIKEPolicy_withLifetimeUpdate(t *testing.T) {
 
 func testAccCheckIKEPolicyDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
+	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.NeutronSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -130,7 +130,7 @@ func testAccCheckIKEPolicyExists(n string, policy *ikepolicies.Policy) resource.
 		}
 
 		config := acctest.AccTestProvider.Meta().(clients.Config)
-		networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
+		networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.NeutronSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}

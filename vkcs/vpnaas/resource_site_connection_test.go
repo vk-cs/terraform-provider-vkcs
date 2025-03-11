@@ -45,7 +45,7 @@ func TestAccVPNaaSSiteConnection_basic(t *testing.T) {
 
 func testAccCheckSiteConnectionDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
-	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
+	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.NeutronSDN)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS networking client: %s", err)
 	}
@@ -76,7 +76,7 @@ func testAccCheckSiteConnectionExists(n string, conn *siteconnections.Connection
 		}
 
 		config := acctest.AccTestProvider.Meta().(clients.Config)
-		networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
+		networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.NeutronSDN)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS networking client: %s", err)
 		}
@@ -94,7 +94,7 @@ func testAccCheckSiteConnectionExists(n string, conn *siteconnections.Connection
 }
 
 const testAccSiteConnectionBasic = `
-	{{.BaseExtNetwork}}
+	{{.BaseExtNetworkNeutron}}
 	
 	resource "vkcs_networking_network" "network_1" {
 		name           = "tf_test_network"
