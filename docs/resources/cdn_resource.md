@@ -20,6 +20,7 @@ resource "vkcs_cdn_resource" "resource" {
       value = "10m"
     }
     forward_host_header = true
+    gzip_on             = true
   }
   ssl_certificate = {
     type = "own"
