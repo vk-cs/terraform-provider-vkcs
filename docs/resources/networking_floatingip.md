@@ -14,7 +14,7 @@ Manages a floating IP resource within VKCS that can be used for load balancers.
 ### Simple floating IP allocation
 ```terraform
 resource "vkcs_networking_floatingip" "base_fip" {
-  pool        = "ext-net"
+  pool        = "internet"
   description = "floating ip in external net tf example"
 }
 ```
@@ -23,7 +23,7 @@ resource "vkcs_networking_floatingip" "base_fip" {
 
 ```terraform
 resource "vkcs_networking_floatingip" "associated_fip" {
-  pool    = "ext-net"
+  pool    = "internet"
   port_id = vkcs_networking_port.persistent_etcd.id
 }
 ```

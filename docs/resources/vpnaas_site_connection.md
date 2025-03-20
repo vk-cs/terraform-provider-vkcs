@@ -27,7 +27,7 @@ resource "vkcs_vpnaas_site_connection" "connection" {
     timeout  = 42
     interval = 21
   }
-  depends_on = [vkcs_networking_router_interface.app]
+  depends_on = [vkcs_dc_interface.internet]
 }
 ```
 ## Argument Reference
