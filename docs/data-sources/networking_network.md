@@ -14,7 +14,7 @@ Use this data source to get the ID of an available VKCS network.
 
 ```terraform
 data "vkcs_networking_network" "extnet" {
-  name = "ext-net"
+  name = "internet"
 }
 ```
 
