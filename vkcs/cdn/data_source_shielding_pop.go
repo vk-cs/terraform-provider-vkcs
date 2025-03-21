@@ -102,7 +102,7 @@ func (d *shieldingPopDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	shieldingPop := shieldingPops[0]
+	shieldingPop := filteredShieldingPops[0]
 
 	data.Id = types.Int64Value(int64(shieldingPop.ID))
 	data.City = types.StringValue(shieldingPop.City)
