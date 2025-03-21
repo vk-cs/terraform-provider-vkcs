@@ -71,6 +71,22 @@ func ResourceACLPolicyTypeValues() []string {
 	}
 }
 
+type ResourceSecureKeyType int64
+
+const (
+	ResourceSecureKeyTypeIncludeUsers ResourceSecureKeyType = 0
+	ResourceSecureKeyTypeExcludeUsers ResourceSecureKeyType = 2
+)
+
+// ResourceSecureKeyTypeValues returns list of all possible values for
+// a ResourceSecureKeyType enumeration.
+func ResourceSecureKeyTypeValues() []int64 {
+	return []int64{
+		int64(ResourceSecureKeyTypeIncludeUsers),
+		int64(ResourceSecureKeyTypeExcludeUsers),
+	}
+}
+
 type ResourceOptionsBoolOption struct {
 	Enabled bool `json:"enabled"`
 	Value   bool `json:"value"`
@@ -115,6 +131,12 @@ type ResourceOptionsACLOption struct {
 	PolicyType     ResourceACLPolicyType `json:"policy_type"`
 }
 
+type ResourceOptionSecureKeyOption struct {
+	Enabled bool   `json:"enabled"`
+	Key     string `json:"key"`
+	Type    int64  `json:"type"`
+}
+
 type ResourceOptions struct {
 	AllowedHttpMethods   *ResourceOptionsAllowedHttpMethodsOption `json:"allowedHttpMethods,omitempty"`
 	BrotliCompression    *ResourceOptionsStringListOption         `json:"brotli_compression,omitempty"`
@@ -139,4 +161,5 @@ type ResourceOptions struct {
 	StaticHeaders        *ResourceOptionsStringMapOption          `json:"staticHeaders,omitempty"`
 	StaticRequestHeaders *ResourceOptionsStringMapOption          `json:"staticRequestHeaders,omitempty"`
 	Websockets           *ResourceOptionsBoolOption               `json:"websockets,omitempty"`
+	SecureKey            *ResourceOptionSecureKeyOption           `json:"secure_key,omitempty"`
 }

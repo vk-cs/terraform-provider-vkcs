@@ -80,6 +80,9 @@ func TestAccCDNResourceResource_full(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.static_headers.enabled", "true"),
 					acctest.TestCheckResourceMapAttr("vkcs_cdn_resource.full", "options.static_request_headers.value", map[string]string{"Header-One": "Value 1", "Header-Two": "Value 2"}),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.static_request_headers.enabled", "true"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.secure_key.enabled", "true"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.secure_key.key", "mysupersecretkey"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.secure_key.type", "0"),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.full", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "origin_protocol", "MATCH"),
 					acctest.TestCheckResourceListAttr("vkcs_cdn_resource.full", "secondary_hostnames", []string{"cdn1.vk.com", "cdn2.vk.com"}),
@@ -143,6 +146,9 @@ func TestAccCDNResourceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.static_headers.enabled", "true"),
 					acctest.TestCheckResourceMapAttr("vkcs_cdn_resource.update", "options.static_request_headers.value", map[string]string{"Header-One": "Old Value 1", "Header-Two": "Old Value 2"}),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.static_request_headers.enabled", "true"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.enabled", "true"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.key", "mysupersecretkey"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.type", "0"),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.update", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "origin_protocol", "HTTP"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "shielding.enabled", "true"),
@@ -196,6 +202,9 @@ func TestAccCDNResourceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.static_headers.enabled", "true"),
 					acctest.TestCheckResourceMapAttr("vkcs_cdn_resource.update", "options.static_request_headers.value", map[string]string{"Header-Two": "Value 2", "Header-Three": "Value 3"}),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.static_request_headers.enabled", "true"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.enabled", "false"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.key", "mysimplekey"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.type", "2"),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.update", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "origin_protocol", "HTTPS"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "shielding.enabled", "false"),
@@ -375,6 +384,11 @@ resource "vkcs_cdn_resource" "full" {
         "Header-Two" : "Value 2"
       }
     }
+	secure_key = {
+	  "enabled": true,
+      "key": "mysupersecretkey",
+      "type": 0	
+	}
   }
   origin_group        = vkcs_cdn_origin_group.base.id
   origin_protocol     = "MATCH"
@@ -457,6 +471,11 @@ resource "vkcs_cdn_resource" "update" {
         "Header-Two" : "Old Value 2"
       }
     }
+	secure_key = {
+	  "enabled": true,
+      "key": "mysupersecretkey",
+      "type": 0	
+	}
   }
   origin_group    = vkcs_cdn_origin_group.base.id
   origin_protocol = "HTTP"
@@ -532,6 +551,11 @@ resource "vkcs_cdn_resource" "update" {
 		    "Header-Three" : "Value 3" 
 	    }
     }
+	secure_key = {
+	  "enabled": false,
+      "key": "mysimplekey",
+      "type": 2	
+	}
   }
   origin_group    = vkcs_cdn_origin_group.base.id
   origin_protocol = "HTTPS"

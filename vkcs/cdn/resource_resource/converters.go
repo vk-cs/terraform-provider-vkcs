@@ -379,6 +379,21 @@ func (v OptionsValue) ToResourceOptions(ctx context.Context) (*resources.Resourc
 		}
 	}
 
+	if o := v.SecureKey; !o.IsUnknown() && !o.IsNull() {
+		secureKeyObjV, d := SecureKeyType{}.ValueFromObject(ctx, o)
+		diags.Append(d...)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		secureKey := secureKeyObjV.(SecureKeyValue)
+		result.SecureKey = &resources.ResourceOptionSecureKeyOption{
+			Enabled: secureKey.Enabled.ValueBool(),
+			Key:     secureKey.Key.ValueString(),
+			Type:    secureKey.SecureKeyType.ValueInt64(),
+		}
+	}
+
 	return result, diags
 }
 
@@ -741,6 +756,26 @@ func (v OptionsValue) FromResourceOptions(ctx context.Context, opts *resources.R
 		}
 	}
 
+	var secureKey types.Object
+	if o := opts.SecureKey; o != nil {
+		secureKey, d = SecureKeyValue{
+			Enabled:       types.BoolValue(o.Enabled),
+			Key:           types.StringValue(o.Key),
+			SecureKeyType: types.Int64Value(o.Type),
+			state:         attr.ValueStateKnown,
+		}.ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+	} else {
+		secureKey, d = NewSecureKeyValueNull().ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+	}
+
 	return OptionsValue{
 		AllowedHttpMethods:   allowedHttpMethods,
 		BrotliCompression:    brotliCompression,
@@ -763,6 +798,7 @@ func (v OptionsValue) FromResourceOptions(ctx context.Context, opts *resources.R
 		Stale:                stale,
 		StaticHeaders:        staticHeaders,
 		StaticRequestHeaders: staticRequestHeaders,
+		SecureKey:            secureKey,
 		state:                attr.ValueStateKnown,
 	}, diags
 }

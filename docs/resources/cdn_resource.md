@@ -142,6 +142,14 @@ Specify HTTP-code you need and text or URL if you're going to set up redirection
     - `policy_type` optional *string* &rarr;  The type of CDN resource access policy. Must be one of following: "allow", "deny".
 
 
+  - `secure_key` optional &rarr;  Configures access with tokenized URLs. This makes impossible to access content without a valid (unexpired) token.
+    - `enabled` optional *boolean* &rarr;  Controls the option state.
+
+    - `key` optional *string* &rarr;  Secure key generated on your side which will be used for the URL signing.
+
+    - `type` optional *number* &rarr;  Type of the URL signing. Choose one of the values: 0 — to include the end user's IP address to secure token generation, 2 — to exclude the end user's IP address from the secure token generation.
+
+
   - `slice` optional *boolean* &rarr;  If enabled, CDN servers request and cache files larger than 10 MB in parts. Origins must support HTTP Range requests.
 
   - `stale` optional &rarr;  If enabled, CDN serves stale cached content in case of origin unavailability.

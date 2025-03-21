@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.9.3 (unreleased)
+- Add secure_key option to cdn resource
 
 #### v0.9.2
 - Reduce the minimum number of DHCP ports to wait for a subnet to be ready from 2 to 1
