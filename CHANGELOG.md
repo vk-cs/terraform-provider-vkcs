@@ -9,6 +9,7 @@ description: |-
 
 #### v0.9.3 (unreleased)
 - Add secure_key option to cdn resource
+- Fix filtering in the vkcs_cdn_shielding_pop data source
 
 #### v0.9.2
 - Reduce the minimum number of DHCP ports to wait for a subnet to be ready from 2 to 1
