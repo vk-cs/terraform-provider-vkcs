@@ -1223,6 +1223,64 @@
                                             }
                                         ]
                                     }
+                                },
+                                {
+                                    "name": "secure_key",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Configures access with tokenized URLs. This makes impossible to access content without a valid (unexpired) token.",
+                                        "attributes": [
+                                            {
+                                                "name": "key",
+                                                "string": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Secure key generated on your side which will be used for the URL signing."
+                                                }
+                                            },
+                                            {
+                                                "name": "type",
+                                                "int64": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Type of the URL signing. Choose one of the values: 0 — to include the end user's IP address to secure token generation, 2 — to exclude the end user's IP address from the secure token generation.",
+                                                    "validators": [
+                                                        {
+                                                            "custom": {
+                                                                "imports": [
+                                                                    {
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+                                                                    },
+                                                                    {
+                                                                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/cdn/v1/resources"
+                                                                    }
+                                                                ],
+                                                                "schema_definition": "int64validator.OneOf(resources.ResourceSecureKeyTypeValues()...)"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
                                 }
                             ]
                         }

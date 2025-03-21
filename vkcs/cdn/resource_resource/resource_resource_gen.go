@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -497,6 +498,43 @@ func ResourceResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Use this option to control access to the CDN resource content for specified domain names.",
 						MarkdownDescription: "Use this option to control access to the CDN resource content for specified domain names.",
+						PlanModifiers: []planmodifier.Object{
+							resource_planmodifiers.ResourceOption(),
+						},
+					},
+					"secure_key": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"enabled": schema.BoolAttribute{
+								Optional:            true,
+								Computed:            true,
+								Description:         "Controls the option state.",
+								MarkdownDescription: "Controls the option state.",
+							},
+							"key": schema.StringAttribute{
+								Optional:            true,
+								Computed:            true,
+								Description:         "Secure key generated on your side which will be used for the URL signing.",
+								MarkdownDescription: "Secure key generated on your side which will be used for the URL signing.",
+							},
+							"type": schema.Int64Attribute{
+								Optional:            true,
+								Computed:            true,
+								Description:         "Type of the URL signing. Choose one of the values: 0 — to include the end user's IP address to secure token generation, 2 — to exclude the end user's IP address from the secure token generation.",
+								MarkdownDescription: "Type of the URL signing. Choose one of the values: 0 — to include the end user's IP address to secure token generation, 2 — to exclude the end user's IP address from the secure token generation.",
+								Validators: []validator.Int64{
+									int64validator.OneOf(resources.ResourceSecureKeyTypeValues()...),
+								},
+							},
+						},
+						CustomType: SecureKeyType{
+							ObjectType: types.ObjectType{
+								AttrTypes: SecureKeyValue{}.AttributeTypes(ctx),
+							},
+						},
+						Optional:            true,
+						Computed:            true,
+						Description:         "Configures access with tokenized URLs. This makes impossible to access content without a valid (unexpired) token.",
+						MarkdownDescription: "Configures access with tokenized URLs. This makes impossible to access content without a valid (unexpired) token.",
 						PlanModifiers: []planmodifier.Object{
 							resource_planmodifiers.ResourceOption(),
 						},
@@ -1079,6 +1117,24 @@ func (t OptionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`referrer_acl expected to be basetypes.ObjectValue, was: %T`, referrerAclAttribute))
 	}
 
+	secureKeyAttribute, ok := attributes["secure_key"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`secure_key is missing from object`)
+
+		return nil, diags
+	}
+
+	secureKeyVal, ok := secureKeyAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`secure_key expected to be basetypes.ObjectValue, was: %T`, secureKeyAttribute))
+	}
+
 	sliceAttribute, ok := attributes["slice"]
 
 	if !ok {
@@ -1173,6 +1229,7 @@ func (t OptionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		QueryParamsBlacklist: queryParamsBlacklistVal,
 		QueryParamsWhitelist: queryParamsWhitelistVal,
 		ReferrerAcl:          referrerAclVal,
+		SecureKey:            secureKeyVal,
 		Slice:                sliceVal,
 		Stale:                staleVal,
 		StaticHeaders:        staticHeadersVal,
@@ -1550,6 +1607,24 @@ func NewOptionsValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`referrer_acl expected to be basetypes.ObjectValue, was: %T`, referrerAclAttribute))
 	}
 
+	secureKeyAttribute, ok := attributes["secure_key"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`secure_key is missing from object`)
+
+		return NewOptionsValueUnknown(), diags
+	}
+
+	secureKeyVal, ok := secureKeyAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`secure_key expected to be basetypes.ObjectValue, was: %T`, secureKeyAttribute))
+	}
+
 	sliceAttribute, ok := attributes["slice"]
 
 	if !ok {
@@ -1644,6 +1719,7 @@ func NewOptionsValue(attributeTypes map[string]attr.Type, attributes map[string]
 		QueryParamsBlacklist: queryParamsBlacklistVal,
 		QueryParamsWhitelist: queryParamsWhitelistVal,
 		ReferrerAcl:          referrerAclVal,
+		SecureKey:            secureKeyVal,
 		Slice:                sliceVal,
 		Stale:                staleVal,
 		StaticHeaders:        staticHeadersVal,
@@ -1737,6 +1813,7 @@ type OptionsValue struct {
 	QueryParamsBlacklist basetypes.ObjectValue `tfsdk:"query_params_blacklist"`
 	QueryParamsWhitelist basetypes.ObjectValue `tfsdk:"query_params_whitelist"`
 	ReferrerAcl          basetypes.ObjectValue `tfsdk:"referrer_acl"`
+	SecureKey            basetypes.ObjectValue `tfsdk:"secure_key"`
 	Slice                basetypes.BoolValue   `tfsdk:"slice"`
 	Stale                basetypes.ObjectValue `tfsdk:"stale"`
 	StaticHeaders        basetypes.ObjectValue `tfsdk:"static_headers"`
@@ -1745,7 +1822,7 @@ type OptionsValue struct {
 }
 
 func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 21)
+	attrTypes := make(map[string]tftypes.Type, 22)
 
 	var val tftypes.Value
 	var err error
@@ -1791,6 +1868,9 @@ func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	attrTypes["referrer_acl"] = basetypes.ObjectType{
 		AttrTypes: ReferrerAclValue{}.AttributeTypes(ctx),
 	}.TerraformType(ctx)
+	attrTypes["secure_key"] = basetypes.ObjectType{
+		AttrTypes: SecureKeyValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
 	attrTypes["slice"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["stale"] = basetypes.ObjectType{
 		AttrTypes: StaleValue{}.AttributeTypes(ctx),
@@ -1806,7 +1886,7 @@ func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 21)
+		vals := make(map[string]tftypes.Value, 22)
 
 		val, err = v.AllowedHttpMethods.ToTerraformValue(ctx)
 
@@ -1943,6 +2023,14 @@ func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		}
 
 		vals["referrer_acl"] = val
+
+		val, err = v.SecureKey.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["secure_key"] = val
 
 		val, err = v.Slice.ToTerraformValue(ctx)
 
@@ -2257,6 +2345,27 @@ func (v OptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		)
 	}
 
+	var secureKey basetypes.ObjectValue
+
+	if v.SecureKey.IsNull() {
+		secureKey = types.ObjectNull(
+			SecureKeyValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.SecureKey.IsUnknown() {
+		secureKey = types.ObjectUnknown(
+			SecureKeyValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.SecureKey.IsNull() && !v.SecureKey.IsUnknown() {
+		secureKey = types.ObjectValueMust(
+			SecureKeyValue{}.AttributeTypes(ctx),
+			v.SecureKey.Attributes(),
+		)
+	}
+
 	var stale basetypes.ObjectValue
 
 	if v.Stale.IsNull() {
@@ -2362,6 +2471,9 @@ func (v OptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		"referrer_acl": basetypes.ObjectType{
 			AttrTypes: ReferrerAclValue{}.AttributeTypes(ctx),
 		},
+		"secure_key": basetypes.ObjectType{
+			AttrTypes: SecureKeyValue{}.AttributeTypes(ctx),
+		},
 		"slice": basetypes.BoolType{},
 		"stale": basetypes.ObjectType{
 			AttrTypes: StaleValue{}.AttributeTypes(ctx),
@@ -2402,6 +2514,7 @@ func (v OptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"query_params_blacklist": queryParamsBlacklist,
 			"query_params_whitelist": queryParamsWhitelist,
 			"referrer_acl":           referrerAcl,
+			"secure_key":             secureKey,
 			"slice":                  v.Slice,
 			"stale":                  stale,
 			"static_headers":         staticHeaders,
@@ -2494,6 +2607,10 @@ func (v OptionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.SecureKey.Equal(other.SecureKey) {
+		return false
+	}
+
 	if !v.Slice.Equal(other.Slice) {
 		return false
 	}
@@ -2563,6 +2680,9 @@ func (v OptionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		},
 		"referrer_acl": basetypes.ObjectType{
 			AttrTypes: ReferrerAclValue{}.AttributeTypes(ctx),
+		},
+		"secure_key": basetypes.ObjectType{
+			AttrTypes: SecureKeyValue{}.AttributeTypes(ctx),
 		},
 		"slice": basetypes.BoolType{},
 		"stale": basetypes.ObjectType{
@@ -7700,6 +7820,440 @@ func (v ReferrerAclValue) AttributeTypes(ctx context.Context) map[string]attr.Ty
 			ElemType: types.StringType,
 		},
 		"policy_type": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = SecureKeyType{}
+
+type SecureKeyType struct {
+	basetypes.ObjectType
+}
+
+func (t SecureKeyType) Equal(o attr.Type) bool {
+	other, ok := o.(SecureKeyType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t SecureKeyType) String() string {
+	return "SecureKeyType"
+}
+
+func (t SecureKeyType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	enabledAttribute, ok := attributes["enabled"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`enabled is missing from object`)
+
+		return nil, diags
+	}
+
+	enabledVal, ok := enabledAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`enabled expected to be basetypes.BoolValue, was: %T`, enabledAttribute))
+	}
+
+	keyAttribute, ok := attributes["key"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`key is missing from object`)
+
+		return nil, diags
+	}
+
+	keyVal, ok := keyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`key expected to be basetypes.StringValue, was: %T`, keyAttribute))
+	}
+
+	typeAttribute, ok := attributes["type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`type is missing from object`)
+
+		return nil, diags
+	}
+
+	typeVal, ok := typeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`type expected to be basetypes.Int64Value, was: %T`, typeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return SecureKeyValue{
+		Enabled:       enabledVal,
+		Key:           keyVal,
+		SecureKeyType: typeVal,
+		state:         attr.ValueStateKnown,
+	}, diags
+}
+
+func NewSecureKeyValueNull() SecureKeyValue {
+	return SecureKeyValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewSecureKeyValueUnknown() SecureKeyValue {
+	return SecureKeyValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewSecureKeyValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (SecureKeyValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing SecureKeyValue Attribute Value",
+				"While creating a SecureKeyValue value, a missing attribute value was detected. "+
+					"A SecureKeyValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("SecureKeyValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid SecureKeyValue Attribute Type",
+				"While creating a SecureKeyValue value, an invalid attribute value was detected. "+
+					"A SecureKeyValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("SecureKeyValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("SecureKeyValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra SecureKeyValue Attribute Value",
+				"While creating a SecureKeyValue value, an extra attribute value was detected. "+
+					"A SecureKeyValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra SecureKeyValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewSecureKeyValueUnknown(), diags
+	}
+
+	enabledAttribute, ok := attributes["enabled"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`enabled is missing from object`)
+
+		return NewSecureKeyValueUnknown(), diags
+	}
+
+	enabledVal, ok := enabledAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`enabled expected to be basetypes.BoolValue, was: %T`, enabledAttribute))
+	}
+
+	keyAttribute, ok := attributes["key"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`key is missing from object`)
+
+		return NewSecureKeyValueUnknown(), diags
+	}
+
+	keyVal, ok := keyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`key expected to be basetypes.StringValue, was: %T`, keyAttribute))
+	}
+
+	typeAttribute, ok := attributes["type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`type is missing from object`)
+
+		return NewSecureKeyValueUnknown(), diags
+	}
+
+	typeVal, ok := typeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`type expected to be basetypes.Int64Value, was: %T`, typeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewSecureKeyValueUnknown(), diags
+	}
+
+	return SecureKeyValue{
+		Enabled:       enabledVal,
+		Key:           keyVal,
+		SecureKeyType: typeVal,
+		state:         attr.ValueStateKnown,
+	}, diags
+}
+
+func NewSecureKeyValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) SecureKeyValue {
+	object, diags := NewSecureKeyValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewSecureKeyValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t SecureKeyType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewSecureKeyValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewSecureKeyValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewSecureKeyValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewSecureKeyValueMust(SecureKeyValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t SecureKeyType) ValueType(ctx context.Context) attr.Value {
+	return SecureKeyValue{}
+}
+
+var _ basetypes.ObjectValuable = SecureKeyValue{}
+
+type SecureKeyValue struct {
+	Enabled       basetypes.BoolValue   `tfsdk:"enabled"`
+	Key           basetypes.StringValue `tfsdk:"key"`
+	SecureKeyType basetypes.Int64Value  `tfsdk:"type"`
+	state         attr.ValueState
+}
+
+func (v SecureKeyValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["enabled"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["key"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["type"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Enabled.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["enabled"] = val
+
+		val, err = v.Key.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["key"] = val
+
+		val, err = v.SecureKeyType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["type"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v SecureKeyValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v SecureKeyValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v SecureKeyValue) String() string {
+	return "SecureKeyValue"
+}
+
+func (v SecureKeyValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"enabled": basetypes.BoolType{},
+		"key":     basetypes.StringType{},
+		"type":    basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"enabled": v.Enabled,
+			"key":     v.Key,
+			"type":    v.SecureKeyType,
+		})
+
+	return objVal, diags
+}
+
+func (v SecureKeyValue) Equal(o attr.Value) bool {
+	other, ok := o.(SecureKeyValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Enabled.Equal(other.Enabled) {
+		return false
+	}
+
+	if !v.Key.Equal(other.Key) {
+		return false
+	}
+
+	if !v.SecureKeyType.Equal(other.SecureKeyType) {
+		return false
+	}
+
+	return true
+}
+
+func (v SecureKeyValue) Type(ctx context.Context) attr.Type {
+	return SecureKeyType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v SecureKeyValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"enabled": basetypes.BoolType{},
+		"key":     basetypes.StringType{},
+		"type":    basetypes.Int64Type{},
 	}
 }
 
