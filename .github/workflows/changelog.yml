@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: tj-actions/changed-files@v41
+      - uses: tj-actions/changed-files@v46
         id: changelog
         with:
           files: |
