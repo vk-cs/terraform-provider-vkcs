@@ -24,13 +24,14 @@ const (
 	PostgresProEnterprise1C = "postgrespro_enterprise_1c"
 	Galera                  = "galera_mysql"
 	Postgres                = "postgresql"
+	PostgresMultiAZ         = "postgresql_multiaz"
 	Clickhouse              = "clickhouse"
 	MySQL                   = "mysql"
 	Tarantool               = "tarantool"
 )
 
 func getClusterDatastores() []string {
-	return []string{Galera, Postgres, Tarantool, PostgresProEnterprise, PostgresProEnterprise1C}
+	return []string{Galera, Postgres, PostgresMultiAZ, Tarantool, PostgresProEnterprise, PostgresProEnterprise1C}
 }
 
 func getClusterWithShardsDatastores() []string {

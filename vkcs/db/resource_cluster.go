@@ -179,6 +179,12 @@ func ResourceDatabaseCluster() *schema.Resource {
 				Description: "The id of the loadbalancer attached to the cluster.",
 			},
 
+			"vrrp_port_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The id of the VRRP port attached to the cluster. __note__ Only available in multi-AZ configurations.",
+			},
+
 			"network": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -247,6 +253,15 @@ func ResourceDatabaseCluster() *schema.Resource {
 				Computed:    false,
 				ForceNew:    true,
 				Description: "The name of the availability zone of the cluster. Changing this creates a new cluster.",
+			},
+
+			"availability_zones": {
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Computed:    false,
+				ForceNew:    true,
+				Description: "The names of availability zones for the cluster. Changing this creates a new cluster. __note__ Only available in multi-AZ configurations",
 			},
 
 			"floating_ip_enabled": {
@@ -523,10 +538,9 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 	clusterInstances := make([]clusters.InstanceCreateOpts, clusterSize)
 	volumeSize := d.Get("volume_size").(int)
 	createDBInstanceOpts := clusters.InstanceCreateOpts{
-		Keypair:          d.Get("keypair").(string),
-		AvailabilityZone: d.Get("availability_zone").(string),
-		FlavorRef:        d.Get("flavor_id").(string),
-		Volume:           &instances.Volume{Size: &volumeSize, VolumeType: d.Get("volume_type").(string)},
+		Keypair:   d.Get("keypair").(string),
+		FlavorRef: d.Get("flavor_id").(string),
+		Volume:    &instances.Volume{Size: &volumeSize, VolumeType: d.Get("volume_type").(string)},
 	}
 
 	if v, ok := d.GetOk("network"); ok {
@@ -547,7 +561,17 @@ func resourceDatabaseClusterCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
+	var availabilityZones []string
+	if v, ok := d.GetOk("availability_zones"); ok {
+		availabilityZones = util.ExpandToStringSlice(v.([]any))
+	}
+
 	for i := 0; i < clusterSize; i++ {
+		az := d.Get("availability_zone").(string)
+		if len(availabilityZones) > 0 {
+			az = availabilityZones[i%len(availabilityZones)]
+		}
+		createDBInstanceOpts.AvailabilityZone = az
 		clusterInstances[i] = createDBInstanceOpts
 	}
 
@@ -674,6 +698,7 @@ func resourceDatabaseClusterRead(ctx context.Context, d *schema.ResourceData, me
 	d.Set("name", cluster.Name)
 	d.Set("datastore", flattenDatabaseInstanceDatastore(*cluster.DataStore))
 	d.Set("loadbalancer_id", cluster.LoadbalancerID)
+	d.Set("vrrp_port_id", cluster.VRRPPortID)
 
 	d.Set("configuration_id", cluster.ConfigurationID)
 	if _, ok := d.GetOk("disk_autoexpand"); ok {

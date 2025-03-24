@@ -116,11 +116,46 @@ resource "vkcs_db_cluster" "pg_with_backup" {
 }
 ```
 
+### Multi-zone cluster
+In order to improve reliability and fault tolerance, you can set up a cluster in multiple availability zones.
+To achieve this, use the specific datastore combined with list of availability zones to deploy into.
+To get the cluster IP address, use the "vrrp_port_id" attribute.
+```terraform
+resource "vkcs_db_cluster" "cluster" {
+  name               = "multiaz-cluster-tf-example"
+  availability_zones = ["GZ1", "MS1"]
+  cluster_size       = 3
+  flavor_id          = data.vkcs_compute_flavor.basic.id
+  volume_size        = 10
+  volume_type        = "ceph-ssd"
+  datastore {
+    version = "16"
+    type    = "postgresql_multiaz"
+  }
+  network {
+    uuid = vkcs_networking_network.db.id
+  }
+
+  depends_on = [
+    vkcs_networking_router_interface.db
+  ]
+}
+
+data "vkcs_networking_port" "vrrp_port" {
+  id = vkcs_db_cluster.cluster.vrrp_port_id
+}
+
+output "cluster_ip" {
+  value       = data.vkcs_networking_port.vrrp_port.all_fixed_ips[0]
+  description = "IP address of the cluster."
+}
+```
+
 ## Argument Reference
 - `cluster_size` **required** *number* &rarr;  The number of instances in the cluster.
 
 - `datastore` **required** &rarr;  Object that represents datastore of the cluster. Changing this creates a new cluster.
-  - `type` **required** *string* &rarr;  Type of the datastore. Changing this creates a new cluster. Must be one of: `galera_mysql`, `postgresql`, `tarantool`, `postgrespro_enterprise`, `postgrespro_enterprise_1c`
+  - `type` **required** *string* &rarr;  Type of the datastore. Changing this creates a new cluster. Must be one of: `galera_mysql`, `postgresql`, `postgresql_multiaz`, `tarantool`, `postgrespro_enterprise`, `postgrespro_enterprise_1c`
 
   - `version` **required** *string* &rarr;  Version of the datastore. Changing this creates a new cluster.
 
@@ -133,6 +168,8 @@ resource "vkcs_db_cluster" "pg_with_backup" {
 - `volume_type` **required** *string* &rarr;  The type of the cluster instance volume. Changing this creates a new cluster.
 
 - `availability_zone` optional *string* &rarr;  The name of the availability zone of the cluster. Changing this creates a new cluster.
+
+- `availability_zones` optional *string* &rarr;  The names of availability zones for the cluster. Changing this creates a new cluster. _<br>**Note:**_ Only available in multi-AZ configurations
 
 - `backup_schedule` optional &rarr;  Object that represents configuration of PITR backup. This functionality is available only for postgres datastore.<br>**New since v0.1.4**.
   - `interval_hours` **required** *number* &rarr;  Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.
@@ -206,6 +243,8 @@ In addition to all arguments above, the following attributes are exported:
 - `instances` *object* &rarr;  Cluster instances info.
 
 - `loadbalancer_id` *string* &rarr;  The id of the loadbalancer attached to the cluster.<br>**New since v0.1.15**.
+
+- `vrrp_port_id` *string* &rarr;  The id of the VRRP port attached to the cluster. _<br>**Note:**_ Only available in multi-AZ configurations.
 
 
 
