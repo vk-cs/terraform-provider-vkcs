@@ -169,7 +169,7 @@ output "cluster_ip" {
 
 - `availability_zone` optional *string* &rarr;  The name of the availability zone of the cluster. Changing this creates a new cluster.
 
-- `availability_zones` optional *string* &rarr;  The names of availability zones for the cluster. Changing this creates a new cluster. _<br>**Note:**_ Only available in multi-AZ configurations
+- `availability_zones` optional *string* &rarr;  The names of availability zones for the cluster. Changing this creates a new cluster. _<br>**Note:**_ Only available in multi-AZ configurations<br>**New since v0.9.3**.
 
 - `backup_schedule` optional &rarr;  Object that represents configuration of PITR backup. This functionality is available only for postgres datastore.<br>**New since v0.1.4**.
   - `interval_hours` **required** *number* &rarr;  Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.
@@ -244,7 +244,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `loadbalancer_id` *string* &rarr;  The id of the loadbalancer attached to the cluster.<br>**New since v0.1.15**.
 
-- `vrrp_port_id` *string* &rarr;  The id of the VRRP port attached to the cluster. _<br>**Note:**_ Only available in multi-AZ configurations.
+- `vrrp_port_id` *string* &rarr;  The id of the VRRP port attached to the cluster. _<br>**Note:**_ Only available in multi-AZ configurations.<br>**New since v0.9.3**.
 
 
 
