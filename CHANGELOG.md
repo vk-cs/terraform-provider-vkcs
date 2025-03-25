@@ -7,7 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.9.3 (unreleased)
+#### v0.9.3
 - Add secure_key option to cdn resource
 - Fix filtering in the vkcs_cdn_shielding_pop data source
 
