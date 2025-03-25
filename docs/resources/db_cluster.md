@@ -116,7 +116,7 @@ resource "vkcs_db_cluster" "pg_with_backup" {
 }
 ```
 
-### Multi-zone cluster
+### Multi-zone PostgreSQL cluster
 In order to improve reliability and fault tolerance, you can set up a cluster in multiple availability zones.
 To achieve this, use the specific datastore combined with list of availability zones to deploy into.
 To get the cluster IP address, use the "vrrp_port_id" attribute.
