@@ -1105,6 +1105,16 @@
             "description": "The name of the availability zone of the cluster. Changing this creates a new cluster.",
             "force_new": true
           },
+          "availability_zones": {
+            "type": "TypeList",
+            "optional": true,
+            "description": "The names of availability zones for the cluster. Changing this creates a new cluster. __note__ Only available in multi-AZ configurations",
+            "force_new": true,
+            "elem": {
+              "type": "TypeString"
+            },
+            "new_since": "v0.9.3"
+          },
           "backup_schedule": {
             "type": "TypeList",
             "optional": true,
@@ -1189,7 +1199,7 @@
                 "type": {
                   "type": "TypeString",
                   "required": true,
-                  "description": "Type of the datastore. Changing this creates a new cluster. Must be one of: `galera_mysql`, `postgresql`, `tarantool`, `postgrespro_enterprise`, `postgrespro_enterprise_1c`",
+                  "description": "Type of the datastore. Changing this creates a new cluster. Must be one of: `galera_mysql`, `postgresql`, `postgresql_multiaz`, `tarantool`, `postgrespro_enterprise`, `postgrespro_enterprise_1c`",
                   "force_new": true
                 },
                 "version": {
@@ -1394,6 +1404,12 @@
             "type": "TypeString",
             "required": true,
             "description": "The type of the cluster instance volume. Changing this creates a new cluster."
+          },
+          "vrrp_port_id": {
+            "type": "TypeString",
+            "description": "The id of the VRRP port attached to the cluster. __note__ Only available in multi-AZ configurations.",
+            "computed": true,
+            "new_since": "v0.9.3"
           },
           "wal_disk_autoexpand": {
             "type": "TypeList",
