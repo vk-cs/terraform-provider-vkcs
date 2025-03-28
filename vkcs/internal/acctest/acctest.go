@@ -38,6 +38,7 @@ var AccTestValues map[string]string = map[string]string{
 	"BaseImage":             AccTestBaseImage(),
 	"BaseFlavor":            AccTestBaseFlavor(),
 	"BaseNewFlavor":         AccTestBaseNewFlavor(),
+	"BaseSecurityGroup":     AccTestBaseSecurityGroup,
 	"AvailabilityZone":      OsAvailabilityZone,
 	"VolumeType":            OsVolumeType,
 	"FlavorName":            OsFlavorName,
@@ -168,6 +169,13 @@ data "vkcs_networking_network" "extnet" {
 	router_id = vkcs_networking_router.base.id
 	subnet_id = vkcs_networking_subnet.base.id
   }
+`
+
+const AccTestBaseSecurityGroup string = `
+data "vkcs_networking_secgroup" "default_secgroup" {
+  name = "default"
+  sdn  = "sprut"
+}
 `
 
 func AccTestRenderConfig(testConfig string, values ...map[string]string) string {
