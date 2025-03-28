@@ -137,29 +137,41 @@ type ResourceOptionSecureKeyOption struct {
 	Type    int64  `json:"type"`
 }
 
+type ResourceOptionStaticResponseHeadersOption struct {
+	Enabled bool                          `json:"enabled"`
+	Value   []*StaticResponseHeadersValue `json:"value"`
+}
+
+type StaticResponseHeadersValue struct {
+	Name   string   `json:"name"`
+	Value  []string `json:"value"`
+	Always bool     `json:"always"`
+}
+
 type ResourceOptions struct {
-	AllowedHttpMethods   *ResourceOptionsAllowedHttpMethodsOption `json:"allowedHttpMethods,omitempty"`
-	BrotliCompression    *ResourceOptionsStringListOption         `json:"brotli_compression,omitempty"`
-	BrowserCacheSettings *ResourceOptionsStringOption             `json:"browser_cache_settings,omitempty"`
-	CORS                 *ResourceOptionsStringListOption         `json:"cors,omitempty"`
-	EdgeCacheSettings    *ResourceOptionsEdgeCacheSettingsOption  `json:"edge_cache_settings,omitempty"`
-	FetchCompressed      *ResourceOptionsBoolOption               `json:"fetch_compressed,omitempty"`
-	ForceReturn          *ResourceOptionsForceReturnOption        `json:"force_return,omitempty"`
-	ForwardHostHeader    *ResourceOptionsBoolOption               `json:"forward_host_header,omitempty"`
-	GzipOn               *ResourceOptionsBoolOption               `json:"gzipOn,omitempty"`
-	HostHeader           *ResourceOptionsStringOption             `json:"hostHeader,omitempty"`
-	IgnoreQueryString    *ResourceOptionsBoolOption               `json:"ignoreQueryString,omitempty"`
-	IgnoreCookie         *ResourceOptionsBoolOption               `json:"ignore_cookie,omitempty"`
-	QueryParamsBlacklist *ResourceOptionsStringListOption         `json:"query_params_blacklist,omitempty"`
-	QueryParamsWhitelist *ResourceOptionsStringListOption         `json:"query_params_whitelist,omitempty"`
-	CountryACL           *ResourceOptionsACLOption                `json:"country_acl,omitempty"`
-	ReferrerACL          *ResourceOptionsACLOption                `json:"referrer_acl,omitempty"`
-	IpAddressACL         *ResourceOptionsACLOption                `json:"ip_address_acl,omitempty"`
-	UserAgentACL         *ResourceOptionsACLOption                `json:"user_agent_acl,omitempty"`
-	Slice                *ResourceOptionsBoolOption               `json:"slice,omitempty"`
-	Stale                *ResourceOptionsStringListOption         `json:"stale,omitempty"`
-	StaticHeaders        *ResourceOptionsStringMapOption          `json:"staticHeaders,omitempty"`
-	StaticRequestHeaders *ResourceOptionsStringMapOption          `json:"staticRequestHeaders,omitempty"`
-	Websockets           *ResourceOptionsBoolOption               `json:"websockets,omitempty"`
-	SecureKey            *ResourceOptionSecureKeyOption           `json:"secure_key,omitempty"`
+	AllowedHttpMethods    *ResourceOptionsAllowedHttpMethodsOption   `json:"allowedHttpMethods,omitempty"`
+	BrotliCompression     *ResourceOptionsStringListOption           `json:"brotli_compression,omitempty"`
+	BrowserCacheSettings  *ResourceOptionsStringOption               `json:"browser_cache_settings,omitempty"`
+	CORS                  *ResourceOptionsStringListOption           `json:"cors,omitempty"`
+	EdgeCacheSettings     *ResourceOptionsEdgeCacheSettingsOption    `json:"edge_cache_settings,omitempty"`
+	FetchCompressed       *ResourceOptionsBoolOption                 `json:"fetch_compressed,omitempty"`
+	ForceReturn           *ResourceOptionsForceReturnOption          `json:"force_return,omitempty"`
+	ForwardHostHeader     *ResourceOptionsBoolOption                 `json:"forward_host_header,omitempty"`
+	GzipOn                *ResourceOptionsBoolOption                 `json:"gzipOn,omitempty"`
+	HostHeader            *ResourceOptionsStringOption               `json:"hostHeader,omitempty"`
+	IgnoreQueryString     *ResourceOptionsBoolOption                 `json:"ignoreQueryString,omitempty"`
+	IgnoreCookie          *ResourceOptionsBoolOption                 `json:"ignore_cookie,omitempty"`
+	QueryParamsBlacklist  *ResourceOptionsStringListOption           `json:"query_params_blacklist,omitempty"`
+	QueryParamsWhitelist  *ResourceOptionsStringListOption           `json:"query_params_whitelist,omitempty"`
+	CountryACL            *ResourceOptionsACLOption                  `json:"country_acl,omitempty"`
+	ReferrerACL           *ResourceOptionsACLOption                  `json:"referrer_acl,omitempty"`
+	IpAddressACL          *ResourceOptionsACLOption                  `json:"ip_address_acl,omitempty"`
+	UserAgentACL          *ResourceOptionsACLOption                  `json:"user_agent_acl,omitempty"`
+	Slice                 *ResourceOptionsBoolOption                 `json:"slice,omitempty"`
+	Stale                 *ResourceOptionsStringListOption           `json:"stale,omitempty"`
+	StaticHeaders         *ResourceOptionsStringMapOption            `json:"staticHeaders,omitempty"`
+	StaticRequestHeaders  *ResourceOptionsStringMapOption            `json:"staticRequestHeaders,omitempty"`
+	Websockets            *ResourceOptionsBoolOption                 `json:"websockets,omitempty"`
+	SecureKey             *ResourceOptionSecureKeyOption             `json:"secure_key,omitempty"`
+	StaticResponseHeaders *ResourceOptionStaticResponseHeadersOption `json:"static_response_headers,omitempty"`
 }

@@ -1,11 +1,28 @@
 TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 PKG_NAME=vkcs
+LOCALBIN ?= $(shell pwd)/bin
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
+TF_PLUGIN_GEN ?= $(LOCALBIN)/tfplugingen-framework
+TF_PLUGIN_GEN_VERSION ?= v0.4.1
+
+define go-install-tool
+@[ -f $(LOCALBIN)/$(1) ] || { \
+set -e ;\
+echo "Installing $(1)@$(3)" ;\
+GOBIN=$(LOCALBIN) go install $(2)@$(3) ;\
+}
+endef
 
 default: build
 
-generate:
-	go generate ./...
+tfplugingen-framework: $(TF_PLUGIN_GEN)
+$(TF_PLUGIN_GEN): $(LOCALBIN)
+	$(call go-install-tool,$(TF_PLUGIN_GEN),github.com/hashicorp/terraform-plugin-codegen-framework/cmd/tfplugingen-framework,$(TF_PLUGIN_GEN_VERSION))
+
+generate: tfplugingen-framework
+	PATH="$(LOCALBIN):$$PATH" go generate ./...
 
 build: fmtcheck generate
 	go install
@@ -100,4 +117,4 @@ check_examples:
 	tflint --chdir=examples --recursive -f compact --config="$(CURDIR)/.tflint.hcl"
 	terraform fmt --check --recursive examples
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test lint update_release_schema
+.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test lint update_release_schema generate tfplugingen-framework
