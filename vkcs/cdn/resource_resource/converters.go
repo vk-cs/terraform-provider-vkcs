@@ -394,6 +394,25 @@ func (v OptionsValue) ToResourceOptions(ctx context.Context) (*resources.Resourc
 		}
 	}
 
+	if o := v.StaticResponseHeaders; !o.IsUnknown() && !o.IsNull() {
+		staticResponseHeadersObjV, d := StaticResponseHeadersType{}.ValueFromObject(ctx, o)
+		diags.Append(d...)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		staticResponseHeaders := staticResponseHeadersObjV.(StaticResponseHeadersValue)
+		headerValue, d := expandStaticHeadersValue(ctx, staticResponseHeaders.Value)
+		diags.Append(d...)
+		if diags.HasError() {
+			return nil, diags
+		}
+		result.StaticResponseHeaders = &resources.ResourceOptionStaticResponseHeadersOption{
+			Enabled: staticResponseHeaders.Enabled.ValueBool(),
+			Value:   headerValue,
+		}
+	}
+
 	return result, diags
 }
 
@@ -776,30 +795,56 @@ func (v OptionsValue) FromResourceOptions(ctx context.Context, opts *resources.R
 		}
 	}
 
+	var staticResponseHeaders types.Object
+	if o := opts.StaticResponseHeaders; o != nil {
+		value, d := flattenStaticHeadersValue(ctx, o.Value)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+
+		staticResponseHeaders, d = StaticResponseHeadersValue{
+			Enabled: types.BoolValue(o.Enabled),
+			Value:   value,
+			state:   attr.ValueStateKnown,
+		}.ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+	} else {
+		staticResponseHeaders, d = NewStaticResponseHeadersValueNull().ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+	}
+
 	return OptionsValue{
-		AllowedHttpMethods:   allowedHttpMethods,
-		BrotliCompression:    brotliCompression,
-		BrowserCacheSettings: browserCacheSettings,
-		Cors:                 cors,
-		CountryAcl:           countryAcl,
-		EdgeCacheSettings:    edgeCacheSettings,
-		FetchCompressed:      flattenBoolOption(opts.FetchCompressed),
-		ForceReturn:          forceReturn,
-		ForwardHostHeader:    flattenBoolOption(opts.ForwardHostHeader),
-		GzipOn:               flattenBoolOption(opts.GzipOn),
-		HostHeader:           hostHeader,
-		IgnoreCookie:         flattenBoolOption(opts.IgnoreCookie),
-		IgnoreQueryString:    flattenBoolOption(opts.IgnoreQueryString),
-		IpAddressAcl:         ipAddressAcl,
-		QueryParamsBlacklist: queryParamsBlacklist,
-		QueryParamsWhitelist: queryParamsWhitelist,
-		ReferrerAcl:          referrerAcl,
-		Slice:                flattenBoolOption(opts.Slice),
-		Stale:                stale,
-		StaticHeaders:        staticHeaders,
-		StaticRequestHeaders: staticRequestHeaders,
-		SecureKey:            secureKey,
-		state:                attr.ValueStateKnown,
+		AllowedHttpMethods:    allowedHttpMethods,
+		BrotliCompression:     brotliCompression,
+		BrowserCacheSettings:  browserCacheSettings,
+		Cors:                  cors,
+		CountryAcl:            countryAcl,
+		EdgeCacheSettings:     edgeCacheSettings,
+		FetchCompressed:       flattenBoolOption(opts.FetchCompressed),
+		ForceReturn:           forceReturn,
+		ForwardHostHeader:     flattenBoolOption(opts.ForwardHostHeader),
+		GzipOn:                flattenBoolOption(opts.GzipOn),
+		HostHeader:            hostHeader,
+		IgnoreCookie:          flattenBoolOption(opts.IgnoreCookie),
+		IgnoreQueryString:     flattenBoolOption(opts.IgnoreQueryString),
+		IpAddressAcl:          ipAddressAcl,
+		QueryParamsBlacklist:  queryParamsBlacklist,
+		QueryParamsWhitelist:  queryParamsWhitelist,
+		ReferrerAcl:           referrerAcl,
+		Slice:                 flattenBoolOption(opts.Slice),
+		Stale:                 stale,
+		StaticHeaders:         staticHeaders,
+		StaticRequestHeaders:  staticRequestHeaders,
+		SecureKey:             secureKey,
+		StaticResponseHeaders: staticResponseHeaders,
+		state:                 attr.ValueStateKnown,
 	}, diags
 }
 
@@ -901,4 +946,59 @@ func flattenBoolOption(opt *resources.ResourceOptionsBoolOption) types.Bool {
 		return types.BoolNull()
 	}
 	return types.BoolValue(opt.Value && opt.Enabled)
+}
+
+func expandStaticHeadersValue(ctx context.Context, headers types.List) ([]*resources.StaticResponseHeadersValue, diag.Diagnostics) {
+	if headers.IsNull() || headers.IsUnknown() {
+		return nil, nil
+	}
+	values := make([]ValueValue, 0, len(headers.Elements()))
+	diags := headers.ElementsAs(ctx, &values, true)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	result := make([]*resources.StaticResponseHeadersValue, 0, len(values))
+	for _, header := range values {
+		headerValues := make([]string, 0, len(header.Value.Elements()))
+		diags.Append(header.Value.ElementsAs(ctx, &headerValues, true)...)
+		if diags.HasError() {
+			return nil, diags
+		}
+		result = append(result, &resources.StaticResponseHeadersValue{
+			Name:   header.Name.ValueString(),
+			Value:  headerValues,
+			Always: header.Always.ValueBool(),
+		})
+	}
+
+	return result, diags
+}
+
+func flattenStaticHeadersValue(ctx context.Context, headers []*resources.StaticResponseHeadersValue) (types.List, diag.Diagnostics) {
+	headersVType := ValueValue{}.Type(ctx)
+	if len(headers) == 0 {
+		return types.ListNull(headersVType), nil
+	}
+
+	var diags diag.Diagnostics
+	headersV := make([]attr.Value, 0, len(headers))
+	for _, header := range headers {
+		headerValue, d := types.ListValueFrom(ctx, types.StringType, header.Value)
+		diags.Append(d...)
+		if diags.HasError() {
+			return types.ListUnknown(headersVType), diags
+		}
+
+		headersV = append(headersV,
+			ValueValue{
+				Always: types.BoolValue(header.Always),
+				Name:   types.StringValue(header.Name),
+				Value:  headerValue,
+				state:  attr.ValueStateKnown,
+			},
+		)
+	}
+
+	return types.ListValue(ValueValue{}.Type(ctx), headersV)
 }

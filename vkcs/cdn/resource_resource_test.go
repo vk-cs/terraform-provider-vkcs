@@ -76,13 +76,13 @@ func TestAccCDNResourceResource_full(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.slice", "false"),
 					acctest.TestCheckResourceListAttr("vkcs_cdn_resource.full", "options.stale.value", []string{"http_403", "http_404"}),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.stale.enabled", "true"),
-					acctest.TestCheckResourceMapAttr("vkcs_cdn_resource.full", "options.static_headers.value", map[string]string{"X-Header-One": "Value 1"}),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.static_headers.enabled", "true"),
 					acctest.TestCheckResourceMapAttr("vkcs_cdn_resource.full", "options.static_request_headers.value", map[string]string{"Header-One": "Value 1", "Header-Two": "Value 2"}),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.static_request_headers.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.secure_key.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.secure_key.key", "mysupersecretkey"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.secure_key.type", "0"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.static_response_headers.enabled", "true"),
+					acctest.TestCheckResourceAttrDeepEqual("vkcs_cdn_resource.full", "options.static_response_headers.value", []map[string]any{{"name": "First-Header", "value": []string{"Header1"}, "always": true}, {"name": "Second-Header", "value": []string{"Header2"}, "always": false}}),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.full", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "origin_protocol", "MATCH"),
 					acctest.TestCheckResourceListAttr("vkcs_cdn_resource.full", "secondary_hostnames", []string{"cdn1.vk.com", "cdn2.vk.com"}),
@@ -142,13 +142,13 @@ func TestAccCDNResourceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.slice", "false"),
 					acctest.TestCheckResourceListAttr("vkcs_cdn_resource.update", "options.stale.value", []string{"http_403", "http_404"}),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.stale.enabled", "true"),
-					acctest.TestCheckResourceMapAttr("vkcs_cdn_resource.update", "options.static_headers.value", map[string]string{"X-Header-One": "Old Value 1"}),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.static_headers.enabled", "true"),
 					acctest.TestCheckResourceMapAttr("vkcs_cdn_resource.update", "options.static_request_headers.value", map[string]string{"Header-One": "Old Value 1", "Header-Two": "Old Value 2"}),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.static_request_headers.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.key", "mysupersecretkey"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.type", "0"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.static_response_headers.enabled", "true"),
+					acctest.TestCheckResourceAttrDeepEqual("vkcs_cdn_resource.update", "options.static_response_headers.value", []map[string]any{{"name": "First-Header", "value": []string{"Header1"}, "always": true}, {"name": "Second-Header", "value": []string{"Header2"}, "always": false}}),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.update", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "origin_protocol", "HTTP"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "shielding.enabled", "true"),
@@ -198,13 +198,13 @@ func TestAccCDNResourceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.slice", "false"),
 					acctest.TestCheckResourceListAttr("vkcs_cdn_resource.update", "options.stale.value", []string{"http_403", "http_404"}),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.stale.enabled", "false"),
-					acctest.TestCheckResourceMapAttr("vkcs_cdn_resource.update", "options.static_headers.value", map[string]string{"X-Header-Two": "Value 2"}),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.static_headers.enabled", "true"),
 					acctest.TestCheckResourceMapAttr("vkcs_cdn_resource.update", "options.static_request_headers.value", map[string]string{"Header-Two": "Value 2", "Header-Three": "Value 3"}),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.static_request_headers.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.enabled", "false"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.key", "mysimplekey"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.type", "2"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.static_response_headers.enabled", "true"),
+					acctest.TestCheckResourceAttrDeepEqual("vkcs_cdn_resource.update", "options.static_response_headers.value", []map[string]any{{"name": "Second-Header", "value": []string{"Header1", "Header2"}, "always": true}}),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.update", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "origin_protocol", "HTTPS"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "shielding.enabled", "false"),
@@ -373,11 +373,6 @@ resource "vkcs_cdn_resource" "full" {
     stale = {
       value = ["http_403", "http_404"]
     }
-    static_headers = {
-      value = {
-        "X-Header-One" : "Value 1"
-      }
-    }
     static_request_headers = {
       value = {
         "Header-One" : "Value 1",
@@ -385,10 +380,25 @@ resource "vkcs_cdn_resource" "full" {
       }
     }
 	secure_key = {
-	  "enabled": true,
-      "key": "mysupersecretkey",
-      "type": 0	
+	  enabled = true
+      key	  = "mysupersecretkey"
+      type	  = 0
 	}
+    static_response_headers = {
+      enabled = true
+      value = [
+        {
+          name = "First-Header"
+          value = ["Header1"]
+          always = true
+        },
+        {
+          name = "Second-Header"
+          value = ["Header2"]
+          always = false
+        }
+      ]
+    }
   }
   origin_group        = vkcs_cdn_origin_group.base.id
   origin_protocol     = "MATCH"
@@ -460,11 +470,6 @@ resource "vkcs_cdn_resource" "update" {
     stale = {
       value = ["http_403", "http_404"]
     }
-    static_headers = {
-      value = {
-        "X-Header-One" : "Old Value 1"
-      }
-    }
     static_request_headers = {
       value = {
         "Header-One" : "Old Value 1",
@@ -472,10 +477,25 @@ resource "vkcs_cdn_resource" "update" {
       }
     }
 	secure_key = {
-	  "enabled": true,
-      "key": "mysupersecretkey",
-      "type": 0	
+	  enabled = true
+      key	  = "mysupersecretkey"
+      type	  = 0
 	}
+    static_response_headers = {
+      enabled = true
+      value = [
+        {
+          name = "First-Header"
+          value = ["Header1"]
+          always = true
+        },
+        {
+          name = "Second-Header"
+          value = ["Header2"]
+          always = false
+        }
+      ]
+    }
   }
   origin_group    = vkcs_cdn_origin_group.base.id
   origin_protocol = "HTTP"
@@ -540,11 +560,6 @@ resource "vkcs_cdn_resource" "update" {
     stale = {
 	    enabled = false
     }
-    static_headers = {
-      value = {
-	  	  "X-Header-Two" : "Value 2"
-      }
-    }
     static_request_headers = {
 	    value = {
         "Header-Two" : "Value 2",
@@ -552,10 +567,23 @@ resource "vkcs_cdn_resource" "update" {
 	    }
     }
 	secure_key = {
-	  "enabled": false,
-      "key": "mysimplekey",
-      "type": 2	
+	  enabled = false,
+      key     = "mysimplekey"
+      type    = 2
 	}
+    static_response_headers = {
+      enabled = true
+      value = [
+        {
+          name = "Second-Header"
+          value = [
+            "Header1",
+            "Header2"
+          ]
+          always = true
+        }
+      ]
+    }
   }
   origin_group    = vkcs_cdn_origin_group.base.id
   origin_protocol = "HTTPS"
