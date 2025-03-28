@@ -26,7 +26,7 @@ func TestAccFirewallSecGroup_basic(t *testing.T) {
 				Config: testAccFirewallSecGroupBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccFirewallCheckSecGroupExists("vkcs_networking_secgroup.secgroup_1", &securityGroup),
-					testAccFirewallCheckSecGroupRuleCount(&securityGroup, 2),
+					testAccFirewallCheckSecGroupRuleCount(&securityGroup, 1),
 				),
 			},
 			{

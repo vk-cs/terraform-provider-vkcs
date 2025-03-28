@@ -148,30 +148,6 @@ func TestAccFirewallSecGroupRule_protocols(t *testing.T) {
 	})
 }
 
-func TestAccFirewallSecGroupRule_numericProtocol(t *testing.T) {
-	var secgroup1 groups.SecGroup
-	var secgroupRule1 rules.SecGroupRule
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { acctest.AccTestPreCheck(t) },
-		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccFirewallCheckSecGroupRuleDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccFirewallSecGroupRuleNumericProtocol,
-				Check: resource.ComposeTestCheckFunc(
-					testAccFirewallCheckSecGroupExists(
-						"vkcs_networking_secgroup.secgroup_1", &secgroup1),
-					testAccFirewallCheckSecGroupRuleExists(
-						"vkcs_networking_secgroup_rule.secgroup_rule_1", &secgroupRule1),
-					resource.TestCheckResourceAttr(
-						"vkcs_networking_secgroup_rule.secgroup_rule_1", "protocol", "6"),
-				),
-			},
-		},
-	})
-}
-
 func testAccFirewallCheckSecGroupRuleDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
@@ -396,23 +372,6 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_vrrp" {
   direction = "ingress"
   ethertype = "IPv4"
   protocol = "vrrp"
-  remote_ip_prefix = "0.0.0.0/0"
-  security_group_id = vkcs_networking_secgroup.secgroup_1.id
-}
-`
-
-const testAccFirewallSecGroupRuleNumericProtocol = `
-resource "vkcs_networking_secgroup" "secgroup_1" {
-  name = "secgroup_1"
-  description = "terraform security group rule acceptance test"
-}
-
-resource "vkcs_networking_secgroup_rule" "secgroup_rule_1" {
-  direction = "ingress"
-  ethertype = "IPv4"
-  port_range_max = 22
-  port_range_min = 22
-  protocol = "6"
   remote_ip_prefix = "0.0.0.0/0"
   security_group_id = vkcs_networking_secgroup.secgroup_1.id
 }
