@@ -229,12 +229,13 @@ const testAccComputeFloatingIPAssociateBasic = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = [vkcs_networking_router_interface.base]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -256,11 +257,12 @@ const testAccComputeFloatingIPAssociateUpdate = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -283,11 +285,12 @@ const testAccComputeFloatingIPAssociateFixedIP = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -310,11 +313,12 @@ const testAccComputeFloatingIPAssociateAttachNew1 = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -340,11 +344,12 @@ const testAccComputeFloatingIPAssociateAttachNew2 = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -370,11 +375,12 @@ const testAccComputeFloatingIPAssociateWaitUntilAssociated = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }

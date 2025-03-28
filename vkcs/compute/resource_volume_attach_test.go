@@ -204,6 +204,7 @@ const testAccComputeVolumeAttachBasic = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
@@ -221,7 +222,7 @@ resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -239,6 +240,7 @@ const testAccComputeVolumeAttachBasicMetadataUpdate = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
@@ -256,7 +258,7 @@ resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -274,6 +276,7 @@ const testAccComputeVolumeAttachBasicMetadataDelete = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
@@ -286,7 +289,7 @@ resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
