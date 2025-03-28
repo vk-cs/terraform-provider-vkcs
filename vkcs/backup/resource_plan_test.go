@@ -79,12 +79,13 @@ const testAccBackupPlanBase = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "base_instance" {
 	depends_on = ["vkcs_networking_router_interface.base"]
 	name = "instance_1"
 	availability_zone = "{{.AvailabilityZone}}"
-	security_groups = ["default"]
+	security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
 	metadata = {
 	  foo = "bar"
 	}

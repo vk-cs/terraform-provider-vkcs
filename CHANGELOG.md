@@ -7,7 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.9.3
+#### v0.9.3 (unreleased)
 - Add secure_key option to cdn resource
 - Add static_response_headers option to cdn resource
 - Add availability_zones and vrrp_port_id fields to vkcs_db_cluster resource

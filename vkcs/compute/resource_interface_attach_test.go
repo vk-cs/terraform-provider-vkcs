@@ -130,8 +130,11 @@ const testAccComputeInterfaceAttachBasic = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_networking_port" "port_1" {
+  depends_on = ["vkcs_networking_subnet.base"]
+
   name = "port_1"
   network_id = vkcs_networking_network.base.id
   admin_state_up = "true"
@@ -141,7 +144,7 @@ resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -159,6 +162,7 @@ const testAccComputeInterfaceAttachIP = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
@@ -176,7 +180,7 @@ resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
