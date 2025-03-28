@@ -64,6 +64,10 @@ func (r *resourceResource) ConfigValidators(ctx context.Context) []resource.Conf
 			path.MatchRoot("options").AtName("query_params_blacklist"),
 			path.MatchRoot("options").AtName("query_params_whitelist"),
 		),
+		resource_validators.ConflictingEnabled(
+			path.MatchRoot("options").AtName("static_headers"),
+			path.MatchRoot("options").AtName("static_response_headers"),
+		),
 	}
 }
 

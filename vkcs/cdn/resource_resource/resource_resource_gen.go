@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
@@ -602,6 +603,7 @@ func ResourceResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Custom HTTP Headers that a CDN server adds to a response.",
 						MarkdownDescription: "Custom HTTP Headers that a CDN server adds to a response.",
+						DeprecationMessage:  "static_headers option is deprecated. Use static_response_headers option instead",
 						PlanModifiers: []planmodifier.Object{
 							resource_planmodifiers.ResourceOption(),
 						},
@@ -631,6 +633,61 @@ func ResourceResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Custom HTTP Headers for a CDN server to add to a request.",
 						MarkdownDescription: "Custom HTTP Headers for a CDN server to add to a request.",
+						PlanModifiers: []planmodifier.Object{
+							resource_planmodifiers.ResourceOption(),
+						},
+					},
+					"static_response_headers": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"enabled": schema.BoolAttribute{
+								Optional:            true,
+								Computed:            true,
+								Description:         "Controls the option state.",
+								MarkdownDescription: "Controls the option state.",
+							},
+							"value": schema.ListNestedAttribute{
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"always": schema.BoolAttribute{
+											Optional:            true,
+											Computed:            true,
+											Description:         "Set field to true — to add the header to the response from CDN server regardless of the HTTP response status code. Set field to false — to add the header to the responses with HTTP 200, 201, 204, 206, 301, 302, 303, 304, 307, or 308 status codes only. Default value is true.",
+											MarkdownDescription: "Set field to true — to add the header to the response from CDN server regardless of the HTTP response status code. Set field to false — to add the header to the responses with HTTP 200, 201, 204, 206, 301, 302, 303, 304, 307, or 308 status codes only. Default value is true.",
+											Default:             booldefault.StaticBool(true),
+										},
+										"name": schema.StringAttribute{
+											Optional:            true,
+											Computed:            true,
+											Description:         "Header name.",
+											MarkdownDescription: "Header name.",
+										},
+										"value": schema.ListAttribute{
+											ElementType:         types.StringType,
+											Optional:            true,
+											Computed:            true,
+											Description:         "Header value.",
+											MarkdownDescription: "Header value.",
+										},
+									},
+									CustomType: ValueType{
+										ObjectType: types.ObjectType{
+											AttrTypes: ValueValue{}.AttributeTypes(ctx),
+										},
+									},
+								},
+								Optional: true,
+								Computed: true,
+							},
+						},
+						CustomType: StaticResponseHeadersType{
+							ObjectType: types.ObjectType{
+								AttrTypes: StaticResponseHeadersValue{}.AttributeTypes(ctx),
+							},
+						},
+						Optional:            true,
+						Computed:            true,
+						Description:         "Custom HTTP Headers that a CDN server adds to a response.",
+						MarkdownDescription: "Custom HTTP Headers that a CDN server adds to a response.",
 						PlanModifiers: []planmodifier.Object{
 							resource_planmodifiers.ResourceOption(),
 						},
@@ -1207,34 +1264,53 @@ func (t OptionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`static_request_headers expected to be basetypes.ObjectValue, was: %T`, staticRequestHeadersAttribute))
 	}
 
+	staticResponseHeadersAttribute, ok := attributes["static_response_headers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`static_response_headers is missing from object`)
+
+		return nil, diags
+	}
+
+	staticResponseHeadersVal, ok := staticResponseHeadersAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`static_response_headers expected to be basetypes.ObjectValue, was: %T`, staticResponseHeadersAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return OptionsValue{
-		AllowedHttpMethods:   allowedHttpMethodsVal,
-		BrotliCompression:    brotliCompressionVal,
-		BrowserCacheSettings: browserCacheSettingsVal,
-		Cors:                 corsVal,
-		CountryAcl:           countryAclVal,
-		EdgeCacheSettings:    edgeCacheSettingsVal,
-		FetchCompressed:      fetchCompressedVal,
-		ForceReturn:          forceReturnVal,
-		ForwardHostHeader:    forwardHostHeaderVal,
-		GzipOn:               gzipOnVal,
-		HostHeader:           hostHeaderVal,
-		IgnoreCookie:         ignoreCookieVal,
-		IgnoreQueryString:    ignoreQueryStringVal,
-		IpAddressAcl:         ipAddressAclVal,
-		QueryParamsBlacklist: queryParamsBlacklistVal,
-		QueryParamsWhitelist: queryParamsWhitelistVal,
-		ReferrerAcl:          referrerAclVal,
-		SecureKey:            secureKeyVal,
-		Slice:                sliceVal,
-		Stale:                staleVal,
-		StaticHeaders:        staticHeadersVal,
-		StaticRequestHeaders: staticRequestHeadersVal,
-		state:                attr.ValueStateKnown,
+		AllowedHttpMethods:    allowedHttpMethodsVal,
+		BrotliCompression:     brotliCompressionVal,
+		BrowserCacheSettings:  browserCacheSettingsVal,
+		Cors:                  corsVal,
+		CountryAcl:            countryAclVal,
+		EdgeCacheSettings:     edgeCacheSettingsVal,
+		FetchCompressed:       fetchCompressedVal,
+		ForceReturn:           forceReturnVal,
+		ForwardHostHeader:     forwardHostHeaderVal,
+		GzipOn:                gzipOnVal,
+		HostHeader:            hostHeaderVal,
+		IgnoreCookie:          ignoreCookieVal,
+		IgnoreQueryString:     ignoreQueryStringVal,
+		IpAddressAcl:          ipAddressAclVal,
+		QueryParamsBlacklist:  queryParamsBlacklistVal,
+		QueryParamsWhitelist:  queryParamsWhitelistVal,
+		ReferrerAcl:           referrerAclVal,
+		SecureKey:             secureKeyVal,
+		Slice:                 sliceVal,
+		Stale:                 staleVal,
+		StaticHeaders:         staticHeadersVal,
+		StaticRequestHeaders:  staticRequestHeadersVal,
+		StaticResponseHeaders: staticResponseHeadersVal,
+		state:                 attr.ValueStateKnown,
 	}, diags
 }
 
@@ -1697,34 +1773,53 @@ func NewOptionsValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`static_request_headers expected to be basetypes.ObjectValue, was: %T`, staticRequestHeadersAttribute))
 	}
 
+	staticResponseHeadersAttribute, ok := attributes["static_response_headers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`static_response_headers is missing from object`)
+
+		return NewOptionsValueUnknown(), diags
+	}
+
+	staticResponseHeadersVal, ok := staticResponseHeadersAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`static_response_headers expected to be basetypes.ObjectValue, was: %T`, staticResponseHeadersAttribute))
+	}
+
 	if diags.HasError() {
 		return NewOptionsValueUnknown(), diags
 	}
 
 	return OptionsValue{
-		AllowedHttpMethods:   allowedHttpMethodsVal,
-		BrotliCompression:    brotliCompressionVal,
-		BrowserCacheSettings: browserCacheSettingsVal,
-		Cors:                 corsVal,
-		CountryAcl:           countryAclVal,
-		EdgeCacheSettings:    edgeCacheSettingsVal,
-		FetchCompressed:      fetchCompressedVal,
-		ForceReturn:          forceReturnVal,
-		ForwardHostHeader:    forwardHostHeaderVal,
-		GzipOn:               gzipOnVal,
-		HostHeader:           hostHeaderVal,
-		IgnoreCookie:         ignoreCookieVal,
-		IgnoreQueryString:    ignoreQueryStringVal,
-		IpAddressAcl:         ipAddressAclVal,
-		QueryParamsBlacklist: queryParamsBlacklistVal,
-		QueryParamsWhitelist: queryParamsWhitelistVal,
-		ReferrerAcl:          referrerAclVal,
-		SecureKey:            secureKeyVal,
-		Slice:                sliceVal,
-		Stale:                staleVal,
-		StaticHeaders:        staticHeadersVal,
-		StaticRequestHeaders: staticRequestHeadersVal,
-		state:                attr.ValueStateKnown,
+		AllowedHttpMethods:    allowedHttpMethodsVal,
+		BrotliCompression:     brotliCompressionVal,
+		BrowserCacheSettings:  browserCacheSettingsVal,
+		Cors:                  corsVal,
+		CountryAcl:            countryAclVal,
+		EdgeCacheSettings:     edgeCacheSettingsVal,
+		FetchCompressed:       fetchCompressedVal,
+		ForceReturn:           forceReturnVal,
+		ForwardHostHeader:     forwardHostHeaderVal,
+		GzipOn:                gzipOnVal,
+		HostHeader:            hostHeaderVal,
+		IgnoreCookie:          ignoreCookieVal,
+		IgnoreQueryString:     ignoreQueryStringVal,
+		IpAddressAcl:          ipAddressAclVal,
+		QueryParamsBlacklist:  queryParamsBlacklistVal,
+		QueryParamsWhitelist:  queryParamsWhitelistVal,
+		ReferrerAcl:           referrerAclVal,
+		SecureKey:             secureKeyVal,
+		Slice:                 sliceVal,
+		Stale:                 staleVal,
+		StaticHeaders:         staticHeadersVal,
+		StaticRequestHeaders:  staticRequestHeadersVal,
+		StaticResponseHeaders: staticResponseHeadersVal,
+		state:                 attr.ValueStateKnown,
 	}, diags
 }
 
@@ -1796,33 +1891,34 @@ func (t OptionsType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = OptionsValue{}
 
 type OptionsValue struct {
-	AllowedHttpMethods   basetypes.ObjectValue `tfsdk:"allowed_http_methods"`
-	BrotliCompression    basetypes.ObjectValue `tfsdk:"brotli_compression"`
-	BrowserCacheSettings basetypes.ObjectValue `tfsdk:"browser_cache_settings"`
-	Cors                 basetypes.ObjectValue `tfsdk:"cors"`
-	CountryAcl           basetypes.ObjectValue `tfsdk:"country_acl"`
-	EdgeCacheSettings    basetypes.ObjectValue `tfsdk:"edge_cache_settings"`
-	FetchCompressed      basetypes.BoolValue   `tfsdk:"fetch_compressed"`
-	ForceReturn          basetypes.ObjectValue `tfsdk:"force_return"`
-	ForwardHostHeader    basetypes.BoolValue   `tfsdk:"forward_host_header"`
-	GzipOn               basetypes.BoolValue   `tfsdk:"gzip_on"`
-	HostHeader           basetypes.ObjectValue `tfsdk:"host_header"`
-	IgnoreCookie         basetypes.BoolValue   `tfsdk:"ignore_cookie"`
-	IgnoreQueryString    basetypes.BoolValue   `tfsdk:"ignore_query_string"`
-	IpAddressAcl         basetypes.ObjectValue `tfsdk:"ip_address_acl"`
-	QueryParamsBlacklist basetypes.ObjectValue `tfsdk:"query_params_blacklist"`
-	QueryParamsWhitelist basetypes.ObjectValue `tfsdk:"query_params_whitelist"`
-	ReferrerAcl          basetypes.ObjectValue `tfsdk:"referrer_acl"`
-	SecureKey            basetypes.ObjectValue `tfsdk:"secure_key"`
-	Slice                basetypes.BoolValue   `tfsdk:"slice"`
-	Stale                basetypes.ObjectValue `tfsdk:"stale"`
-	StaticHeaders        basetypes.ObjectValue `tfsdk:"static_headers"`
-	StaticRequestHeaders basetypes.ObjectValue `tfsdk:"static_request_headers"`
-	state                attr.ValueState
+	AllowedHttpMethods    basetypes.ObjectValue `tfsdk:"allowed_http_methods"`
+	BrotliCompression     basetypes.ObjectValue `tfsdk:"brotli_compression"`
+	BrowserCacheSettings  basetypes.ObjectValue `tfsdk:"browser_cache_settings"`
+	Cors                  basetypes.ObjectValue `tfsdk:"cors"`
+	CountryAcl            basetypes.ObjectValue `tfsdk:"country_acl"`
+	EdgeCacheSettings     basetypes.ObjectValue `tfsdk:"edge_cache_settings"`
+	FetchCompressed       basetypes.BoolValue   `tfsdk:"fetch_compressed"`
+	ForceReturn           basetypes.ObjectValue `tfsdk:"force_return"`
+	ForwardHostHeader     basetypes.BoolValue   `tfsdk:"forward_host_header"`
+	GzipOn                basetypes.BoolValue   `tfsdk:"gzip_on"`
+	HostHeader            basetypes.ObjectValue `tfsdk:"host_header"`
+	IgnoreCookie          basetypes.BoolValue   `tfsdk:"ignore_cookie"`
+	IgnoreQueryString     basetypes.BoolValue   `tfsdk:"ignore_query_string"`
+	IpAddressAcl          basetypes.ObjectValue `tfsdk:"ip_address_acl"`
+	QueryParamsBlacklist  basetypes.ObjectValue `tfsdk:"query_params_blacklist"`
+	QueryParamsWhitelist  basetypes.ObjectValue `tfsdk:"query_params_whitelist"`
+	ReferrerAcl           basetypes.ObjectValue `tfsdk:"referrer_acl"`
+	SecureKey             basetypes.ObjectValue `tfsdk:"secure_key"`
+	Slice                 basetypes.BoolValue   `tfsdk:"slice"`
+	Stale                 basetypes.ObjectValue `tfsdk:"stale"`
+	StaticHeaders         basetypes.ObjectValue `tfsdk:"static_headers"`
+	StaticRequestHeaders  basetypes.ObjectValue `tfsdk:"static_request_headers"`
+	StaticResponseHeaders basetypes.ObjectValue `tfsdk:"static_response_headers"`
+	state                 attr.ValueState
 }
 
 func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 22)
+	attrTypes := make(map[string]tftypes.Type, 23)
 
 	var val tftypes.Value
 	var err error
@@ -1881,12 +1977,15 @@ func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	attrTypes["static_request_headers"] = basetypes.ObjectType{
 		AttrTypes: StaticRequestHeadersValue{}.AttributeTypes(ctx),
 	}.TerraformType(ctx)
+	attrTypes["static_response_headers"] = basetypes.ObjectType{
+		AttrTypes: StaticResponseHeadersValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 22)
+		vals := make(map[string]tftypes.Value, 23)
 
 		val, err = v.AllowedHttpMethods.ToTerraformValue(ctx)
 
@@ -2063,6 +2162,14 @@ func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		}
 
 		vals["static_request_headers"] = val
+
+		val, err = v.StaticResponseHeaders.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["static_response_headers"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -2429,6 +2536,27 @@ func (v OptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		)
 	}
 
+	var staticResponseHeaders basetypes.ObjectValue
+
+	if v.StaticResponseHeaders.IsNull() {
+		staticResponseHeaders = types.ObjectNull(
+			StaticResponseHeadersValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.StaticResponseHeaders.IsUnknown() {
+		staticResponseHeaders = types.ObjectUnknown(
+			StaticResponseHeadersValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.StaticResponseHeaders.IsNull() && !v.StaticResponseHeaders.IsUnknown() {
+		staticResponseHeaders = types.ObjectValueMust(
+			StaticResponseHeadersValue{}.AttributeTypes(ctx),
+			v.StaticResponseHeaders.Attributes(),
+		)
+	}
+
 	attributeTypes := map[string]attr.Type{
 		"allowed_http_methods": basetypes.ObjectType{
 			AttrTypes: AllowedHttpMethodsValue{}.AttributeTypes(ctx),
@@ -2484,6 +2612,9 @@ func (v OptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		"static_request_headers": basetypes.ObjectType{
 			AttrTypes: StaticRequestHeadersValue{}.AttributeTypes(ctx),
 		},
+		"static_response_headers": basetypes.ObjectType{
+			AttrTypes: StaticResponseHeadersValue{}.AttributeTypes(ctx),
+		},
 	}
 
 	if v.IsNull() {
@@ -2497,28 +2628,29 @@ func (v OptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"allowed_http_methods":   allowedHttpMethods,
-			"brotli_compression":     brotliCompression,
-			"browser_cache_settings": browserCacheSettings,
-			"cors":                   cors,
-			"country_acl":            countryAcl,
-			"edge_cache_settings":    edgeCacheSettings,
-			"fetch_compressed":       v.FetchCompressed,
-			"force_return":           forceReturn,
-			"forward_host_header":    v.ForwardHostHeader,
-			"gzip_on":                v.GzipOn,
-			"host_header":            hostHeader,
-			"ignore_cookie":          v.IgnoreCookie,
-			"ignore_query_string":    v.IgnoreQueryString,
-			"ip_address_acl":         ipAddressAcl,
-			"query_params_blacklist": queryParamsBlacklist,
-			"query_params_whitelist": queryParamsWhitelist,
-			"referrer_acl":           referrerAcl,
-			"secure_key":             secureKey,
-			"slice":                  v.Slice,
-			"stale":                  stale,
-			"static_headers":         staticHeaders,
-			"static_request_headers": staticRequestHeaders,
+			"allowed_http_methods":    allowedHttpMethods,
+			"brotli_compression":      brotliCompression,
+			"browser_cache_settings":  browserCacheSettings,
+			"cors":                    cors,
+			"country_acl":             countryAcl,
+			"edge_cache_settings":     edgeCacheSettings,
+			"fetch_compressed":        v.FetchCompressed,
+			"force_return":            forceReturn,
+			"forward_host_header":     v.ForwardHostHeader,
+			"gzip_on":                 v.GzipOn,
+			"host_header":             hostHeader,
+			"ignore_cookie":           v.IgnoreCookie,
+			"ignore_query_string":     v.IgnoreQueryString,
+			"ip_address_acl":          ipAddressAcl,
+			"query_params_blacklist":  queryParamsBlacklist,
+			"query_params_whitelist":  queryParamsWhitelist,
+			"referrer_acl":            referrerAcl,
+			"secure_key":              secureKey,
+			"slice":                   v.Slice,
+			"stale":                   stale,
+			"static_headers":          staticHeaders,
+			"static_request_headers":  staticRequestHeaders,
+			"static_response_headers": staticResponseHeaders,
 		})
 
 	return objVal, diags
@@ -2627,6 +2759,10 @@ func (v OptionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.StaticResponseHeaders.Equal(other.StaticResponseHeaders) {
+		return false
+	}
+
 	return true
 }
 
@@ -2693,6 +2829,9 @@ func (v OptionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		},
 		"static_request_headers": basetypes.ObjectType{
 			AttrTypes: StaticRequestHeadersValue{}.AttributeTypes(ctx),
+		},
+		"static_response_headers": basetypes.ObjectType{
+			AttrTypes: StaticResponseHeadersValue{}.AttributeTypes(ctx),
 		},
 	}
 }
@@ -9470,6 +9609,882 @@ func (v StaticRequestHeadersValue) AttributeTypes(ctx context.Context) map[strin
 	return map[string]attr.Type{
 		"enabled": basetypes.BoolType{},
 		"value": basetypes.MapType{
+			ElemType: types.StringType,
+		},
+	}
+}
+
+var _ basetypes.ObjectTypable = StaticResponseHeadersType{}
+
+type StaticResponseHeadersType struct {
+	basetypes.ObjectType
+}
+
+func (t StaticResponseHeadersType) Equal(o attr.Type) bool {
+	other, ok := o.(StaticResponseHeadersType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t StaticResponseHeadersType) String() string {
+	return "StaticResponseHeadersType"
+}
+
+func (t StaticResponseHeadersType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	enabledAttribute, ok := attributes["enabled"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`enabled is missing from object`)
+
+		return nil, diags
+	}
+
+	enabledVal, ok := enabledAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`enabled expected to be basetypes.BoolValue, was: %T`, enabledAttribute))
+	}
+
+	valueAttribute, ok := attributes["value"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`value is missing from object`)
+
+		return nil, diags
+	}
+
+	valueVal, ok := valueAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`value expected to be basetypes.ListValue, was: %T`, valueAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return StaticResponseHeadersValue{
+		Enabled: enabledVal,
+		Value:   valueVal,
+		state:   attr.ValueStateKnown,
+	}, diags
+}
+
+func NewStaticResponseHeadersValueNull() StaticResponseHeadersValue {
+	return StaticResponseHeadersValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewStaticResponseHeadersValueUnknown() StaticResponseHeadersValue {
+	return StaticResponseHeadersValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewStaticResponseHeadersValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (StaticResponseHeadersValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing StaticResponseHeadersValue Attribute Value",
+				"While creating a StaticResponseHeadersValue value, a missing attribute value was detected. "+
+					"A StaticResponseHeadersValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("StaticResponseHeadersValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid StaticResponseHeadersValue Attribute Type",
+				"While creating a StaticResponseHeadersValue value, an invalid attribute value was detected. "+
+					"A StaticResponseHeadersValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("StaticResponseHeadersValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("StaticResponseHeadersValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra StaticResponseHeadersValue Attribute Value",
+				"While creating a StaticResponseHeadersValue value, an extra attribute value was detected. "+
+					"A StaticResponseHeadersValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra StaticResponseHeadersValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewStaticResponseHeadersValueUnknown(), diags
+	}
+
+	enabledAttribute, ok := attributes["enabled"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`enabled is missing from object`)
+
+		return NewStaticResponseHeadersValueUnknown(), diags
+	}
+
+	enabledVal, ok := enabledAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`enabled expected to be basetypes.BoolValue, was: %T`, enabledAttribute))
+	}
+
+	valueAttribute, ok := attributes["value"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`value is missing from object`)
+
+		return NewStaticResponseHeadersValueUnknown(), diags
+	}
+
+	valueVal, ok := valueAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`value expected to be basetypes.ListValue, was: %T`, valueAttribute))
+	}
+
+	if diags.HasError() {
+		return NewStaticResponseHeadersValueUnknown(), diags
+	}
+
+	return StaticResponseHeadersValue{
+		Enabled: enabledVal,
+		Value:   valueVal,
+		state:   attr.ValueStateKnown,
+	}, diags
+}
+
+func NewStaticResponseHeadersValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) StaticResponseHeadersValue {
+	object, diags := NewStaticResponseHeadersValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewStaticResponseHeadersValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t StaticResponseHeadersType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewStaticResponseHeadersValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewStaticResponseHeadersValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewStaticResponseHeadersValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewStaticResponseHeadersValueMust(StaticResponseHeadersValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t StaticResponseHeadersType) ValueType(ctx context.Context) attr.Value {
+	return StaticResponseHeadersValue{}
+}
+
+var _ basetypes.ObjectValuable = StaticResponseHeadersValue{}
+
+type StaticResponseHeadersValue struct {
+	Enabled basetypes.BoolValue `tfsdk:"enabled"`
+	Value   basetypes.ListValue `tfsdk:"value"`
+	state   attr.ValueState
+}
+
+func (v StaticResponseHeadersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["enabled"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["value"] = basetypes.ListType{
+		ElemType: ValueValue{}.Type(ctx),
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Enabled.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["enabled"] = val
+
+		val, err = v.Value.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["value"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v StaticResponseHeadersValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v StaticResponseHeadersValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v StaticResponseHeadersValue) String() string {
+	return "StaticResponseHeadersValue"
+}
+
+func (v StaticResponseHeadersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	value := types.ListValueMust(
+		ValueType{
+			basetypes.ObjectType{
+				AttrTypes: ValueValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.Value.Elements(),
+	)
+
+	if v.Value.IsNull() {
+		value = types.ListNull(
+			ValueType{
+				basetypes.ObjectType{
+					AttrTypes: ValueValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.Value.IsUnknown() {
+		value = types.ListUnknown(
+			ValueType{
+				basetypes.ObjectType{
+					AttrTypes: ValueValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"enabled": basetypes.BoolType{},
+		"value": basetypes.ListType{
+			ElemType: ValueValue{}.Type(ctx),
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"enabled": v.Enabled,
+			"value":   value,
+		})
+
+	return objVal, diags
+}
+
+func (v StaticResponseHeadersValue) Equal(o attr.Value) bool {
+	other, ok := o.(StaticResponseHeadersValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Enabled.Equal(other.Enabled) {
+		return false
+	}
+
+	if !v.Value.Equal(other.Value) {
+		return false
+	}
+
+	return true
+}
+
+func (v StaticResponseHeadersValue) Type(ctx context.Context) attr.Type {
+	return StaticResponseHeadersType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v StaticResponseHeadersValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"enabled": basetypes.BoolType{},
+		"value": basetypes.ListType{
+			ElemType: ValueValue{}.Type(ctx),
+		},
+	}
+}
+
+var _ basetypes.ObjectTypable = ValueType{}
+
+type ValueType struct {
+	basetypes.ObjectType
+}
+
+func (t ValueType) Equal(o attr.Type) bool {
+	other, ok := o.(ValueType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ValueType) String() string {
+	return "ValueType"
+}
+
+func (t ValueType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	alwaysAttribute, ok := attributes["always"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`always is missing from object`)
+
+		return nil, diags
+	}
+
+	alwaysVal, ok := alwaysAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`always expected to be basetypes.BoolValue, was: %T`, alwaysAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	valueAttribute, ok := attributes["value"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`value is missing from object`)
+
+		return nil, diags
+	}
+
+	valueVal, ok := valueAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`value expected to be basetypes.ListValue, was: %T`, valueAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ValueValue{
+		Always: alwaysVal,
+		Name:   nameVal,
+		Value:  valueVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewValueValueNull() ValueValue {
+	return ValueValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewValueValueUnknown() ValueValue {
+	return ValueValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewValueValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ValueValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ValueValue Attribute Value",
+				"While creating a ValueValue value, a missing attribute value was detected. "+
+					"A ValueValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ValueValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ValueValue Attribute Type",
+				"While creating a ValueValue value, an invalid attribute value was detected. "+
+					"A ValueValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ValueValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ValueValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ValueValue Attribute Value",
+				"While creating a ValueValue value, an extra attribute value was detected. "+
+					"A ValueValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ValueValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewValueValueUnknown(), diags
+	}
+
+	alwaysAttribute, ok := attributes["always"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`always is missing from object`)
+
+		return NewValueValueUnknown(), diags
+	}
+
+	alwaysVal, ok := alwaysAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`always expected to be basetypes.BoolValue, was: %T`, alwaysAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewValueValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	valueAttribute, ok := attributes["value"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`value is missing from object`)
+
+		return NewValueValueUnknown(), diags
+	}
+
+	valueVal, ok := valueAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`value expected to be basetypes.ListValue, was: %T`, valueAttribute))
+	}
+
+	if diags.HasError() {
+		return NewValueValueUnknown(), diags
+	}
+
+	return ValueValue{
+		Always: alwaysVal,
+		Name:   nameVal,
+		Value:  valueVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewValueValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ValueValue {
+	object, diags := NewValueValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewValueValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ValueType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewValueValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewValueValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewValueValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewValueValueMust(ValueValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ValueType) ValueType(ctx context.Context) attr.Value {
+	return ValueValue{}
+}
+
+var _ basetypes.ObjectValuable = ValueValue{}
+
+type ValueValue struct {
+	Always basetypes.BoolValue   `tfsdk:"always"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	Value  basetypes.ListValue   `tfsdk:"value"`
+	state  attr.ValueState
+}
+
+func (v ValueValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["always"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["value"] = basetypes.ListType{
+		ElemType: types.StringType,
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Always.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["always"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		val, err = v.Value.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["value"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ValueValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ValueValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ValueValue) String() string {
+	return "ValueValue"
+}
+
+func (v ValueValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var valueVal basetypes.ListValue
+	switch {
+	case v.Value.IsUnknown():
+		valueVal = types.ListUnknown(types.StringType)
+	case v.Value.IsNull():
+		valueVal = types.ListNull(types.StringType)
+	default:
+		var d diag.Diagnostics
+		valueVal, d = types.ListValue(types.StringType, v.Value.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"always": basetypes.BoolType{},
+			"name":   basetypes.StringType{},
+			"value": basetypes.ListType{
+				ElemType: types.StringType,
+			},
+		}), diags
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"always": basetypes.BoolType{},
+		"name":   basetypes.StringType{},
+		"value": basetypes.ListType{
+			ElemType: types.StringType,
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"always": v.Always,
+			"name":   v.Name,
+			"value":  valueVal,
+		})
+
+	return objVal, diags
+}
+
+func (v ValueValue) Equal(o attr.Value) bool {
+	other, ok := o.(ValueValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Always.Equal(other.Always) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	if !v.Value.Equal(other.Value) {
+		return false
+	}
+
+	return true
+}
+
+func (v ValueValue) Type(ctx context.Context) attr.Type {
+	return ValueType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ValueValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"always": basetypes.BoolType{},
+		"name":   basetypes.StringType{},
+		"value": basetypes.ListType{
 			ElemType: types.StringType,
 		},
 	}
