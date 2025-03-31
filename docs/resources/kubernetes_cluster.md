@@ -84,7 +84,7 @@ resource "vkcs_kubernetes_cluster" "k8s_cluster" {
 
 - `api_lb_fip` optional *string* &rarr;  API LoadBalancer fip. IP address field.
 
-- `api_lb_vip` optional *string* &rarr;  API LoadBalancer vip. IP address field.
+- `api_lb_vip` optional *string* &rarr;  API LoadBalancer vip. IP address field. The field is read-only, the value set in this field will be ignored. The ability to set this field will be removed in future versions of the provider.
 
 - `availability_zone` optional *string* &rarr;  Availability zone of the cluster, set this argument only for cluster with type `standard`.
 
