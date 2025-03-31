@@ -43,7 +43,7 @@ func TestAccDatabaseClusterWithShards_update_big(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDatabaseClusterExists("vkcs_db_cluster_with_shards.update", &cluster),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "name", "update"),
-					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "datastore.0.version", "20.8"),
+					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "datastore.0.version", "24.3"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "datastore.0.type", "clickhouse"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "cloud_monitoring_enabled", "false"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "shard.#", "1"),
@@ -59,7 +59,7 @@ func TestAccDatabaseClusterWithShards_update_big(t *testing.T) {
 				Config: acctest.AccTestRenderConfig(testAccDatabaseClusterWithShardsUpdateUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "name", "update"),
-					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "datastore.0.version", "20.8"),
+					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "datastore.0.version", "24.3"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "datastore.0.type", "clickhouse"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "cloud_monitoring_enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "shard.#", "1"),
@@ -171,7 +171,7 @@ resource "vkcs_db_cluster_with_shards" "basic" {
   name = "basic"
 
   datastore {
-    version = "20.8"
+    version = "24.3"
     type    = "clickhouse"
   }
 
@@ -198,7 +198,7 @@ const testAccDatabaseClusterWithShardsUpdateInitial = `
 resource "vkcs_db_config_group" "basic" {
 	name = "basic"
 	datastore {
-	  version = "20.8"
+	  version = "24.3"
 	  type    = "clickhouse"
 	}
 	values = {
@@ -210,7 +210,7 @@ resource "vkcs_db_cluster_with_shards" "update" {
   name      = "update"
   
   datastore {
-	version = "20.8"
+	version = "24.3"
 	type    = "clickhouse"
   }
   configuration_id = vkcs_db_config_group.basic.id
@@ -244,7 +244,7 @@ data "vkcs_compute_flavor" "new_flavor" {
 resource "vkcs_db_config_group" "basic" {
   name = "basic"
   datastore {
-    version = "20.8"
+    version = "24.3"
     type    = "clickhouse"
   }
   values = {
@@ -256,7 +256,7 @@ resource "vkcs_db_cluster_with_shards" "update" {
   name = "update"
 
   datastore {
-    version = "20.8"
+    version = "24.3"
     type    = "clickhouse"
   }
   configuration_id = vkcs_db_config_group.basic.id
@@ -296,7 +296,7 @@ resource "vkcs_db_cluster_with_shards" "resize" {
   name      = "resize"
   
   datastore {
-	version = "20.8"
+	version = "24.3"
 	type    = "clickhouse"
   }
   
@@ -328,7 +328,7 @@ resource "vkcs_db_cluster_with_shards" "resize" {
   name      = "resize"
   
   datastore {
-	version = "20.8"
+	version = "24.3"
 	type    = "clickhouse"
   }
   
@@ -368,7 +368,7 @@ resource "vkcs_db_cluster_with_shards" "resize" {
   name      = "resize"
   
   datastore {
-	version = "20.8"
+	version = "24.3"
 	type    = "clickhouse"
   }
   

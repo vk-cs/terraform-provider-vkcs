@@ -18,7 +18,7 @@ resource "vkcs_db_cluster_with_shards" "clickhouse_cluster" {
 
   datastore {
     type    = "clickhouse"
-    version = "20.8"
+    version = "24.3"
   }
 
   cloud_monitoring_enabled = true
@@ -84,7 +84,7 @@ resource "vkcs_db_cluster_with_shards" "db_cluster_with_shards" {
 
   datastore {
     type    = "clickhouse"
-    version = "20.8"
+    version = "24.3"
   }
 
   shard {
