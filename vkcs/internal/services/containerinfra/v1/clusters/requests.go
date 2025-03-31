@@ -27,7 +27,6 @@ type CreateOpts struct {
 	SubnetID                  string            `json:"subnet_id" required:"true"`
 	PodsNetworkCidr           string            `json:"pods_network_cidr,omitempty"`
 	FloatingIPEnabled         bool              `json:"floating_ip_enabled"`
-	APILBVIP                  string            `json:"api_lb_vip,omitempty"`
 	APILBFIP                  string            `json:"api_lb_fip,omitempty"`
 	RegistryAuthPassword      string            `json:"registry_auth_password,omitempty"`
 	AvailabilityZone          string            `json:"availability_zone,omitempty"`

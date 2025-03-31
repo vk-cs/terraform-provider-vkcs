@@ -219,8 +219,7 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
-				Description: "API LoadBalancer vip. IP address field.",
+				Description: "API LoadBalancer vip. IP address field. The field is read-only, the value set in this field will be ignored. The ability to set this field will be removed in future versions of the provider.",
 			},
 			"api_lb_fip": {
 				Type:        schema.TypeString,
@@ -384,7 +383,6 @@ func resourceKubernetesClusterCreate(ctx context.Context, d *schema.ResourceData
 		SubnetID:             d.Get("subnet_id").(string),
 		PodsNetworkCidr:      d.Get("pods_network_cidr").(string),
 		FloatingIPEnabled:    d.Get("floating_ip_enabled").(bool),
-		APILBVIP:             d.Get("api_lb_vip").(string),
 		APILBFIP:             d.Get("api_lb_fip").(string),
 		LoadbalancerSubnetID: d.Get("loadbalancer_subnet_id").(string),
 		RegistryAuthPassword: d.Get("registry_auth_password").(string),
