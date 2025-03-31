@@ -176,7 +176,7 @@ resource "vkcs_db_instance" "pg_with_backup" {
 - `keypair` optional *string* &rarr;  Name of the keypair to be attached to instance. Changing this creates a new instance.
 
 - `network` optional &rarr;  Object that represents network of the instance. Changing this creates a new instance.
-  - `fixed_ip_v4` optional *string* &rarr;  The IPv4 address. Changing this creates a new instance. <br>**Note:** This argument conflicts with "replica_of". Setting both at the same time causes "fixed_ip_v4" to be ignored.
+  - `fixed_ip_v4` optional deprecated *string* &rarr;  The IPv4 address. Changing this creates a new instance. <br>**Note:** This argument conflicts with "replica_of". Setting both at the same time causes "fixed_ip_v4" to be ignored. **Deprecated** This argument is no longer supported, and the instance will have a random ip address in the selected subnet.
 
   - `port` optional deprecated *string* &rarr;  The port id of the network. Changing this creates a new instance. **Deprecated** This argument is deprecated, please do not use it.
 

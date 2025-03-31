@@ -14,6 +14,7 @@ description: |-
 - Support multi-AZ PostgreSQL clusters
 - Fix filtering in the vkcs_cdn_shielding_pop data source
 - Deprecate static_headers option of cdn resource
+- Deprecate fixed_ip_v4 field of vkcs_db_instance resource
 
 #### v0.9.2
 - Reduce the minimum number of DHCP ports to wait for a subnet to be ready from 2 to 1

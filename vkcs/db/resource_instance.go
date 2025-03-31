@@ -224,8 +224,8 @@ func ResourceDatabaseInstance() *schema.Resource {
 						"fixed_ip_v4": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							ForceNew:    true,
 							Description: "The IPv4 address. Changing this creates a new instance. _note_ This argument conflicts with \"replica_of\". Setting both at the same time causes \"fixed_ip_v4\" to be ignored.",
+							Deprecated:  "This argument is no longer supported, and the instance will have a random ip address in the selected subnet.",
 						},
 						"subnet_id": {
 							Type:        schema.TypeString,
