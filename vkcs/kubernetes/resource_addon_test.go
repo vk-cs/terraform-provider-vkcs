@@ -180,7 +180,7 @@ const testAccKubernetesAddonBasic = `
 data "vkcs_kubernetes_addon" "ingress-nginx" {
   cluster_id = vkcs_kubernetes_cluster.cluster.id
   name       = "ingress-nginx"
-  version    = "4.12.0"
+  version    = "4.12.1"
 }
 
 resource "vkcs_kubernetes_addon" "addon" {
@@ -196,7 +196,7 @@ const testAccKubernetesAddonFull = `
 data "vkcs_kubernetes_addon" "ingress-nginx" {
   cluster_id = vkcs_kubernetes_cluster.cluster.id
   name       = "ingress-nginx"
-  version    = "4.12.0"
+  version    = "4.12.1"
 }
 
 resource "vkcs_kubernetes_addon" "addon" {
