@@ -164,6 +164,7 @@ const testAccComputeServerGroupAffinity = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_servergroup" "sg_1" {
   name = "sg_1"
@@ -174,7 +175,7 @@ resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   scheduler_hints {
     group = vkcs_compute_servergroup.sg_1.id
   }
@@ -190,6 +191,7 @@ const testAccComputeServerGroupSoftAffinity = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_servergroup" "sg_1" {
   name = "sg_1"
@@ -200,7 +202,7 @@ resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   scheduler_hints {
     group = vkcs_compute_servergroup.sg_1.id
   }
