@@ -829,6 +829,26 @@ func TestAccComputeInstance_cloudMonitoringMetadata(t *testing.T) {
 	})
 }
 
+func TestAccComputeInstance_GetWindowsPassword(t *testing.T) {
+	var instance servers.Server
+	resourceName := "vkcs_compute_instance.instance_1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceGetWindowsPassword),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists(resourceName, &instance),
+					resource.TestCheckResourceAttrSet(resourceName, "password_data"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckComputeInstanceDestroy(s *terraform.State) error {
 	config, err := clients.ConfigureFromEnv(context.Background())
 	if err != nil {
@@ -1034,12 +1054,13 @@ const testAccComputeInstanceBasic = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
 	depends_on = ["vkcs_networking_router_interface.base"]
 	name = "instance_1"
 	availability_zone = "{{.AvailabilityZone}}"
-	security_groups = ["default"]
+	security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
 	metadata = {
 	  foo = "bar"
 	}
@@ -1055,12 +1076,13 @@ const testAccComputeInstanceBootFromVolumeImage = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
@@ -1080,6 +1102,7 @@ const testAccComputeInstanceBootFromVolumeVolume = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_blockstorage_volume" "vol_1" {
   name = "vol_1"
@@ -1093,7 +1116,7 @@ resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   block_device {
     uuid = vkcs_blockstorage_volume.vol_1.id
     source_type = "volume"
@@ -1112,12 +1135,13 @@ const testAccComputeInstanceBootFromVolumeForceNew1 = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]  
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
@@ -1137,12 +1161,13 @@ const testAccComputeInstanceBootFromVolumeForceNew2 = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
@@ -1162,12 +1187,13 @@ const testAccComputeInstanceBlockDeviceNewVolume = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
@@ -1194,12 +1220,13 @@ const testAccComputeInstanceBlockDeviceNewVolumeTypeAndBus = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
@@ -1229,6 +1256,7 @@ const testAccComputeInstanceBlockDeviceExistingVolume = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
@@ -1241,7 +1269,7 @@ resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
@@ -1268,6 +1296,7 @@ const testAccComputeInstanceBlockDeviceBootIndexDefault = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
@@ -1280,7 +1309,7 @@ resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
@@ -1299,6 +1328,7 @@ const testAccComputeInstanceBlockDevicesBootIndicesDefaults = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_blockstorage_volume" "volume_1" {
   name = "volume_1"
@@ -1311,7 +1341,7 @@ resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
@@ -1343,12 +1373,13 @@ const testAccComputeInstancePersonality = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   personality {
     file = "/tmp/foobar.txt"
     content = "happy"
@@ -1369,6 +1400,7 @@ const testAccComputeInstanceAccessIPv4 = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
@@ -1387,7 +1419,7 @@ resource "vkcs_compute_instance" "instance_1" {
 
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
 
   network {
     uuid = vkcs_networking_network.base.id
@@ -1407,12 +1439,13 @@ const testAccComputeInstanceChangeFixedIP1 = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
     fixed_ip_v4 = "192.168.199.134"
@@ -1426,12 +1459,13 @@ const testAccComputeInstanceChangeFixedIP2 = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
     fixed_ip_v4 = "192.168.199.135"
@@ -1445,12 +1479,13 @@ const testAccComputeInstanceStopBeforeDestroy = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   stop_before_destroy = true
   network {
     uuid = vkcs_networking_network.base.id
@@ -1464,12 +1499,13 @@ const testAccComputeInstanceMetadataRemove1 = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   metadata = {
     foo = "bar"
     abc = "def"
@@ -1486,12 +1522,13 @@ const testAccComputeInstanceMetadataRemove2 = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   metadata = {
     foo = "bar"
     ghi = "jkl"
@@ -1508,12 +1545,13 @@ const testAccComputeInstanceForceDelete = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   force_delete = true
   network {
     uuid = vkcs_networking_network.base.id
@@ -1527,12 +1565,13 @@ const testAccComputeInstanceTimeout = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
 
   timeouts {
     create = "10m"
@@ -1548,6 +1587,7 @@ resource "vkcs_compute_instance" "instance_1" {
 const testAccComputeInstanceNetworkModeNone = `
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   name = "test-instance-1"
@@ -1563,6 +1603,7 @@ const testAccComputeInstanceNetworkNameToID = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_networking_network" "network_acc_test" {
   name = "network_{{.TestName}}_{{.CurrentTime}}"
@@ -1581,7 +1622,7 @@ resource "vkcs_compute_instance" "instance_1" {
 
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
 
   network {
     uuid = vkcs_networking_network.base.id
@@ -1599,6 +1640,7 @@ const testAccComputeInstanceCrazyNICs = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
@@ -1679,7 +1721,7 @@ resource "vkcs_compute_instance" "instance_1" {
 
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
 
   network {
     uuid = vkcs_networking_network.base.id
@@ -1730,12 +1772,13 @@ const testAccComputeInstanceStateActive = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = [vkcs_networking_router_interface.base]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   power_state = "active"
   network {
     uuid = vkcs_networking_network.base.id
@@ -1749,12 +1792,13 @@ const testAccComputeInstanceStateShutoff = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   power_state = "shutoff"
   network {
     uuid = vkcs_networking_network.base.id
@@ -1768,11 +1812,12 @@ const testAccComputeInstanceStateShelve = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   power_state = "shelved_offloaded"
   network {
     uuid = vkcs_networking_network.base.id
@@ -1786,12 +1831,13 @@ const testAccComputeInstanceTagsCreate = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -1804,12 +1850,13 @@ const testAccComputeInstanceTagsAdd = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -1823,12 +1870,13 @@ const testAccComputeInstanceTagsDelete = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -1842,12 +1890,13 @@ const testAccComputeInstanceTagsClear = `
 {{.BaseNetwork}}
 {{.BaseImage}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
   depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_groups = ["default"]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -1859,6 +1908,7 @@ resource "vkcs_compute_instance" "instance_1" {
 const testAccComputeInstanceCloudMonitoring = `
 {{.BaseNetwork}}
 {{.BaseFlavor}}
+{{.BaseSecurityGroup}}
 
 data "vkcs_images_image" "base" {
   visibility = "public"
@@ -1874,11 +1924,11 @@ resource "vkcs_cloud_monitoring" "basic" {
 }
 
 resource "vkcs_compute_instance" "instance_1" {
-  name              = "instance_with_monitoring"
-  image_id          = data.vkcs_images_image.base.id
-  flavor_id         = data.vkcs_compute_flavor.base.id
-  availability_zone = "{{.AvailabilityZone}}"
-  security_groups   = ["default"]
+  name               = "instance_with_monitoring"
+  image_id           = data.vkcs_images_image.base.id
+  flavor_id          = data.vkcs_compute_flavor.base.id
+  availability_zone  = "{{.AvailabilityZone}}"
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
   network {
     uuid = vkcs_networking_network.base.id
   }
@@ -1925,4 +1975,52 @@ metadata = {
 
 const testMetadataEmpty = `
 metadata = {}
+`
+
+const testAccComputeInstanceGetWindowsPassword = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
+{{.BaseSecurityGroup}}
+
+data "vkcs_images_image" "windows" {
+  visibility  = "public"
+  default     = true
+  most_recent = true
+  properties = {
+    mcs_os_type = "windows"
+    os_version  = "10.0"
+  }
+}
+
+resource "vkcs_compute_keypair" "windows" {
+  name = "windows_key_pair"
+}
+
+resource "vkcs_compute_instance" "instance_1" {
+  name               = "instance_with_windows"
+  flavor_id          = data.vkcs_compute_flavor.base.id
+  availability_zone  = "{{.AvailabilityZone}}"
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  key_pair 			 = vkcs_compute_keypair.windows.name
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+
+  block_device {
+    source_type           = "image"
+    uuid                  = data.vkcs_images_image.windows.id
+    destination_type      = "volume"
+    volume_size           = 50
+    volume_type           = "ceph-ssd"
+    delete_on_termination = true
+  }
+
+  vendor_options {
+    get_password_data = true
+  }
+  
+  depends_on = [
+    vkcs_networking_router_interface.base
+  ]
+}
 `
