@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -251,7 +252,12 @@ func ResourceComputeInstance() *schema.Resource {
 				Optional:    true,
 				Sensitive:   true,
 				ForceNew:    false,
-				Description: "The administrative password to assign to the server. Changing this changes the root password on the existing server.",
+				Description: "The administrative password to assign to the server. This attribute allows you to set or change a password only on an already created server.",
+			},
+			"password_data": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Base-64 encoded encrypted password data for the instance. Use this attribute only for instances running Microsoft Windows. This attribute is only exported if `get_password_data` is true. If you change the password after creating the instance, these changes will not be visible in this field.",
 			},
 			"access_ip_v4": {
 				Type:        schema.TypeString,
@@ -434,6 +440,12 @@ func ResourceComputeInstance() *schema.Resource {
 							Optional:    true,
 							Description: "Whether to try to detach all attached ports to the vm before destroying it to make sure the port state is correct after the vm destruction. This is helpful when the port is not deleted.",
 						},
+						"get_password_data": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "If true, wait for initial windows admin password to be generated and retrieve it. Use this attribute only for instances running Microsoft Windows. The password data is exported to the `password_data` attribute. The password will be generated only if you specify the instance `key_pair`. The password will be read only once when the instance is created.",
+						},
 					},
 				},
 				Description: "Map of additional vendor-specific options. Supported options are described below.",
@@ -444,6 +456,17 @@ func ResourceComputeInstance() *schema.Resource {
 }
 
 func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if _, ok := d.GetOk("admin_pass"); ok {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "The admin_pass option does not work during creation, it is only allows you to set or change a password only on an already created server",
+			AttributePath: cty.Path{
+				cty.GetAttrStep{Name: "admin_pass"},
+			},
+		})
+	}
+
 	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(util.GetRegion(d, config))
 	if err != nil {
@@ -458,7 +481,6 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	var createOpts servers.CreateOptsBuilder
 	var availabilityZone string
 	var networks interface{}
-	var diags diag.Diagnostics
 
 	// Determines the Image ID using the following rules:
 	// If a bootable block_device was specified, ignore the image altogether.
@@ -651,6 +673,15 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		if err != nil {
 			return diag.Errorf("Error waiting for instance (%s) to become inactive(shutoff): %s", d.Id(), err)
 		}
+	}
+
+	vendorOptionsRaw := d.Get("vendor_options").(*schema.Set)
+	if shouldGetServerPassword(vendorOptionsRaw) {
+		passwordData, err := getServerPasswordData(ctx, computeClient, server.ID, d.Timeout(schema.TimeoutRead))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to get server password: %w", err))
+		}
+		d.Set("password_data", passwordData)
 	}
 
 	diags = append(diags, resourceComputeInstanceRead(ctx, d, meta)...)
@@ -1194,6 +1225,18 @@ func resourceComputeInstanceCustomizeDiff(ctx context.Context, diff *schema.Reso
 		diff.ForceNew("availability_zone")
 	}
 
+	if diff.GetRawState().IsNull() {
+		vendorOptionsRaw := diff.Get("vendor_options").(*schema.Set)
+		if shouldGetServerPassword(vendorOptionsRaw) {
+			if _, ok := diff.GetOk("key_pair"); !ok {
+				return errors.New("key_pair must be set if you would to get password of the server")
+			}
+			if _, ok := diff.GetOk("admin_pass"); ok {
+				return errors.New("admin_pass must not be set if you would to get password of the server")
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -1696,4 +1739,39 @@ func resourceInstanceUserData(d *schema.ResourceData, monitoringSettings *imonit
 	}
 
 	return "", nil
+}
+
+func shouldGetServerPassword(vendorOptionsRaw *schema.Set) bool {
+	var getPasswordData bool
+	if vendorOptionsRaw.Len() > 0 {
+		vendorOptions := util.ExpandVendorOptions(vendorOptionsRaw.List())
+		getPasswordData = vendorOptions["get_password_data"].(bool)
+	}
+
+	return getPasswordData
+}
+
+func getServerPasswordData(ctx context.Context, computeClient *gophercloud.ServiceClient, serverID string, timeout time.Duration) (string, error) {
+	log.Printf("[INFO] Wait for password for server %s", serverID)
+
+	var passwordData string
+	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
+		var err error
+		passwordData, err = iservers.GetServerPassword(computeClient, serverID).ExtractPassword(nil)
+		if err != nil {
+			return retry.NonRetryableError(err)
+		}
+
+		if passwordData == "" {
+			return retry.RetryableError(fmt.Errorf("password data is blank for server: %s", serverID))
+		}
+
+		log.Printf("[INFO] Password data is read for server %s", serverID)
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return passwordData, nil
 }

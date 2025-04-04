@@ -829,6 +829,26 @@ func TestAccComputeInstance_cloudMonitoringMetadata(t *testing.T) {
 	})
 }
 
+func TestAccComputeInstance_GetWindowsPassword(t *testing.T) {
+	var instance servers.Server
+	resourceName := "vkcs_compute_instance.instance_1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceGetWindowsPassword),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists(resourceName, &instance),
+					resource.TestCheckResourceAttrSet(resourceName, "password_data"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckComputeInstanceDestroy(s *terraform.State) error {
 	config, err := clients.ConfigureFromEnv(context.Background())
 	if err != nil {
@@ -1903,7 +1923,7 @@ resource "vkcs_cloud_monitoring" "basic" {
 }
 
 resource "vkcs_compute_instance" "instance_1" {
-  name               = "instance_with_monitoring"
+  name               = "instance-with-monitoring"
   image_id           = data.vkcs_images_image.base.id
   flavor_id          = data.vkcs_compute_flavor.base.id
   availability_zone  = "{{.AvailabilityZone}}"
@@ -1954,4 +1974,52 @@ metadata = {
 
 const testMetadataEmpty = `
 metadata = {}
+`
+
+const testAccComputeInstanceGetWindowsPassword = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
+{{.BaseSecurityGroup}}
+
+data "vkcs_images_image" "windows" {
+  visibility  = "public"
+  default     = true
+  most_recent = true
+  properties = {
+    mcs_os_type = "windows"
+    os_version  = "10.0"
+  }
+}
+
+resource "vkcs_compute_keypair" "windows" {
+  name = "windows-key-pair"
+}
+
+resource "vkcs_compute_instance" "instance_1" {
+  name               = "instance-with-windows"
+  flavor_id          = data.vkcs_compute_flavor.base.id
+  availability_zone  = "{{.AvailabilityZone}}"
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  key_pair 			 = vkcs_compute_keypair.windows.name
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+
+  block_device {
+    source_type           = "image"
+    uuid                  = data.vkcs_images_image.windows.id
+    destination_type      = "volume"
+    volume_size           = 50
+    volume_type           = "ceph-ssd"
+    delete_on_termination = true
+  }
+
+  vendor_options {
+    get_password_data = true
+  }
+  
+  depends_on = [
+    vkcs_networking_router_interface.base
+  ]
+}
 `

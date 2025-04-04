@@ -46,6 +46,11 @@ script and user_data into one file
 
 {{tffile "examples/compute/instance/cloud_monitoring/main.tf"}}
 
+### Get generated admin password for windows instance
+
+~> **Attention:** The password will be generated only if you specify the instance `key_pair`. If you change the password after creating the instance, these changes will not be visible in `password_data` field.
+{{tffile "examples/compute/instance/windows_password/main.tf"}}
+
 {{ .SchemaMarkdown }}
 
 ## Notes
