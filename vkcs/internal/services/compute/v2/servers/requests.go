@@ -71,3 +71,9 @@ func DeleteMetadatum(client *gophercloud.ServiceClient, id, key string) servers.
 	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return r
 }
+
+func GetServerPassword(client *gophercloud.ServiceClient, id string) servers.GetPasswordResult {
+	r := servers.GetPassword(client, id)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return r
+}

@@ -249,12 +249,58 @@ resource "vkcs_compute_instance" "cloud_monitoring" {
 }
 ```
 
+### Get generated admin password for windows instance
+
+~> **Attention:** The password will be generated only if you specify the instance `key_pair`. If you change the password after creating the instance, these changes will not be visible in `password_data` field.
+```terraform
+resource "vkcs_compute_keypair" "generated_key" {
+  name = "generated-key-tf-example"
+}
+
+resource "vkcs_compute_instance" "basic" {
+  name              = "windows-password-tf-example"
+  availability_zone = "ME1"
+  flavor_name       = "STD2-2-8"
+  key_pair          = vkcs_compute_keypair.generated_key.name
+
+  block_device {
+    source_type           = "image"
+    uuid                  = data.vkcs_images_image.windows.id
+    destination_type      = "volume"
+    volume_size           = 50
+    volume_type           = "high-iops-ha"
+    delete_on_termination = true
+  }
+
+  network {
+    uuid = vkcs_networking_network.app.id
+  }
+
+  security_group_ids = [
+    vkcs_networking_secgroup.rdp.id,
+  ]
+
+  vendor_options {
+    get_password_data = true
+  }
+
+  depends_on = [
+    vkcs_networking_router_interface.app
+  ]
+}
+
+output "windows_password" {
+  value     = rsadecrypt(vkcs_compute_instance.basic.password_data, vkcs_compute_keypair.generated_key.private_key)
+  sensitive = true
+}
+```
+
 ## Argument Reference
 - `name` **required** *string* &rarr;  A unique name for the resource.
 
 - `access_ip_v4` optional *string* &rarr;  The first detected Fixed IPv4 address.
 
-- `admin_pass` optional sensitive *string* &rarr;  The administrative password to assign to the server. Changing this changes the root password on the existing server.
+- `admin_pass` optional sensitive *string* &rarr;  The administrative password to assign to the server. This attribute allows you to set or change a password only on an already created server.
 
 - `availability_zone` optional *string* &rarr;  The availability zone in which to create the server. Conflicts with `availability_zone_hints`. Changing this creates a new server.
 
@@ -338,6 +384,8 @@ resource "vkcs_compute_instance" "cloud_monitoring" {
 - `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below.
   - `detach_ports_before_destroy` optional *boolean* &rarr;  Whether to try to detach all attached ports to the vm before destroying it to make sure the port state is correct after the vm destruction. This is helpful when the port is not deleted.
 
+  - `get_password_data` optional *boolean* &rarr;  If true, wait for initial windows admin password to be generated and retrieve it. Use this attribute only for instances running Microsoft Windows. The password data is exported to the `password_data` attribute. The password will be generated only if you specify the instance `key_pair`. The password will be read only once when the instance is created.
+
   - `ignore_resize_confirmation` optional *boolean* &rarr;  Boolean to control whether to ignore manual confirmation of the instance resizing.
 
 
@@ -351,6 +399,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `network` 
   - `mac` *string* &rarr;  The MAC address of the NIC on that network.
+
+- `password_data` *string* &rarr;  Base-64 encoded encrypted password data for the instance. Use this attribute only for instances running Microsoft Windows. This attribute is only exported if `get_password_data` is true. If you change the password after creating the instance, these changes will not be visible in this field.
 
 
 
