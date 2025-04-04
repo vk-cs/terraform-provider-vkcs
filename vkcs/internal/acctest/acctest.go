@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/provider"
 )
@@ -31,13 +32,14 @@ var (
 	OsVolumeType        = os.Getenv("OS_VOLUME_TYPE")
 )
 
-var AccTestValues map[string]string = map[string]string{
+var AccTestValues = map[string]string{
 	"BaseNetwork":           AccTestBaseNetwork,
 	"BaseExtNetwork":        AccTestBaseExtNetwork(),
 	"BaseExtNetworkNeutron": AccTestBaseExtNetworkNeutron(),
 	"BaseImage":             AccTestBaseImage(),
 	"BaseFlavor":            AccTestBaseFlavor(),
 	"BaseNewFlavor":         AccTestBaseNewFlavor(),
+	"BaseSecurityGroup":     AccTestBaseDefaultSG(),
 	"AvailabilityZone":      OsAvailabilityZone,
 	"VolumeType":            OsVolumeType,
 	"FlavorName":            OsFlavorName,
@@ -169,6 +171,15 @@ data "vkcs_networking_network" "extnet" {
 	subnet_id = vkcs_networking_subnet.base.id
   }
 `
+
+func AccTestBaseDefaultSG() string {
+	return fmt.Sprintf(`
+	data "vkcs_networking_secgroup" "default_secgroup" {
+	  name = "default"
+	  sdn  = "%s"
+	}
+	`, networking.DefaultSDN)
+}
 
 func AccTestRenderConfig(testConfig string, values ...map[string]string) string {
 	t := template.Must(template.New("acc").Option("missingkey=error").Parse(testConfig))

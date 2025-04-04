@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -253,6 +254,11 @@ func ResourceComputeInstance() *schema.Resource {
 				ForceNew:    false,
 				Description: "The administrative password to assign to the server. Changing this changes the root password on the existing server.",
 			},
+			"password_data": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Base-64 encoded encrypted password data for the instance. Use this attribute only for instances running Microsoft Windows. This attribute is only exported if \"get_password_data\" is true. If you change the password after creating the instance, these changes will not be visible in this field.",
+			},
 			"access_ip_v4": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -433,6 +439,12 @@ func ResourceComputeInstance() *schema.Resource {
 							Default:     false,
 							Optional:    true,
 							Description: "Whether to try to detach all attached ports to the vm before destroying it to make sure the port state is correct after the vm destruction. This is helpful when the port is not deleted.",
+						},
+						"get_password_data": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "If true, wait for password data to become available and retrieve it. Use this attribute only for instances running Microsoft Windows. The password data is exported to the \"password_data\" attribute. The password will be generated only if you specify the instance key pair.",
 						},
 					},
 				},
@@ -657,7 +669,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceComputeInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(util.GetRegion(d, config))
 	if err != nil {
@@ -762,6 +774,14 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 		log.Printf("[DEBUG] Unable to get tags for vkcs_compute_instance: %s", err)
 	} else {
 		ComputeInstanceReadTags(d, instanceTags)
+	}
+
+	if shouldGetServerPassword(d) {
+		passwordData, err := getServerPasswordData(ctx, computeClient, server.ID, d.Timeout(schema.TimeoutRead))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to get read server password: %w", err))
+		}
+		d.Set("password_data", passwordData)
 	}
 
 	return nil
@@ -1192,6 +1212,12 @@ func resourceComputeInstanceCustomizeDiff(ctx context.Context, diff *schema.Reso
 	oldState, newState := diff.GetChange("power_state")
 	if !(oldState.(string) == "shelved_offloaded" && newState.(string) == "active" || diff.Get("power_state").(string) == "shelved_offloaded") {
 		diff.ForceNew("availability_zone")
+	}
+
+	if shouldGetServerPassword(diff) {
+		if _, ok := diff.GetOk("key_pair"); !ok {
+			return errors.New("key pair must be set if you would to get password of the server")
+		}
 	}
 
 	return nil
@@ -1696,4 +1722,49 @@ func resourceInstanceUserData(d *schema.ResourceData, monitoringSettings *imonit
 	}
 
 	return "", nil
+}
+
+type ResourceData interface {
+	Get(string) interface{}
+	GetChange(string) (interface{}, interface{})
+	GetOk(string) (interface{}, bool)
+	HasChange(string) bool
+	HasChanges(...string) bool
+	Id() string
+}
+
+func shouldGetServerPassword[T ResourceData](d T) bool {
+	vendorOptionsRaw := d.Get("vendor_options").(*schema.Set)
+	var getPasswordData bool
+	if vendorOptionsRaw.Len() > 0 {
+		vendorOptions := util.ExpandVendorOptions(vendorOptionsRaw.List())
+		getPasswordData = vendorOptions["get_password_data"].(bool)
+	}
+
+	return getPasswordData
+}
+
+func getServerPasswordData(ctx context.Context, computeClient *gophercloud.ServiceClient, serverID string, timeout time.Duration) (string, error) {
+	log.Printf("[INFO] Wait for password for server %s", serverID)
+
+	var passwordData string
+	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
+		var err error
+		passwordData, err = iservers.GetServerPassword(computeClient, serverID).ExtractPassword(nil)
+		if err != nil {
+			return retry.NonRetryableError(err)
+		}
+
+		if passwordData == "" {
+			return retry.RetryableError(fmt.Errorf("password data is blank for server: %s", serverID))
+		}
+
+		log.Printf("[INFO] Password data is read for server %s", serverID)
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return passwordData, nil
 }
