@@ -1149,7 +1149,6 @@
                                 {
                                     "name": "static_headers",
                                     "single_nested": {
-                                        "deprecation_message": "static_headers option is deprecated. Use static_response_headers option instead",
                                         "computed_optional_required": "computed_optional",
                                         "description": "Custom HTTP Headers that a CDN server adds to a response.",
                                         "attributes": [
@@ -1161,72 +1160,6 @@
                                                         "string": {}
                                                     },
                                                     "description": "A map of static headers in the format \"header_name\": \"header_value\"."
-                                                }
-                                            },
-                                            {
-                                                "name": "enabled",
-                                                "bool": {
-                                                    "computed_optional_required": "computed_optional",
-                                                    "description": "Controls the option state."
-                                                }
-                                            }
-                                        ],
-                                        "plan_modifiers": [
-                                            {
-                                                "custom": {
-                                                    "imports": [
-                                                        {
-                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
-                                                            "alias": "resource_planmodifiers"
-                                                        }
-                                                    ],
-                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
-                                                }
-                                            }
-                                        ]
-                                    }
-                                },
-                                {
-                                    "name": "static_response_headers",
-                                    "single_nested": {
-                                        "computed_optional_required": "computed_optional",
-                                        "description": "Custom HTTP Headers that a CDN server adds to a response.",
-                                        "attributes": [
-                                            {
-                                                "name": "value",
-                                                "list_nested": {
-                                                    "computed_optional_required": "computed_optional",
-                                                    "nested_object": {
-                                                        "attributes": [
-                                                            {
-                                                                "name": "name",
-                                                                "string": {
-                                                                    "computed_optional_required": "computed_optional",
-                                                                    "description": "Header name."
-                                                                }
-                                                            },
-                                                            {
-                                                                "name": "value",
-                                                                "list": {
-                                                                    "element_type": {
-                                                                        "string": {}
-                                                                    },
-                                                                    "computed_optional_required": "computed_optional",
-                                                                    "description": "Header value."
-                                                                }
-                                                            },
-                                                            {
-                                                                "name": "always",
-                                                                "bool": {
-                                                                  "computed_optional_required": "computed_optional",
-                                                                  "default": {
-                                                                    "static": true
-                                                                  },
-                                                                  "description" : "Set field to true — to add the header to the response from CDN server regardless of the HTTP response status code. Set field to false — to add the header to the responses with HTTP 200, 201, 204, 206, 301, 302, 303, 304, 307, or 308 status codes only. Default value is true."
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
                                                 }
                                             },
                                             {

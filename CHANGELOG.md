@@ -9,12 +9,10 @@ description: |-
 
 #### v0.9.3 (unreleased)
 - Add secure_key option to cdn resource
-- Add static_response_headers option to cdn resource
 - Add availability_zones and vrrp_port_id fields to vkcs_db_cluster resource
 - Support multi-AZ PostgreSQL clusters
 - Fix filtering in the vkcs_cdn_shielding_pop data source
 - Mark api_lb_vip field of vkcs_kubernetes_cluster resource as read-only
-- Deprecate static_headers option of cdn resource
 - Deprecate fixed_ip_v4 field of vkcs_db_instance resource
 
 #### v0.9.2
