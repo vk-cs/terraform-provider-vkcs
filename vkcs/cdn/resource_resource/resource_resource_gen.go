@@ -6,12 +6,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
@@ -316,13 +318,45 @@ func ResourceResourceSchema(ctx context.Context) schema.Schema {
 							boolplanmodifier.UseStateForUnknown(),
 						},
 					},
+					"gzip_compression": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"enabled": schema.BoolAttribute{
+								Optional:            true,
+								Computed:            true,
+								Description:         "Controls the option state.",
+								MarkdownDescription: "Controls the option state.",
+							},
+							"value": schema.SetAttribute{
+								ElementType:         types.StringType,
+								Optional:            true,
+								Computed:            true,
+								Description:         "List of content types to be compressed. It's required to specify text/html here.",
+								MarkdownDescription: "List of content types to be compressed. It's required to specify text/html here.",
+							},
+						},
+						CustomType: GzipCompressionType{
+							ObjectType: types.ObjectType{
+								AttrTypes: GzipCompressionValue{}.AttributeTypes(ctx),
+							},
+						},
+						Optional:            true,
+						Computed:            true,
+						Description:         "Compresses content with GZip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed`, `slice` and `gzip_on` if any of them are enabled simultaneously. `application/wasm` value is not supported when the shielded option is disabled, compression in this case is performed on the origin shielding, so it must be active for the MIME type to be compressed.",
+						MarkdownDescription: "Compresses content with GZip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed`, `slice` and `gzip_on` if any of them are enabled simultaneously. `application/wasm` value is not supported when the shielded option is disabled, compression in this case is performed on the origin shielding, so it must be active for the MIME type to be compressed.",
+						PlanModifiers: []planmodifier.Object{
+							resource_planmodifiers.ResourceOption(),
+						},
+					},
 					"gzip_on": schema.BoolAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Enables content compression using gzip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed` if both enabled simultaneously.",
-						MarkdownDescription: "Enables content compression using gzip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed` if both enabled simultaneously.",
+						Description:         "Enables content compression using gzip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed`, `slice` and `gzip_compression` if any of them are enabled simultaneously.",
+						MarkdownDescription: "Enables content compression using gzip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed`, `slice` and `gzip_compression` if any of them are enabled simultaneously.",
 						PlanModifiers: []planmodifier.Bool{
 							boolplanmodifier.UseStateForUnknown(),
+						},
+						Validators: []validator.Bool{
+							boolvalidator.ConflictsWith(path.MatchRoot("options").AtName("gzip_compression")),
 						},
 					},
 					"host_header": schema.SingleNestedAttribute{
@@ -973,6 +1007,24 @@ func (t OptionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`forward_host_header expected to be basetypes.BoolValue, was: %T`, forwardHostHeaderAttribute))
 	}
 
+	gzipCompressionAttribute, ok := attributes["gzip_compression"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`gzip_compression is missing from object`)
+
+		return nil, diags
+	}
+
+	gzipCompressionVal, ok := gzipCompressionAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`gzip_compression expected to be basetypes.ObjectValue, was: %T`, gzipCompressionAttribute))
+	}
+
 	gzipOnAttribute, ok := attributes["gzip_on"]
 
 	if !ok {
@@ -1221,6 +1273,7 @@ func (t OptionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		FetchCompressed:      fetchCompressedVal,
 		ForceReturn:          forceReturnVal,
 		ForwardHostHeader:    forwardHostHeaderVal,
+		GzipCompression:      gzipCompressionVal,
 		GzipOn:               gzipOnVal,
 		HostHeader:           hostHeaderVal,
 		IgnoreCookie:         ignoreCookieVal,
@@ -1463,6 +1516,24 @@ func NewOptionsValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`forward_host_header expected to be basetypes.BoolValue, was: %T`, forwardHostHeaderAttribute))
 	}
 
+	gzipCompressionAttribute, ok := attributes["gzip_compression"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`gzip_compression is missing from object`)
+
+		return NewOptionsValueUnknown(), diags
+	}
+
+	gzipCompressionVal, ok := gzipCompressionAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`gzip_compression expected to be basetypes.ObjectValue, was: %T`, gzipCompressionAttribute))
+	}
+
 	gzipOnAttribute, ok := attributes["gzip_on"]
 
 	if !ok {
@@ -1711,6 +1782,7 @@ func NewOptionsValue(attributeTypes map[string]attr.Type, attributes map[string]
 		FetchCompressed:      fetchCompressedVal,
 		ForceReturn:          forceReturnVal,
 		ForwardHostHeader:    forwardHostHeaderVal,
+		GzipCompression:      gzipCompressionVal,
 		GzipOn:               gzipOnVal,
 		HostHeader:           hostHeaderVal,
 		IgnoreCookie:         ignoreCookieVal,
@@ -1805,6 +1877,7 @@ type OptionsValue struct {
 	FetchCompressed      basetypes.BoolValue   `tfsdk:"fetch_compressed"`
 	ForceReturn          basetypes.ObjectValue `tfsdk:"force_return"`
 	ForwardHostHeader    basetypes.BoolValue   `tfsdk:"forward_host_header"`
+	GzipCompression      basetypes.ObjectValue `tfsdk:"gzip_compression"`
 	GzipOn               basetypes.BoolValue   `tfsdk:"gzip_on"`
 	HostHeader           basetypes.ObjectValue `tfsdk:"host_header"`
 	IgnoreCookie         basetypes.BoolValue   `tfsdk:"ignore_cookie"`
@@ -1822,7 +1895,7 @@ type OptionsValue struct {
 }
 
 func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 22)
+	attrTypes := make(map[string]tftypes.Type, 23)
 
 	var val tftypes.Value
 	var err error
@@ -1850,6 +1923,9 @@ func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		AttrTypes: ForceReturnValue{}.AttributeTypes(ctx),
 	}.TerraformType(ctx)
 	attrTypes["forward_host_header"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["gzip_compression"] = basetypes.ObjectType{
+		AttrTypes: GzipCompressionValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
 	attrTypes["gzip_on"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["host_header"] = basetypes.ObjectType{
 		AttrTypes: HostHeaderValue{}.AttributeTypes(ctx),
@@ -1886,7 +1962,7 @@ func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 22)
+		vals := make(map[string]tftypes.Value, 23)
 
 		val, err = v.AllowedHttpMethods.ToTerraformValue(ctx)
 
@@ -1959,6 +2035,14 @@ func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		}
 
 		vals["forward_host_header"] = val
+
+		val, err = v.GzipCompression.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["gzip_compression"] = val
 
 		val, err = v.GzipOn.ToTerraformValue(ctx)
 
@@ -2240,6 +2324,27 @@ func (v OptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		)
 	}
 
+	var gzipCompression basetypes.ObjectValue
+
+	if v.GzipCompression.IsNull() {
+		gzipCompression = types.ObjectNull(
+			GzipCompressionValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.GzipCompression.IsUnknown() {
+		gzipCompression = types.ObjectUnknown(
+			GzipCompressionValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.GzipCompression.IsNull() && !v.GzipCompression.IsUnknown() {
+		gzipCompression = types.ObjectValueMust(
+			GzipCompressionValue{}.AttributeTypes(ctx),
+			v.GzipCompression.Attributes(),
+		)
+	}
+
 	var hostHeader basetypes.ObjectValue
 
 	if v.HostHeader.IsNull() {
@@ -2453,7 +2558,10 @@ func (v OptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			AttrTypes: ForceReturnValue{}.AttributeTypes(ctx),
 		},
 		"forward_host_header": basetypes.BoolType{},
-		"gzip_on":             basetypes.BoolType{},
+		"gzip_compression": basetypes.ObjectType{
+			AttrTypes: GzipCompressionValue{}.AttributeTypes(ctx),
+		},
+		"gzip_on": basetypes.BoolType{},
 		"host_header": basetypes.ObjectType{
 			AttrTypes: HostHeaderValue{}.AttributeTypes(ctx),
 		},
@@ -2506,6 +2614,7 @@ func (v OptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"fetch_compressed":       v.FetchCompressed,
 			"force_return":           forceReturn,
 			"forward_host_header":    v.ForwardHostHeader,
+			"gzip_compression":       gzipCompression,
 			"gzip_on":                v.GzipOn,
 			"host_header":            hostHeader,
 			"ignore_cookie":          v.IgnoreCookie,
@@ -2572,6 +2681,10 @@ func (v OptionsValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.ForwardHostHeader.Equal(other.ForwardHostHeader) {
+		return false
+	}
+
+	if !v.GzipCompression.Equal(other.GzipCompression) {
 		return false
 	}
 
@@ -2663,7 +2776,10 @@ func (v OptionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 			AttrTypes: ForceReturnValue{}.AttributeTypes(ctx),
 		},
 		"forward_host_header": basetypes.BoolType{},
-		"gzip_on":             basetypes.BoolType{},
+		"gzip_compression": basetypes.ObjectType{
+			AttrTypes: GzipCompressionValue{}.AttributeTypes(ctx),
+		},
+		"gzip_on": basetypes.BoolType{},
 		"host_header": basetypes.ObjectType{
 			AttrTypes: HostHeaderValue{}.AttributeTypes(ctx),
 		},
@@ -5705,6 +5821,412 @@ func (v ForceReturnValue) AttributeTypes(ctx context.Context) map[string]attr.Ty
 		"body":    basetypes.StringType{},
 		"code":    basetypes.Int64Type{},
 		"enabled": basetypes.BoolType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = GzipCompressionType{}
+
+type GzipCompressionType struct {
+	basetypes.ObjectType
+}
+
+func (t GzipCompressionType) Equal(o attr.Type) bool {
+	other, ok := o.(GzipCompressionType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t GzipCompressionType) String() string {
+	return "GzipCompressionType"
+}
+
+func (t GzipCompressionType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	enabledAttribute, ok := attributes["enabled"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`enabled is missing from object`)
+
+		return nil, diags
+	}
+
+	enabledVal, ok := enabledAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`enabled expected to be basetypes.BoolValue, was: %T`, enabledAttribute))
+	}
+
+	valueAttribute, ok := attributes["value"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`value is missing from object`)
+
+		return nil, diags
+	}
+
+	valueVal, ok := valueAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`value expected to be basetypes.SetValue, was: %T`, valueAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return GzipCompressionValue{
+		Enabled: enabledVal,
+		Value:   valueVal,
+		state:   attr.ValueStateKnown,
+	}, diags
+}
+
+func NewGzipCompressionValueNull() GzipCompressionValue {
+	return GzipCompressionValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewGzipCompressionValueUnknown() GzipCompressionValue {
+	return GzipCompressionValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewGzipCompressionValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (GzipCompressionValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing GzipCompressionValue Attribute Value",
+				"While creating a GzipCompressionValue value, a missing attribute value was detected. "+
+					"A GzipCompressionValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("GzipCompressionValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid GzipCompressionValue Attribute Type",
+				"While creating a GzipCompressionValue value, an invalid attribute value was detected. "+
+					"A GzipCompressionValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("GzipCompressionValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("GzipCompressionValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra GzipCompressionValue Attribute Value",
+				"While creating a GzipCompressionValue value, an extra attribute value was detected. "+
+					"A GzipCompressionValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra GzipCompressionValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewGzipCompressionValueUnknown(), diags
+	}
+
+	enabledAttribute, ok := attributes["enabled"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`enabled is missing from object`)
+
+		return NewGzipCompressionValueUnknown(), diags
+	}
+
+	enabledVal, ok := enabledAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`enabled expected to be basetypes.BoolValue, was: %T`, enabledAttribute))
+	}
+
+	valueAttribute, ok := attributes["value"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`value is missing from object`)
+
+		return NewGzipCompressionValueUnknown(), diags
+	}
+
+	valueVal, ok := valueAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`value expected to be basetypes.SetValue, was: %T`, valueAttribute))
+	}
+
+	if diags.HasError() {
+		return NewGzipCompressionValueUnknown(), diags
+	}
+
+	return GzipCompressionValue{
+		Enabled: enabledVal,
+		Value:   valueVal,
+		state:   attr.ValueStateKnown,
+	}, diags
+}
+
+func NewGzipCompressionValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) GzipCompressionValue {
+	object, diags := NewGzipCompressionValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewGzipCompressionValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t GzipCompressionType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewGzipCompressionValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewGzipCompressionValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewGzipCompressionValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewGzipCompressionValueMust(GzipCompressionValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t GzipCompressionType) ValueType(ctx context.Context) attr.Value {
+	return GzipCompressionValue{}
+}
+
+var _ basetypes.ObjectValuable = GzipCompressionValue{}
+
+type GzipCompressionValue struct {
+	Enabled basetypes.BoolValue `tfsdk:"enabled"`
+	Value   basetypes.SetValue  `tfsdk:"value"`
+	state   attr.ValueState
+}
+
+func (v GzipCompressionValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["enabled"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["value"] = basetypes.SetType{
+		ElemType: types.StringType,
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Enabled.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["enabled"] = val
+
+		val, err = v.Value.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["value"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v GzipCompressionValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v GzipCompressionValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v GzipCompressionValue) String() string {
+	return "GzipCompressionValue"
+}
+
+func (v GzipCompressionValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var valueVal basetypes.SetValue
+	switch {
+	case v.Value.IsUnknown():
+		valueVal = types.SetUnknown(types.StringType)
+	case v.Value.IsNull():
+		valueVal = types.SetNull(types.StringType)
+	default:
+		var d diag.Diagnostics
+		valueVal, d = types.SetValue(types.StringType, v.Value.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"enabled": basetypes.BoolType{},
+			"value": basetypes.SetType{
+				ElemType: types.StringType,
+			},
+		}), diags
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"enabled": basetypes.BoolType{},
+		"value": basetypes.SetType{
+			ElemType: types.StringType,
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"enabled": v.Enabled,
+			"value":   valueVal,
+		})
+
+	return objVal, diags
+}
+
+func (v GzipCompressionValue) Equal(o attr.Value) bool {
+	other, ok := o.(GzipCompressionValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Enabled.Equal(other.Enabled) {
+		return false
+	}
+
+	if !v.Value.Equal(other.Value) {
+		return false
+	}
+
+	return true
+}
+
+func (v GzipCompressionValue) Type(ctx context.Context) attr.Type {
+	return GzipCompressionType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v GzipCompressionValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"enabled": basetypes.BoolType{},
+		"value": basetypes.SetType{
+			ElemType: types.StringType,
+		},
 	}
 }
 

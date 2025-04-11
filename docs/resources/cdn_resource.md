@@ -102,7 +102,13 @@ Specify HTTP-code you need and text or URL if you're going to set up redirection
 
   - `forward_host_header` optional *boolean* &rarr;  Forwards the Host header from a end-user request to an origin server. Conflicts with `host_header` if both enabled simultaneously.
 
-  - `gzip_on` optional *boolean* &rarr;  Enables content compression using gzip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed` if both enabled simultaneously.
+  - `gzip_compression` optional &rarr;  Compresses content with GZip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed`, `slice` and `gzip_on` if any of them are enabled simultaneously. `application/wasm` value is not supported when the shielded option is disabled, compression in this case is performed on the origin shielding, so it must be active for the MIME type to be compressed.
+    - `enabled` optional *boolean* &rarr;  Controls the option state.
+
+    - `value` optional *set of* *string* &rarr;  List of content types to be compressed. It's required to specify text/html here.
+
+
+  - `gzip_on` optional *boolean* &rarr;  Enables content compression using gzip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed`, `slice` and `gzip_compression` if any of them are enabled simultaneously.
 
   - `host_header` optional &rarr;  Use this option to specify the Host header that CDN servers use when request content from an origin server. If the option is not set, the header value is equal to the first CNAME. Conflicts with `forward_host_header` if both enabled simultaneously.
     - `enabled` optional *boolean* &rarr;  Controls the option state.

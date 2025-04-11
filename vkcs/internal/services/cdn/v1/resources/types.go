@@ -147,6 +147,7 @@ type ResourceOptions struct {
 	ForceReturn          *ResourceOptionsForceReturnOption        `json:"force_return,omitempty"`
 	ForwardHostHeader    *ResourceOptionsBoolOption               `json:"forward_host_header,omitempty"`
 	GzipOn               *ResourceOptionsBoolOption               `json:"gzipOn,omitempty"`
+	GzipCompression      *ResourceOptionsStringListOption         `json:"gzip_compression,omitempty"`
 	HostHeader           *ResourceOptionsStringOption             `json:"hostHeader,omitempty"`
 	IgnoreQueryString    *ResourceOptionsBoolOption               `json:"ignoreQueryString,omitempty"`
 	IgnoreCookie         *ResourceOptionsBoolOption               `json:"ignore_cookie,omitempty"`

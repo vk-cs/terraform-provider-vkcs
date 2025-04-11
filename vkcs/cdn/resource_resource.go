@@ -24,6 +24,7 @@ var (
 	_ resource.ResourceWithConfigValidators = (*resourceResource)(nil)
 	_ resource.ResourceWithImportState      = (*resourceResource)(nil)
 	_ resource.ResourceWithValidateConfig   = (*resourceResource)(nil)
+	_ resource.ResourceWithModifyPlan       = (*resourceResource)(nil)
 )
 
 func NewResourceResource() resource.Resource {
@@ -54,6 +55,18 @@ func (r *resourceResource) ConfigValidators(ctx context.Context) []resource.Conf
 		resource_validators.ConflictingEnabled(
 			path.MatchRoot("options").AtName("fetch_compressed"),
 			path.MatchRoot("options").AtName("gzip_on"),
+		),
+		resource_validators.ConflictingEnabled(
+			path.MatchRoot("options").AtName("slice"),
+			path.MatchRoot("options").AtName("gzip_on"),
+		),
+		resource_validators.ConflictingEnabled(
+			path.MatchRoot("options").AtName("fetch_compressed"),
+			path.MatchRoot("options").AtName("gzip_compression"),
+		),
+		resource_validators.ConflictingEnabled(
+			path.MatchRoot("options").AtName("slice"),
+			path.MatchRoot("options").AtName("gzip_compression"),
 		),
 		resource_validators.ConflictingEnabled(
 			path.MatchRoot("options").AtName("forward_host_header"),
@@ -92,6 +105,32 @@ func (r *resourceResource) ValidateConfig(ctx context.Context, req resource.Vali
 			"`shielding.pop_id` must be configured when `shielding.enabled` is \"true\"",
 		)
 	}
+}
+
+func (r *resourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var plan *resource_resource.ResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	gzipCompression := plan.Options.GzipCompression
+	if !gzipCompression.IsNull() && !gzipCompression.IsUnknown() {
+		gzipCompressionObjV, d := resource_resource.GzipCompressionType{}.ValueFromObject(ctx, gzipCompression)
+		resp.Diagnostics.Append(d...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		gzipCompression := gzipCompressionObjV.(resource_resource.GzipCompressionValue)
+
+		plan.Options.GzipOn = types.BoolValue(gzipCompression.Enabled.ValueBool())
+	}
+
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *resourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

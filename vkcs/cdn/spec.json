@@ -750,7 +750,7 @@
                                     "name": "gzip_on",
                                     "bool": {
                                         "computed_optional_required": "computed_optional",
-                                        "description": "Enables content compression using gzip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed` if both enabled simultaneously.",
+                                        "description": "Enables content compression using gzip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed`, `slice` and `gzip_compression` if any of them are enabled simultaneously.",
                                         "plan_modifiers": [
                                             {
                                                 "custom": {
@@ -760,6 +760,60 @@
                                                         }
                                                     ],
                                                     "schema_definition": "boolplanmodifier.UseStateForUnknown()"
+                                                }
+                                            }
+                                        ],
+                                        "validators": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
+                                                        },
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework/path"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "boolvalidator.ConflictsWith(path.MatchRoot(\"options\").AtName(\"gzip_compression\"))"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "gzip_compression",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Compresses content with GZip on the CDN side. CDN servers will request only uncompressed content from the origin. Conflicts with `fetch_compressed`, `slice` and `gzip_on` if any of them are enabled simultaneously. `application/wasm` value is not supported when the shielded option is disabled, compression in this case is performed on the origin shielding, so it must be active for the MIME type to be compressed.",
+                                        "attributes": [
+                                            {
+                                                "name": "value",
+                                                "set": {
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "List of content types to be compressed. It's required to specify text/html here."
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
                                                 }
                                             }
                                         ]
