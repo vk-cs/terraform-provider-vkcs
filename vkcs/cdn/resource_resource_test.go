@@ -181,7 +181,8 @@ func TestAccCDNResourceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.force_return.body", "https://vk.com/redirect/old"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.force_return.enabled", "false"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.forward_host_header", "false"),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.gzip_on", "false"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.gzip_compression.enabled", "false"),
+					acctest.TestCheckResourceListAttr("vkcs_cdn_resource.update", "options.gzip_compression.value", []string{"application/json", "text/html"}),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.host_header.value", "host.com"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.host_header.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.ignore_cookie", "true"),
@@ -515,10 +516,13 @@ resource "vkcs_cdn_resource" "update" {
       enabled = false
     }
     forward_host_header = false
-    gzip_on             = false
-	  host_header         = {
-	    value = "host.com"
-	  }
+    gzip_compression = {
+	  enabled = false
+	  value   = ["application/json", "text/html"] 
+	}
+	host_header = {
+	  value = "host.com"
+	}
     ignore_cookie       = true
     query_params_blacklist = {
       enabled = false

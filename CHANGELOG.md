@@ -9,6 +9,7 @@ description: |-
 
 #### v0.9.3 (unreleased)
 - Add secure_key option to cdn resource
+- Add gzip_compression option to cdn resource
 - Add availability_zones and vrrp_port_id fields to vkcs_db_cluster resource
 - Add ability go get admin password of compute instance with windows
 - Support multi-AZ PostgreSQL clusters

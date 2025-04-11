@@ -394,6 +394,27 @@ func (v OptionsValue) ToResourceOptions(ctx context.Context) (*resources.Resourc
 		}
 	}
 
+	if o := v.GzipCompression; !o.IsUnknown() && !o.IsNull() {
+		gzipCompressionObjV, d := GzipCompressionType{}.ValueFromObject(ctx, o)
+		diags.Append(d...)
+		if diags.HasError() {
+			return nil, diags
+		}
+		gzipCompression := gzipCompressionObjV.(GzipCompressionValue)
+		value := make([]string, 0, len(gzipCompression.Value.Elements()))
+		if optV := gzipCompression.Value; !optV.IsUnknown() && !optV.IsNull() {
+			diags.Append(optV.ElementsAs(ctx, &value, true)...)
+			if diags.HasError() {
+				return nil, diags
+			}
+		}
+
+		result.GzipCompression = &resources.ResourceOptionsStringListOption{
+			Enabled: gzipCompression.Enabled.ValueBool(),
+			Value:   value,
+		}
+	}
+
 	return result, diags
 }
 
@@ -776,6 +797,30 @@ func (v OptionsValue) FromResourceOptions(ctx context.Context, opts *resources.R
 		}
 	}
 
+	var gzipCompression types.Object
+	if o := opts.GzipCompression; o != nil {
+		value, d := types.SetValueFrom(ctx, types.StringType, o.Value)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+		gzipCompression, d = GzipCompressionValue{
+			Value:   value,
+			Enabled: types.BoolValue(o.Enabled),
+			state:   attr.ValueStateKnown,
+		}.ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+	} else {
+		gzipCompression, d = NewGzipCompressionValueNull().ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+	}
+
 	return OptionsValue{
 		AllowedHttpMethods:   allowedHttpMethods,
 		BrotliCompression:    brotliCompression,
@@ -787,6 +832,7 @@ func (v OptionsValue) FromResourceOptions(ctx context.Context, opts *resources.R
 		ForceReturn:          forceReturn,
 		ForwardHostHeader:    flattenBoolOption(opts.ForwardHostHeader),
 		GzipOn:               flattenBoolOption(opts.GzipOn),
+		GzipCompression:      gzipCompression,
 		HostHeader:           hostHeader,
 		IgnoreCookie:         flattenBoolOption(opts.IgnoreCookie),
 		IgnoreQueryString:    flattenBoolOption(opts.IgnoreQueryString),
