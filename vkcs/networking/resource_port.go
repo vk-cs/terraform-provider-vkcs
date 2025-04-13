@@ -203,7 +203,7 @@ func ResourceNetworkingPort() *schema.Resource {
 						},
 					},
 				},
-				Description: "An extra DHCP option that needs to be configured on the port. The structure is described below. Can be specified multiple times.",
+				Description: "An extra DHCP option that needs to be configured on the port. The structure is described below. Can be specified multiple times. _note_ This is field is not supported by `sprut` sdn.",
 			},
 
 			"value_specs": {

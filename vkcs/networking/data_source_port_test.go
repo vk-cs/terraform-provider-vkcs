@@ -48,7 +48,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
 
 data "vkcs_networking_secgroup" "default" {
   name = "default"
-  sdn = "neutron"
+  sdn  = "sprut"
 }
 
 resource "vkcs_networking_port" "port_1" {
