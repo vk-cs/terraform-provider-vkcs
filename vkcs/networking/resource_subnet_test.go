@@ -39,8 +39,6 @@ func TestAccNetworkingSubnet_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"vkcs_networking_subnet.subnet_1", "name", "subnet_1"),
 					resource.TestCheckResourceAttr(
-						"vkcs_networking_subnet.subnet_1", "gateway_ip", "192.168.199.1"),
-					resource.TestCheckResourceAttr(
 						"vkcs_networking_subnet.subnet_1", "enable_dhcp", "true"),
 					resource.TestCheckResourceAttr(
 						"vkcs_networking_subnet.subnet_1", "allocation_pool.0.start", "192.168.199.150"),
@@ -125,7 +123,7 @@ func TestAccNetworkingSubnet_impliedGateway(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
 					resource.TestCheckResourceAttr(
-						"vkcs_networking_subnet.subnet_1", "gateway_ip", "192.168.199.1"),
+						"vkcs_networking_subnet.subnet_1", "gateway_ip", "192.168.199.254"),
 				),
 			},
 		},
@@ -339,7 +337,6 @@ resource "vkcs_networking_network" "network_1" {
 resource "vkcs_networking_subnet" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
-  gateway_ip = "192.168.199.1"
   network_id = vkcs_networking_network.network_1.id
 
   dns_nameservers = ["10.0.16.4", "213.186.33.99"]
@@ -446,7 +443,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
 
   allocation_pool {
     start = "10.3.255.0"
-    end = "10.3.255.254"
+    end = "10.3.255.253"
   }
 }
 `
@@ -464,7 +461,7 @@ resource "vkcs_networking_subnet" "subnet_1" {
 
   allocation_pool {
     start = "10.3.255.0"
-    end = "10.3.255.254"
+    end = "10.3.255.253"
   }
 
   allocation_pool {

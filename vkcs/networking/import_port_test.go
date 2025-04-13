@@ -81,28 +81,3 @@ func TestAccNetworkingPort_importAllowedAddressPairsNoMAC(t *testing.T) {
 		},
 	})
 }
-
-func TestAccNetworkingPort_importDHCPOpts(t *testing.T) {
-	resourceName := "vkcs_networking_port.port_1"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { acctest.AccTestPreCheck(t) },
-		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccCheckNetworkingPortDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccNetworkingPortCreateExtraDhcpOpts,
-			},
-
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"fixed_ip",
-					"full_security_groups_control",
-				},
-			},
-		},
-	})
-}

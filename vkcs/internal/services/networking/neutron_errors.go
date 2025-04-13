@@ -14,6 +14,8 @@ const (
 	NeutronErrTypeDBObjectDuplicateEntry = "NeutronDbObjectDuplicateEntry"
 	NeutronErrIPAddressGenerationFailure = "IpAddressGenerationFailure"
 	NeutronErrExternalIPAddressExhausted = "ExternalIpAddressExhausted"
+	NeutronErrBadRequest                 = "BadRequest"
+	SprutErrIPConflict                   = "HTTPConflict"
 )
 
 type NeutronError struct {

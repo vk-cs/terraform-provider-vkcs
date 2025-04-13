@@ -218,11 +218,19 @@ func needRetryOnFloatingIPCreationError(err error) bool {
 			ErrType: inetworking.NeutronErrExternalIPAddressExhausted,
 		},
 		{
+			ErrCode: 400,
+			ErrType: inetworking.NeutronErrBadRequest,
+		},
+		{
 			ErrCode: 404,
 		},
 		{
 			ErrCode: 409,
 			ErrType: inetworking.NeutronErrIPAddressGenerationFailure,
+		},
+		{
+			ErrCode: 409,
+			ErrType: inetworking.SprutErrIPConflict,
 		},
 	}, true)
 }

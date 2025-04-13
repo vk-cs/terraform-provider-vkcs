@@ -55,7 +55,7 @@ resource "vkcs_networking_port" "persistent_etcd" {
 
 - `dns_name` optional *string* &rarr;  The port DNS name.
 
-- `extra_dhcp_option` optional &rarr;  An extra DHCP option that needs to be configured on the port. The structure is described below. Can be specified multiple times.
+- `extra_dhcp_option` optional &rarr;  An extra DHCP option that needs to be configured on the port. The structure is described below. Can be specified multiple times. <br>**Note:** This is field is not supported by `sprut` sdn.
   - `name` **required** *string* &rarr;  Name of the DHCP option.
 
   - `value` **required** *string* &rarr;  Value of the DHCP option.
