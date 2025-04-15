@@ -488,7 +488,7 @@
           "admin_pass": {
             "type": "TypeString",
             "optional": true,
-            "description": "The administrative password to assign to the server. Changing this changes the root password on the existing server."
+            "description": "The administrative password to assign to the server. This attribute allows you to set or change a password only on an already created server."
           },
           "all_metadata": {
             "type": "TypeMap",
@@ -714,6 +714,12 @@
             "description": "Special string for `network` option to create the server. `network_mode` can be `\"auto\"` or `\"none\"`. Please see the following [reference](https://docs.openstack.org/api-ref/compute/?expanded=create-server-detail#id11) for more information. Conflicts with `network`.",
             "force_new": true
           },
+          "password_data": {
+            "type": "TypeString",
+            "description": "Base-64 encoded encrypted password data for the instance. Use this attribute only for instances running Microsoft Windows. This attribute is only exported if `get_password_data` is true. If you change the password after creating the instance, these changes will not be visible in this field.",
+            "computed": true,
+            "new_since": "v0.9.3"
+          },
           "personality": {
             "type": "TypeSet",
             "optional": true,
@@ -813,6 +819,13 @@
                   "optional": true,
                   "default": false,
                   "description": "Whether to try to detach all attached ports to the vm before destroying it to make sure the port state is correct after the vm destruction. This is helpful when the port is not deleted."
+                },
+                "get_password_data": {
+                  "type": "TypeBool",
+                  "optional": true,
+                  "default": false,
+                  "description": "If true, wait for initial windows admin password to be generated and retrieve it. Use this attribute only for instances running Microsoft Windows. The password data is exported to the `password_data` attribute. The password will be generated only if you specify the instance `key_pair`. The password will be read only once when the instance is created.",
+                  "new_since": "v0.9.3"
                 },
                 "ignore_resize_confirmation": {
                   "type": "TypeBool",
@@ -2039,7 +2052,7 @@
                   "type": "TypeString",
                   "optional": true,
                   "description": "The IPv4 address. Changing this creates a new instance. _note_ This argument conflicts with \"replica_of\". Setting both at the same time causes \"fixed_ip_v4\" to be ignored.",
-                  "force_new": true
+                  "deprecated": "This argument is no longer supported, and the instance will have a random ip address in the selected subnet."
                 },
                 "port": {
                   "type": "TypeString",
@@ -3565,9 +3578,8 @@
           "api_lb_vip": {
             "type": "TypeString",
             "optional": true,
-            "description": "API LoadBalancer vip. IP address field.",
-            "computed": true,
-            "force_new": true
+            "description": "API LoadBalancer vip. IP address field. The field is read-only, the value set in this field will be ignored. The ability to set this field will be removed in future versions of the provider.",
+            "computed": true
           },
           "availability_zone": {
             "type": "TypeString",
@@ -5434,7 +5446,7 @@
           "extra_dhcp_option": {
             "type": "TypeSet",
             "optional": true,
-            "description": "An extra DHCP option that needs to be configured on the port. The structure is described below. Can be specified multiple times.",
+            "description": "An extra DHCP option that needs to be configured on the port. The structure is described below. Can be specified multiple times. _note_ This is field is not supported by `sprut` sdn.",
             "elem": {
               "schema": {
                 "name": {

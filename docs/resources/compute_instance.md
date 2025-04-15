@@ -384,7 +384,7 @@ output "windows_password" {
 - `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below.
   - `detach_ports_before_destroy` optional *boolean* &rarr;  Whether to try to detach all attached ports to the vm before destroying it to make sure the port state is correct after the vm destruction. This is helpful when the port is not deleted.
 
-  - `get_password_data` optional *boolean* &rarr;  If true, wait for initial windows admin password to be generated and retrieve it. Use this attribute only for instances running Microsoft Windows. The password data is exported to the `password_data` attribute. The password will be generated only if you specify the instance `key_pair`. The password will be read only once when the instance is created.
+  - `get_password_data` optional *boolean* &rarr;  If true, wait for initial windows admin password to be generated and retrieve it. Use this attribute only for instances running Microsoft Windows. The password data is exported to the `password_data` attribute. The password will be generated only if you specify the instance `key_pair`. The password will be read only once when the instance is created.<br>**New since v0.9.3**.
 
   - `ignore_resize_confirmation` optional *boolean* &rarr;  Boolean to control whether to ignore manual confirmation of the instance resizing.
 
@@ -400,7 +400,7 @@ In addition to all arguments above, the following attributes are exported:
 - `network` 
   - `mac` *string* &rarr;  The MAC address of the NIC on that network.
 
-- `password_data` *string* &rarr;  Base-64 encoded encrypted password data for the instance. Use this attribute only for instances running Microsoft Windows. This attribute is only exported if `get_password_data` is true. If you change the password after creating the instance, these changes will not be visible in this field.
+- `password_data` *string* &rarr;  Base-64 encoded encrypted password data for the instance. Use this attribute only for instances running Microsoft Windows. This attribute is only exported if `get_password_data` is true. If you change the password after creating the instance, these changes will not be visible in this field.<br>**New since v0.9.3**.
 
 
 
