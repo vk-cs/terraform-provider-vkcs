@@ -259,9 +259,10 @@ func SliceUnion(a, b []string) []string {
 	return res
 }
 
-func IsOperationNotSupported(d string, types ...string) bool {
+func IsOperationNotSupported(curType string, types ...string) bool {
+	curType = strings.ToLower(curType)
 	for _, t := range types {
-		if d == t {
+		if curType == t {
 			return true
 		}
 	}

@@ -192,9 +192,12 @@ func ResourceDatabaseInstance() *schema.Resource {
 							Description: "Version of the datastore. Changing this creates a new instance.",
 						},
 						"type": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+							StateFunc: func(dataStore interface{}) string {
+								return strings.ToLower(dataStore.(string))
+							},
 							Description: "Type of the datastore. Changing this creates a new instance.",
 						},
 					},
