@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/mitchellh/mapstructure"
@@ -73,21 +74,24 @@ func extractDatabaseRestorePoint(v []interface{}) (instances.RestorePoint, error
 }
 
 func extractDatabaseDatastore(v []interface{}) (datastores.DatastoreShort, error) {
-	var D datastores.DatastoreShort
+	var datastore datastores.DatastoreShort
 	in := v[0].(map[string]interface{})
-	err := util.MapStructureDecoder(&D, &in, util.DecoderConfig)
+	err := util.MapStructureDecoder(&datastore, &in, util.DecoderConfig)
 	if err != nil {
-		return D, err
+		return datastore, err
 	}
-	return D, nil
+	datastore.Type = strings.ToLower(datastore.Type)
+
+	return datastore, nil
 }
 
 func flattenDatabaseInstanceDatastore(d datastores.DatastoreShort) []map[string]interface{} {
-	datastore := make([]map[string]interface{}, 1)
-	datastore[0] = make(map[string]interface{})
-	datastore[0]["type"] = d.Type
-	datastore[0]["version"] = d.Version
-	return datastore
+	return []map[string]interface{}{
+		{
+			"type":    d.Type,
+			"version": d.Version,
+		},
+	}
 }
 
 func extractDatabaseNetworks(v []interface{}) ([]instances.NetworkOpts, []string, error) {

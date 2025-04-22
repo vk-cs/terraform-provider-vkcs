@@ -106,9 +106,12 @@ func ResourceDatabaseClusterWithShards() *schema.Resource {
 							Description: "Version of the datastore. Changing this creates a new cluster.",
 						},
 						"type": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ForceNew:     true,
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+							StateFunc: func(dataStore interface{}) string {
+								return strings.ToLower(dataStore.(string))
+							},
 							ValidateFunc: validation.StringInSlice(getClusterWithShardsDatastores(), true),
 							Description:  fmt.Sprintf("Type of the datastore. Changing this creates a new cluster. Must be one of: %s", strings.Join(datastoresWithQuotes(getClusterWithShardsDatastores()), ", ")),
 						},

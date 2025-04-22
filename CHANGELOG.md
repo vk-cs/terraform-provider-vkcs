@@ -7,6 +7,8 @@ description: |-
 
 # VKCS Provider's changelog
 
+#### v0.9.4 (unreleased)
+
 #### v0.9.3
 - Add secure_key option to cdn resource
 - Add gzip_compression option to cdn resource
