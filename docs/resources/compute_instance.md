@@ -300,7 +300,7 @@ output "windows_password" {
 
 - `access_ip_v4` optional *string* &rarr;  The first detected Fixed IPv4 address.
 
-- `admin_pass` optional sensitive *string* &rarr;  The administrative password to assign to the server. This attribute allows you to set or change a password only on an already created server.
+- `admin_pass` optional sensitive *string* &rarr;  The administrative password to assign to the server. For some images, the password must meet certain requirements, which can be found here: https://cloud.vk.com/docs/en/computing/iaas/service-management/vm/vm-manage. <br>**Note:** If the password does not meet these requirements, the resource creation may hang until the timeout due to repeated attempts to set the password.
 
 - `availability_zone` optional *string* &rarr;  The availability zone in which to create the server. Conflicts with `availability_zone_hints`. Changing this creates a new server.
 

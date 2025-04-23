@@ -849,6 +849,35 @@ func TestAccComputeInstance_GetWindowsPassword(t *testing.T) {
 	})
 }
 
+func TestAccComputeInstance_AdminPasswordUpdate(t *testing.T) {
+	var instance servers.Server
+	resourceName := "vkcs_compute_instance.instance_1"
+	oldPassword := "S1mfd)dIt8s_mD"
+	newPassword := "foDp2x_f(sdoRv"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceAdminPassword, map[string]string{"AdminPass": oldPassword}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists(resourceName, &instance),
+					resource.TestCheckResourceAttr(resourceName, "admin_pass", oldPassword),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceAdminPassword, map[string]string{"AdminPass": newPassword}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists(resourceName, &instance),
+					resource.TestCheckResourceAttr(resourceName, "admin_pass", newPassword),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckComputeInstanceDestroy(s *terraform.State) error {
 	config, err := clients.ConfigureFromEnv(context.Background())
 	if err != nil {
@@ -2018,6 +2047,37 @@ resource "vkcs_compute_instance" "instance_1" {
     get_password_data = true
   }
   
+  depends_on = [
+    vkcs_networking_router_interface.base
+  ]
+}
+`
+
+const testAccComputeInstanceAdminPassword = `
+{{.BaseNetwork}}
+{{.BaseFlavor}}
+{{.BaseSecurityGroup}}
+
+data "vkcs_images_image" "base" {
+  visibility = "public"
+  default    = true
+  properties = {
+    mcs_os_distro  = "ubuntu"
+    mcs_os_version = "24.04"
+  }
+}
+
+resource "vkcs_compute_instance" "instance_1" {
+  name               = "instance-with-admin-password"
+  image_id           = data.vkcs_images_image.base.id
+  flavor_id          = data.vkcs_compute_flavor.base.id
+  availability_zone  = "{{.AvailabilityZone}}"
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  admin_pass         = "{{.AdminPass}}"
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+
   depends_on = [
     vkcs_networking_router_interface.base
   ]

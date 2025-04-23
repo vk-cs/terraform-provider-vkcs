@@ -252,7 +252,7 @@ func ResourceComputeInstance() *schema.Resource {
 				Optional:    true,
 				Sensitive:   true,
 				ForceNew:    false,
-				Description: "The administrative password to assign to the server. This attribute allows you to set or change a password only on an already created server.",
+				Description: "The administrative password to assign to the server. For some images, the password must meet certain requirements, which can be found here: https://cloud.vk.com/docs/en/computing/iaas/service-management/vm/vm-manage. _note_ If the password does not meet these requirements, the resource creation may hang until the timeout due to repeated attempts to set the password.",
 			},
 			"password_data": {
 				Type:        schema.TypeString,
@@ -456,17 +456,7 @@ func ResourceComputeInstance() *schema.Resource {
 }
 
 func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-	if _, ok := d.GetOk("admin_pass"); ok {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "The admin_pass option does not work during creation, it is only allows you to set or change a password only on an already created server",
-			AttributePath: cty.Path{
-				cty.GetAttrStep{Name: "admin_pass"},
-			},
-		})
-	}
-
+	startTime := time.Now()
 	config := meta.(clients.Config)
 	computeClient, err := config.ComputeV2Client(util.GetRegion(d, config))
 	if err != nil {
@@ -478,6 +468,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("Error creating VKCS image client: %s", err)
 	}
 
+	var diags diag.Diagnostics
 	var createOpts servers.CreateOptsBuilder
 	var availabilityZone string
 	var networks interface{}
@@ -682,6 +673,13 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 			return diag.FromErr(fmt.Errorf("failed to get server password: %w", err))
 		}
 		d.Set("password_data", passwordData)
+	}
+
+	if password, ok := d.GetOk("admin_pass"); ok {
+		err = setAdminPassword(ctx, computeClient, server.ID, password.(string), d.Timeout(schema.TimeoutCreate)-time.Since(startTime))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to set admin password: %w", err))
+		}
 	}
 
 	diags = append(diags, resourceComputeInstanceRead(ctx, d, meta)...)
@@ -978,7 +976,9 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		if newPwd, ok := d.Get("admin_pass").(string); ok {
 			err := iservers.ChangeAdminPassword(computeClient, d.Id(), newPwd).ExtractErr()
 			if err != nil {
-				return diag.Errorf("Error changing admin password of VKCS server (%s): %s", d.Id(), err)
+				old, _ := d.GetChange("admin_pass")
+				d.Set("admin_pass", old)
+				return diag.Errorf("Error changing admin password of VKCS server %s: %s", d.Id(), err)
 			}
 		}
 	}
@@ -1774,4 +1774,21 @@ func getServerPasswordData(ctx context.Context, computeClient *gophercloud.Servi
 	}
 
 	return passwordData, nil
+}
+
+func setAdminPassword(ctx context.Context, computeClient *gophercloud.ServiceClient, serverID, password string, timeout time.Duration) error {
+	log.Printf("[INFO] Trying to set admin password for server %s", serverID)
+
+	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
+		err := iservers.ChangeAdminPassword(computeClient, serverID, password).ExtractErr()
+		if err != nil {
+			return util.CheckForRetryableError(err)
+		}
+
+		log.Printf("[INFO] Admin password has been set for server %s", serverID)
+
+		return nil
+	})
+
+	return err
 }
