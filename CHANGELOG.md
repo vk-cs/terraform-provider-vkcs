@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 
 #### v0.9.4 (unreleased)
+- Add ability to set admin password for vkcs_compute_instance when creating
 - Disable forced re-creation when updating cloud_monitoring_enabled for the vkcs_db_instance with MongoDB datastore type
 - Fix deleting vkcs_compute_volume_attach when volume is deleted
 
