@@ -427,7 +427,7 @@ func ResourceDatabaseCluster() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				ForceNew:    false,
-				Description: "Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance.",
+				Description: "Enable cloud monitoring for the cluster.",
 			},
 
 			"vendor_options": {

@@ -10,13 +10,13 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
-func resourceDatabaseCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func resourceDatabaseCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 	if diff.Id() != "" && diff.HasChange("cloud_monitoring_enabled") {
 		t, exists := diff.GetOk("datastore.0.type")
 		if !exists {
 			return errors.New("datastore.0.type is not found")
 		}
-		if exists && util.IsOperationNotSupported(t.(string), Redis, MongoDB) {
+		if util.IsOperationNotSupported(t.(string), Redis) {
 			return diff.ForceNew("cloud_monitoring_enabled")
 		}
 	}

@@ -160,7 +160,7 @@ resource "vkcs_db_cluster_with_shards" "db_cluster_with_shards" {
 
   - `settings` optional *map of* *string* &rarr;  Map of key-value settings of the capability.
 
-- `cloud_monitoring_enabled` optional *boolean* &rarr;  Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance.<br>**New since v0.2.0**.
+- `cloud_monitoring_enabled` optional *boolean* &rarr;  Enable cloud monitoring for the cluster.<br>**New since v0.2.0**.
 
 - `configuration_id` optional *string* &rarr;  The id of the configuration attached to cluster.
 
