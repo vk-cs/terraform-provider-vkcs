@@ -162,7 +162,7 @@ resource "vkcs_db_instance" "pg_with_backup" {
 
   - `settings` optional *map of* *string* &rarr;  Map of key-value settings of the capability.
 
-- `cloud_monitoring_enabled` optional *boolean* &rarr;  Enable cloud monitoring for the instance. Changing this for Redis or MongoDB creates a new instance.<br>**New since v0.2.0**.
+- `cloud_monitoring_enabled` optional *boolean* &rarr;  Enable cloud monitoring for the instance. Changing this for Redis creates a new instance.<br>**New since v0.2.0**.
 
 - `configuration_id` optional *string* &rarr;  The id of the configuration attached to instance.
 
