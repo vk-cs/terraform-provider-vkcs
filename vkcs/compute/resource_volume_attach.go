@@ -181,7 +181,7 @@ func resourceComputeVolumeAttachDelete(ctx context.Context, d *schema.ResourceDa
 
 	volumeStateConf := &retry.StateChangeConf{
 		Pending:    []string{blockstorage.BSVolumeStatusDetaching, blockstorage.BSVolumeStatusInUse},
-		Target:     []string{blockstorage.BSVolumeStatusActive},
+		Target:     []string{blockstorage.BSVolumeStatusActive, blockstorage.BSVolumeStatusDeleted},
 		Refresh:    blockstorage.BlockStorageVolumeStateRefreshFunc(blockStorageClient, volumeID),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      5 * time.Second,

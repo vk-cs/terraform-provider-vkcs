@@ -9,6 +9,7 @@ description: |-
 
 #### v0.9.4 (unreleased)
 - Disable forced re-creation when updating cloud_monitoring_enabled for the vkcs_db_instance with MongoDB datastore type
+- Fix deleting vkcs_compute_volume_attach when volume is deleted
 
 #### v0.9.3
 - Add secure_key option to cdn resource

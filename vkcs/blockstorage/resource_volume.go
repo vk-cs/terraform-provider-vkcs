@@ -32,7 +32,7 @@ var (
 	bsVolumeStatusExtending   = "extending"
 	bsVolumeStatusAttaching   = "attaching"
 	bsVolumeStatusShutdown    = "deleting"
-	bsVolumeStatusDeleted     = "deleted"
+	BSVolumeStatusDeleted     = "deleted"
 	bsVolumeStatusDownloading = "downloading"
 	bsVolumeMigrationPolicy   = "on-demand"
 )
@@ -316,7 +316,7 @@ func resourceBlockStorageVolumeDelete(ctx context.Context, d *schema.ResourceDat
 
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{BSVolumeStatusActive, bsVolumeStatusShutdown},
-		Target:     []string{bsVolumeStatusDeleted},
+		Target:     []string{BSVolumeStatusDeleted},
 		Refresh:    BlockStorageVolumeStateRefreshFunc(blockStorageClient, d.Id()),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      bsVolumeDelay,

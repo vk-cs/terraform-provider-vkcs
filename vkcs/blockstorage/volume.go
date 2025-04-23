@@ -25,7 +25,7 @@ func BlockStorageVolumeStateRefreshFunc(client *gophercloud.ServiceClient, volum
 		v, err := ivolumes.Get(client, volumeID).Extract()
 		if err != nil {
 			if errutil.IsNotFound(err) {
-				return v, bsVolumeStatusDeleted, nil
+				return v, BSVolumeStatusDeleted, nil
 			}
 			return nil, "", err
 		}
