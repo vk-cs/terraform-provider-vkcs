@@ -1,0 +1,21 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a dataplatform cluster
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+# Opensearch
+{{tffile "templates/dataplatform/resources/vkcs_dataplatform_cluster/main-opensearch.tf"}}
+
+# Trino
+{{tffile "templates/dataplatform/resources/vkcs_dataplatform_cluster/main-trino.tf"}}
+
+{{ .SchemaMarkdown }}
