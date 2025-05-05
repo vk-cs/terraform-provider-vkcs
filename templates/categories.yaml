@@ -17,3 +17,4 @@ subCategoryMapping:
   mlplatform: ML Platform
   monitoring: Cloud Monitoring
   cdn: CDN
+  dataplatform: Data Platform

@@ -1,0 +1,18 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a dataplatform cluster
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+# Spark
+{{tffile "templates/dataplatform/resources/vkcs_dataplatform_cluster/main-spark.tf"}}
+
+{{ .SchemaMarkdown }}
