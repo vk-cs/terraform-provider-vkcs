@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/backup"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/dataplatform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/dc"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/images"
@@ -123,6 +124,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		backup.NewProviderDataSource,
 		backup.NewProvidersDataSource,
 		dc.NewAPIOptionsDataSource,
+		dataplatform.NewTemplatesDataSource,
 	}
 }
 
@@ -154,5 +156,6 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		mlplatform.NewK8SRegistryResource,
 		monitoring.NewResource,
 		networking.NewAnycastIPResource,
+		dataplatform.NewClusterResource,
 	}
 }
