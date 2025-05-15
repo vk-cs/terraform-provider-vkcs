@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.9.3",
+  "provider_version": "v0.10.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -488,7 +488,7 @@
           "admin_pass": {
             "type": "TypeString",
             "optional": true,
-            "description": "The administrative password to assign to the server. This attribute allows you to set or change a password only on an already created server."
+            "description": "The administrative password to assign to the server. For some images, the password must meet certain requirements, which can be found here: https://cloud.vk.com/docs/en/computing/iaas/service-management/vm/vm-manage. _note_ If the password does not meet these requirements, the resource creation may hang until the timeout due to repeated attempts to set the password."
           },
           "all_metadata": {
             "type": "TypeMap",
@@ -1189,7 +1189,7 @@
           "cloud_monitoring_enabled": {
             "type": "TypeBool",
             "optional": true,
-            "description": "Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance.",
+            "description": "Enable cloud monitoring for the cluster.",
             "new_since": "v0.2.0"
           },
           "cluster_size": {
@@ -1497,7 +1497,7 @@
           "cloud_monitoring_enabled": {
             "type": "TypeBool",
             "optional": true,
-            "description": "Enable cloud monitoring for the cluster. Changing this for Redis or MongoDB creates a new instance.",
+            "description": "Enable cloud monitoring for the cluster.",
             "new_since": "v0.2.0"
           },
           "configuration_id": {
@@ -1958,7 +1958,7 @@
           "cloud_monitoring_enabled": {
             "type": "TypeBool",
             "optional": true,
-            "description": "Enable cloud monitoring for the instance. Changing this for Redis or MongoDB creates a new instance.",
+            "description": "Enable cloud monitoring for the instance. Changing this for Redis creates a new instance.",
             "new_since": "v0.2.0"
           },
           "configuration_id": {
@@ -5170,6 +5170,74 @@
         },
         "description": "Manages a ML Platform Spark K8S cluster resource.",
         "new_since": "v0.7.0"
+      },
+      "vkcs_networking_anycastip": {
+        "schema": {
+          "associations": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "List of port associations with anycast IP.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "id": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "ID of port / dc interface / octavia loadbalancer vip port."
+                },
+                "type": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Type of association. Can be one of: port, dc_interface, octavia."
+                }
+              }
+            }
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the anycast IP.",
+            "computed": true
+          },
+          "health_check": {
+            "optional": true,
+            "description": "Health check settings.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the anycast IP.",
+            "computed": true
+          },
+          "ip_address": {
+            "type": "TypeString",
+            "description": "Anycast IP address.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the anycast IP.",
+            "computed": true
+          },
+          "network_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "ID of the external network to choose ip for anycast IP from."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the Networking client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+            "computed": true
+          },
+          "subnet_id": {
+            "type": "TypeString",
+            "description": "Anycast IP subnet id.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.10.0"
       },
       "vkcs_networking_floatingip": {
         "schema": {
