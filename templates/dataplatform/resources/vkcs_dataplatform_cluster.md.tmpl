@@ -13,6 +13,11 @@ description: |-
 ## Example Usage
 
 # Spark
-{{tffile "templates/dataplatform/resources/vkcs_dataplatform_cluster/main-spark.tf"}}
+{{tffile .ExampleFile}}
 
 {{ .SchemaMarkdown }}
+
+## Import
+
+A Dataplaform cluster can be imported using the `id`, e.g.
+{{codefile "shell" "templates/dataplatform/resources/vkcs_dataplatform_cluster/import.sh"}}

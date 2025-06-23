@@ -1,0 +1,1 @@
+terraform import vkcs_dataplatform_cluster.mycluster 83e08ade-c7cd-4382-8ee2-d297abbfc8d0

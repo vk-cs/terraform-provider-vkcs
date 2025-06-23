@@ -14,18 +14,14 @@ description: |-
 
 # Spark
 ```terraform
-data "vkcs_dataplatform_templates" "cluster-templates" {
-}
+resource "vkcs_dataplatform_cluster" "basic_spark" {
+  name            = "tf-basic-spark"
+  network_id      = vkcs_networking_network.db.id
+  subnet_id       = vkcs_networking_subnet.db.id
+  product_name    = "spark"
+  product_version = "3.5.1"
 
-resource "vkcs_dataplatform_cluster" "basic-opensearch" {
-  cluster_template_id = data.vkcs_dataplatform_templates.cluster-templates.templates[index(data.vkcs_dataplatform_templates.cluster-templates.*.product_name, "spark")].id
-  name                = "tf-basic-spark"
-  network_id          = "d2fad739-1b10-4dc8-9b2c-c246d7a7cc69"
-  subnet_id           = "3a744943-fcc1-4a85-a96b-3dc4fff71885"
-  product_name        = "spark"
-  product_version     = "3.5.1"
-
-  availability_zone = "UD2"
+  availability_zone = "GZ1"
   configs = {
     settings = [
       {
@@ -33,21 +29,12 @@ resource "vkcs_dataplatform_cluster" "basic-opensearch" {
         value = "spark-py-3.5.1:v3.5.1.2"
       }
     ]
-    users = [
-      {
-        user     = "user"
-        password = "somepa55word!"
-      }
-    ]
     maintenance = {
       start = "0 0 1 * *"
     }
     warehouses = [
       {
-        name = "db_customer"
-        users = [
-          "user"
-        ]
+        name = "spark"
         connections = [
           {
             name = "s3_int"
@@ -55,11 +42,11 @@ resource "vkcs_dataplatform_cluster" "basic-opensearch" {
             settings = [
               {
                 alias = "s3_bucket"
-                value = "really-cool-bucket"
+                value = local.s3_bucket
               },
               {
                 alias = "s3_folder"
-                value = "folder"
+                value = "tfexample-folder"
               }
             ]
           },
@@ -69,19 +56,19 @@ resource "vkcs_dataplatform_cluster" "basic-opensearch" {
             settings = [
               {
                 alias = "db_name"
-                value = "db"
+                value = "testdb_1"
               },
               {
                 alias = "hostname"
-                value = "database.com:5432"
+                value = "${vkcs_db_instance.db_instance.ip[0]}:5432"
               },
               {
                 alias = "username"
-                value = "db"
+                value = "testuser"
               },
               {
                 alias = "password"
-                value = "db"
+                value = "Test_p@ssword-12-3"
               }
             ]
           }
@@ -91,36 +78,33 @@ resource "vkcs_dataplatform_cluster" "basic-opensearch" {
   }
   pod_groups = [
     {
+      name  = "sparkconnect"
       count = 1
       resource = {
         cpu_request = "8"
         ram_request = "8"
       }
-      pod_group_template_id = "6a8e3515-d0d6-40f9-826e-e33dbe141485"
     },
     {
+      name  = "sparkhistory"
       count = 1
       resource = {
         cpu_request = "0.5"
         ram_request = "0.5"
       }
-      volumes = [
-        {
-          type = "data"
-          storage_class_name = "ceph"
-          storage = "5"
-          count = 1
+      volumes = {
+        "data" = {
+          storage_class_name = "ceph-ssd"
+          storage            = "5"
+          count              = 1
         }
-      ]
-      pod_group_template_id = "498c4bf6-1e3e-4a06-b8b7-d60337e85dc1"
+      }
     }
   ]
 }
 ```
 
 ## Argument Reference
-- `cluster_template_id` **required** *string* &rarr;  ID of the cluster template.
-
 - `configs` ***required*** &rarr;  Product configuration.
   - `maintenance` ***required*** &rarr;  Maintenance settings.
     - `backup` optional &rarr;  Backup settings.
@@ -166,62 +150,18 @@ resource "vkcs_dataplatform_cluster" "basic-opensearch" {
 
       - `start` optional *string* &rarr;  Cron tab schedule.
 
+      - `id` read-only *string*
+
       - `required` read-only *boolean* &rarr;  Whether cron tab is required.
 
 
     - `start` optional *string* &rarr;  Maintenance cron schedule.
 
 
-  - `features` optional &rarr;  Product features.
-    - `volume_autoresize` optional &rarr;  Volume autoresize options.
-      - `data` optional &rarr;  Data volume options.
-        - `enabled` optional *boolean* &rarr;  Enables option.
-
-        - `max_scale_size` optional *number* &rarr;  Maximum scale size.
-
-        - `scale_step_size` optional *number* &rarr;  Scale step size.
-
-        - `size_scale_threshold` optional *number* &rarr;  Size scale threshold.
-
-
-      - `wal` optional &rarr;  Data volume options.
-        - `enabled` optional *boolean* &rarr;  Enables option.
-
-        - `max_scale_size` optional *number* &rarr;  Maximum scale size.
-
-        - `scale_step_size` optional *number* &rarr;  Scale step size.
-
-        - `size_scale_threshold` optional *number* &rarr;  Size scale threshold.
-
-
-
-
   - `settings`  *list* &rarr;  Additional common settings.
     - `alias` **required** *string* &rarr;  Setting alias.
 
     - `value` **required** *string* &rarr;  Setting value.
-
-
-  - `users`  *list* &rarr;  Users settings.
-    - `password` **required** *string* &rarr;  Password.
-
-    - `username` **required** *string* &rarr;  Username.
-
-    - `access` optional &rarr;  Access settings.
-      - `settings`  *list* &rarr;  Access users settings.
-        - `alias` **required** *string* &rarr;  Setting alias.
-
-        - `value` **required** *string* &rarr;  Setting value.
-
-
-      - `id` read-only *string* &rarr;  Access ID.
-
-
-    - `role` optional *string* &rarr;  User role.
-
-    - `created_at` read-only *string* &rarr;  User creation timestamp.
-
-    - `id` read-only *string* &rarr;  User ID.
 
 
   - `warehouses`  *list* &rarr;  Warehouses settings.
@@ -241,25 +181,7 @@ resource "vkcs_dataplatform_cluster" "basic-opensearch" {
       - `id` read-only *string* &rarr;  Connection ID.
 
 
-    - `extensions`  *list* &rarr;  Warehouse extensions.
-      - `type` **required** *string* &rarr;  Extension type.
-
-      - `settings`  *list* &rarr;  Additional extension settings.
-        - `alias` **required** *string* &rarr;  Setting alias.
-
-        - `value` **required** *string* &rarr;  Setting value.
-
-
-      - `version` optional *string* &rarr;  Extension version.
-
-      - `created_at` read-only *string* &rarr;  Extension creation timestamp.
-
-      - `id` read-only *string* &rarr;  Extension ID
-
-
     - `name` optional *string* &rarr;  Warehouse name.
-
-    - `users` optional *string* &rarr;  Warehouse users.
 
     - `id` read-only *string* &rarr;  Warehouse ID.
 
@@ -275,16 +197,14 @@ resource "vkcs_dataplatform_cluster" "basic-opensearch" {
 
 - `availability_zone` optional *string* &rarr;  Availability zone to create cluster in.
 
-- `cluster_id` optional *string*
+- `cluster_template_id` optional *string* &rarr;  ID of the cluster template.
 
 - `description` optional *string* &rarr;  Cluster description.
-
-- `floating_ip_pool` optional *string* &rarr;  Floating IP pool ID.
 
 - `multiaz` optional *boolean* &rarr;  Enables multi az support.
 
 - `pod_groups`  *list* &rarr;  Cluster pod groups.
-  - `pod_group_template_id` **required** *string* &rarr;  Pod group template ID.
+  - `name` **required** *string* &rarr;  Pod group name.
 
   - `count` optional *number* &rarr;  Pod count.
 
@@ -316,8 +236,6 @@ resource "vkcs_dataplatform_cluster" "basic-opensearch" {
 
   - `id` read-only *string* &rarr;  Pod group ID.
 
-  - `name` read-only *string* &rarr;  Pod group name.
-
 
 - `region` optional *string* &rarr;  The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.
 
@@ -332,24 +250,13 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` *string* &rarr;  ID of the cluster.
 
-- `info`  &rarr;  Cluster info.
-  - `services`  *list* &rarr;  Cluster services info.
-    - `connection_string` *string* &rarr;  Service connection string.
-
-    - `description` *string* &rarr;  Service description.
-
-    - `exposed` *boolean* &rarr;  Is service exposed.
-
-    - `type` *string* &rarr;  Service type.
-
-
-
 - `product_type` *string* &rarr;  Type of the product.
 
-- `project_id` *string*
-
-- `status` *string* &rarr;  Cluster status.
-
-- `status_description` *string* &rarr;  Cluster status description.
 
 
+## Import
+
+A Dataplaform cluster can be imported using the `id`, e.g.
+```shell
+terraform import vkcs_dataplatform_cluster.mycluster 83e08ade-c7cd-4382-8ee2-d297abbfc8d0
+```

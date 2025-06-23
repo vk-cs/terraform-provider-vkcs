@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.11.0
+- Add vkcs_dataplatform_cluster resource
+
 #### v0.10.0
 - Add vkcs_networking_anycastip resource
 - Add ability to set admin password for vkcs_compute_instance when creating

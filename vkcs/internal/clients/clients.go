@@ -118,3 +118,8 @@ func newCDNV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (
 	sc, err := initClientOpts(client, eo, "cdn")
 	return sc, err
 }
+
+func newDataPlatform(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
+	sc, err := initClientOpts(client, eo, "dataplatform")
+	return sc, err
+}
