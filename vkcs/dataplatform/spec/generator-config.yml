@@ -9,7 +9,22 @@ resources:
       path: /api/clusters/{cluster_id}
       method: GET
     schema:
+      ignores:
+        - configs.features
+        - configs.users
+        - configs.warehouses.extensions
+        - configs.warehouses.users
+        - status
+        - status_description
+        - pod_groups.pod_group_template_id
+        - upgrades
+        - floating_ip_pool
+        - info
+        - project_id
+        - import_source
       attributes:
+        aliases:
+          cluster_id: id
         overrides:
           id:
             description: ID of the cluster.
@@ -21,10 +36,6 @@ resources:
             description: Version of the product.
           product_type:
             description: Type of the product.
-          status:
-            description: Cluster status.
-          status_description:
-            description: Cluster status description.
           cluster_template_id:
             description: ID of the cluster template.
           network_id:
@@ -81,52 +92,6 @@ resources:
             description: Setting value.
           configs.maintenance.crontabs.required:
             description: Whether cron tab is required.
-          configs.features:
-            description: Product features.
-          configs.features.volume_autoresize:
-            description: Volume autoresize options.
-          configs.features.volume_autoresize.data:
-            description: Data volume options.
-          configs.features.volume_autoresize.data.scale_step_size:
-            description: Scale step size.
-          configs.features.volume_autoresize.data.max_scale_size:
-            description: Maximum scale size.
-          configs.features.volume_autoresize.data.size_scale_threshold:
-            description: Size scale threshold.
-          configs.features.volume_autoresize.data.enabled:
-            description: Enables option.
-          configs.features.volume_autoresize.wal:
-            description: Data volume options.
-          configs.features.volume_autoresize.wal.scale_step_size:
-            description: Scale step size.
-          configs.features.volume_autoresize.wal.max_scale_size:
-            description: Maximum scale size.
-          configs.features.volume_autoresize.wal.size_scale_threshold:
-            description: Size scale threshold.
-          configs.features.volume_autoresize.wal.enabled:
-            description: Enables option.
-          configs.users:
-            description: Users settings.
-          configs.users.username:
-            description: Username.
-          configs.users.password:
-            description: Password.
-          configs.users.access:
-            description: Access settings.
-          configs.users.access.id:
-            description: Access ID.
-          configs.users.access.settings:
-            description: Access users settings.
-          configs.users.access.settings.alias:
-            description: Setting alias.
-          configs.users.access.settings.value:
-            description: Setting value.
-          configs.users.id:
-            description: User ID.
-          configs.users.created_at:
-            description: User creation timestamp.
-          configs.users.role:
-            description: User role.
           configs.settings:
             description: Additional common settings.
           configs.settings.alias:
@@ -137,8 +102,6 @@ resources:
             description: Warehouses settings.
           configs.warehouses.name:
             description: Warehouse name.
-          configs.warehouses.users:
-            description: Warehouse users.
           configs.warehouses.connections:
             description: Warehouse connections.
           configs.warehouses.connections.plug:
@@ -155,22 +118,6 @@ resources:
             description: Connection ID.
           configs.warehouses.connections.created_at:
             description: Connection creation timestamp.
-          configs.warehouses.extensions:
-            description: Warehouse extensions.
-          configs.warehouses.extensions.type:
-            description: Extension type.
-          configs.warehouses.extensions.version:
-            description: Extension version.
-          configs.warehouses.extensions.settings:
-            description: Additional extension settings.
-          configs.warehouses.extensions.settings.alias:
-            description: Setting alias.
-          configs.warehouses.extensions.settings.value:
-            description: Setting value.
-          configs.warehouses.extensions.id:
-            description: Extension ID
-          configs.warehouses.extensions.created_at:
-            description: Extension creation timestamp.
           configs.warehouses.id:
             description: Warehouse ID.
           description:
@@ -183,8 +130,6 @@ resources:
             description: Floating IP pool ID.
           pod_groups.node_processes:
             description: Node processes.
-          pod_groups.pod_group_template_id:
-            description: Pod group template ID.
           pod_groups.resource:
             description: Resource request settings.
           pod_groups.resource.cpu_request:
@@ -219,442 +164,5 @@ resources:
             description: Availability zone to create cluster in.
           multiaz:
             description: Enables multi az support.
-          floating_ip_pool:
-            description: Floating IP pool ID.
           created_at:
             description: Cluster creation timestamp.
-          info:
-            description: Cluster info.
-          info.services:
-            description: Cluster services info.
-          info.services.connection_string:
-            description: Service connection string.
-          info.services.description:
-            description: Service description.
-          info.services.exposed:
-            description: Is service exposed.
-          info.services.type:
-            description: Service type.
-
-data_sources:
-  products:
-    read:
-      path: /api/products
-      method: GET
-    schema:
-      attributes:
-        overrides:
-          mode:
-            description: Product templates mode
-          products:
-            description: Products info.
-          products.product_name:
-            description: Product name.
-          products.product_version:
-            description: Product version.
-          products.configs:
-            description: Product configuration.
-          products.configs.settings:
-            description: Additional settings.
-          products.configs.settings.alias:
-            description: Setting alias.
-          products.configs.settings.default_value:
-            description: Setting default value.
-          products.configs.settings.max_value:
-            description: Setting max value.
-          products.configs.settings.min_value:
-            description: Setting min value.
-          products.configs.settings.regexp:
-            description: Setting regexp.
-          products.configs.settings.string_variation:
-            description: Setting string variations.
-          products.configs.settings.validation:
-            description: Setting validation.
-          products.configs.settings.is_require:
-            description: Is setting required.
-          products.configs.settings.is_sensitive:
-            description: Is setting sensitive.
-          products.configs.settings.backref:
-            description: Setting backref.
-          products.configs.settings.policy:
-            description: Setting policy.
-          products.configs.settings.policy.add_on_create:
-            description: Add on create policy.
-          products.configs.settings.policy.live_update:
-            description: Live update policy.
-          products.configs.settings.dependencies:
-            description: Setting dependencies.
-          products.configs.settings.dependencies.kind:
-            description: Dependency kind.
-          products.configs.settings.dependencies.anchors:
-            description: Dependency anchors.
-          products.configs.connections:
-            description: Connections settings.
-          products.configs.connections.plug:
-            description: Connection plug.
-          products.configs.connections.is_required:
-            description: Is connection required.
-          products.configs.connections.position:
-            description: Connection position.
-          products.configs.connections.name_i18n_key:
-            description: Connection name i18n key.
-          products.configs.connections.desc_i18n_key:
-            description: Connection description i18n key.
-          products.configs.connections.required_group:
-            description: Connection required group.
-          products.configs.connections.restrictions:
-            description: Connection restrictions.
-          products.configs.connections.restrictions.condition:
-            description: Connection restriction condition
-          products.configs.connections.restrictions.entry:
-            description: Connection restriction entry
-          products.configs.connections.restrictions.choice:
-            description: Connection restriction choice
-          products.configs.connections.settings:
-            description: Additional connection settings.
-          products.configs.connections.settings.alias:
-            description: Setting alias.
-          products.configs.connections.settings.default_value:
-            description: Setting default value.
-          products.configs.connections.settings.max_value:
-            description: Setting max value.
-          products.configs.connections.settings.min_value:
-            description: Setting min value.
-          products.configs.connections.settings.regexp:
-            description: Setting regexp.
-          products.configs.connections.settings.string_variation:
-            description: Setting string variations.
-          products.configs.connections.settings.validation:
-            description: Setting validation.
-          products.configs.connections.settings.is_require:
-            description: Is setting required.
-          products.configs.connections.settings.is_sensitive:
-            description: Is setting sensitive.
-          products.configs.connections.settings.backref:
-            description: Setting backref.
-          products.configs.connections.settings.policy:
-            description: Setting policy.
-          products.configs.connections.settings.policy.add_on_create:
-            description: Add on create policy.
-          products.configs.connections.settings.policy.live_update:
-            description: Live update policy.
-          products.configs.connections.settings.dependencies:
-            description: Setting dependencies.
-          products.configs.connections.settings.dependencies.kind:
-            description: Dependency kind.
-          products.configs.connections.settings.dependencies.anchors:
-            description: Dependency anchors.
-          products.configs.extensions:
-            description: Extensions settings.
-          products.configs.extensions.type:
-            description: Extension type.
-          products.configs.extensions.name_i18n_key:
-            description: Extension name i18n key.
-          products.configs.extensions.desc_i18n_key:
-            description: Extension description i18n key.
-          products.configs.extensions.persistent:
-            description: Is extensions persistent.
-          products.configs.extensions.version:
-            description: Extension version.
-          products.configs.extensions.access_control:
-            description: Extension access control mode.
-          products.configs.extensions.settings:
-            description: Additional extension settings.
-          products.configs.extensions.settings.alias:
-            description: Setting alias.
-          products.configs.extensions.settings.default_value:
-            description: Setting default value.
-          products.configs.extensions.settings.max_value:
-            description: Setting max value.
-          products.configs.extensions.settings.min_value:
-            description: Setting min value.
-          products.configs.extensions.settings.regexp:
-            description: Setting regexp.
-          products.configs.extensions.settings.string_variation:
-            description: Setting string variations.
-          products.configs.extensions.settings.validation:
-            description: Setting validation.
-          products.configs.extensions.settings.is_require:
-            description: Is setting required.
-          products.configs.extensions.settings.is_sensitive:
-            description: Is setting sensitive.
-          products.configs.extensions.settings.backref:
-            description: Setting backref.
-          products.configs.extensions.settings.policy:
-            description: Setting policy.
-          products.configs.extensions.settings.policy.add_on_create:
-            description: Add on create policy.
-          products.configs.extensions.settings.policy.live_update:
-            description: Live update policy.
-          products.configs.extensions.settings.dependencies:
-            description: Setting dependencies.
-          products.configs.extensions.settings.dependencies.kind:
-            description: Dependency kind.
-          products.configs.extensions.settings.dependencies.anchors:
-            description: Dependency anchors.
-          products.configs.user_accesses:
-            description: User accesses settings.
-          products.configs.user_accesses.settings:
-            description: Additional user access settings.
-          products.configs.user_accesses.settings.alias:
-            description: Setting alias.
-          products.configs.user_accesses.settings.default_value:
-            description: Setting default value.
-          products.configs.user_accesses.settings.max_value:
-            description: Setting max value.
-          products.configs.user_accesses.settings.min_value:
-            description: Setting min value.
-          products.configs.user_accesses.settings.regexp:
-            description: Setting regexp.
-          products.configs.user_accesses.settings.string_variation:
-            description: Setting string variations.
-          products.configs.user_accesses.settings.validation:
-            description: Setting validation.
-          products.configs.user_accesses.settings.is_require:
-            description: Is setting required.
-          products.configs.user_accesses.settings.is_sensitive:
-            description: Is setting sensitive.
-          products.configs.user_accesses.settings.backref:
-            description: Setting backref.
-          products.configs.user_accesses.settings.policy:
-            description: Setting policy.
-          products.configs.user_accesses.settings.policy.add_on_create:
-            description: Add on create policy.
-          products.configs.user_accesses.settings.policy.live_update:
-            description: Live update policy.
-          products.configs.user_accesses.settings.dependencies:
-            description: Setting dependencies.
-          products.configs.user_accesses.settings.dependencies.kind:
-            description: Dependency kind.
-          products.configs.user_accesses.settings.dependencies.anchors:
-            description: Dependency anchors.
-          products.configs.user_roles:
-            description: User roles settings.
-          products.configs.user_roles.name:
-            description: User role name.
-          products.configs.user_roles.restrictions:
-            description: User role restrictions.
-          products.configs.user_roles.condition:
-            description: Restriction condition.
-          products.configs.user_roles.choice:
-            description: Restriction choice.
-          products.configs.crontabs:
-            description: Cron tabs settings.
-          products.configs.crontabs.name:
-            description: Cron tab name.
-          products.configs.crontabs.start:
-            description: Cron schedule.
-          products.configs.crontabs.required:
-            description: Is cron required.
-          products.configs.crontabs.settings:
-            description: Additional cron settings.
-          products.configs.crontabs.settings.alias:
-            description: Setting alias.
-          products.configs.crontabs.settings.default_value:
-            description: Setting default value.
-          products.configs.crontabs.settings.max_value:
-            description: Setting max value.
-          products.configs.crontabs.settings.min_value:
-            description: Setting min value.
-          products.configs.crontabs.settings.regexp:
-            description: Setting regexp.
-          products.configs.crontabs.settings.string_variation:
-            description: Setting string variations.
-          products.configs.crontabs.settings.validation:
-            description: Setting validation.
-          products.configs.crontabs.settings.is_require:
-            description: Is setting required.
-          products.configs.crontabs.settings.is_sensitive:
-            description: Is setting sensitive.
-          products.configs.crontabs.settings.backref:
-            description: Setting backref.
-          products.configs.crontabs.settings.policy:
-            description: Setting policy.
-          products.configs.crontabs.settings.policy.add_on_create:
-            description: Add on create policy.
-          products.configs.crontabs.settings.policy.live_update:
-            description: Live update policy.
-          products.configs.crontabs.settings.dependencies:
-            description: Setting dependencies.
-          products.configs.crontabs.settings.dependencies.kind:
-            description: Dependency kind.
-          products.configs.crontabs.settings.dependencies.anchors:
-            description: Dependency anchors.
-  templates:
-    read:
-      path: /api/templates
-      method: GET
-    schema:
-      attributes:
-        overrides:
-          cluster_templates:
-            description: Cluster templates info.
-          cluster_templates.id:
-            description: Cluster template id.
-          cluster_templates.created_at:
-            description: Cluster template creation timestamp.
-          cluster_templates.name:
-            description: Cluster template name.
-          cluster_templates.description:
-            description: Cluster template description.
-          cluster_templates.product_name:
-            description: Product name.
-          cluster_templates.product_type:
-            description: Product type.
-          cluster_templates.product_version:
-            description: Product version.
-          cluster_templates.pod_groups:
-            description: Cluster pod groups.
-          cluster_templates.pod_groups.id:
-            description: Pod group id.
-          cluster_templates.pod_groups.created_at:
-            description: Pod group creation timestamp.
-          cluster_templates.pod_groups.name:
-            description: Pod group name.
-          cluster_templates.pod_groups.description:
-            description: Pod group name.
-          cluster_templates.pod_groups.resource:
-            description: Resource settings.
-          cluster_templates.pod_groups.resource.cpu_request:
-            description: CPU request settings.
-          cluster_templates.pod_groups.resource.cpu_margin:
-            description: CPU margin settings.
-          cluster_templates.pod_groups.resource.ram_request:
-            description: RAM request settings.
-          cluster_templates.pod_groups.resource.ram_margin:
-            description: RAM margin settings.
-          cluster_templates.pod_groups.node_processes:
-            description: Node processes.
-          cluster_templates.pod_groups.volumes:
-            description: Volumes settings.
-          cluster_templates.pod_groups.volumes.count:
-            description: Volume count.
-          cluster_templates.pod_groups.volumes.storageClassName:
-            description: Storage class name.
-          cluster_templates.pod_groups.volumes.storage:
-            description: Storage size.
-          cluster_templates.pod_groups.count:
-            description: Pod count.
-          cluster_templates.pod_groups.template_type:
-            description: Template type.
-          cluster_templates.pod_groups.cluster_template_id:
-            description: Cluster template id.
-          cluster_templates.pod_groups.backref:
-            description: Backref.
-          cluster_templates.pod_groups.alias:
-            description: Alias.
-          cluster_templates.template_type:
-            description: Template type.
-          cluster_templates.configs:
-            description: Cluster template configs.
-          cluster_templates.configs.common:
-            description: Common configs.
-          cluster_templates.configs.common.maintenance:
-            description: Maintenance settings.
-          cluster_templates.configs.common.maintenance.start:
-            description: Maintenance cron schedule.
-          cluster_templates.configs.common.maintenance.duration:
-            description: Maintenance duration.
-          cluster_templates.configs.common.maintenance.backup:
-            description: Backup settings.
-          cluster_templates.configs.common.maintenance.backup.full:
-            description: Full backup settings.
-          cluster_templates.configs.common.maintenance.backup.full.enabled:
-            description: Whether full backup is enabled.
-          cluster_templates.configs.common.maintenance.backup.full.backup_name_prefix:
-            description: Backup name prefix.
-          cluster_templates.configs.common.maintenance.backup.full.start:
-            description: Backup schedule.
-          cluster_templates.configs.common.maintenance.backup.full.creation_timeout:
-            description: Backup creation timeout.
-          cluster_templates.configs.common.maintenance.backup.full.keep_count:
-            description: Backup keep count.
-          cluster_templates.configs.common.maintenance.backup.full.keep_time:
-            description: Backup keep time.
-          cluster_templates.configs.common.maintenance.backup.full.backup_s3_bucket_name:
-            description: Backup S3 bucket name.
-          cluster_templates.configs.common.maintenance.backup.incremental:
-            description: Incremental backup settings.
-          cluster_templates.configs.common.maintenance.backup.incremental.enabled:
-            description: Whether incremental backup is enabled.
-          cluster_templates.configs.common.maintenance.backup.incremental.backup_name_prefix:
-            description: Backup name prefix.
-          cluster_templates.configs.common.maintenance.backup.incremental.start:
-            description: Backup schedule.
-          cluster_templates.configs.common.maintenance.backup.incremental.creation_timeout:
-            description: Backup creation timeout.
-          cluster_templates.configs.common.maintenance.backup.incremental.keep_count:
-            description: Backup keep count.
-          cluster_templates.configs.common.maintenance.backup.incremental.keep_time:
-            description: Backup keep time.
-          cluster_templates.configs.common.maintenance.backup.incremental.backup_s3_bucket_name:
-            description: Backup S3 bucket name.
-          cluster_templates.configs.common.maintenance.backup.differential:
-            description: Differential backup settings.
-          cluster_templates.configs.common.maintenance.backup.differential.enabled:
-            description: Whether differential backup is enabled.
-          cluster_templates.configs.common.maintenance.backup.differential.backup_name_prefix:
-            description: Backup name prefix.
-          cluster_templates.configs.common.maintenance.backup.differential.start:
-            description: Backup schedule.
-          cluster_templates.configs.common.maintenance.backup.differential.creation_timeout:
-            description: Backup creation timeout.
-          cluster_templates.configs.common.maintenance.backup.differential.keep_count:
-            description: Backup keep count.
-          cluster_templates.configs.common.maintenance.backup.differential.keep_time:
-            description: Backup keep time.
-          cluster_templates.configs.common.maintenance.backup.differential.backup_s3_bucket_name:
-            description: Backup S3 bucket name.
-          cluster_templates.multiaz:
-            description: Is multiple available zones mode enabled.
-          cluster_templates.presets:
-            description: Presets info.
-          cluster_templates.presets.name:
-            description: Preset name.
-          cluster_templates.presets.pod_groups:
-            description: Preset pod groups.
-          cluster_templates.presets.pod_groups.name:
-            description: Pod group name.
-          cluster_templates.presets.pod_groups.count:
-            description: Pod count.
-          cluster_templates.presets.pod_groups.resource:
-            description: Resource settings.
-          cluster_templates.presets.pod_groups.resource.cpu_request:
-            description: CPU request settings.
-          cluster_templates.presets.pod_groups.resource.ram_request:
-            description: RAM request settings.
-          cluster_templates.presets.pod_groups.volumes:
-            description: Volumes settings.
-          cluster_templates.presets.pod_groups.volumes.count:
-            description: Volume count.
-          cluster_templates.presets.pod_groups.volumes.storageClassName:
-            description: Storage class name.
-          cluster_templates.presets.pod_groups.volumes.storage:
-            description: Storage size.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

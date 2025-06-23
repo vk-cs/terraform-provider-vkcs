@@ -11,3 +11,12 @@ func RandomName(n int) string {
 	}
 	return string(result)
 }
+
+func RandomRequestID(n int) string {
+	charSet := []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012346789")
+	result := make([]byte, 0, n)
+	for i := 0; i < n; i++ {
+		result = append(result, charSet[rand.Intn(len(charSet))])
+	}
+	return string(result)
+}
