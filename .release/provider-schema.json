@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.10.0",
+  "provider_version": "v0.11.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -998,6 +998,172 @@
           "delete": 10
         },
         "description": "Attaches a Block Storage Volume to an Instance using the VKCS Compute API."
+      },
+      "vkcs_dataplatform_cluster": {
+        "schema": {
+          "availability_zone": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Availability zone to create cluster in.",
+            "computed": true
+          },
+          "cluster_template_id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "ID of the cluster template.",
+            "computed": true
+          },
+          "configs": {
+            "required": true,
+            "description": "Product configuration."
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "Cluster creation timestamp.",
+            "computed": true
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Cluster description.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the cluster.",
+            "computed": true
+          },
+          "multiaz": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Enables multi az support.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Name of the cluster."
+          },
+          "network_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "ID of the cluster network."
+          },
+          "pod_groups": {
+            "type": "TypeList",
+            "optional": true,
+            "description": "Cluster pod groups.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "alias": {
+                  "type": "TypeString",
+                  "description": "Pod group alias.",
+                  "computed": true
+                },
+                "availability_zone": {
+                  "type": "TypeString",
+                  "computed": true
+                },
+                "count": {
+                  "type": "TypeInt",
+                  "optional": true,
+                  "description": "Pod count.",
+                  "computed": true
+                },
+                "floating_ip_pool": {
+                  "type": "TypeString",
+                  "optional": true,
+                  "description": "Floating IP pool ID.",
+                  "computed": true
+                },
+                "id": {
+                  "type": "TypeString",
+                  "description": "Pod group ID.",
+                  "computed": true
+                },
+                "name": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Pod group name."
+                },
+                "node_processes": {
+                  "type": "TypeList",
+                  "optional": true,
+                  "description": "Node processes.",
+                  "computed": true,
+                  "elem": {
+                    "type": "TypeString"
+                  }
+                },
+                "resource": {
+                  "optional": true,
+                  "description": "Resource request settings.",
+                  "computed": true
+                },
+                "volumes": {
+                  "type": "TypeMap",
+                  "optional": true,
+                  "description": "Volumes settings.",
+                  "computed": true,
+                  "elem": {
+                    "schema": {
+                      "count": {
+                        "type": "TypeInt",
+                        "required": true,
+                        "description": "Volume count."
+                      },
+                      "storage": {
+                        "type": "TypeString",
+                        "required": true,
+                        "description": "Storage size."
+                      },
+                      "storage_class_name": {
+                        "type": "TypeString",
+                        "required": true,
+                        "description": "Storage class name."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "product_name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Name of the product."
+          },
+          "product_type": {
+            "type": "TypeString",
+            "description": "Type of the product.",
+            "computed": true
+          },
+          "product_version": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Version of the product."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+            "computed": true
+          },
+          "stack_id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "ID of the cluster stack.",
+            "computed": true
+          },
+          "subnet_id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "ID of the cluster subnet.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.11.0"
       },
       "vkcs_db_backup": {
         "schema": {
