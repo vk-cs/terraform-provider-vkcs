@@ -38,7 +38,7 @@ resource "vkcs_db_database" "postgres_db" {
 
 resource "vkcs_db_user" "postgres_user" {
   name     = "testuser"
-  password = "Test_p@ssword-12-3"
+  password = "Test_p#ssword-12-3"
 
   dbms_id = vkcs_db_instance.db_instance.id
 
