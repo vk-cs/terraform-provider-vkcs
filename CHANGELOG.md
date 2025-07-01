@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.11.0
+#### v0.11.0 (unreleased)
 - Add vkcs_dataplatform_cluster resource
 
 #### v0.10.0

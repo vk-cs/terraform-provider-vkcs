@@ -16,6 +16,7 @@ description: |-
 ```terraform
 resource "vkcs_dataplatform_cluster" "basic_spark" {
   name            = "tf-basic-spark"
+  description     = "tf-basic-description"
   network_id      = vkcs_networking_network.db.id
   subnet_id       = vkcs_networking_subnet.db.id
   product_name    = "spark"
@@ -56,7 +57,7 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
             settings = [
               {
                 alias = "db_name"
-                value = "testdb_1"
+                value = vkcs_db_database.postgres_db.name
               },
               {
                 alias = "hostname"
@@ -64,11 +65,11 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
               },
               {
                 alias = "username"
-                value = "testuser"
+                value = vkcs_db_user.postgres_user.name
               },
               {
                 alias = "password"
-                value = "Test_p@ssword-12-3"
+                value = vkcs_db_user.postgres_user.password
               }
             ]
           }

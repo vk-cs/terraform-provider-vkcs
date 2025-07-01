@@ -30,10 +30,11 @@ const (
 type clusterStatus string
 
 const (
-	clusterStatusCreating clusterStatus = "InfraUpdating"
-	clusterStatusActive   clusterStatus = "Active"
-	clusterStatusDeleting clusterStatus = "Waiting deleting"
-	clusterStatusDeleted  clusterStatus = "Deleted"
+	clusterStatusCreating        clusterStatus = "InfraUpdating"
+	clusterStatusActive          clusterStatus = "Active"
+	clusterStatusWaitingDeleting clusterStatus = "Waiting deleting"
+	clusterStatusDeleting        clusterStatus = "Deleting"
+	clusterStatusDeleted         clusterStatus = "Deleted"
 )
 
 var (
@@ -103,6 +104,7 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 
 	createOpts := clusters.ClusterCreate{
 		Name:              data.Name.ValueString(),
+		Description:       data.Description.ValueString(),
 		ClusterTemplateID: clusterTemplate.ID,
 		NetworkID:         data.NetworkId.ValueString(),
 		SubnetID:          data.SubnetId.ValueString(),
@@ -294,7 +296,7 @@ func (r *clusterResource) Delete(ctx context.Context, req resource.DeleteRequest
 	tflog.Trace(ctx, "Called Data Platform to delete cluster")
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(clusterStatusCreating), string(clusterStatusActive), string(clusterStatusDeleting)},
+		Pending:    []string{string(clusterStatusCreating), string(clusterStatusActive), string(clusterStatusDeleting), string(clusterStatusWaitingDeleting)},
 		Target:     []string{string(clusterStatusDeleted)},
 		Refresh:    clusterStateRefreshFunc(client, id),
 		Timeout:    clusterDeleteTimeout,

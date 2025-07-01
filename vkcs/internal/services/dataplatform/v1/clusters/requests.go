@@ -21,6 +21,7 @@ type ClusterCreate struct {
 	AvailabilityZone  string            `json:"availability_zone" required:"true"`
 	Configs           *ClusterConfig    `json:"configs" required:"true"`
 	PodGroups         []ClusterPodGroup `json:"pod_groups" required:"true"`
+	Description       string            `json:"description,omitempty"`
 }
 
 type ClusterUpdate struct {
