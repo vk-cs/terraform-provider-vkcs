@@ -42,6 +42,10 @@ resource "vkcs_db_user" "postgres_user" {
 
   dbms_id = vkcs_db_instance.db_instance.id
 
+  vendor_options {
+    skip_deletion = true
+  }
+
   databases = [vkcs_db_database.postgres_db.name]
 }
 
