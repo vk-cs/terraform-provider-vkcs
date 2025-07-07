@@ -91,6 +91,34 @@ func TestAccDatabaseCluster_wal_no_update_big(t *testing.T) {
 	})
 }
 
+func TestAccDatabaseCluster_wal_updateMaxDiskSize_big(t *testing.T) {
+	var cluster clusters.ClusterResp
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckDatabaseClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccDatabaseClusterWal),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDatabaseClusterExists(
+						"vkcs_db_cluster.basic", &cluster),
+					resource.TestCheckResourceAttrPtr(
+						"vkcs_db_cluster.basic", "name", &cluster.Name),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccDatabaseClusterWalUpdateAutoexpand),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDatabaseClusterExists(
+						"vkcs_db_cluster.basic", &cluster),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDatabaseCluster_shrink_big(t *testing.T) {
 	var cluster clusters.ClusterResp
 
@@ -288,8 +316,42 @@ const testAccDatabaseClusterWal = `
    }
 
    wal_disk_autoexpand {
-	autoexpand = true
-	max_disk_size = 1000
+    autoexpand = true
+    max_disk_size = 1000
+   }
+
+   depends_on = [vkcs_networking_router_interface.base]
+ }
+`
+
+const testAccDatabaseClusterWalUpdateAutoexpand = `
+{{.BaseNetwork}}	
+{{.BaseFlavor}}
+
+ resource "vkcs_db_cluster" "basic" {
+   name      = "basic"
+   flavor_id = data.vkcs_compute_flavor.base.id
+   volume_size      = 8
+   volume_type = "{{.VolumeType}}"
+   cluster_size = 3
+   datastore {
+	version = "13"
+	type    = "postgresql"
+  }
+
+   network {
+     uuid = vkcs_networking_network.base.id
+   }
+	
+   availability_zone = "{{.AvailabilityZone}}"
+   wal_volume {
+	size = 8
+	volume_type = "{{.VolumeType}}"
+   }
+
+   wal_disk_autoexpand {
+    autoexpand = true
+    max_disk_size = 2000
    }
 
    depends_on = [vkcs_networking_router_interface.base]
