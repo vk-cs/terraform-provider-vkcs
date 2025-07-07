@@ -622,38 +622,6 @@
 										}
 									},
 									{
-										"name": "node_processes",
-										"list": {
-											"computed_optional_required": "computed_optional",
-											"element_type": {
-												"string": {}
-											},
-											"description": "Node processes.",
-											"validators": [
-												{
-													"custom": {
-														"imports": [
-															{
-																"path": "github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-															}
-														],
-														"schema_definition": "listvalidator.SizeAtMost(1)"
-													}
-												},
-												{
-													"custom": {
-														"imports": [
-															{
-																"path": "github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-															}
-														],
-														"schema_definition": "listvalidator.UniqueValues()"
-													}
-												}
-											]
-										}
-									},
-									{
 										"name": "resource",
 										"single_nested": {
 											"computed_optional_required": "computed_optional",

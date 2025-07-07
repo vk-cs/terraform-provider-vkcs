@@ -31,6 +31,7 @@ type clusterStatus string
 
 const (
 	clusterStatusCreating        clusterStatus = "InfraUpdating"
+	clusterStatusConfiguring     clusterStatus = "Configuring"
 	clusterStatusActive          clusterStatus = "Active"
 	clusterStatusWaitingDeleting clusterStatus = "Waiting deleting"
 	clusterStatusDeleting        clusterStatus = "Deleting"
@@ -129,7 +130,7 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 	resp.State.SetAttribute(ctx, path.Root("id"), id)
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(clusterStatusCreating)},
+		Pending:    []string{string(clusterStatusCreating), string(clusterStatusConfiguring)},
 		Target:     []string{string(clusterStatusActive)},
 		Refresh:    clusterStateRefreshFunc(client, clusterShort.ID),
 		Timeout:    clusterCreateTimeout,
@@ -202,7 +203,6 @@ func (r *clusterResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	resp.Diagnostics.Append(resource_cluster.UpdateConfigs(ctx, cluster.Configs, &resp.State)...)
 	resp.Diagnostics.Append(resource_cluster.UpdateClusterPodGroups(ctx, cluster.PodGroups, &resp.State)...)
-
 }
 
 func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -296,7 +296,7 @@ func (r *clusterResource) Delete(ctx context.Context, req resource.DeleteRequest
 	tflog.Trace(ctx, "Called Data Platform to delete cluster")
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(clusterStatusCreating), string(clusterStatusActive), string(clusterStatusDeleting), string(clusterStatusWaitingDeleting)},
+		Pending:    []string{string(clusterStatusCreating), string(clusterStatusActive), string(clusterStatusDeleting), string(clusterStatusWaitingDeleting), string(clusterStatusConfiguring)},
 		Target:     []string{string(clusterStatusDeleted)},
 		Refresh:    clusterStateRefreshFunc(client, id),
 		Timeout:    clusterDeleteTimeout,

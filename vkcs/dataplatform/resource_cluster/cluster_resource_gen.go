@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -456,17 +455,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 							Required:            true,
 							Description:         "Pod group name.",
 							MarkdownDescription: "Pod group name.",
-						},
-						"node_processes": schema.ListAttribute{
-							ElementType:         types.StringType,
-							Optional:            true,
-							Computed:            true,
-							Description:         "Node processes.",
-							MarkdownDescription: "Node processes.",
-							Validators: []validator.List{
-								listvalidator.SizeAtMost(1),
-								listvalidator.UniqueValues(),
-							},
 						},
 						"resource": schema.SingleNestedAttribute{
 							Attributes: map[string]schema.Attribute{
@@ -6528,24 +6516,6 @@ func (t PodGroupsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
 	}
 
-	nodeProcessesAttribute, ok := attributes["node_processes"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`node_processes is missing from object`)
-
-		return nil, diags
-	}
-
-	nodeProcessesVal, ok := nodeProcessesAttribute.(basetypes.ListValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`node_processes expected to be basetypes.ListValue, was: %T`, nodeProcessesAttribute))
-	}
-
 	resourceAttribute, ok := attributes["resource"]
 
 	if !ok {
@@ -6593,7 +6563,6 @@ func (t PodGroupsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 		FloatingIpPool:   floatingIpPoolVal,
 		Id:               idVal,
 		Name:             nameVal,
-		NodeProcesses:    nodeProcessesVal,
 		Resource:         resourceVal,
 		Volumes:          volumesVal,
 		state:            attr.ValueStateKnown,
@@ -6771,24 +6740,6 @@ func NewPodGroupsValue(attributeTypes map[string]attr.Type, attributes map[strin
 			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
 	}
 
-	nodeProcessesAttribute, ok := attributes["node_processes"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`node_processes is missing from object`)
-
-		return NewPodGroupsValueUnknown(), diags
-	}
-
-	nodeProcessesVal, ok := nodeProcessesAttribute.(basetypes.ListValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`node_processes expected to be basetypes.ListValue, was: %T`, nodeProcessesAttribute))
-	}
-
 	resourceAttribute, ok := attributes["resource"]
 
 	if !ok {
@@ -6836,7 +6787,6 @@ func NewPodGroupsValue(attributeTypes map[string]attr.Type, attributes map[strin
 		FloatingIpPool:   floatingIpPoolVal,
 		Id:               idVal,
 		Name:             nameVal,
-		NodeProcesses:    nodeProcessesVal,
 		Resource:         resourceVal,
 		Volumes:          volumesVal,
 		state:            attr.ValueStateKnown,
@@ -6917,14 +6867,13 @@ type PodGroupsValue struct {
 	FloatingIpPool   basetypes.StringValue `tfsdk:"floating_ip_pool"`
 	Id               basetypes.StringValue `tfsdk:"id"`
 	Name             basetypes.StringValue `tfsdk:"name"`
-	NodeProcesses    basetypes.ListValue   `tfsdk:"node_processes"`
 	Resource         basetypes.ObjectValue `tfsdk:"resource"`
 	Volumes          basetypes.MapValue    `tfsdk:"volumes"`
 	state            attr.ValueState
 }
 
 func (v PodGroupsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 9)
+	attrTypes := make(map[string]tftypes.Type, 8)
 
 	var val tftypes.Value
 	var err error
@@ -6935,9 +6884,6 @@ func (v PodGroupsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 	attrTypes["floating_ip_pool"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["node_processes"] = basetypes.ListType{
-		ElemType: types.StringType,
-	}.TerraformType(ctx)
 	attrTypes["resource"] = basetypes.ObjectType{
 		AttrTypes: PodGroupsResourceValue{}.AttributeTypes(ctx),
 	}.TerraformType(ctx)
@@ -6949,7 +6895,7 @@ func (v PodGroupsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 9)
+		vals := make(map[string]tftypes.Value, 8)
 
 		val, err = v.Alias.ToTerraformValue(ctx)
 
@@ -6998,14 +6944,6 @@ func (v PodGroupsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		}
 
 		vals["name"] = val
-
-		val, err = v.NodeProcesses.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["node_processes"] = val
 
 		val, err = v.Resource.ToTerraformValue(ctx)
 
@@ -7102,38 +7040,6 @@ func (v PodGroupsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 		)
 	}
 
-	var nodeProcessesVal basetypes.ListValue
-	switch {
-	case v.NodeProcesses.IsUnknown():
-		nodeProcessesVal = types.ListUnknown(types.StringType)
-	case v.NodeProcesses.IsNull():
-		nodeProcessesVal = types.ListNull(types.StringType)
-	default:
-		var d diag.Diagnostics
-		nodeProcessesVal, d = types.ListValue(types.StringType, v.NodeProcesses.Elements())
-		diags.Append(d...)
-	}
-
-	if diags.HasError() {
-		return types.ObjectUnknown(map[string]attr.Type{
-			"alias":             basetypes.StringType{},
-			"availability_zone": basetypes.StringType{},
-			"count":             basetypes.Int64Type{},
-			"floating_ip_pool":  basetypes.StringType{},
-			"id":                basetypes.StringType{},
-			"name":              basetypes.StringType{},
-			"node_processes": basetypes.ListType{
-				ElemType: types.StringType,
-			},
-			"resource": basetypes.ObjectType{
-				AttrTypes: PodGroupsResourceValue{}.AttributeTypes(ctx),
-			},
-			"volumes": basetypes.MapType{
-				ElemType: PodGroupsVolumesValue{}.Type(ctx),
-			},
-		}), diags
-	}
-
 	attributeTypes := map[string]attr.Type{
 		"alias":             basetypes.StringType{},
 		"availability_zone": basetypes.StringType{},
@@ -7141,9 +7047,6 @@ func (v PodGroupsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 		"floating_ip_pool":  basetypes.StringType{},
 		"id":                basetypes.StringType{},
 		"name":              basetypes.StringType{},
-		"node_processes": basetypes.ListType{
-			ElemType: types.StringType,
-		},
 		"resource": basetypes.ObjectType{
 			AttrTypes: PodGroupsResourceValue{}.AttributeTypes(ctx),
 		},
@@ -7169,7 +7072,6 @@ func (v PodGroupsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 			"floating_ip_pool":  v.FloatingIpPool,
 			"id":                v.Id,
 			"name":              v.Name,
-			"node_processes":    nodeProcessesVal,
 			"resource":          resource,
 			"volumes":           volumes,
 		})
@@ -7216,10 +7118,6 @@ func (v PodGroupsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.NodeProcesses.Equal(other.NodeProcesses) {
-		return false
-	}
-
 	if !v.Resource.Equal(other.Resource) {
 		return false
 	}
@@ -7247,9 +7145,6 @@ func (v PodGroupsValue) AttributeTypes(ctx context.Context) map[string]attr.Type
 		"floating_ip_pool":  basetypes.StringType{},
 		"id":                basetypes.StringType{},
 		"name":              basetypes.StringType{},
-		"node_processes": basetypes.ListType{
-			ElemType: types.StringType,
-		},
 		"resource": basetypes.ObjectType{
 			AttrTypes: PodGroupsResourceValue{}.AttributeTypes(ctx),
 		},

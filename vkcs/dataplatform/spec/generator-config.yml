@@ -17,6 +17,7 @@ resources:
         - status
         - status_description
         - pod_groups.pod_group_template_id
+        - pod_groups.node_processes
         - upgrades
         - floating_ip_pool
         - info
@@ -128,8 +129,6 @@ resources:
             description: Pod count.
           pod_groups.floating_ip_pool:
             description: Floating IP pool ID.
-          pod_groups.node_processes:
-            description: Node processes.
           pod_groups.resource:
             description: Resource request settings.
           pod_groups.resource.cpu_request:

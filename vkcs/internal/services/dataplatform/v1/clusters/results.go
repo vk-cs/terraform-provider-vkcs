@@ -24,7 +24,92 @@ type Cluster struct {
 	AvailabilityZone  string            `json:"availability_zone"`
 	MultiAZ           bool              `json:"multi_az"`
 	FloatingIPPool    string            `json:"floating_ip_pool"`
-	Info              *ClusterInfo      `json:"info"`
+}
+
+type ClusterConfig struct {
+	Settings    []ClusterConfigSetting    `json:"settings"`
+	Maintenance *ClusterConfigMaintenance `json:"maintenance"`
+	Warehouses  []ClusterConfigWarehouse  `json:"warehouses"`
+}
+
+type ClusterConfigSetting struct {
+	Alias string `json:"alias" required:"true"`
+	Value string `json:"value" required:"true"`
+}
+
+type ClusterConfigMaintenance struct {
+	Start    string                             `json:"start"`
+	Backup   *ClusterConfigMaintenanceBackup    `json:"backup,omitempty"`
+	CronTabs []ClusterConfigMaintenanceCronTabs `json:"cron_tabs,omitempty"`
+}
+
+type ClusterConfigMaintenanceBackup struct {
+	Full         *ClusterConfigMaintenanceBackupObj `json:"full,omitempty"`
+	Incremental  *ClusterConfigMaintenanceBackupObj `json:"incremental,omitempty"`
+	Differential *ClusterConfigMaintenanceBackupObj `json:"differential,omitempty"`
+}
+
+type ClusterConfigMaintenanceBackupObj struct {
+	Enabled   bool   `json:"enabled,omitempty"`
+	Start     string `json:"start" required:"true"`
+	KeepCount int    `json:"keep_count,omitempty"`
+	KeepTime  int    `json:"keep_time,omitempty"`
+}
+
+type ClusterConfigMaintenanceCronTabs struct {
+	ID       string                 `json:"id"`
+	Required bool                   `json:"required"`
+	Name     string                 `json:"name"`
+	Start    string                 `json:"start"`
+	Settings []ClusterConfigSetting `json:"settings,omitempty"`
+}
+
+type ClusterConfigWarehouse struct {
+	ID          string                             `json:"id"`
+	Name        string                             `json:"name"`
+	Connections []ClusterConfigWarehouseConnection `json:"connections"`
+	Extensions  []ClusterConfigWarehouseExtension  `json:"extensions,omitempty"`
+}
+
+type ClusterConfigWarehouseConnection struct {
+	Name      string                 `json:"name"`
+	Plug      string                 `json:"plug"`
+	Settings  []ClusterConfigSetting `json:"settings"`
+	ID        string                 `json:"id"`
+	CreatedAt string                 `json:"created_at"`
+}
+
+type ClusterConfigWarehouseExtension struct {
+	Type      string                 `json:"type"`
+	Version   string                 `json:"version,omitempty"`
+	Settings  []ClusterConfigSetting `json:"settings,omitempty"`
+	ID        string                 `json:"id"`
+	CreatedAt string                 `json:"created_at"`
+}
+
+type ClusterPodGroup struct {
+	ID                 string                           `json:"id"`
+	Name               string                           `json:"name"`
+	Count              int                              `json:"count"`
+	Resource           *ClusterPodGroupResource         `json:"resource"`
+	PodGroupTemplateID string                           `json:"pod_group_template_id" required:"true"`
+	Volumes            map[string]ClusterPodGroupVolume `json:"volumes,omitempty"`
+	FloatingIPPool     string                           `json:"floating_ip_pool,omitempty"`
+	AvailabilityZone   string                           `json:"availability_zone,omitempty"`
+	Alias              string                           `json:"alias,omitempty"`
+}
+
+type ClusterPodGroupResource struct {
+	CPURequest string `json:"cpu_request"`
+	CPULimit   string `json:"cpu_limit"`
+	RAMRequest string `json:"ram_request"`
+	RAMLimit   string `json:"ram_limit"`
+}
+
+type ClusterPodGroupVolume struct {
+	StorageClassName string `json:"storageClassName"`
+	Storage          string `json:"storage"`
+	Count            int    `json:"count"`
 }
 
 type ClusterShortResp struct {
@@ -39,7 +124,7 @@ type commonShortClusterResult struct {
 	gophercloud.Result
 }
 
-// CreateResult represents result of database cluster create
+// CreateResult represents result of dataplatform cluster create
 type CreateResult struct {
 	commonShortClusterResult
 }
@@ -48,7 +133,7 @@ type UpdateResult struct {
 	commonShortClusterResult
 }
 
-// GetResult represents result of database cluster get
+// GetResult represents result of dataplatform cluster get
 type GetResult struct {
 	commonClusterResult
 }
