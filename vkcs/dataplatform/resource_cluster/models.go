@@ -175,18 +175,6 @@ func UpdateClusterPodGroups(ctx context.Context, o []clusters.ClusterPodGroup, s
 					return diags
 				}
 
-				nodeProcesses, d := FlattenClusterPodGroupsNodeProcesses(ctx, p.NodeProcesses)
-				diags.Append(d...)
-				if diags.HasError() {
-					return diags
-				}
-
-				d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("node_processes"), nodeProcesses)
-				diags.Append(d...)
-				if diags.HasError() {
-					return diags
-				}
-
 				volumes, d := FlattenClusterPodGroupsVolumes(ctx, p.Volumes)
 				diags.Append(d...)
 				if diags.HasError() {

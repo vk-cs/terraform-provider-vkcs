@@ -211,8 +211,6 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
   - `floating_ip_pool` optional *string* &rarr;  Floating IP pool ID.
 
-  - `node_processes` optional *string* &rarr;  Node processes.
-
   - `resource` optional &rarr;  Resource request settings.
     - `cpu_request` optional *string* &rarr;  Resource request settings.
 
