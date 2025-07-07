@@ -327,11 +327,11 @@ func databaseClusterUpdateWalDiskAutoexpand(updateCtx *dbResourceUpdateContext) 
 
 	var walAutoExpandOpts clusters.UpdateAutoExpandWalOpts
 	if walAutoExpandProperties.AutoExpand {
-		walAutoExpandOpts.Cluster.WalVolume.VolumeAutoresizeEnabled = 1
+		walAutoExpandOpts.Cluster.WalAutoresizeEnabled = 1
 	} else {
-		walAutoExpandOpts.Cluster.WalVolume.VolumeAutoresizeEnabled = 0
+		walAutoExpandOpts.Cluster.WalAutoresizeEnabled = 0
 	}
-	walAutoExpandOpts.Cluster.WalVolume.VolumeAutoresizeMaxSize = walAutoExpandProperties.MaxDiskSize
+	walAutoExpandOpts.Cluster.WalAutoresizeMaxSize = walAutoExpandProperties.MaxDiskSize
 
 	return databaseClusterUpdateWalDiskAutoexpandBase(updateCtx, walAutoExpandOpts)
 }

@@ -101,10 +101,8 @@ type UpdateAutoExpandOpts struct {
 // UpdateAutoExpandWalOpts represents autoresize parameters of wal volume of database cluster
 type UpdateAutoExpandWalOpts struct {
 	Cluster struct {
-		WalVolume struct {
-			VolumeAutoresizeEnabled int `json:"autoresize_enabled"`
-			VolumeAutoresizeMaxSize int `json:"autoresize_max_size"`
-		} `json:"wal_volume"`
+		WalAutoresizeEnabled int `json:"wal_autoresize_enabled"`
+		WalAutoresizeMaxSize int `json:"wal_autoresize_max_size"`
 	} `json:"cluster"`
 }
 
