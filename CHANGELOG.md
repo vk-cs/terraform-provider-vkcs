@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.11.1 (unreleased)
+#### v0.11.1
 - Fix updating wal_disk_autoexpand field of resource vkcs_database_cluster
 
 #### v0.11.0

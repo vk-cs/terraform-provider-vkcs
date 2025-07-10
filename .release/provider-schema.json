@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.11.0",
+  "provider_version": "v0.11.1",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -1086,15 +1086,6 @@
                   "type": "TypeString",
                   "required": true,
                   "description": "Pod group name."
-                },
-                "node_processes": {
-                  "type": "TypeList",
-                  "optional": true,
-                  "description": "Node processes.",
-                  "computed": true,
-                  "elem": {
-                    "type": "TypeString"
-                  }
                 },
                 "resource": {
                   "optional": true,
