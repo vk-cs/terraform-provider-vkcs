@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.11.2 (unreleased)
+- Support vkcs_dataplatform_cluster resource settings update
+
 #### v0.11.1
 - Fix updating wal_disk_autoexpand field of resource vkcs_database_cluster
 

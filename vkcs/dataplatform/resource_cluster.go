@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/dataplatform/resource_cluster"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	fwutils "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/utils"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dataplatform/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
@@ -32,6 +31,7 @@ type clusterStatus string
 const (
 	clusterStatusCreating        clusterStatus = "InfraUpdating"
 	clusterStatusConfiguring     clusterStatus = "Configuring"
+	clusterStatusUpdating        clusterStatus = "Updating"
 	clusterStatusActive          clusterStatus = "Active"
 	clusterStatusWaitingDeleting clusterStatus = "Waiting deleting"
 	clusterStatusDeleting        clusterStatus = "Deleting"
@@ -247,6 +247,48 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
+	updateSettingsOpts := make([]clusters.ClusterUpdateSetting, 0)
+	planSettings, diags := resource_cluster.ExpandClusterConfigsSettings(ctx, plan.Configs.Settings)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+	dataSettings, diags := resource_cluster.ExpandClusterConfigsSettings(ctx, data.Configs.Settings)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+	for _, planSetting := range planSettings {
+		for _, dataSetting := range dataSettings {
+			if planSetting.Alias == dataSetting.Alias {
+				if planSetting.Value != dataSetting.Value {
+					updateSettingsOpts = append(updateSettingsOpts, clusters.ClusterUpdateSetting(planSetting))
+				}
+				break
+			}
+		}
+	}
+	if len(updateSettingsOpts) > 0 {
+		_, err = clusters.UpdateSettings(client, id, &clusters.ClusterUpdateSettings{Settings: updateSettingsOpts}).Extract()
+		if err != nil {
+			resp.Diagnostics.AddError("Error calling Data Platform API to update cluster settings", err.Error())
+			return
+		}
+
+		stateConf := &retry.StateChangeConf{
+			Pending:    []string{string(clusterStatusCreating), string(clusterStatusConfiguring), string(clusterStatusUpdating)},
+			Target:     []string{string(clusterStatusActive)},
+			Refresh:    clusterStateRefreshFunc(client, id),
+			Timeout:    clusterCreateTimeout,
+			Delay:      clusterCreateDelay,
+			MinTimeout: clusterCreateMinTimeout,
+		}
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			resp.Diagnostics.AddError("Error waiting for cluster update", err.Error())
+		}
+	}
+
 	cluster, err := clusters.Get(client, id).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting cluster", err.Error())
@@ -259,6 +301,12 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	resp.Diagnostics.Append(resource_cluster.UpdateConfigs(ctx, cluster.Configs, &resp.State)...)
+	resp.Diagnostics.Append(resource_cluster.UpdateClusterPodGroups(ctx, cluster.PodGroups, &resp.State)...)
+	if len(updateSettingsOpts) > 0 {
+		resp.Diagnostics.Append(resource_cluster.UpdateClusterConfigsSettings(ctx, planSettings, &resp.State)...)
+	}
 }
 
 func (r *clusterResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -310,5 +358,5 @@ func (r *clusterResource) Delete(ctx context.Context, req resource.DeleteRequest
 }
 
 func (r *clusterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	fwutils.ImportStatePassthroughInt64ID(ctx, req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
