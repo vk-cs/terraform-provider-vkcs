@@ -9,6 +9,7 @@ description: |-
 ### v0.12.0 (unreleased)
 - Add vkcs_dataplatform_products data source
 - Add vkcs_dataplatform_product data source
+- Support vkcs_dataplatform_cluster resource settings update
 - Add external_network_id create option for Kubernetes cluster
 - Fix validation for postgrespro_enterprise datastore
 

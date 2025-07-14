@@ -4,13 +4,31 @@ import (
 	"context"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dataplatform/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dataplatform/v1/templates"
 )
+
+func (m *ClusterModel) UpdateState(ctx context.Context, cluster *clusters.Cluster, state *tfsdk.State, oldSettings basetypes.ListValue) diag.Diagnostics {
+	var diags diag.Diagnostics
+	diags.Append(m.UpdateFromCluster(ctx, cluster)...)
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(state.Set(ctx, m)...)
+
+	diags.Append(UpdateClusterConfigs(ctx, cluster.Configs, state)...)
+	diags.Append(UpdateClusterPodGroups(ctx, cluster.PodGroups, state)...)
+	diags.Append(UpdateClusterConfigsSettings(ctx, oldSettings, cluster.Configs.Settings, state)...)
+
+	return diags
+}
 
 func (m *ClusterModel) UpdateFromCluster(ctx context.Context, cluster *clusters.Cluster) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -36,7 +54,7 @@ func (m *ClusterModel) UpdateFromCluster(ctx context.Context, cluster *clusters.
 	return diags
 }
 
-func UpdateConfigs(ctx context.Context, config *clusters.ClusterConfig, state *tfsdk.State) diag.Diagnostics {
+func UpdateClusterConfigs(ctx context.Context, config *clusters.ClusterConfig, state *tfsdk.State) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var d diag.Diagnostics
 
@@ -50,13 +68,13 @@ func UpdateConfigs(ctx context.Context, config *clusters.ClusterConfig, state *t
 		return diags
 	}
 
-	diags = state.SetAttribute(ctx, path.Root("configs").AtName("maintenance"), maintenance)
+	d = state.SetAttribute(ctx, path.Root("configs").AtName("maintenance"), maintenance)
 	diags.Append(d...)
 	if diags.HasError() {
 		return diags
 	}
 
-	diags = UpdateClusterConfigsWarehouses(ctx, config.Warehouses, path.Root("configs").AtName("warehouses"), state)
+	d = UpdateClusterConfigsWarehouses(ctx, config.Warehouses, path.Root("configs").AtName("warehouses"), state)
 	diags.Append(d...)
 	if diags.HasError() {
 		return diags
@@ -128,6 +146,50 @@ func UpdateClusterConfigsWarehousesConnections(ctx context.Context, i int, conne
 	}
 	return nil
 }
+
+func UpdateClusterConfigsSettings(ctx context.Context, oldSettings basetypes.ListValue, o []clusters.ClusterConfigSetting, state *tfsdk.State) diag.Diagnostics {
+	var diags diag.Diagnostics
+	settingsV := make([]ConfigsSettingsValue, 0, len(oldSettings.Elements()))
+	if len(oldSettings.Elements()) > 0 {
+		d := oldSettings.ElementsAs(ctx, &settingsV, false)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+	}
+
+	for _, s := range o {
+		updated := false
+		for i, setting := range settingsV {
+			if setting.Alias.ValueString() == s.Alias {
+				settingsV[i].Value = types.StringValue(s.Value)
+				updated = true
+			}
+		}
+		if !updated {
+			settingsV = append(settingsV, ConfigsSettingsValue{
+				Alias: types.StringValue(s.Alias),
+				Value: types.StringValue(s.Value),
+				state: attr.ValueStateKnown,
+			})
+		}
+	}
+	if len(settingsV) == 0 {
+		d := state.SetAttribute(ctx, path.Root("configs").AtName("settings"), types.ListNull(ConfigsSettingsValue{}.Type(ctx)))
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+	} else {
+		d := state.SetAttribute(ctx, path.Root("configs").AtName("settings"), settingsV)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+	}
+	return nil
+}
+
 func UpdateClusterPodGroups(ctx context.Context, o []clusters.ClusterPodGroup, state *tfsdk.State) diag.Diagnostics {
 	var diags diag.Diagnostics
 
