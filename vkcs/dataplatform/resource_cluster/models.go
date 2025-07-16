@@ -128,6 +128,34 @@ func UpdateClusterConfigsWarehousesConnections(ctx context.Context, i int, conne
 	}
 	return nil
 }
+
+func UpdateClusterConfigsSettings(ctx context.Context, o []clusters.ClusterCreateConfigSetting, state *tfsdk.State) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	if o == nil {
+		return nil
+	}
+	for _, s := range o {
+		var stateSettings []ConfigsSettingsValue
+		d := state.GetAttribute(ctx, path.Root("configs").AtName("settings"), &stateSettings)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+
+		for i, setting := range stateSettings {
+			if setting.Alias.ValueString() == s.Alias {
+				d = state.SetAttribute(ctx, path.Root("configs").AtName("settings").AtListIndex(i).AtName("value"), s.Value)
+				diags.Append(d...)
+				if diags.HasError() {
+					return diags
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func UpdateClusterPodGroups(ctx context.Context, o []clusters.ClusterPodGroup, state *tfsdk.State) diag.Diagnostics {
 	var diags diag.Diagnostics
 
