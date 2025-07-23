@@ -124,7 +124,7 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    false,
-				Description: "The UUID of the Kubernetes cluster template. It can be obtained using the cluster_template data source.",
+				Description: "The UUID of the Kubernetes cluster template. It can be obtained using the vkcs_kubernetes_clustertemplate data source.",
 			},
 			"master_flavor": {
 				Type:        schema.TypeString,
