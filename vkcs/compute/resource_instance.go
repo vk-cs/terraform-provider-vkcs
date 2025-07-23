@@ -1280,6 +1280,7 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 			ID                  string                 `json:"id"`
 			Size                int                    `json:"size"`
 			Bootable            string                 `json:"bootable"`
+			VolumeType          string                 `json:"volume_type"`
 		}{}
 		for _, b := range serverWithAttachments.VolumesAttached {
 			rawVolume := ivolumes.Get(blockStorageClient, b["id"].(string))
@@ -1288,15 +1289,25 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 			}
 
 			log.Printf("[DEBUG] retrieved volume%+v", volMetaData)
+
+			var uuid, sourceType string
+			if imageID, ok := volMetaData.VolumeImageMetadata["image_id"]; ok && imageID != "" {
+				uuid = imageID.(string)
+				sourceType = "image"
+			} else {
+				uuid = volMetaData.ID
+				sourceType = "volume"
+			}
+
 			v := map[string]interface{}{
 				"delete_on_termination": true,
-				"uuid":                  volMetaData.VolumeImageMetadata["image_id"],
+				"uuid":                  uuid,
 				"boot_index":            -1,
 				"destination_type":      "volume",
-				"source_type":           "image",
+				"source_type":           sourceType,
 				"volume_size":           volMetaData.Size,
 				"disk_bus":              "",
-				"volume_type":           "",
+				"volume_type":           volMetaData.VolumeType,
 				"device_type":           "",
 			}
 

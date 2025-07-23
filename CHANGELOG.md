@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 #### v0.11.2 (unreleased)
 - Support stack_id parameter for vkcs_dataplatform_cluster creation
+- Fix data when importing a VM via terraform. Added separation into image and volume for uuid and source_type
 
 #### v0.11.1
 - Fix updating wal_disk_autoexpand field of resource vkcs_database_cluster
