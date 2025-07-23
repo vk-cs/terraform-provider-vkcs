@@ -1119,6 +1119,7 @@ resource "vkcs_compute_instance" "instance_1" {
     boot_index = 0
     destination_type = "volume"
     delete_on_termination = true
+	volume_type = "ceph-hdd"
   }
   network {
     uuid = vkcs_networking_network.base.id
@@ -1178,6 +1179,7 @@ resource "vkcs_compute_instance" "instance_1" {
     boot_index = 0
     destination_type = "volume"
     delete_on_termination = true
+	volume_type = "ceph-hdd"
   }
   network {
     uuid = vkcs_networking_network.base.id
