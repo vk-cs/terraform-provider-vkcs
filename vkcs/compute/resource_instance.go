@@ -1290,33 +1290,31 @@ func resourceComputeInstanceImportState(ctx context.Context, d *schema.ResourceD
 
 			log.Printf("[DEBUG] retrieved volume%+v", volMetaData)
 
-			var uuid, sourceType string
-			if imageID, ok := volMetaData.VolumeImageMetadata["image_id"]; ok && imageID != "" {
-				uuid = imageID.(string)
-				sourceType = "image"
-			} else {
-				uuid = volMetaData.ID
-				sourceType = "volume"
-			}
-
 			v := map[string]interface{}{
 				"delete_on_termination": true,
-				"uuid":                  uuid,
 				"boot_index":            -1,
 				"destination_type":      "volume",
-				"source_type":           sourceType,
-				"volume_size":           volMetaData.Size,
 				"disk_bus":              "",
-				"volume_type":           volMetaData.VolumeType,
 				"device_type":           "",
+			}
+
+			if imageID, ok := volMetaData.VolumeImageMetadata["image_id"]; ok && imageID != "" {
+				v["uuid"] = imageID.(string)
+				v["source_type"] = "image"
+				v["volume_size"] = volMetaData.Size
+				v["volume_type"] = volMetaData.VolumeType
+			} else {
+				v["uuid"] = volMetaData.ID
+				v["source_type"] = "volume"
 			}
 
 			if volMetaData.Bootable == "true" {
 				bds = append(bds, v)
 			}
 		}
-
-		bds[0]["boot_index"] = 0
+		if len(bds) != 0 {
+			bds[0]["boot_index"] = 0
+		}
 
 		d.Set("block_device", bds)
 	}
