@@ -18,21 +18,27 @@ import (
 
 // Datastore names
 const (
-	Redis                   = "redis"
-	MongoDB                 = "mongodb"
-	PostgresPro             = "postgrespro"
+	Redis           = "redis"
+	MongoDB         = "mongodb"
+	PostgresPro     = "postgrespro"
+	Galera          = "galera_mysql"
+	Postgres        = "postgresql"
+	PostgresMultiAZ = "postgresql_multiaz"
+	Clickhouse      = "clickhouse"
+	MySQL           = "mysql"
+	Tarantool       = "tarantool"
+
+	// datastores are requiring request to helpdesk
 	PostgresProEnterprise   = "postgrespro_enterprise"
 	PostgresProEnterprise1C = "postgrespro_enterprise_1c"
-	Galera                  = "galera_mysql"
-	Postgres                = "postgresql"
-	PostgresMultiAZ         = "postgresql_multiaz"
-	Clickhouse              = "clickhouse"
-	MySQL                   = "mysql"
-	Tarantool               = "tarantool"
 )
 
 func getClusterDatastores() []string {
-	return []string{Galera, Postgres, PostgresMultiAZ, Tarantool, PostgresProEnterprise, PostgresProEnterprise1C}
+	return []string{Galera, Postgres, PostgresMultiAZ, Tarantool}
+}
+
+func getClusterDatastoresRequiringRequest() []string {
+	return []string{PostgresProEnterprise, PostgresProEnterprise1C}
 }
 
 func getClusterWithShardsDatastores() []string {
