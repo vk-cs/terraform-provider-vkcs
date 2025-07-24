@@ -171,7 +171,7 @@ func ResourceDatabaseCluster() *schema.Resource {
 							ValidateFunc: validation.StringInSlice(getClusterDatastores(), true),
 							Description: fmt.Sprintf(
 								"Type of the datastore. Changing this creates a new cluster. Must be one of: %s. "+
-									"The following datastores are available upon request: %s. Please contact support.",
+									"The following datastores may not be available: %s. Please contact support for details.",
 								strings.Join(datastoresWithQuotes(getClusterDatastores()), ", "),
 								strings.Join(datastoresWithQuotes(getClusterDatastoresRequiringRequest()), ", ")),
 						},
