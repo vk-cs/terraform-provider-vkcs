@@ -22,6 +22,7 @@ type ClusterCreate struct {
 	Configs           *ClusterCreateConfig    `json:"configs" required:"true"`
 	PodGroups         []ClusterCreatePodGroup `json:"pod_groups" required:"true"`
 	Description       string                  `json:"description,omitempty"`
+	StackID           string                  `json:"stack_id,omitempty"`
 }
 
 type ClusterUpdate struct {

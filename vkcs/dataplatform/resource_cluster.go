@@ -114,6 +114,7 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 		AvailabilityZone:  data.AvailabilityZone.ValueString(),
 		Configs:           configOpts,
 		PodGroups:         podGroupOpts,
+		StackID:           data.StackId.ValueString(),
 	}
 
 	tflog.Trace(ctx, "Calling Data Platform API to create cluster", map[string]interface{}{"opts": fmt.Sprintf("%#v", createOpts)})
