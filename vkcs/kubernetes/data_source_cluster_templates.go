@@ -69,7 +69,7 @@ func (d *ClusterTemplatesDataSource) Schema(ctx context.Context, req datasource.
 
 						"version": schema.StringAttribute{
 							Computed:    true,
-							Description: "Version of a cluster template.",
+							Description: "Version of Kubernetes.",
 						},
 					},
 				},
