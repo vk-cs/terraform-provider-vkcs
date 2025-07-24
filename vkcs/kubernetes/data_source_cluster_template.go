@@ -20,7 +20,7 @@ func DataSourceKubernetesClusterTemplate() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Kubernetes version. _note_ Only major.minor versions are supported (e.g., 1.31), patch versions such as 1.31.3 are not allowed. Only one of `name`, `version` or `id` must be specified.",
+				Description: "Kubernetes version. Specify only major and minor versions (i.e. 1.32), patch versions are not used in cluster templates. _note_ Only one of `name`, `version`, or `id` must be specified.",
 			},
 			"id": {
 				Type:        schema.TypeString,
