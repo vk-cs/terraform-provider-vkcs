@@ -26,7 +26,7 @@ data "vkcs_kubernetes_clustertemplate" "k8s_31" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the V1 Container Infra client. If omitted, the `region` argument of the provider is used.
 
-- `version` optional *string* &rarr;  Kubernetes version of the cluster. <br>**Note:** Only one of `name`, `version` or `id` must be specified.
+- `version` optional *string* &rarr;  Kubernetes version. Specify only major and minor versions (i.e. 1.32), patch versions are not used in cluster templates. <br>**Note:** Only one of `name`, `version`, or `id` must be specified.
 
 
 ## Attributes Reference

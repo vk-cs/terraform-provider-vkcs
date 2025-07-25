@@ -155,7 +155,7 @@ output "cluster_ip" {
 - `cluster_size` **required** *number* &rarr;  The number of instances in the cluster.
 
 - `datastore` **required** &rarr;  Object that represents datastore of the cluster. Changing this creates a new cluster.
-  - `type` **required** *string* &rarr;  Type of the datastore. Changing this creates a new cluster. Must be one of: `galera_mysql`, `postgresql`, `postgresql_multiaz`, `tarantool`, `postgrespro_enterprise`, `postgrespro_enterprise_1c`
+  - `type` **required** *string* &rarr;  Type of the datastore. Changing this creates a new cluster. Must be one of: `galera_mysql`, `postgresql`, `postgresql_multiaz`, `tarantool`. The following datastores may not be available: `postgrespro_enterprise`, `postgrespro_enterprise_1c`. Please contact support for details.
 
   - `version` **required** *string* &rarr;  Version of the datastore. Changing this creates a new cluster.
 
