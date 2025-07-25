@@ -34,7 +34,7 @@ In addition to all arguments above, the following attributes are exported:
 
   - `name` *string* &rarr;  Name of a cluster template.
 
-  - `version` *string* &rarr;  Version of a cluster template.
+  - `version` *string* &rarr;  Version of Kubernetes.
 
 
 - `id` *string* &rarr;  Random identifier of the data source.

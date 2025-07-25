@@ -72,7 +72,7 @@ resource "vkcs_kubernetes_cluster" "k8s_cluster" {
 ```
 
 ## Argument Reference
-- `cluster_template_id` **required** *string* &rarr;  The UUID of the Kubernetes cluster template. It can be obtained using the cluster_template data source.
+- `cluster_template_id` **required** *string* &rarr;  The UUID of the Kubernetes cluster template. It can be obtained using the vkcs_kubernetes_clustertemplate data source.
 
 - `floating_ip_enabled` **required** *boolean* &rarr;  Floating ip is enabled.
 
