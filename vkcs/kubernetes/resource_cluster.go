@@ -300,6 +300,12 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Description:      "Type of the kubernetes cluster, may be `standard` or `regional`. Default type is `standard`.",
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{clusterTypeStandard, clusterTypeRegional}, false)),
 			},
+			"external_network_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "ID of external network, it should be specified if cloud deployment doesn't have a public external network.",
+			},
 		},
 		CustomizeDiff: resourceKubernetesClusterCustomizeDiff,
 		Description:   "Provides a kubernetes cluster resource. This can be used to create, modify and delete kubernetes clusters.",
@@ -388,6 +394,7 @@ func resourceKubernetesClusterCreate(ctx context.Context, d *schema.ResourceData
 		RegistryAuthPassword: d.Get("registry_auth_password").(string),
 		DNSDomain:            d.Get("dns_domain").(string),
 		ClusterType:          d.Get("cluster_type").(string),
+		ExternalNetworkId:    d.Get("external_network_id").(string),
 	}
 
 	switch createOpts.ClusterType {

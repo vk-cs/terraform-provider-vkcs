@@ -36,6 +36,7 @@ type CreateOpts struct {
 	DNSDomain                 string            `json:"dns_domain,omitempty"`
 	SecurityPolicySyncEnabled *bool             `json:"security_policy_sync_enabled,omitempty"`
 	ClusterType               string            `json:"cluster_type,omitempty"`
+	ExternalNetworkId         string            `json:"external_network_id,omitempty"`
 }
 
 type UpdateOp string
