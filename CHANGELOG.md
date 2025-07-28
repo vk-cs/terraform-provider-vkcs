@@ -6,9 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.11.2 (unreleased)
+#### v0.11.2
 - Support stack_id parameter for vkcs_dataplatform_cluster creation
-- Fix imporitng VM booted on a disk was not created from an image
+- Fix importing VM booted on a disk was not created from an image
 
 #### v0.11.1
 - Fix updating wal_disk_autoexpand field of resource vkcs_database_cluster
