@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.11.1",
+  "provider_version": "v0.11.2",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -1369,7 +1369,7 @@
                 "type": {
                   "type": "TypeString",
                   "required": true,
-                  "description": "Type of the datastore. Changing this creates a new cluster. Must be one of: `galera_mysql`, `postgresql`, `postgresql_multiaz`, `tarantool`, `postgrespro_enterprise`, `postgrespro_enterprise_1c`",
+                  "description": "Type of the datastore. Changing this creates a new cluster. Must be one of: `galera_mysql`, `postgresql`, `postgresql_multiaz`, `tarantool`. The following datastores may not be available: `postgrespro_enterprise`, `postgrespro_enterprise_1c`. Please contact support for details.",
                   "force_new": true
                 },
                 "version": {
@@ -3759,7 +3759,7 @@
           "cluster_template_id": {
             "type": "TypeString",
             "required": true,
-            "description": "The UUID of the Kubernetes cluster template. It can be obtained using the cluster_template data source."
+            "description": "The UUID of the Kubernetes cluster template. It can be obtained using the vkcs_kubernetes_clustertemplate data source."
           },
           "cluster_type": {
             "type": "TypeString",
@@ -9559,7 +9559,7 @@
           "version": {
             "type": "TypeString",
             "optional": true,
-            "description": "Kubernetes version of the cluster. _note_ Only one of `name`, `version` or `id` must be specified.",
+            "description": "Kubernetes version. Specify only major and minor versions (i.e. 1.32), patch versions are not used in cluster templates. _note_ Only one of `name`, `version`, or `id` must be specified.",
             "computed": true
           },
           "volume_driver": {
@@ -9590,7 +9590,7 @@
                 },
                 "version": {
                   "type": "TypeString",
-                  "description": "Version of a cluster template.",
+                  "description": "Version of Kubernetes.",
                   "computed": true
                 }
               }
