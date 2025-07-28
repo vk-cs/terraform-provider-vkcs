@@ -6,7 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-### v0.11.3 (unrealised)
+### v0.12.0 (unreleased)
+- Add vkcs_dataplatform_products data source
+- Add vkcs_dataplatform_product data source
 - Add external_network_id create option for Kubernetes cluster
 
 #### v0.11.2

@@ -99,16 +99,22 @@ func (p *vkcsProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 // DataSources defines the data sources implemented in the provider.
 func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		backup.NewPlanDataSource,
+		backup.NewProviderDataSource,
+		backup.NewProvidersDataSource,
 		cdn.NewOriginGroupDataSource,
 		cdn.NewShieldingPopDataSource,
 		cdn.NewShieldingPopsDataSource,
 		cdn.NewSslCertificateDataSource,
+		dataplatform.NewProductsDataSource,
+		dataplatform.NewProductDataSource,
 		db.NewBackupDataSource,
 		db.NewConfigGroupDataSource,
 		db.NewDatastoreDataSource,
 		db.NewDatastoresDataSource,
 		db.NewDatastoreCapabilitiesDataSource,
 		db.NewDatastoreParametersDataSource,
+		dc.NewAPIOptionsDataSource,
 		images.NewImagesDataSource,
 		keymanager.NewContainerDataSource,
 		keymanager.NewSecretDataSource,
@@ -120,10 +126,6 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		kubernetes.NewSecurityPolicyTemplateDataSource,
 		networking.NewPortDataSource,
 		networking.NewSubnetDataSource,
-		backup.NewPlanDataSource,
-		backup.NewProviderDataSource,
-		backup.NewProvidersDataSource,
-		dc.NewAPIOptionsDataSource,
 	}
 }
 
@@ -134,6 +136,7 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		cdn.NewOriginGroupResource,
 		cdn.NewResourceResource,
 		cdn.NewSslCertificateResource,
+		dataplatform.NewClusterResource,
 		db.NewBackupResource,
 		dc.NewRouterResource,
 		dc.NewInterfaceResource,
@@ -155,6 +158,5 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		mlplatform.NewK8SRegistryResource,
 		monitoring.NewResource,
 		networking.NewAnycastIPResource,
-		dataplatform.NewClusterResource,
 	}
 }

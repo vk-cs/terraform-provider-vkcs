@@ -165,3 +165,21 @@ resources:
             description: Enables multi az support.
           created_at:
             description: Cluster creation timestamp.
+data_sources:
+  products:
+    read:
+      path: /api/products
+      method: GET
+    schema:
+      ignores:
+        - features
+        - mode
+        - products.configs
+      attributes:
+        overrides:
+          products:
+            description: List of products information
+          products.product_name:
+            description: Product name
+          products.product_version:
+            description: Product version
