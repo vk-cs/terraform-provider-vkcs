@@ -1,4 +1,232 @@
 {
+	"datasources": [
+		{
+			"name": "products",
+			"schema": {
+				"attributes": [
+					{
+						"name": "products",
+						"list_nested": {
+							"computed_optional_required": "computed",
+							"nested_object": {
+								"attributes": [
+									{
+										"name": "product_name",
+										"string": {
+											"computed_optional_required": "computed",
+											"description": "Product name"
+										}
+									},
+									{
+										"name": "product_version",
+										"string": {
+											"computed_optional_required": "computed",
+											"description": "Product version"
+										}
+									}
+								]
+							},
+							"description": "List of products information"
+						}
+					},
+					{
+						"name": "region",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource."
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "product",
+			"schema": {
+				"attributes": [
+					{
+						"name": "configs",
+						"single_nested": {
+							"computed_optional_required": "computed",
+							"attributes": [
+								{
+									"name": "connections",
+									"list_nested": {
+										"computed_optional_required": "computed",
+										"nested_object": {
+											"attributes": [
+												{
+													"name": "is_required",
+													"bool": {
+														"computed_optional_required": "computed",
+														"description": "Is connection required"
+													}
+												},
+												{
+													"name": "plug",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "Connection type"
+													}
+												},
+												{
+													"name": "position",
+													"int64": {
+														"computed_optional_required": "computed",
+														"description": "Connection position"
+													}
+												},
+												{
+													"name": "required_group",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "Connection required group"
+													}
+												},
+												{
+													"name": "settings",
+													"list_nested": {
+														"computed_optional_required": "computed",
+														"nested_object": {
+															"attributes": [
+																{
+																	"name": "alias",
+																	"string": {
+																		"computed_optional_required": "computed",
+																		"description": "Setting alias"
+																	}
+																},
+																{
+																	"name": "default_value",
+																	"string": {
+																		"computed_optional_required": "computed",
+																		"description": "Setting default value"
+																	}
+																},
+																{
+																	"name": "is_require",
+																	"bool": {
+																		"computed_optional_required": "computed",
+																		"description": "Is setting required"
+																	}
+																},
+																{
+																	"name": "is_sensitive",
+																	"bool": {
+																		"computed_optional_required": "computed",
+																		"description": "Is setting sensitive"
+																	}
+																},
+																{
+																	"name": "regexp",
+																	"string": {
+																		"computed_optional_required": "computed",
+																		"description": "Setting validation regexp"
+																	}
+																},
+																{
+																	"name": "string_variation",
+																	"list": {
+																		"computed_optional_required": "computed",
+																		"element_type": {
+																			"string": {}
+																		},
+																		"description": "Available setting values"
+																	}
+																}
+															]
+														},
+														"description": "Connection settings"
+													}
+												}
+											]
+										},
+										"description": "Product connections configuration info"
+									}
+								},
+								{
+									"name": "settings",
+									"list_nested": {
+										"computed_optional_required": "computed",
+										"nested_object": {
+											"attributes": [
+												{
+													"name": "alias",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "Setting alias"
+													}
+												},
+												{
+													"name": "default_value",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "Setting default value"
+													}
+												},
+												{
+													"name": "is_require",
+													"bool": {
+														"computed_optional_required": "computed",
+														"description": "Is setting required"
+													}
+												},
+												{
+													"name": "is_sensitive",
+													"bool": {
+														"computed_optional_required": "computed",
+														"description": "Is setting sensitive"
+													}
+												},
+												{
+													"name": "regexp",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "Setting validation regexp"
+													}
+												},
+												{
+													"name": "string_variation",
+													"list": {
+														"computed_optional_required": "computed",
+														"element_type": {
+															"string": {}
+														},
+														"description": "Available setting values"
+													}
+												}
+											]
+										},
+										"description": "Product settings"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "product_name",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "Product name"
+						}
+					},
+					{
+						"name": "product_version",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Product version"
+						}
+					},
+					{
+						"name": "region",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource."
+						}
+					}
+				]
+			}
+		}
+	],
 	"provider": {
 		"name": "vkcs"
 	},
