@@ -304,7 +304,7 @@ func ResourceKubernetesCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "ID of external network, it should be specified if cloud deployment doesn't have a public external network.",
+				Description: "ID of external network, it should be specified if cloud deployment doesn't have a public external network. Changing this creates new cluster.",
 			},
 		},
 		CustomizeDiff: resourceKubernetesClusterCustomizeDiff,
