@@ -482,6 +482,7 @@ func resourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("cluster_type", cluster.ClusterType)
 	d.Set("availability_zone", cluster.AvailabilityZone)
 	d.Set("availability_zones", cluster.AvailabilityZones)
+	d.Set("external_network_id", cluster.ExternalNetworkId)
 
 	k8sConfig, err := clusters.KubeConfigGet(containerInfraClient, cluster.UUID)
 	if err != nil {
