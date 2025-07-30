@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	acctest_helper "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -171,6 +172,38 @@ func testAccCheckKubernetesClusterLabels(name string, labels map[string]string) 
 	return resource.ComposeTestCheckFunc(testFuncs...)
 }
 
+func TestAccKubernetesCluster_externalNetworkID_big(t *testing.T) {
+	var cluster clusters.Cluster
+	clusterName := "tfacc-extnet-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterValidExtNet, map[string]string{
+					"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
+					"TestAccKubernetesClusterBase":    testAccKubernetesClusterBase,
+					"ClusterName":                     clusterName,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKubernetesClusterExists("vkcs_kubernetes_cluster.extnet", &cluster),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_cluster.extnet", "name", clusterName),
+				),
+			},
+
+			{
+				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterInvalidExtNet, map[string]string{
+					"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
+					"TestAccKubernetesClusterBase":    testAccKubernetesClusterBase,
+					"ClusterName":                     clusterName + "-invalid",
+				}),
+				ExpectError: regexp.MustCompile(`Network .* is an internal`),
+			},
+		},
+	})
+}
+
 const testAccKubernetesNetworkingBase = `
 resource "vkcs_networking_network" "base" {
   name           = "tfacc-base-net"
@@ -277,6 +310,67 @@ resource "vkcs_kubernetes_cluster" "update" {
 	clean_volumes    = "{{ .CleanVolumes }}"
 	kube_log_level   = "{{ .KubeLogLevel }}"
   }
+
+  depends_on = [
+    vkcs_networking_router_interface.base,
+  ]
+}
+`
+
+const testAccKubernetesClusterValidExtNet = `
+{{ .TestAccKubernetesNetworkingBase }}
+{{ .TestAccKubernetesClusterBase }}
+
+data "vkcs_compute_flavor" "base" {
+  name = "Standard-2-8-50"
+}
+
+resource "vkcs_kubernetes_cluster" "extnet" {
+  name                = "{{ .ClusterName }}"
+  cluster_template_id = data.vkcs_kubernetes_clustertemplate.base.id
+  master_flavor       = data.vkcs_compute_flavor.base.id
+  master_count        = 1
+  network_id          = vkcs_networking_network.base.id
+  subnet_id           = vkcs_networking_subnet.base.id
+  external_network_id = data.vkcs_networking_network.base-extnet.id
+  floating_ip_enabled = false
+  availability_zone   = "MS1"
+
+  depends_on = [
+    vkcs_networking_router_interface.base,
+  ]
+}
+`
+
+const testAccKubernetesClusterInvalidExtNet = `
+{{ .TestAccKubernetesNetworkingBase }}
+{{ .TestAccKubernetesClusterBase }}
+
+data "vkcs_compute_flavor" "base" {
+  name = "Standard-2-8-50"
+}
+
+resource "vkcs_networking_network" "isolated" {
+  name        = "isolated-tf-example"
+  description = "Isolated network for K8s cluster"
+}
+
+resource "vkcs_networking_subnet" "isolated" {
+  name       = "isolated-tf-example"
+  network_id = vkcs_networking_network.isolated.id
+  cidr       = "192.168.250.0/24"
+}
+
+resource "vkcs_kubernetes_cluster" "extnet_invalid" {
+  name                = "{{ .ClusterName }}"
+  cluster_template_id = data.vkcs_kubernetes_clustertemplate.base.id
+  master_flavor       = data.vkcs_compute_flavor.base.id
+  master_count        = 1
+  network_id          = vkcs_networking_network.base.id
+  subnet_id           = vkcs_networking_subnet.base.id
+  external_network_id = vkcs_networking_network.isolated.id
+  floating_ip_enabled = false
+  availability_zone   = "MS1"
 
   depends_on = [
     vkcs_networking_router_interface.base,
