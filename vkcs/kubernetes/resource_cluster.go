@@ -303,6 +303,7 @@ func ResourceKubernetesCluster() *schema.Resource {
 			"external_network_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "ID of external network, it should be specified if cloud deployment doesn't have a public external network. Changing this creates new cluster.",
 			},
