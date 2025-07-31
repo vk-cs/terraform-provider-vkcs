@@ -172,7 +172,7 @@ func testAccCheckKubernetesClusterLabels(name string, labels map[string]string) 
 	return resource.ComposeTestCheckFunc(testFuncs...)
 }
 
-func TestAccKubernetesCluster_externalNetworkID_big(t *testing.T) {
+func TestAccKubernetesCluster_externalNetworkID_valid_big(t *testing.T) {
 	var cluster clusters.Cluster
 	clusterName := "tfacc-extnet-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 
@@ -191,12 +191,22 @@ func TestAccKubernetesCluster_externalNetworkID_big(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_kubernetes_cluster.extnet", "name", clusterName),
 				),
 			},
+		},
+	})
+}
 
+func TestAccKubernetesCluster_externalNetworkID_invalid_big(t *testing.T) {
+	clusterName := "tfacc-extnet-err-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		Steps: []resource.TestStep{
 			{
 				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterInvalidExtNet, map[string]string{
 					"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
 					"TestAccKubernetesClusterBase":    testAccKubernetesClusterBase,
-					"ClusterName":                     clusterName + "-err",
+					"ClusterName":                     clusterName,
 				}),
 				ExpectError: regexp.MustCompile(`Network .* is an internal`),
 			},
