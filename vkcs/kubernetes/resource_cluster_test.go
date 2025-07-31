@@ -196,7 +196,7 @@ func TestAccKubernetesCluster_externalNetworkID_big(t *testing.T) {
 				Config: acctest.AccTestRenderConfig(testAccKubernetesClusterInvalidExtNet, map[string]string{
 					"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
 					"TestAccKubernetesClusterBase":    testAccKubernetesClusterBase,
-					"ClusterName":                     clusterName + "-invalid",
+					"ClusterName":                     clusterName + "-err",
 				}),
 				ExpectError: regexp.MustCompile(`Network .* is an internal`),
 			},
