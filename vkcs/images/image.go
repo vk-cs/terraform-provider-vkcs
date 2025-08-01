@@ -428,15 +428,8 @@ func resourceImagesImageNeedsDefaultStore(endpoint string) bool {
 	return false
 }
 
-type VersionLink struct {
-	Href string `json:"href"`
-	Rel  string `json:"rel"`
-}
-
 type Version struct {
-	Status string        `json:"status"`
-	ID     string        `json:"id"`
-	Links  []VersionLink `json:"links"`
+	ID string `json:"id"`
 }
 
 type VersionsResponse struct {
