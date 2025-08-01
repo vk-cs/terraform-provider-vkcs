@@ -7,7 +7,6 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -27,6 +26,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iimages "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/images/v2/images"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/images/v2/versions"
 )
 
 var imagesDefaultStoreEndpointMasks = []string{"*.devmail.ru$", "^ams.*"}
@@ -428,36 +428,13 @@ func resourceImagesImageNeedsDefaultStore(endpoint string) bool {
 	return false
 }
 
-type Version struct {
-	ID string `json:"id"`
-}
-
-type VersionsResponse struct {
-	Versions []Version `json:"versions"`
-}
-
-func checkVersion(baseURL string) (bool, error) {
-	resp, err := http.Get(baseURL + "/versions")
+func checkVersion(client *gophercloud.ServiceClient) (bool, error) {
+	versions, err := versions.Get(client)
 	if err != nil {
-		return false, fmt.Errorf("failed to request versions: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return false, err
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return false, fmt.Errorf("failed to read response: %w", err)
-	}
-
-	var versions VersionsResponse
-	if err := json.Unmarshal(body, &versions); err != nil {
-		return false, fmt.Errorf("failed to parse json: %w", err)
-	}
-
-	for _, v := range versions.Versions {
+	for _, v := range versions {
 		if v.ID == "v2.6" {
 			return true, nil
 		}

@@ -272,7 +272,7 @@ func resourceImagesImageCreate(ctx context.Context, d *schema.ResourceData, meta
 		imageProperties["store"] = storeS3
 	}
 
-	isNewVersion, err := checkVersion(imageClient.Endpoint)
+	isNewVersion, err := checkVersion(imageClient)
 	if err != nil {
 		return diag.Errorf("Error checking Glance version: %s", err)
 	}
