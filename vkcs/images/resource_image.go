@@ -272,6 +272,17 @@ func resourceImagesImageCreate(ctx context.Context, d *schema.ResourceData, meta
 		imageProperties["store"] = storeS3
 	}
 
+	isNewVersion, err := checkVersion(imageClient.Endpoint)
+	if err != nil {
+		return diag.Errorf("Error checking Glance version: %s", err)
+	}
+	if isNewVersion {
+		imageClient.MoreHeaders = map[string]string{
+			"x-image-meta-store": imageProperties["store"],
+		}
+		delete(imageProperties, "store")
+	}
+
 	createOpts := &images.CreateOpts{
 		Name:            d.Get("name").(string),
 		ContainerFormat: d.Get("container_format").(string),

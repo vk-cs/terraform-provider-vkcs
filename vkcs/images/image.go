@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -425,6 +426,51 @@ func resourceImagesImageNeedsDefaultStore(endpoint string) bool {
 		}
 	}
 	return false
+}
+
+type VersionLink struct {
+	Href string `json:"href"`
+	Rel  string `json:"rel"`
+}
+
+type Version struct {
+	Status string        `json:"status"`
+	ID     string        `json:"id"`
+	Links  []VersionLink `json:"links"`
+}
+
+type VersionsResponse struct {
+	Versions []Version `json:"versions"`
+}
+
+func checkVersion(baseURL string) (bool, error) {
+	resp, err := http.Get(baseURL + "/versions")
+	if err != nil {
+		return false, fmt.Errorf("failed to request versions: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	var versions VersionsResponse
+	if err := json.Unmarshal(body, &versions); err != nil {
+		return false, fmt.Errorf("failed to parse json: %w", err)
+	}
+
+	for _, v := range versions.Versions {
+		if v.ID == "v2.6" {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func resourceImagesImageUpdateComputedAttributes(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
