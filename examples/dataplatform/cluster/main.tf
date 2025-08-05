@@ -66,8 +66,8 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
       name  = "sparkconnect"
       count = 1
       resource = {
-        cpu_request = "8"
-        ram_request = "8"
+        cpu_request = "10"
+        ram_request = "10"
       }
     },
     {
@@ -75,7 +75,7 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
       count = 1
       resource = {
         cpu_request = "0.5"
-        ram_request = "0.5"
+        ram_request = "1"
       }
       volumes = {
         "data" = {
