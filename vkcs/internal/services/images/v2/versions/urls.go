@@ -7,6 +7,5 @@ import (
 )
 
 func versionsURL(c *gophercloud.ServiceClient) string {
-	baseURL := c.ResourceBaseURL()
-	return strings.TrimSuffix(baseURL, "/v2/")
+	return strings.TrimSuffix(c.ResourceBaseURL(), "v2/")
 }

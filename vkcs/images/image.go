@@ -429,7 +429,7 @@ func resourceImagesImageNeedsDefaultStore(endpoint string) bool {
 }
 
 func checkVersion(client *gophercloud.ServiceClient) (bool, error) {
-	versions, err := versions.Get(client)
+	versions, err := versions.Get(client).Extract()
 	if err != nil {
 		return false, err
 	}
