@@ -269,23 +269,9 @@ func resourceImagesImageCreate(ctx context.Context, d *schema.ResourceData, meta
 	properties := d.Get("properties").(map[string]interface{})
 	imageProperties := resourceImagesImageExpandProperties(properties)
 
-	store := ""
-	if !resourceImagesImageNeedsDefaultStore(imageClient.Endpoint) {
-		store = storeS3
-	}
-
-	if store != "" {
-		isNewVersion, err := checkVersion(imageClient)
-		if err != nil {
-			return diag.Errorf("Error checking Glance version: %s", err)
-		}
-
-		if isNewVersion {
-			imageClient.MoreHeaders = map[string]string{
-				"x-image-meta-store": store,
-			}
-		} else {
-			imageProperties["store"] = store
+	if isPublicCloudEndpoint(imageClient.Endpoint) {
+		imageClient.MoreHeaders = map[string]string{
+			"x-image-meta-store": storeS3,
 		}
 	}
 

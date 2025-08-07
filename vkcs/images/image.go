@@ -15,7 +15,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gofrs/flock"
@@ -26,10 +26,22 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iimages "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/images/v2/images"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/images/v2/versions"
 )
 
-var imagesDefaultStoreEndpointMasks = []string{"*.devmail.ru$", "^ams.*"}
+var publicCloudDomains = []string{
+	"mcs.mail.ru",
+	"cloud.vk.ru",
+	"cloud.vk.com",
+	"public.infra.mail.ru",
+	"infra.mail.ru",
+
+	"kz.mcs.mail.ru",
+	"cloud.vk.kz",
+	"kz.cloud.vk.kz",
+	"kz.cloud.vk.com",
+	"vkcloud.kz",
+	"kz.infra.mail.ru",
+}
 
 // ListOpts allows the filtering and sorting of paginated collections through
 // the API. Filtering is achieved by passing in struct field values that map to
@@ -416,31 +428,20 @@ func resourceImagesImageExpandProperties(v map[string]interface{}) map[string]st
 	return properties
 }
 
-func resourceImagesImageNeedsDefaultStore(endpoint string) bool {
-	endpointURL, _ := url.Parse(endpoint)
-	hostname := endpointURL.Hostname()
-	for _, mask := range imagesDefaultStoreEndpointMasks {
-		matches, _ := regexp.MatchString(mask, hostname)
-		if matches {
+func isPublicCloudEndpoint(rawURL string) bool {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return false
+	}
+
+	host := strings.ToLower(u.Hostname())
+	for _, domain := range publicCloudDomains {
+		if strings.HasSuffix(host, domain) {
 			return true
 		}
 	}
+
 	return false
-}
-
-func checkVersion(client *gophercloud.ServiceClient) (bool, error) {
-	versions, err := versions.Get(client).Extract()
-	if err != nil {
-		return false, err
-	}
-
-	for _, v := range versions {
-		if v.ID == "v2.6" {
-			return true, nil
-		}
-	}
-
-	return false, nil
 }
 
 func resourceImagesImageUpdateComputedAttributes(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
