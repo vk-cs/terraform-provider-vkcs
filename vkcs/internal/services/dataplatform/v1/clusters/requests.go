@@ -31,7 +31,7 @@ type ClusterUpdate struct {
 }
 
 type ClusterCreateConfig struct {
-	Settings    []ClusterCreateConfigSetting    `json:"settings" required:"true"`
+	Settings    []ClusterCreateConfigSetting    `json:"settings,omitempty"`
 	Maintenance *ClusterCreateConfigMaintenance `json:"maintenance" required:"true"`
 	Warehouses  []ClusterCreateConfigWarehouse  `json:"warehouses" required:"true"`
 }
@@ -100,6 +100,15 @@ type ClusterCreatePodGroupVolume struct {
 	StorageClassName string `json:"storageClassName" required:"true"`
 	Storage          string `json:"storage" required:"true"`
 	Count            int    `json:"count" required:"true"`
+}
+
+type ClusterUpdateSettings struct {
+	Settings []ClusterUpdateSetting `json:"settings" required:"true"`
+}
+
+type ClusterUpdateSetting struct {
+	Alias string `json:"alias" required:"true"`
+	Value string `json:"value" required:"true"`
 }
 
 // Map converts opts to a map (for a request body)
@@ -186,6 +195,18 @@ func (opts *ClusterCreatePodGroupVolume) Map() (map[string]interface{}, error) {
 	return body, err
 }
 
+// Map converts opts to a map (for a request body)
+func (opts *ClusterUpdateSettings) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
+// Map converts opts to a map (for a request body)
+func (opts *ClusterUpdateSetting) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
 // Create performs request to create database cluster
 func Create(client *gophercloud.ServiceClient, opts OptsBuilder) (r CreateResult) {
 	common.SetHeaders(client)
@@ -220,6 +241,21 @@ func Update(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r U
 		return
 	}
 	resp, err := client.Patch(clusterURL(client, id), &b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+func UpdateSettings(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r UpdateResult) {
+	common.SetHeaders(client)
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := client.Patch(clusterSettingsURL(client, id), &b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)

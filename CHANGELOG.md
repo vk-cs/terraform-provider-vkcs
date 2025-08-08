@@ -6,8 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-### v0.11.3 (unrealised)
+#### v0.11.3 (unreleased)
 - Add external_network_id create option for Kubernetes cluster
+- Support vkcs_dataplatform_cluster resource settings update
 
 #### v0.11.2
 - Support stack_id parameter for vkcs_dataplatform_cluster creation
