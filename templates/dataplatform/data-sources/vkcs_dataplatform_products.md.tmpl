@@ -1,0 +1,17 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Get information on VKCS Data Platform products.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+{{tffile "examples/dataplatform/products/main-datasource.tf"}}
+
+{{ .SchemaMarkdown }}
