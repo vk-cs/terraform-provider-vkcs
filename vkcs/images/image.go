@@ -470,6 +470,12 @@ func resourceImagesImageUpdateComputedAttributes(_ context.Context, diff *schema
 						newProperties[oldKey] = v
 					}
 				}
+
+				if oldKey == "stores" {
+					if v, ok := oldValue.(string); ok {
+						newProperties[oldKey] = v
+					}
+				}
 			}
 
 			// Set the diff to the newProperties
