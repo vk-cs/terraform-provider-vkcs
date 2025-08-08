@@ -268,8 +268,11 @@ func resourceImagesImageCreate(ctx context.Context, d *schema.ResourceData, meta
 
 	properties := d.Get("properties").(map[string]interface{})
 	imageProperties := resourceImagesImageExpandProperties(properties)
-	if !resourceImagesImageNeedsDefaultStore(imageClient.Endpoint) {
-		imageProperties["store"] = storeS3
+
+	if isPublicCloudEndpoint(imageClient.Endpoint) {
+		imageClient.MoreHeaders = map[string]string{
+			"x-image-meta-store": storeS3,
+		}
 	}
 
 	createOpts := &images.CreateOpts{
