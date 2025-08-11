@@ -168,11 +168,11 @@ func ResourceDatabaseCluster() *schema.Resource {
 							StateFunc: func(dataStore interface{}) string {
 								return strings.ToLower(dataStore.(string))
 							},
-							ValidateFunc: validation.StringInSlice(getClusterDatastores(), true),
+							ValidateFunc: validation.StringInSlice(getAllClusterDatastores(), true),
 							Description: fmt.Sprintf(
 								"Type of the datastore. Changing this creates a new cluster. Must be one of: %s. "+
-									"The following datastores may not be available: %s. Please contact support for details.",
-								strings.Join(datastoresWithQuotes(getClusterDatastores()), ", "),
+									"The following datastores may not be available: %s, please contact support for details.",
+								strings.Join(datastoresWithQuotes(getAllClusterDatastores()), ", "),
 								strings.Join(datastoresWithQuotes(getClusterDatastoresRequiringRequest()), ", ")),
 						},
 					},

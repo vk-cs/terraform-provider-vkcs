@@ -10,6 +10,7 @@ description: |-
 - Add vkcs_dataplatform_products data source
 - Add vkcs_dataplatform_product data source
 - Add external_network_id create option for Kubernetes cluster
+- Fix validation for postgrespro_enterprise datastore
 
 #### v0.11.2
 - Support stack_id parameter for vkcs_dataplatform_cluster creation

@@ -699,7 +699,7 @@ func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterI
 			}
 		}
 
-		if util.StrSliceContains(getClusterDatastores(), c.DataStore.Type) {
+		if util.StrSliceContains(getAllClusterDatastores(), c.DataStore.Type) {
 			for _, instance := range c.Instances {
 				if instance.Role == "unknown" {
 					return c, string(clusterStatusBuild), nil

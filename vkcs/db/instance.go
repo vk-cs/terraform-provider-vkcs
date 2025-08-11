@@ -41,6 +41,10 @@ func getClusterDatastoresRequiringRequest() []string {
 	return []string{PostgresProEnterprise, PostgresProEnterprise1C}
 }
 
+func getAllClusterDatastores() []string {
+	return append(getClusterDatastores(), getClusterDatastoresRequiringRequest()...)
+}
+
 func getClusterWithShardsDatastores() []string {
 	return []string{Clickhouse}
 }
