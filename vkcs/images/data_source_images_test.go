@@ -6,21 +6,37 @@ import (
 	"testing"
 	"time"
 
+	acctest_helper "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
 func TestAccImagesImagesDataSource_basic(t *testing.T) {
+	testRunID := "tfacc-basic-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+
+	baseConfig := acctest.AccTestRenderConfig(
+		testAccImagesDataSourceBase,
+		map[string]string{
+			"TestRunID": testRunID,
+		},
+	)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccImagesDataSourceBase),
+				Config: baseConfig,
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccImagesDataSourceBasic, map[string]string{"TestAccImagesDataSourceBase": testAccImagesDataSourceBase}),
+				Config: acctest.AccTestRenderConfig(
+					testAccImagesDataSourceBasic,
+					map[string]string{
+						"TestAccImagesDataSourceBase": baseConfig,
+						"TestRunID":                   testRunID,
+					},
+				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.vkcs_images_images.images", "images.#", "3"),
 					resource.TestCheckResourceAttrSet("data.vkcs_images_images.images", "images.0.id"),
@@ -32,18 +48,33 @@ func TestAccImagesImagesDataSource_basic(t *testing.T) {
 }
 
 func TestAccImagesImagesDataSource_filters(t *testing.T) {
+	testRunID := "tfacc-filters-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+
 	createdAt := time.Now().Add(-time.Hour).Format(time.RFC3339)
 	updatedAt := time.Now().Add(time.Hour).Format(time.RFC3339)
+
+	baseConfig := acctest.AccTestRenderConfig(
+		testAccImagesDataSourceBase,
+		map[string]string{
+			"TestRunID": testRunID,
+		},
+	)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccImagesDataSourceBase),
+				Config: baseConfig,
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccImagesDataSourceFilterTags, map[string]string{"TestAccImagesDataSourceBase": testAccImagesDataSourceBase}),
+				Config: acctest.AccTestRenderConfig(
+					testAccImagesDataSourceFilterTags,
+					map[string]string{
+						"TestAccImagesDataSourceBase": baseConfig,
+						"TestRunID":                   testRunID,
+					},
+				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.vkcs_images_images.images", "images.#", "2"),
 					testAccCheckImagesDataSourceImagesNames("data.vkcs_images_images.images",
@@ -51,7 +82,13 @@ func TestAccImagesImagesDataSource_filters(t *testing.T) {
 				),
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccImagesDataSourceFilterProperties, map[string]string{"TestAccImagesDataSourceBase": testAccImagesDataSourceBase}),
+				Config: acctest.AccTestRenderConfig(
+					testAccImagesDataSourceFilterProperties,
+					map[string]string{
+						"TestAccImagesDataSourceBase": baseConfig,
+						"TestRunID":                   testRunID,
+					},
+				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.vkcs_images_images.images", "images.#", "2"),
 					testAccCheckImagesDataSourceImagesNames("data.vkcs_images_images.images",
@@ -59,7 +96,15 @@ func TestAccImagesImagesDataSource_filters(t *testing.T) {
 				),
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccImagesDataSourceFilterDate, map[string]string{"TestAccImagesDataSourceBase": testAccImagesDataSourceBase, "CreatedAt": createdAt, "UpdatedAt": updatedAt}),
+				Config: acctest.AccTestRenderConfig(
+					testAccImagesDataSourceFilterDate,
+					map[string]string{
+						"TestAccImagesDataSourceBase": baseConfig,
+						"CreatedAt":                   createdAt,
+						"UpdatedAt":                   updatedAt,
+						"TestRunID":                   testRunID,
+					},
+				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.vkcs_images_images.images", "images.#", "3"),
 				),
@@ -69,15 +114,30 @@ func TestAccImagesImagesDataSource_filters(t *testing.T) {
 }
 
 func TestAccImagesImagesDataSource_default(t *testing.T) {
+	testRunID := "tfacc-default-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+
+	baseConfig := acctest.AccTestRenderConfig(
+		testAccImagesDataSourceDefaultBase,
+		map[string]string{
+			"TestRunID": testRunID,
+		},
+	)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccImagesDataSourceDefaultBase),
+				Config: baseConfig,
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccImagesDataSourceFilterDefault, map[string]string{"TestAccImagesDataSourceDefaultBase": testAccImagesDataSourceDefaultBase}),
+				Config: acctest.AccTestRenderConfig(
+					testAccImagesDataSourceFilterDefault,
+					map[string]string{
+						"TestAccImagesDataSourceDefaultBase": baseConfig,
+						"TestRunID":                          testRunID,
+					},
+				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.vkcs_images_images.images", "images.#", "2"),
 					testAccCheckImagesDataSourceImagesNames("data.vkcs_images_images.images",
@@ -118,7 +178,10 @@ resource "vkcs_images_image" "image_1" {
   container_format = "bare"
   disk_format = "raw"
   image_source_url = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
-  tags = ["cirros"]
+  tags = [
+    "cirros",
+    "{{.TestRunID}}",
+  ]
   properties = {
 	foo = "bar"
 	bar = "foo"
@@ -130,7 +193,10 @@ resource "vkcs_images_image" "image_2" {
   image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
   container_format = "bare"
   disk_format = "raw"
-  tags = ["centos"]
+  tags = [
+    "centos",
+    "{{.TestRunID}}",
+  ]
   properties = {
 	bar = "foo"
   }
@@ -141,7 +207,10 @@ resource "vkcs_images_image" "image_3" {
   image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
   container_format = "bare"
   disk_format = "raw"
-  tags = ["centos"]
+  tags = [
+    "centos",
+    "{{.TestRunID}}",
+  ]
   properties = {
 	foo = "bar"
 	bar = "foo"
@@ -155,6 +224,7 @@ const testAccImagesDataSourceBasic = `
 
 data "vkcs_images_images" "images" {
   visibility = "private"
+  tags       = ["{{.TestRunID}}"]
 }
 `
 
@@ -163,7 +233,10 @@ const testAccImagesDataSourceFilterTags = `
 
 data "vkcs_images_images" "images" {
   visibility = "private"
-  tags       = ["centos"]
+  tags       = [
+    "centos",
+	"{{.TestRunID}}",
+  ]
 }
 `
 
@@ -175,6 +248,7 @@ data "vkcs_images_images" "images" {
   properties = {
     foo = "bar"
   }
+  tags = ["{{.TestRunID}}"]
 }
 `
 
@@ -185,6 +259,7 @@ data "vkcs_images_images" "images" {
   visibility = "private"
   created_at = "gt:{{ .CreatedAt }}"
   updated_at = "lte:{{ .UpdatedAt }}"
+  tags       = ["{{.TestRunID}}"]
 }
 `
 
@@ -197,6 +272,7 @@ resource "vkcs_images_image" "image_1" {
   properties = {
 	image_type = "snapshot"
   }
+  tags = ["{{.TestRunID}}"]
 }
 
 resource "vkcs_images_image" "image_2" {
@@ -208,6 +284,7 @@ resource "vkcs_images_image" "image_2" {
 	sid = "ml"
 	image_type = "image"
   }
+  tags = ["{{.TestRunID}}"]
 }
 
 resource "vkcs_images_image" "image_3" {
@@ -215,6 +292,7 @@ resource "vkcs_images_image" "image_3" {
   image_source_url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
   container_format = "bare"
   disk_format = "raw"
+  tags = ["{{.TestRunID}}"]
 }
 `
 
@@ -224,5 +302,6 @@ const testAccImagesDataSourceFilterDefault = `
 data "vkcs_images_images" "images" {
   visibility = "private"
   default    = true
+  tags       = ["{{.TestRunID}}"]
 }
 `
