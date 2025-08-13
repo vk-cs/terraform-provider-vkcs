@@ -1805,16 +1805,32 @@ const testAccComputeInstanceStateActive = `
 {{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = [vkcs_networking_router_interface.base]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
-  power_state = "active"
+  flavor_id = data.vkcs_compute_flavor.base.id
+
+  block_device {
+    source_type      = "image"
+    uuid             = data.vkcs_images_image.base.id
+    destination_type = "volume"
+    volume_size      = 10
+    volume_type      = "ceph-ssd"
+    delete_on_termination = true
+  }
+
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
-  flavor_id = data.vkcs_compute_flavor.base.id
+
+  security_group_ids = [
+    data.vkcs_networking_secgroup.default_secgroup.id
+  ]
+
+  depends_on = [
+    vkcs_networking_router_interface.base
+  ]
+
+  power_state = "active"
 }
 `
 
@@ -1825,16 +1841,32 @@ const testAccComputeInstanceStateShutoff = `
 {{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
   availability_zone = "{{.AvailabilityZone}}"
-  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
-  power_state = "shutoff"
+  flavor_id = data.vkcs_compute_flavor.base.id
+
+  block_device {
+    source_type      = "image"
+    uuid             = data.vkcs_images_image.base.id
+    destination_type = "volume"
+    volume_size      = 10
+    volume_type      = "ceph-ssd"
+    delete_on_termination = true
+  }
+
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
-  flavor_id = data.vkcs_compute_flavor.base.id
+
+  security_group_ids = [
+    data.vkcs_networking_secgroup.default_secgroup.id
+  ]
+
+  depends_on = [
+    vkcs_networking_router_interface.base
+  ]
+
+  power_state = "shutoff"
 }
 `
 
@@ -1845,15 +1877,31 @@ const testAccComputeInstanceStateShelve = `
 {{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance_1" {
-  depends_on = ["vkcs_networking_router_interface.base"]
   name = "instance_1"
-  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
-  power_state = "shelved_offloaded"
+  flavor_id = data.vkcs_compute_flavor.base.id
+
+  block_device {
+    source_type      = "image"
+    uuid             = data.vkcs_images_image.base.id
+    destination_type = "volume"
+    volume_size      = 10
+    volume_type      = "ceph-ssd"
+    delete_on_termination = true
+  }
+
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
-  flavor_id = data.vkcs_compute_flavor.base.id
+
+  security_group_ids = [
+    data.vkcs_networking_secgroup.default_secgroup.id
+  ]
+
+  depends_on = [
+    vkcs_networking_router_interface.base
+  ]
+
+  power_state = "shelved_offloaded"
 }
 `
 
