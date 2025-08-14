@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-### v0.12.0 (unreleased)
+### v0.12.0
 - Add vkcs_dataplatform_products data source
 - Add vkcs_dataplatform_product data source
 - Support vkcs_dataplatform_cluster resource settings update
