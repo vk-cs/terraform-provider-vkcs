@@ -32,9 +32,9 @@ resource "vkcs_db_config_group" "mysql_80" {
 ```
 ## Argument Reference
 - `datastore` **required** &rarr;  Object that represents datastore of the config group. Changing this creates a new config group.
-  - `type` **required** *string* &rarr;  Type of the datastore.
+    - `type` **required** *string* &rarr;  Type of the datastore.
 
-  - `version` **required** *string* &rarr;  Version of the datastore.
+    - `version` **required** *string* &rarr;  Version of the datastore.
 
 - `name` **required** *string* &rarr;  The name of the config group.
 

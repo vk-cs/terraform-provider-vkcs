@@ -48,11 +48,11 @@ resource "vkcs_vpnaas_site_connection" "connection" {
 - `description` optional *string* &rarr;  The human-readable description for the connection. Changing this updates the description of the existing connection.
 
 - `dpd` optional &rarr;  A dictionary with dead peer detection (DPD) protocol controls.
-  - `action` optional *string* &rarr;  The dead peer detection (DPD) action. A valid value is clear, hold, restart, disabled, or restart-by-peer. Default value is hold.
+    - `action` optional *string* &rarr;  The dead peer detection (DPD) action. A valid value is clear, hold, restart, disabled, or restart-by-peer. Default value is hold.
 
-  - `interval` optional *number* &rarr;  The dead peer detection (DPD) interval, in seconds. A valid value is a positive integer. Default is 30.
+    - `interval` optional *number* &rarr;  The dead peer detection (DPD) interval, in seconds. A valid value is a positive integer. Default is 30.
 
-  - `timeout` optional *number* &rarr;  The dead peer detection (DPD) timeout in seconds. A valid value is a positive integer that is greater than the DPD interval value. Default is 120.
+    - `timeout` optional *number* &rarr;  The dead peer detection (DPD) timeout in seconds. A valid value is a positive integer that is greater than the DPD interval value. Default is 120.
 
 - `initiator` optional *string* &rarr;  A valid value is response-only or bi-directional. Default is bi-directional.
 

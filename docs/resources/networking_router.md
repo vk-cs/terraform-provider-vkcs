@@ -38,7 +38,7 @@ resource "vkcs_networking_router" "router" {
 - `value_specs` optional *map of* *string* &rarr;  Map of additional driver-specific options.
 
 - `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below.
-  - `set_router_gateway_after_create` optional *boolean* &rarr;  Boolean to control whether the Router gateway is assigned during creation or updated after creation.
+    - `set_router_gateway_after_create` optional *boolean* &rarr;  Boolean to control whether the Router gateway is assigned during creation or updated after creation.
 
 
 ## Attributes Reference

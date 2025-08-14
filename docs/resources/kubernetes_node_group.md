@@ -57,9 +57,9 @@ resource "vkcs_kubernetes_node_group" "default_ng" {
 - `flavor_id` optional *string* &rarr;  The flavor UUID of this node group. <br>**Note:** Starting with v0.5.1, changing this attribute does not force the resource to be recreated, which requires an in-place update and may not be provided in custom deployments. In this case, contact support for clarification.
 
 - `labels` optional &rarr;  The list of objects representing representing additional properties of the node group. Each object should have attribute "key". Object may also have optional attribute "value".
-  - `key` **required** *string*
+    - `key` **required** *string*
 
-  - `value` optional *string*
+    - `value` optional *string*
 
 - `max_node_unavailable` optional *number* &rarr;  The maximum number of nodes that can fail during an upgrade. The default value is 25 percent.
 
@@ -68,11 +68,11 @@ resource "vkcs_kubernetes_node_group" "default_ng" {
 - `min_nodes` optional *number* &rarr;  The minimum allowed nodes for this node group. Default to 0 if not set.
 
 - `taints` optional &rarr;  The list of objects representing node group taints. Each object should have following attributes: key, value, effect.
-  - `effect` **required** *string*
+    - `effect` **required** *string*
 
-  - `key` **required** *string*
+    - `key` **required** *string*
 
-  - `value` **required** *string*
+    - `value` **required** *string*
 
 - `volume_size` optional *number* &rarr;  The size in GB for volume to load nodes from. Changing this will force to create a new node group.
 

@@ -107,84 +107,84 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
 ## Argument Reference
 - `configs` ***required*** &rarr;  Product configuration.
-  - `maintenance` ***required*** &rarr;  Maintenance settings.
-    - `backup` optional &rarr;  Backup settings.
-      - `differential` optional &rarr;  Differential backup settings.
-        - `start` **required** *string* &rarr;  Differential backup schedule.
+    - `maintenance` ***required*** &rarr;  Maintenance settings.
+        - `backup` optional &rarr;  Backup settings.
+            - `differential` optional &rarr;  Differential backup settings.
+                - `start` **required** *string* &rarr;  Differential backup schedule.
 
-        - `keep_count` optional *number*
+                - `keep_count` optional *number*
 
-        - `keep_time` optional *number*
+                - `keep_time` optional *number*
 
-        - `enabled` read-only *boolean* &rarr;  Whether differential backup is enabled.
-
-
-      - `full` optional &rarr;  Full backup settings.
-        - `start` **required** *string* &rarr;  Full backup schedule.
-
-        - `keep_count` optional *number*
-
-        - `keep_time` optional *number*
-
-        - `enabled` read-only *boolean* &rarr;  Whether full backup is enabled.
+                - `enabled` read-only *boolean* &rarr;  Whether differential backup is enabled.
 
 
-      - `incremental` optional &rarr;  Incremental backup settings.
-        - `start` **required** *string* &rarr;  Incremental backup schedule.
+            - `full` optional &rarr;  Full backup settings.
+                - `start` **required** *string* &rarr;  Full backup schedule.
 
-        - `keep_count` optional *number*
+                - `keep_count` optional *number*
 
-        - `keep_time` optional *number*
+                - `keep_time` optional *number*
 
-        - `enabled` read-only *boolean* &rarr;  Whether incremental backup is enabled.
+                - `enabled` read-only *boolean* &rarr;  Whether full backup is enabled.
+
+
+            - `incremental` optional &rarr;  Incremental backup settings.
+                - `start` **required** *string* &rarr;  Incremental backup schedule.
+
+                - `keep_count` optional *number*
+
+                - `keep_time` optional *number*
+
+                - `enabled` read-only *boolean* &rarr;  Whether incremental backup is enabled.
 
 
 
-    - `crontabs`  *list* &rarr;  Cron tabs settings.
-      - `name` **required** *string* &rarr;  Cron tab name.
+        - `crontabs`  *list* &rarr;  Cron tabs settings.
+            - `name` **required** *string* &rarr;  Cron tab name.
 
-      - `settings`  *list* &rarr;  Additional cron settings.
+            - `settings`  *list* &rarr;  Additional cron settings.
+                - `alias` **required** *string* &rarr;  Setting alias.
+
+                - `value` **required** *string* &rarr;  Setting value.
+
+
+            - `start` optional *string* &rarr;  Cron tab schedule.
+
+            - `id` read-only *string*
+
+            - `required` read-only *boolean* &rarr;  Whether cron tab is required.
+
+
+        - `start` optional *string* &rarr;  Maintenance cron schedule.
+
+
+    - `settings`  *list* &rarr;  Additional common settings.
         - `alias` **required** *string* &rarr;  Setting alias.
 
         - `value` **required** *string* &rarr;  Setting value.
 
 
-      - `start` optional *string* &rarr;  Cron tab schedule.
+    - `warehouses`  *list* &rarr;  Warehouses settings.
+        - `connections`  *list* &rarr;  Warehouse connections.
+            - `name` **required** *string* &rarr;  Connection name.
 
-      - `id` read-only *string*
+            - `plug` **required** *string* &rarr;  Connection plug.
 
-      - `required` read-only *boolean* &rarr;  Whether cron tab is required.
+            - `settings`  *list* &rarr;  Additional warehouse settings.
+                - `alias` **required** *string* &rarr;  Setting alias.
 
-
-    - `start` optional *string* &rarr;  Maintenance cron schedule.
-
-
-  - `settings`  *list* &rarr;  Additional common settings.
-    - `alias` **required** *string* &rarr;  Setting alias.
-
-    - `value` **required** *string* &rarr;  Setting value.
+                - `value` **required** *string* &rarr;  Setting value.
 
 
-  - `warehouses`  *list* &rarr;  Warehouses settings.
-    - `connections`  *list* &rarr;  Warehouse connections.
-      - `name` **required** *string* &rarr;  Connection name.
+            - `created_at` read-only *string* &rarr;  Connection creation timestamp.
 
-      - `plug` **required** *string* &rarr;  Connection plug.
-
-      - `settings`  *list* &rarr;  Additional warehouse settings.
-        - `alias` **required** *string* &rarr;  Setting alias.
-
-        - `value` **required** *string* &rarr;  Setting value.
+            - `id` read-only *string* &rarr;  Connection ID.
 
 
-      - `created_at` read-only *string* &rarr;  Connection creation timestamp.
+        - `name` optional *string* &rarr;  Warehouse name.
 
-      - `id` read-only *string* &rarr;  Connection ID.
-
-
-    - `name` optional *string* &rarr;  Warehouse name.
-
-    - `id` read-only *string* &rarr;  Warehouse ID.
+        - `id` read-only *string* &rarr;  Warehouse ID.
 
 
 
@@ -205,35 +205,35 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 - `multiaz` optional *boolean* &rarr;  Enables multi az support.
 
 - `pod_groups`  *list* &rarr;  Cluster pod groups.
-  - `name` **required** *string* &rarr;  Pod group name.
+    - `name` **required** *string* &rarr;  Pod group name.
 
-  - `count` optional *number* &rarr;  Pod count.
+    - `count` optional *number* &rarr;  Pod count.
 
-  - `floating_ip_pool` optional *string* &rarr;  Floating IP pool ID.
+    - `floating_ip_pool` optional *string* &rarr;  Floating IP pool ID.
 
-  - `resource` optional &rarr;  Resource request settings.
-    - `cpu_request` optional *string* &rarr;  Resource request settings.
+    - `resource` optional &rarr;  Resource request settings.
+        - `cpu_request` optional *string* &rarr;  Resource request settings.
 
-    - `ram_request` optional *string* &rarr;  RAM request settings.
+        - `ram_request` optional *string* &rarr;  RAM request settings.
 
-    - `cpu_limit` read-only *string* &rarr;  CPU limit.
+        - `cpu_limit` read-only *string* &rarr;  CPU limit.
 
-    - `ram_limit` read-only *string* &rarr;  RAM limit settings.
-
-
-  - `volumes`  *map* &rarr;  Volumes settings.
-    - `count` **required** *number* &rarr;  Volume count.
-
-    - `storage` **required** *string* &rarr;  Storage size.
-
-    - `storage_class_name` **required** *string* &rarr;  Storage class name.
+        - `ram_limit` read-only *string* &rarr;  RAM limit settings.
 
 
-  - `alias` read-only *string* &rarr;  Pod group alias.
+    - `volumes`  *map* &rarr;  Volumes settings.
+        - `count` **required** *number* &rarr;  Volume count.
 
-  - `availability_zone` read-only *string*
+        - `storage` **required** *string* &rarr;  Storage size.
 
-  - `id` read-only *string* &rarr;  Pod group ID.
+        - `storage_class_name` **required** *string* &rarr;  Storage class name.
+
+
+    - `alias` read-only *string* &rarr;  Pod group alias.
+
+    - `availability_zone` read-only *string*
+
+    - `id` read-only *string* &rarr;  Pod group ID.
 
 
 - `region` optional *string* &rarr;  The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.

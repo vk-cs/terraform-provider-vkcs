@@ -45,23 +45,23 @@ resource "vkcs_mlplatform_jupyterhub" "jupyterhub" {
 - `availability_zone` **required** *string* &rarr;  The availability zone in which to create the resource. Changing this creates a new resource
 
 - `boot_volume` ***required*** &rarr;  Instance's boot volume configuration
-  - `volume_type` **required** *string* &rarr;  Type of the volume
+    - `volume_type` **required** *string* &rarr;  Type of the volume
 
-  - `size` optional *number* &rarr;  Size of the volume
+    - `size` optional *number* &rarr;  Size of the volume
 
-  - `name` read-only *string* &rarr;  Name of the volume
+    - `name` read-only *string* &rarr;  Name of the volume
 
-  - `volume_id` read-only *string* &rarr;  ID of the volume
+    - `volume_id` read-only *string* &rarr;  ID of the volume
 
 
 - `data_volumes`  *list* &rarr;  Instance's data volumes configuration
-  - `size` **required** *number* &rarr;  Size of the volume
+    - `size` **required** *number* &rarr;  Size of the volume
 
-  - `volume_type` **required** *string* &rarr;  Type of the volume
+    - `volume_type` **required** *string* &rarr;  Type of the volume
 
-  - `name` read-only *string* &rarr;  Name of the volume
+    - `name` read-only *string* &rarr;  Name of the volume
 
-  - `volume_id` read-only *string* &rarr;  ID of the volume
+    - `volume_id` read-only *string* &rarr;  ID of the volume
 
 
 - `flavor_id` **required** *string* &rarr;  Flavor ID
@@ -69,9 +69,9 @@ resource "vkcs_mlplatform_jupyterhub" "jupyterhub" {
 - `name` **required** *string* &rarr;  Instance name. Changing this creates a new resource
 
 - `networks`  *list* &rarr;  Network configuration
-  - `network_id` **required** *string* &rarr;  ID of the network
+    - `network_id` **required** *string* &rarr;  ID of the network
 
-  - `ip_pool` optional *string* &rarr;  ID of the ip pool
+    - `ip_pool` optional *string* &rarr;  ID of the ip pool
 
 
 - `admin_name` optional *string* &rarr;  JupyterHub admin name. Changing this creates a new resource

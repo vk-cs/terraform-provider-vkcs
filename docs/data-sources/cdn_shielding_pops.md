@@ -29,13 +29,13 @@ In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  ID of the resource.
 
 - `shielding_pops`  *list* &rarr;  List of available origin shielding points of precense.
-  - `city` *string* &rarr;  City of origin shielding location.
+    - `city` *string* &rarr;  City of origin shielding location.
 
-  - `country` *string* &rarr;  Country of origin shielding location.
+    - `country` *string* &rarr;  Country of origin shielding location.
 
-  - `datacenter` *string* &rarr;  Name of origin shielding location datacenter.
+    - `datacenter` *string* &rarr;  Name of origin shielding location datacenter.
 
-  - `id` *number* &rarr;  ID of the origin shielding location.
+    - `id` *number* &rarr;  ID of the origin shielding location.
 
 
 

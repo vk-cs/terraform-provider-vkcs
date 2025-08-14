@@ -51,11 +51,11 @@ In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  The ID of the data source
 
 - `images`  *list* &rarr;  Images matching specified criteria.
-  - `id` *string* &rarr;  ID of an image.
+    - `id` *string* &rarr;  ID of an image.
 
-  - `name` *string* &rarr;  Name of an image.
+    - `name` *string* &rarr;  Name of an image.
 
-  - `properties` *map of* *string* &rarr;  Properties associated with an image.
+    - `properties` *map of* *string* &rarr;  Properties associated with an image.
 
 
 

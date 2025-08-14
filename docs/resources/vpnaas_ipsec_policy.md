@@ -31,9 +31,9 @@ resource "vkcs_vpnaas_ipsec_policy" "data_center" {
 - `encryption_algorithm` optional *string* &rarr;  The encryption algorithm. Valid values are 3des, aes-128, aes-192 and so on. The default value is aes-128. Changing this updates the existing policy.
 
 - `lifetime` optional &rarr;  The lifetime of the security association. Consists of Unit and Value.
-  - `units` optional *string* &rarr;  The units for the lifetime of the security association. Can be either seconds or kilobytes. Default is seconds.
+    - `units` optional *string* &rarr;  The units for the lifetime of the security association. Can be either seconds or kilobytes. Default is seconds.
 
-  - `value` optional *number* &rarr;  The value for the lifetime of the security association. Must be a positive integer. Default is 3600.
+    - `value` optional *number* &rarr;  The value for the lifetime of the security association. Must be a positive integer. Default is 3600.
 
 - `name` optional *string* &rarr;  The name of the policy. Changing this updates the name of the existing policy.
 

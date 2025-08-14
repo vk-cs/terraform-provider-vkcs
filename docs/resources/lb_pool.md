@@ -36,9 +36,9 @@ resource "vkcs_lb_pool" "http" {
 - `name` optional *string* &rarr;  Human-readable name for the pool.
 
 - `persistence` optional &rarr;  Omit this field to prevent session persistence. Indicates whether connections in the same session will be processed by the same Pool member or not. Changing this creates a new pool.
-  - `type` **required** *string* &rarr;  The type of persistence mode. The current specification supports SOURCE_IP, HTTP_COOKIE, and APP_COOKIE.
+    - `type` **required** *string* &rarr;  The type of persistence mode. The current specification supports SOURCE_IP, HTTP_COOKIE, and APP_COOKIE.
 
-  - `cookie_name` optional *string* &rarr;  The name of the cookie if persistence mode is set appropriately. Required if `type = APP_COOKIE`.
+    - `cookie_name` optional *string* &rarr;  The name of the cookie if persistence mode is set appropriately. Required if `type = APP_COOKIE`.
 
 - `region` optional *string* &rarr;  The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new pool.
 

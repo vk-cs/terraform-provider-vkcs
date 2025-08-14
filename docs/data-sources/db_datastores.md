@@ -30,9 +30,9 @@ output "available_datastores" {
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `datastores`  *list* &rarr;  List of datastores within VKCS.
-  - `id` *string* &rarr;  ID of a datastore.
+    - `id` *string* &rarr;  ID of a datastore.
 
-  - `name` *string* &rarr;  Name of a datastore.
+    - `name` *string* &rarr;  Name of a datastore.
 
 
 - `id` *string* &rarr;  ID of the resource.

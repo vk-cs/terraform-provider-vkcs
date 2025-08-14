@@ -33,9 +33,9 @@ In addition to all arguments above, the following attributes are exported:
 - `created` *string* &rarr;  Timestamp of config group's creation.
 
 - `datastore`  *list* &rarr;  Object that represents datastore of backup
-  - `type` *string* &rarr;  Type of the datastore.
+    - `type` *string* &rarr;  Type of the datastore.
 
-  - `version` *string* &rarr;  Version of the datastore.
+    - `version` *string* &rarr;  Version of the datastore.
 
 
 - `description` *string* &rarr;  The description of the config group.

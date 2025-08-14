@@ -39,15 +39,15 @@ In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  ID of the resource.
 
 - `parameters`  *list* &rarr;  Configuration parameters supported for the datastore.
-  - `max` *number* &rarr;  Maximum value of a configuration parameter.
+    - `max` *number* &rarr;  Maximum value of a configuration parameter.
 
-  - `min` *number* &rarr;  Minimum value of a configuration parameter.
+    - `min` *number* &rarr;  Minimum value of a configuration parameter.
 
-  - `name` *string* &rarr;  Name of a configuration parameter.
+    - `name` *string* &rarr;  Name of a configuration parameter.
 
-  - `restart_required` *boolean* &rarr;  This attribute indicates whether a restart required when a parameter is set.
+    - `restart_required` *boolean* &rarr;  This attribute indicates whether a restart required when a parameter is set.
 
-  - `type` *string* &rarr;  Type of a configuration parameter.
+    - `type` *string* &rarr;  Type of a configuration parameter.
 
 
 

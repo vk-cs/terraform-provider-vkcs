@@ -42,9 +42,9 @@ In addition to all arguments above, the following attributes are exported:
 - `minimum_ram` *number* &rarr;  Minimum RAM required for instance of the datastore.
 
 - `versions`  *list* &rarr;  Versions of the datastore.
-  - `id` *string* &rarr;  ID of a version of the datastore.
+    - `id` *string* &rarr;  ID of a version of the datastore.
 
-  - `name` *string* &rarr;  Name of a version of the datastore.
+    - `name` *string* &rarr;  Name of a version of the datastore.
 
 
 - `volume_types` *string* &rarr;  Supported volume types for the datastore.

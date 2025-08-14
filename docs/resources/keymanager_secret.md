@@ -35,10 +35,10 @@ resource "vkcs_keymanager_secret" "certificate" {
 
 ## Argument Reference
 - `acl` optional &rarr;  Allows to control an access to a secret. Currently only the `read` operation is supported. If not specified, the secret is accessible project wide.
-  - `read` optional &rarr;  Block that describes read operation.
-    - `project_access` optional *boolean* &rarr;  Whether the container is accessible project wide. Defaults to `true`.
+    - `read` optional &rarr;  Block that describes read operation.
+        - `project_access` optional *boolean* &rarr;  Whether the container is accessible project wide. Defaults to `true`.
 
-    - `users` optional *set of* *string* &rarr;  The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.
+        - `users` optional *set of* *string* &rarr;  The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.
 
 - `algorithm` optional *string* &rarr;  Metadata provided by a user or system for informational purposes.
 
@@ -66,10 +66,10 @@ resource "vkcs_keymanager_secret" "certificate" {
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `acl` 
-  - `read` 
-    - `created_at` *string* &rarr;  The date the container ACL was created.
+    - `read` 
+        - `created_at` *string* &rarr;  The date the container ACL was created.
 
-    - `updated_at` *string* &rarr;  The date the container ACL was last updated.
+        - `updated_at` *string* &rarr;  The date the container ACL was last updated.
 
 - `all_metadata` *map of* *string* &rarr;  The map of metadata, assigned on the secret, which has been explicitly and implicitly added.
 

@@ -30,11 +30,11 @@ output "available_templates_by_name" {
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `cluster_templates`  *list* &rarr;  Available kubernetes cluster templates.
-  - `cluster_template_uuid` *string* &rarr;  UUID of a cluster template.
+    - `cluster_template_uuid` *string* &rarr;  UUID of a cluster template.
 
-  - `name` *string* &rarr;  Name of a cluster template.
+    - `name` *string* &rarr;  Name of a cluster template.
 
-  - `version` *string* &rarr;  Version of Kubernetes.
+    - `version` *string* &rarr;  Version of Kubernetes.
 
 
 - `id` *string* &rarr;  Random identifier of the data source.

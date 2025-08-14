@@ -120,54 +120,54 @@ resource "vkcs_db_cluster_with_shards" "db_cluster_with_shards" {
 ```
 ## Argument Reference
 - `datastore` **required** &rarr;  Object that represents datastore of the cluster. Changing this creates a new cluster.
-  - `type` **required** *string* &rarr;  Type of the datastore. Changing this creates a new cluster. Must be one of: `clickhouse`
+    - `type` **required** *string* &rarr;  Type of the datastore. Changing this creates a new cluster. Must be one of: `clickhouse`
 
-  - `version` **required** *string* &rarr;  Version of the datastore. Changing this creates a new cluster.
+    - `version` **required** *string* &rarr;  Version of the datastore. Changing this creates a new cluster.
 
 - `name` **required** *string* &rarr;  The name of the cluster. Changing this creates a new cluster.
 
 - `shard` **required** &rarr;  Object that represents cluster shard. There can be several instances of this object.
-  - `flavor_id` **required** *string* &rarr;  The ID of flavor for the cluster shard.
+    - `flavor_id` **required** *string* &rarr;  The ID of flavor for the cluster shard.
 
-  - `shard_id` **required** *string* &rarr;  The ID of the shard. Changing this creates a new cluster.
+    - `shard_id` **required** *string* &rarr;  The ID of the shard. Changing this creates a new cluster.
 
-  - `size` **required** *number* &rarr;  The number of instances in the cluster shard.
+    - `size` **required** *number* &rarr;  The number of instances in the cluster shard.
 
-  - `volume_size` **required** *number* &rarr;  Size of the cluster shard instance volume.
+    - `volume_size` **required** *number* &rarr;  Size of the cluster shard instance volume.
 
-  - `volume_type` **required** *string* &rarr;  The type of the cluster shard instance volume.
+    - `volume_type` **required** *string* &rarr;  The type of the cluster shard instance volume.
 
-  - `availability_zone` optional *string* &rarr;  The name of the availability zone of the cluster shard. Changing this creates a new cluster.
+    - `availability_zone` optional *string* &rarr;  The name of the availability zone of the cluster shard. Changing this creates a new cluster.
 
-  - `network` optional
-    - `port` optional deprecated *string* &rarr;  The port id of the network. Changing this creates a new cluster. **Deprecated** This argument is deprecated, please do not use it.
+    - `network` optional
+        - `port` optional deprecated *string* &rarr;  The port id of the network. Changing this creates a new cluster. **Deprecated** This argument is deprecated, please do not use it.
 
-    - `security_groups` optional *set of* *string* &rarr;  An array of one or more security group IDs to associate with the shard instances. Changing this creates a new cluster.<br>**New since v0.2.0**.
+        - `security_groups` optional *set of* *string* &rarr;  An array of one or more security group IDs to associate with the shard instances. Changing this creates a new cluster.<br>**New since v0.2.0**.
 
-    - `subnet_id` optional *string* &rarr;  The id of the subnet. Changing this creates a new cluster.<br>**New since v0.1.15**.
+        - `subnet_id` optional *string* &rarr;  The id of the subnet. Changing this creates a new cluster.<br>**New since v0.1.15**.
 
-    - `uuid` optional *string* &rarr;  The id of the network. Changing this creates a new cluster. <br>**Note:** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
+        - `uuid` optional *string* &rarr;  The id of the network. Changing this creates a new cluster. <br>**Note:** Although this argument is marked as optional, it is actually required at the moment. Not setting a value for it may cause an error.
 
-  - `shrink_options` optional *string* &rarr;  Used only for shrinking cluster. List of IDs of instances that should remain after shrink. If no options are supplied, shrink operation will choose first non-leader instance to delete.
+    - `shrink_options` optional *string* &rarr;  Used only for shrinking cluster. List of IDs of instances that should remain after shrink. If no options are supplied, shrink operation will choose first non-leader instance to delete.
 
-  - `wal_volume` optional &rarr;  Object that represents wal volume of the cluster.
-    - `size` **required** *number* &rarr;  Size of the instance wal volume.
+    - `wal_volume` optional &rarr;  Object that represents wal volume of the cluster.
+        - `size` **required** *number* &rarr;  Size of the instance wal volume.
 
-    - `volume_type` **required** *string* &rarr;  The type of the cluster wal volume.
+        - `volume_type` **required** *string* &rarr;  The type of the cluster wal volume.
 
 - `capabilities` optional &rarr;  Object that represents capability applied to cluster. There can be several instances of this object.
-  - `name` **required** *string* &rarr;  The name of the capability to apply.
+    - `name` **required** *string* &rarr;  The name of the capability to apply.
 
-  - `settings` optional *map of* *string* &rarr;  Map of key-value settings of the capability.
+    - `settings` optional *map of* *string* &rarr;  Map of key-value settings of the capability.
 
 - `cloud_monitoring_enabled` optional *boolean* &rarr;  Enable cloud monitoring for the cluster.<br>**New since v0.2.0**.
 
 - `configuration_id` optional *string* &rarr;  The id of the configuration attached to cluster.
 
 - `disk_autoexpand` optional &rarr;  Object that represents autoresize properties of the cluster.
-  - `autoexpand` optional *boolean* &rarr;  Indicates whether autoresize is enabled.
+    - `autoexpand` optional *boolean* &rarr;  Indicates whether autoresize is enabled.
 
-  - `max_disk_size` optional *number* &rarr;  Maximum disk size for autoresize.
+    - `max_disk_size` optional *number* &rarr;  Maximum disk size for autoresize.
 
 - `floating_ip_enabled` optional *boolean* &rarr;  Boolean field that indicates whether floating ip is created for cluster. Changing this creates a new cluster.
 
@@ -176,19 +176,19 @@ resource "vkcs_db_cluster_with_shards" "db_cluster_with_shards" {
 - `region` optional *string* &rarr;  Region to create resource in.
 
 - `restore_point` optional &rarr;  Object that represents backup to restore instance from.<br>**New since v0.1.4**.
-  - `backup_id` **required** *string* &rarr;  ID of the backup.
+    - `backup_id` **required** *string* &rarr;  ID of the backup.
 
 - `root_enabled` optional *boolean* &rarr;  Indicates whether root user is enabled for the cluster.
 
 - `root_password` optional sensitive *string* &rarr;  Password for the root user of the cluster. When enabling root, password is autogenerated, use this field to obtain it.
 
 - `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below.<br>**New since v0.4.0**.
-  - `restart_confirmed` optional *boolean* &rarr;  Boolean to confirm autorestart of the cluster's instances if it is required to apply configuration group changes.
+    - `restart_confirmed` optional *boolean* &rarr;  Boolean to confirm autorestart of the cluster's instances if it is required to apply configuration group changes.
 
 - `wal_disk_autoexpand` optional &rarr;  Object that represents autoresize properties of wal volume of the cluster.
-  - `autoexpand` optional *boolean* &rarr;  Indicates whether wal volume autoresize is enabled.
+    - `autoexpand` optional *boolean* &rarr;  Indicates whether wal volume autoresize is enabled.
 
-  - `max_disk_size` optional *number* &rarr;  Maximum disk size for wal volume autoresize.
+    - `max_disk_size` optional *number* &rarr;  Maximum disk size for wal volume autoresize.
 
 
 ## Attributes Reference
@@ -196,7 +196,7 @@ In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  ID of the resource.
 
 - `shard` 
-  - `instances` *object* &rarr;  Shard instances info.<br>**New since v0.1.15**.
+    - `instances` *object* &rarr;  Shard instances info.<br>**New since v0.1.15**.
 
 
 

@@ -49,15 +49,15 @@ In addition to all arguments above, the following attributes are exported:
 - `cluster_id` *string* &rarr;  The UUID of cluster that node group belongs.
 
 - `nodes`  *list* &rarr;  The list of node group's node objects.
-  - `created_at` *string* &rarr;  Time when a node was created.
+    - `created_at` *string* &rarr;  Time when a node was created.
 
-  - `name` *string* &rarr;  Name of a node.
+    - `name` *string* &rarr;  Name of a node.
 
-  - `node_group_id` *string* &rarr;  The node group id.
+    - `node_group_id` *string* &rarr;  The node group id.
 
-  - `updated_at` *string* &rarr;  Time when a node was updated.
+    - `updated_at` *string* &rarr;  Time when a node was updated.
 
-  - `uuid` *string* &rarr;  UUID of a node.
+    - `uuid` *string* &rarr;  UUID of a node.
 
 
 - `state` *string* &rarr;  Determines current state of node group (RUNNING, SHUTOFF, ERROR).

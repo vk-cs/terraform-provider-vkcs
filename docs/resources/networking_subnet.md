@@ -37,9 +37,9 @@ resource "vkcs_networking_subnet" "subnet_with_dns_tf_example" {
 - `network_id` **required** *string* &rarr;  The UUID of the parent network. Changing this creates a new subnet.
 
 - `allocation_pool` optional &rarr;  A block declaring the start and end range of the IP addresses available for use with DHCP in this subnet. Multiple `allocation_pool` blocks can be declared, providing the subnet with more than one range of IP addresses to use with DHCP. However, each IP range must be from the same CIDR that the subnet is part of. The `allocation_pool` block is documented below.
-  - `end` **required** *string* &rarr;  The ending address.
+    - `end` **required** *string* &rarr;  The ending address.
 
-  - `start` **required** *string* &rarr;  The starting address.
+    - `start` **required** *string* &rarr;  The starting address.
 
 - `cidr` optional *string* &rarr;  CIDR representing IP range for this subnet, based on IP version. You can omit this option if you are creating a subnet from a subnet pool.
 
