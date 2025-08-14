@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.11.2",
+  "provider_version": "v0.12.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -1369,7 +1369,7 @@
                 "type": {
                   "type": "TypeString",
                   "required": true,
-                  "description": "Type of the datastore. Changing this creates a new cluster. Must be one of: `galera_mysql`, `postgresql`, `postgresql_multiaz`, `tarantool`. The following datastores may not be available: `postgrespro_enterprise`, `postgrespro_enterprise_1c`. Please contact support for details.",
+                  "description": "Type of the datastore. Changing this creates a new cluster. Must be one of: `galera_mysql`, `postgresql`, `postgresql_multiaz`, `tarantool`, `postgrespro_enterprise`, `postgrespro_enterprise_1c`. The following datastores may not be available: `postgrespro_enterprise`, `postgrespro_enterprise_1c`, please contact support for details.",
                   "force_new": true
                 },
                 "version": {
@@ -3780,6 +3780,14 @@
             "description": "Custom DNS cluster domain. Changing this creates a new cluster.",
             "computed": true,
             "force_new": true
+          },
+          "external_network_id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "ID of external network, it should be specified if cloud deployment doesn't have a public external network. Changing this creates new cluster.",
+            "computed": true,
+            "force_new": true,
+            "new_since": "v0.12.0"
           },
           "floating_ip_enabled": {
             "type": "TypeBool",
@@ -7890,6 +7898,61 @@
           }
         },
         "description": "Use this data source to get the compute quotaset of an VKCS project."
+      },
+      "vkcs_dataplatform_product": {
+        "schema": {
+          "configs": {
+            "computed": true
+          },
+          "product_name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Product name"
+          },
+          "product_version": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Product version",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.12.0"
+      },
+      "vkcs_dataplatform_products": {
+        "schema": {
+          "products": {
+            "type": "TypeList",
+            "description": "List of products information",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "product_name": {
+                  "type": "TypeString",
+                  "description": "Product name",
+                  "computed": true
+                },
+                "product_version": {
+                  "type": "TypeString",
+                  "description": "Product version",
+                  "computed": true
+                }
+              }
+            }
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.12.0"
       },
       "vkcs_db_backup": {
         "schema": {
