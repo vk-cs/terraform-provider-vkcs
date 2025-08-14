@@ -37,9 +37,9 @@ In addition to all arguments above, the following attributes are exported:
 - `created` *string* &rarr;  Backup creation timestamp
 
 - `datastore`  *list* &rarr;  Object that represents datastore of backup
-  - `type` *string* &rarr;  Version of the datastore. Changing this creates a new instance.
+    - `type` *string* &rarr;  Version of the datastore. Changing this creates a new instance.
 
-  - `version` *string* &rarr;  Type of the datastore. Changing this creates a new instance.
+    - `version` *string* &rarr;  Type of the datastore. Changing this creates a new instance.
 
 
 - `dbms_type` *string* &rarr;  Type of dbms for the backup, can be "instance" or "cluster".

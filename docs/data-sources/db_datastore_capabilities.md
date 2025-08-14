@@ -37,37 +37,37 @@ output "postgresql_capabilities" {
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `capabilities`  *list* &rarr;  Capabilities of the datastore.
-  - `allow_major_upgrade` *boolean* &rarr;  This attribute indicates whether a capability can be applied in the next major version of data store.
+    - `allow_major_upgrade` *boolean* &rarr;  This attribute indicates whether a capability can be applied in the next major version of data store.
 
-  - `allow_upgrade_from_backup` *boolean* &rarr;  This attribute indicates whether a capability can be applied to upgrade from backup.
+    - `allow_upgrade_from_backup` *boolean* &rarr;  This attribute indicates whether a capability can be applied to upgrade from backup.
 
-  - `description` *string* &rarr;  Description of data store capability.
+    - `description` *string* &rarr;  Description of data store capability.
 
-  - `name` *string* &rarr;  Name of data store capability.
+    - `name` *string* &rarr;  Name of data store capability.
 
-  - `params`  *list*
-    - `default_value` *string* &rarr;  Default value for a parameter.
+    - `params`  *list*
+        - `default_value` *string* &rarr;  Default value for a parameter.
 
-    - `element_type` *string* &rarr;  Type of element value for a parameter of `list` type.
+        - `element_type` *string* &rarr;  Type of element value for a parameter of `list` type.
 
-    - `enum_values` *string* &rarr;  Supported values for a parameter.
+        - `enum_values` *string* &rarr;  Supported values for a parameter.
 
-    - `masked` *boolean* &rarr;  Masked indicates whether a parameter value must be a boolean mask.
+        - `masked` *boolean* &rarr;  Masked indicates whether a parameter value must be a boolean mask.
 
-    - `max` *number* &rarr;  Maximum value for a parameter.
+        - `max` *number* &rarr;  Maximum value for a parameter.
 
-    - `min` *number* &rarr;  Minimum value for a parameter.
+        - `min` *number* &rarr;  Minimum value for a parameter.
 
-    - `name` *string* &rarr;  Name of a parameter.
+        - `name` *string* &rarr;  Name of a parameter.
 
-    - `regex` *string* &rarr;  Regular expression that a parameter value must match.
+        - `regex` *string* &rarr;  Regular expression that a parameter value must match.
 
-    - `required` *boolean* &rarr;  Required indicates whether a parameter value must be set.
+        - `required` *boolean* &rarr;  Required indicates whether a parameter value must be set.
 
-    - `type` *string* &rarr;  Type of value for a parameter.
+        - `type` *string* &rarr;  Type of value for a parameter.
 
 
-  - `should_be_on_master` *boolean* &rarr;  This attribute indicates whether a capability applies only to the master node.
+    - `should_be_on_master` *boolean* &rarr;  This attribute indicates whether a capability applies only to the master node.
 
 
 - `id` *string* &rarr;  ID of the resource

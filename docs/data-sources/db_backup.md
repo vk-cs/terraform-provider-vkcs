@@ -33,9 +33,9 @@ In addition to all arguments above, the following attributes are exported:
 - `created` *string* &rarr;  Backup creation timestamp
 
 - `datastore`  *list* &rarr;  Object that represents datastore of backup
-  - `type` *string* &rarr;  Type of the datastore.
+    - `type` *string* &rarr;  Type of the datastore.
 
-  - `version` *string* &rarr;  Version of the datastore.
+    - `version` *string* &rarr;  Version of the datastore.
 
 
 - `dbms_id` *string* &rarr;  ID of the backed up instance or cluster

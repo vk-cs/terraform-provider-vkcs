@@ -47,15 +47,15 @@ In addition to all arguments above, the following attributes are exported:
 - `name` *string* &rarr;  The name of the server.
 
 - `network`  &rarr;  An array of maps, detailed below.
-  - `fixed_ip_v4` *string* &rarr;  The IPv4 address assigned to this network port.
+    - `fixed_ip_v4` *string* &rarr;  The IPv4 address assigned to this network port.
 
-  - `mac` *string* &rarr;  The MAC address assigned to this network interface.
+    - `mac` *string* &rarr;  The MAC address assigned to this network interface.
 
-  - `name` *string* &rarr;  The name of the network
+    - `name` *string* &rarr;  The name of the network
 
-  - `port` *string* &rarr;  The port UUID for this network
+    - `port` *string* &rarr;  The port UUID for this network
 
-  - `uuid` *string* &rarr;  The UUID of the network
+    - `uuid` *string* &rarr;  The UUID of the network
 
 - `power_state` *string* &rarr;  VM state
 

@@ -30,21 +30,21 @@ data "vkcs_keymanager_container" "lb_cert" {
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `acl`  *list* &rarr;  ACLs assigned to a container.
-  - `read`  *list* &rarr;  Object that describes read operation.
-    - `created_at` *string* &rarr;  The date the container ACL was created.
+    - `read`  *list* &rarr;  Object that describes read operation.
+        - `created_at` *string* &rarr;  The date the container ACL was created.
 
-    - `project_access` *boolean* &rarr;  Whether the container is accessible project wide.
+        - `project_access` *boolean* &rarr;  Whether the container is accessible project wide.
 
-    - `updated_at` *string* &rarr;  The date the container ACL was last updated.
+        - `updated_at` *string* &rarr;  The date the container ACL was last updated.
 
-    - `users` *set of* *string* &rarr;  The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.
+        - `users` *set of* *string* &rarr;  The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.
 
 
 
 - `consumers`  *list* &rarr;  The list of the container consumers.
-  - `name` *string* &rarr;  The name of the consumer.
+    - `name` *string* &rarr;  The name of the consumer.
 
-  - `url` *string* &rarr;  The consumer URL.
+    - `url` *string* &rarr;  The consumer URL.
 
 
 - `container_ref` *string* &rarr;  The container reference / where to find the container.
@@ -56,9 +56,9 @@ In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  ID of the resource.
 
 - `secret_refs`  *set* &rarr;  A set of dictionaries containing references to secrets.
-  - `name` *string*
+    - `name` *string*
 
-  - `secret_ref` *string*
+    - `secret_ref` *string*
 
 
 - `status` *string* &rarr;  The status of the container.

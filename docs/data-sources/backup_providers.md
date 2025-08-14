@@ -27,9 +27,9 @@ In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  ID of the resource.
 
 - `providers`  *list* &rarr;  List of available backup providers
-  - `name` *string* &rarr;  Name of the backup provider
+    - `name` *string* &rarr;  Name of the backup provider
 
-  - `id` *string* &rarr;  ID of the backup provider
+    - `id` *string* &rarr;  ID of the backup provider
 
 
 

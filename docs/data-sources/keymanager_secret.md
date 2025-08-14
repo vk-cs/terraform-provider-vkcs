@@ -48,14 +48,14 @@ data "vkcs_keymanager_secret" "certificate" {
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `acl`  *list* &rarr;  The list of ACLs assigned to a secret.
-  - `read`  *list* &rarr;  Block that describes read operation.
-    - `project_access` *boolean* &rarr;  Whether the container is accessible project wide. Defaults to `true`.
+    - `read`  *list* &rarr;  Block that describes read operation.
+        - `project_access` *boolean* &rarr;  Whether the container is accessible project wide. Defaults to `true`.
 
-    - `users` *set of* *string* &rarr;  The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.
+        - `users` *set of* *string* &rarr;  The list of user IDs, which are allowed to access the container, when `project_access` is set to `false`.
 
-    - `created_at` *string* &rarr;  The date the container ACL was created.
+        - `created_at` *string* &rarr;  The date the container ACL was created.
 
-    - `updated_at` *string* &rarr;  The date the container ACL was last updated.
+        - `updated_at` *string* &rarr;  The date the container ACL was last updated.
 
 
 

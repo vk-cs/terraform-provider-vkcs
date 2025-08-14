@@ -43,9 +43,9 @@ resource "vkcs_networking_port" "persistent_etcd" {
 - `admin_state_up` optional *boolean* &rarr;  Administrative up/down status for the port (must be `true` or `false` if provided). Changing this updates the `admin_state_up` of an existing port.
 
 - `allowed_address_pairs` optional &rarr;  An IP/MAC Address pair of additional IP addresses that can be active on this port. The structure is described below.
-  - `ip_address` **required** *string* &rarr;  The additional IP address.
+    - `ip_address` **required** *string* &rarr;  The additional IP address.
 
-  - `mac_address` optional *string* &rarr;  The additional MAC address.
+    - `mac_address` optional *string* &rarr;  The additional MAC address.
 
 - `description` optional *string* &rarr;  Human-readable description of the port. Changing this updates the `description` of an existing port.
 
@@ -56,14 +56,14 @@ resource "vkcs_networking_port" "persistent_etcd" {
 - `dns_name` optional *string* &rarr;  The port DNS name.
 
 - `extra_dhcp_option` optional &rarr;  An extra DHCP option that needs to be configured on the port. The structure is described below. Can be specified multiple times. <br>**Note:** This is field is not supported by `sprut` sdn.
-  - `name` **required** *string* &rarr;  Name of the DHCP option.
+    - `name` **required** *string* &rarr;  Name of the DHCP option.
 
-  - `value` **required** *string* &rarr;  Value of the DHCP option.
+    - `value` **required** *string* &rarr;  Value of the DHCP option.
 
 - `fixed_ip` optional &rarr;  (Conflicts with `no_fixed_ip`) An array of desired IPs for this port. The structure is described below.
-  - `subnet_id` **required** *string* &rarr;  Subnet in which to allocate IP address for this port.
+    - `subnet_id` **required** *string* &rarr;  Subnet in which to allocate IP address for this port.
 
-  - `ip_address` optional *string* &rarr;  IP address desired in the subnet for this port. If you don't specify `ip_address`, an available IP address from the specified subnet will be allocated to this port. This field will not be populated if it is left blank or omitted. To retrieve the assigned IP address, use the `all_fixed_ips` attribute.
+    - `ip_address` optional *string* &rarr;  IP address desired in the subnet for this port. If you don't specify `ip_address`, an available IP address from the specified subnet will be allocated to this port. This field will not be populated if it is left blank or omitted. To retrieve the assigned IP address, use the `all_fixed_ips` attribute.
 
 - `full_security_groups_control` optional *boolean* &rarr;  Always set this argument to `true`. It brings consistent behavior of managing of security groups of the port. See description of `security_group_ids` argument. <br>**Note:** This argument is introduced to seamless migration to the consistent behavior and will get `true` by default in new major version of the provider.<br>**New since v0.8.0**.
 

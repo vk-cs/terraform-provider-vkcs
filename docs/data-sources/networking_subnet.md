@@ -55,9 +55,9 @@ In addition to all arguments above, the following attributes are exported:
 - `all_tags` *set of* *string* &rarr;  A set of string tags applied on the subnet.
 
 - `allocation_pools`  *list* &rarr;  Allocation pools of the subnet.
-  - `end` *string* &rarr;  The ending address.
+    - `end` *string* &rarr;  The ending address.
 
-  - `start` *string* &rarr;  The starting address.
+    - `start` *string* &rarr;  The starting address.
 
 
 - `dns_nameservers` *set of* *string* &rarr;  DNS Nameservers of the subnet.
@@ -65,9 +65,9 @@ In addition to all arguments above, the following attributes are exported:
 - `enable_dhcp` *boolean* &rarr;  Whether the subnet has DHCP enabled or not.
 
 - `host_routes`  *list* &rarr;  Host Routes of the subnet.
-  - `destination_cidr` *string*
+    - `destination_cidr` *string*
 
-  - `next_hop` *string*
+    - `next_hop` *string*
 
 
 

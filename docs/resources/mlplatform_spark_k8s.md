@@ -64,15 +64,15 @@ resource "vkcs_mlplatform_spark_k8s" "spark_k8s" {
 - `network_id` **required** *string* &rarr;  ID of the network. Changing this creates a new resource
 
 - `node_groups`  *list* &rarr;  Cluster's node groups configuration
-  - `autoscaling_enabled` **required** *boolean* &rarr;  Enables autoscaling for node group
+    - `autoscaling_enabled` **required** *boolean* &rarr;  Enables autoscaling for node group
 
-  - `flavor_id` **required** *string* &rarr;  ID of the flavor to be used in nodes
+    - `flavor_id` **required** *string* &rarr;  ID of the flavor to be used in nodes
 
-  - `max_nodes` optional *number* &rarr;  Maximum number of nodes in node group. It is used only when autoscaling is enabled
+    - `max_nodes` optional *number* &rarr;  Maximum number of nodes in node group. It is used only when autoscaling is enabled
 
-  - `min_nodes` optional *number* &rarr;  Minimum count of nodes in node group. It is used only when autoscaling is enabled
+    - `min_nodes` optional *number* &rarr;  Minimum count of nodes in node group. It is used only when autoscaling is enabled
 
-  - `node_count` optional *number* &rarr;  Count of nodes in node group
+    - `node_count` optional *number* &rarr;  Count of nodes in node group
 
 
 - `registry_id` **required** *string* &rarr;  ID of the K8S registry to use with cluster. Changing this creates a new resource

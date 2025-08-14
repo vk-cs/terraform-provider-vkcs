@@ -31,11 +31,11 @@ resource "vkcs_cdn_origin_group" "origin_group" {
 - `name` **required** *string* &rarr;  Name of the origin group.
 
 - `origins`  *list* &rarr;  List of origin sources in the origin group.
-  - `source` **required** *string* &rarr;  IP address or domain name of the origin and the port, if custom port is used.
+    - `source` **required** *string* &rarr;  IP address or domain name of the origin and the port, if custom port is used.
 
-  - `backup` optional *boolean* &rarr;  Defines whether the origin is a backup, meaning that it will not be used until one of active origins become unavailable. Defaults to false.
+    - `backup` optional *boolean* &rarr;  Defines whether the origin is a backup, meaning that it will not be used until one of active origins become unavailable. Defaults to false.
 
-  - `enabled` optional *boolean* &rarr;  Enables or disables an origin source in the origin group. Enabled by default.
+    - `enabled` optional *boolean* &rarr;  Enables or disables an origin source in the origin group. Enabled by default.
 
 
 - `region` optional *string* &rarr;  The region in which to obtain the CDN client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.

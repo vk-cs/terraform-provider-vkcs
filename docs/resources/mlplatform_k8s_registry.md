@@ -36,13 +36,13 @@ resource "vkcs_mlplatform_k8s_registry" "k8s_registry" {
 - `availability_zone` **required** *string* &rarr;  The availability zone in which to create the resource. Changing this creates a new resource
 
 - `boot_volume` ***required*** &rarr;  Instance's boot volume configuration
-  - `volume_type` **required** *string* &rarr;  Type of the volume
+    - `volume_type` **required** *string* &rarr;  Type of the volume
 
-  - `size` optional *number* &rarr;  Size of the volume
+    - `size` optional *number* &rarr;  Size of the volume
 
-  - `name` read-only *string* &rarr;  Name of the volume
+    - `name` read-only *string* &rarr;  Name of the volume
 
-  - `volume_id` read-only *string* &rarr;  ID of the volume
+    - `volume_id` read-only *string* &rarr;  ID of the volume
 
 
 - `flavor_id` **required** *string* &rarr;  Flavor ID
@@ -50,9 +50,9 @@ resource "vkcs_mlplatform_k8s_registry" "k8s_registry" {
 - `name` **required** *string* &rarr;  Instance name. Changing this creates a new resource
 
 - `networks`  *list* &rarr;  Network configuration
-  - `ip_pool` **required** *string* &rarr;  ID of the ip pool
+    - `ip_pool` **required** *string* &rarr;  ID of the ip pool
 
-  - `network_id` **required** *string* &rarr;  ID of the network
+    - `network_id` **required** *string* &rarr;  ID of the network
 
 
 - `admin_name` optional *string* &rarr;  K8SRegistry admin name. Changing this creates a new resource
@@ -60,13 +60,13 @@ resource "vkcs_mlplatform_k8s_registry" "k8s_registry" {
 - `admin_password` optional sensitive *string* &rarr;  K8SRegistry admin password. Changing this creates a new resource
 
 - `data_volumes`  *list* &rarr;  Instance's data volumes configuration
-  - `size` **required** *number* &rarr;  Size of the volume
+    - `size` **required** *number* &rarr;  Size of the volume
 
-  - `volume_type` **required** *string* &rarr;  Type of the volume
+    - `volume_type` **required** *string* &rarr;  Type of the volume
 
-  - `name` read-only *string* &rarr;  Name of the volume
+    - `name` read-only *string* &rarr;  Name of the volume
 
-  - `volume_id` read-only *string* &rarr;  ID of the volume
+    - `volume_id` read-only *string* &rarr;  ID of the volume
 
 
 - `domain_name` optional *string* &rarr;  Domain name. Changing this creates a new resource

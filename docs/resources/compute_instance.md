@@ -305,30 +305,30 @@ output "windows_password" {
 - `availability_zone` optional *string* &rarr;  The availability zone in which to create the server. Conflicts with `availability_zone_hints`. Changing this creates a new server.
 
 - `block_device` optional &rarr;  Configuration of block devices. The block_device structure is documented below. Changing this creates a new server. You can specify multiple block devices which will create an instance with multiple disks. This configuration is very flexible, so please see the following [reference](https://docs.openstack.org/nova/latest/user/block-device-mapping.html) for more information.
-  - `source_type` **required** *string* &rarr;  The source type of the device. Must be one of "blank", "image", "volume", or "snapshot". Changing this creates a new server.
+    - `source_type` **required** *string* &rarr;  The source type of the device. Must be one of "blank", "image", "volume", or "snapshot". Changing this creates a new server.
 
-  - `boot_index` optional *number* &rarr;  The boot index of the volume. It defaults to 0 if only one `block_device` is specified, and to -1 if more than one is configured. Changing this creates a new server. <br>**Note:** You must set the boot index to 0 for one of the block devices if more than one is defined.
+    - `boot_index` optional *number* &rarr;  The boot index of the volume. It defaults to 0 if only one `block_device` is specified, and to -1 if more than one is configured. Changing this creates a new server. <br>**Note:** You must set the boot index to 0 for one of the block devices if more than one is defined.
 
-  - `delete_on_termination` optional *boolean* &rarr;  Delete the volume / block device upon termination of the instance. Defaults to false. Changing this creates a new server. _<br>**Note:**_ It is important to enable `delete_on_termination` for volumes created with instance. If `delete_on_termination` is disabled for such volumes, then after instance deletion such volumes will stay orphaned and uncontrolled by terraform. _<br>**Note:**_ It is important to disable `delete_on_termination` if volume is created as separate terraform resource and is attached to instance. Enabling `delete_on_termination` for such volumes will result in mismanagement between two terraform resources in case of instance deletion
+    - `delete_on_termination` optional *boolean* &rarr;  Delete the volume / block device upon termination of the instance. Defaults to false. Changing this creates a new server. _<br>**Note:**_ It is important to enable `delete_on_termination` for volumes created with instance. If `delete_on_termination` is disabled for such volumes, then after instance deletion such volumes will stay orphaned and uncontrolled by terraform. _<br>**Note:**_ It is important to disable `delete_on_termination` if volume is created as separate terraform resource and is attached to instance. Enabling `delete_on_termination` for such volumes will result in mismanagement between two terraform resources in case of instance deletion
 
-  - `destination_type` optional *string* &rarr;  The type that gets created. Possible values are "volume" and "local". Changing this creates a new server.
+    - `destination_type` optional *string* &rarr;  The type that gets created. Possible values are "volume" and "local". Changing this creates a new server.
 
-  - `device_type` optional *string* &rarr;  The low-level device type that will be used. Most common thing is to leave this empty. Changing this creates a new server.
+    - `device_type` optional *string* &rarr;  The low-level device type that will be used. Most common thing is to leave this empty. Changing this creates a new server.
 
-  - `disk_bus` optional *string* &rarr;  The low-level disk bus that will be used. Most common thing is to leave this empty. Changing this creates a new server.
+    - `disk_bus` optional *string* &rarr;  The low-level disk bus that will be used. Most common thing is to leave this empty. Changing this creates a new server.
 
-  - `guest_format` optional *string* &rarr;  Specifies the guest server disk file system format, such as `ext2`, `ext3`, `ext4`, `xfs` or `swap`. Swap block device mappings have the following restrictions: source_type must be blank and destination_type must be local and only one swap disk per server and the size of the swap disk must be less than or equal to the swap size of the flavor. Changing this creates a new server.
+    - `guest_format` optional *string* &rarr;  Specifies the guest server disk file system format, such as `ext2`, `ext3`, `ext4`, `xfs` or `swap`. Swap block device mappings have the following restrictions: source_type must be blank and destination_type must be local and only one swap disk per server and the size of the swap disk must be less than or equal to the swap size of the flavor. Changing this creates a new server.
 
-  - `uuid` optional *string* &rarr;  The UUID of the image, volume, or snapshot. Optional if `source_type` is set to `"blank"`. Changing this creates a new server.
+    - `uuid` optional *string* &rarr;  The UUID of the image, volume, or snapshot. Optional if `source_type` is set to `"blank"`. Changing this creates a new server.
 
-  - `volume_size` optional *number* &rarr;  The size of the volume to create (in gigabytes). Required in the following combinations: source=image and destination=volume, source=blank and destination=local, and source=blank and destination=volume. Changing this creates a new server.
+    - `volume_size` optional *number* &rarr;  The size of the volume to create (in gigabytes). Required in the following combinations: source=image and destination=volume, source=blank and destination=local, and source=blank and destination=volume. Changing this creates a new server.
 
-  - `volume_type` optional *string* &rarr;  The volume type that will be used. Changing this creates a new server.
+    - `volume_type` optional *string* &rarr;  The volume type that will be used. Changing this creates a new server.
 
 - `cloud_monitoring` optional &rarr;  The settings of the cloud monitoring, it is recommended to set this field with the values of `vkcs_cloud_monitoring` resource fields. Changing this creates a new server.<br>**New since v0.9.0**.
-  - `script` **required** sensitive *string* &rarr;  The script of the cloud monitoring.
+    - `script` **required** sensitive *string* &rarr;  The script of the cloud monitoring.
 
-  - `service_user_id` **required** *string* &rarr;  The id of the service monitoring user.
+    - `service_user_id` **required** *string* &rarr;  The id of the service monitoring user.
 
 - `config_drive` optional *boolean* &rarr;  Whether to use the config_drive feature to configure the instance. Changing this creates a new server.
 
@@ -347,29 +347,29 @@ output "windows_password" {
 - `metadata` optional *map of* *string* &rarr;  Metadata key/value pairs to make available from within the instance. Changing this updates the existing server metadata.
 
 - `network` optional &rarr;  An array of one or more networks to attach to the instance. The network object structure is documented below. Changing this creates a new server.
-  - `access_network` optional *boolean* &rarr;  Specifies if this network should be used for provisioning access. Accepts true or false. Defaults to false.
+    - `access_network` optional *boolean* &rarr;  Specifies if this network should be used for provisioning access. Accepts true or false. Defaults to false.
 
-  - `fixed_ip_v4` optional *string* &rarr;  Specifies a fixed IPv4 address to be used on this network. Changing this creates a new server.
+    - `fixed_ip_v4` optional *string* &rarr;  Specifies a fixed IPv4 address to be used on this network. Changing this creates a new server.
 
-  - `name` optional *string* &rarr;  The human-readable name of the network. Optional if `uuid` or `port` is provided. Changing this creates a new server.
+    - `name` optional *string* &rarr;  The human-readable name of the network. Optional if `uuid` or `port` is provided. Changing this creates a new server.
 
-  - `port` optional *string* &rarr;  The port UUID of a network to attach to the server. Optional if `uuid` or `name` is provided. Changing this creates a new server. <br>**Note:** If port is used, only its security groups will be applied instead of security_groups instance argument.
+    - `port` optional *string* &rarr;  The port UUID of a network to attach to the server. Optional if `uuid` or `name` is provided. Changing this creates a new server. <br>**Note:** If port is used, only its security groups will be applied instead of security_groups instance argument.
 
-  - `uuid` optional *string* &rarr;  The network UUID to attach to the server. Optional if `port` or `name` is provided. Changing this creates a new server.
+    - `uuid` optional *string* &rarr;  The network UUID to attach to the server. Optional if `port` or `name` is provided. Changing this creates a new server.
 
 - `network_mode` optional *string* &rarr;  Special string for `network` option to create the server. `network_mode` can be `"auto"` or `"none"`. Please see the following [reference](https://docs.openstack.org/api-ref/compute/?expanded=create-server-detail#id11) for more information. Conflicts with `network`.
 
 - `personality` optional &rarr;  Customize the personality of an instance by defining one or more files and their contents. The personality structure is described below. <br>**Note:** 'config_drive' must be enabled.
-  - `content` **required** *string* &rarr;  The contents of the file.
+    - `content` **required** *string* &rarr;  The contents of the file.
 
-  - `file` **required** *string* &rarr;  The absolute path of the destination file. Limited to 255 bytes.
+    - `file` **required** *string* &rarr;  The absolute path of the destination file. Limited to 255 bytes.
 
 - `power_state` optional *string* &rarr;  Provide the VM state. Only 'active' and 'shutoff' are supported values. <br>**Note:** If the initial power_state is the shutoff the VM will be stopped immediately after build and the provisioners like remote-exec or files are not supported.
 
 - `region` optional *string* &rarr;  The region in which to create the server instance. If omitted, the `region` argument of the provider is used. Changing this creates a new server.
 
 - `scheduler_hints` optional &rarr;  Provide the Nova scheduler with hints on how the instance should be launched. The available hints are described below.
-  - `group` optional *string* &rarr;  A UUID of a Server Group. The instance will be placed into that group.
+    - `group` optional *string* &rarr;  A UUID of a Server Group. The instance will be placed into that group.
 
 - `security_group_ids` optional *set of* *string* &rarr;  An array of one or more security group ids to associate with the server. Changing this results in adding/removing security groups from the existing server. <br>**Note:** When attaching the instance to networks using Ports, place the security groups on the Port and not the instance.<br>**New since v0.7.3**.
 
@@ -382,11 +382,11 @@ output "windows_password" {
 - `user_data` optional *string* &rarr;  The user data to provide when launching the instance. When cloud_monitoring enabled only #!/bin/bash, #cloud-config, #ps1 user_data formats are supported. Changing this creates a new server.
 
 - `vendor_options` optional &rarr;  Map of additional vendor-specific options. Supported options are described below.
-  - `detach_ports_before_destroy` optional *boolean* &rarr;  Whether to try to detach all attached ports to the vm before destroying it to make sure the port state is correct after the vm destruction. This is helpful when the port is not deleted.
+    - `detach_ports_before_destroy` optional *boolean* &rarr;  Whether to try to detach all attached ports to the vm before destroying it to make sure the port state is correct after the vm destruction. This is helpful when the port is not deleted.
 
-  - `get_password_data` optional *boolean* &rarr;  If true, wait for initial windows admin password to be generated and retrieve it. Use this attribute only for instances running Microsoft Windows. The password data is exported to the `password_data` attribute. The password will be generated only if you specify the instance `key_pair`. The password will be read only once when the instance is created.<br>**New since v0.9.3**.
+    - `get_password_data` optional *boolean* &rarr;  If true, wait for initial windows admin password to be generated and retrieve it. Use this attribute only for instances running Microsoft Windows. The password data is exported to the `password_data` attribute. The password will be generated only if you specify the instance `key_pair`. The password will be read only once when the instance is created.<br>**New since v0.9.3**.
 
-  - `ignore_resize_confirmation` optional *boolean* &rarr;  Boolean to control whether to ignore manual confirmation of the instance resizing.
+    - `ignore_resize_confirmation` optional *boolean* &rarr;  Boolean to control whether to ignore manual confirmation of the instance resizing.
 
 
 ## Attributes Reference
@@ -398,7 +398,7 @@ In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  ID of the resource.
 
 - `network` 
-  - `mac` *string* &rarr;  The MAC address of the NIC on that network.
+    - `mac` *string* &rarr;  The MAC address of the NIC on that network.
 
 - `password_data` *string* &rarr;  Base-64 encoded encrypted password data for the instance. Use this attribute only for instances running Microsoft Windows. This attribute is only exported if `get_password_data` is true. If you change the password after creating the instance, these changes will not be visible in this field.<br>**New since v0.9.3**.
 

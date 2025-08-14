@@ -69,17 +69,17 @@ In addition to all arguments above, the following attributes are exported:
 - `all_tags` *set of* *string* &rarr;  The set of string tags applied on the port.
 
 - `allowed_address_pairs`  *set* &rarr;  An IP/MAC Address pair of additional IP addresses that can be active on this port. The structure is described below.
-  - `ip_address` *string* &rarr;  The additional IP address.
+    - `ip_address` *string* &rarr;  The additional IP address.
 
-  - `mac_address` *string* &rarr;  The additional MAC address.
+    - `mac_address` *string* &rarr;  The additional MAC address.
 
 
 - `dns_assignment` *map of* *string* &rarr;  The list of maps representing port DNS assignments.
 
 - `extra_dhcp_option`  *list* &rarr;  An extra DHCP option configured on the port. The structure is described below.
-  - `name` *string* &rarr;  Name of the DHCP option.
+    - `name` *string* &rarr;  Name of the DHCP option.
 
-  - `value` *string* &rarr;  Value of the DHCP option.
+    - `value` *string* &rarr;  Value of the DHCP option.
 
 
 

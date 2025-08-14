@@ -27,19 +27,19 @@ In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  Random identifier of the data source.
 
 - `security_policy_templates`  *list* &rarr;  Available kubernetes security policy templates.
-  - `created_at` *string* &rarr;  Template creation timestamp
+    - `created_at` *string* &rarr;  Template creation timestamp
 
-  - `description` *string* &rarr;  Description of the security policy template.
+    - `description` *string* &rarr;  Description of the security policy template.
 
-  - `id` *string* &rarr;  ID of the template.
+    - `id` *string* &rarr;  ID of the template.
 
-  - `name` *string* &rarr;  Name of the security policy template.
+    - `name` *string* &rarr;  Name of the security policy template.
 
-  - `settings_description` *string* &rarr;  Security policy settings description.
+    - `settings_description` *string* &rarr;  Security policy settings description.
 
-  - `updated_at` *string* &rarr;  Template update timestamp.
+    - `updated_at` *string* &rarr;  Template update timestamp.
 
-  - `version` *string* &rarr;  Version of the security policy template.
+    - `version` *string* &rarr;  Version of the security policy template.
 
 
 

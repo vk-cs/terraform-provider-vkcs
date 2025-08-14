@@ -31,15 +31,15 @@ data "vkcs_backup_plan" "plan_datasource" {
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `full_retention`  &rarr;  Parameters for full retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full
-  - `max_full_backup` *number* &rarr;  Maximum number of backups
+    - `max_full_backup` *number* &rarr;  Maximum number of backups
 
 
 - `gfs_retention`  &rarr;  Parameters for gfs retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full
-  - `gfs_monthly` *number* &rarr;  Number of months to store backups
+    - `gfs_monthly` *number* &rarr;  Number of months to store backups
 
-  - `gfs_weekly` *number* &rarr;  Number of weeks to store backups
+    - `gfs_weekly` *number* &rarr;  Number of weeks to store backups
 
-  - `gfs_yearly` *number* &rarr;  Number of years to store backups
+    - `gfs_yearly` *number* &rarr;  Number of years to store backups
 
 
 - `id` *string* &rarr;  ID of the resource
@@ -51,11 +51,11 @@ In addition to all arguments above, the following attributes are exported:
 - `provider_id` *string* &rarr;  ID of backup provider
 
 - `schedule` 
-  - `date` *string* &rarr;  List of days when to perform backups. If incremental_backups is enabled, this field contains day of full backup
+    - `date` *string* &rarr;  List of days when to perform backups. If incremental_backups is enabled, this field contains day of full backup
 
-  - `every_hours` *number* &rarr;  Hour period of backups
+    - `every_hours` *number* &rarr;  Hour period of backups
 
-  - `time` *string* &rarr;  Time of backup in format hh:mm, using UTC timezone
+    - `time` *string* &rarr;  Time of backup in format hh:mm, using UTC timezone
 
 
 

@@ -35,17 +35,17 @@ resource "vkcs_networking_anycastip" "anycastip" {
 - `network_id` **required** *string* &rarr;  ID of the external network to choose ip for anycast IP from.
 
 - `associations`  *set* &rarr;  List of port associations with anycast IP.
-  - `id` **required** *string* &rarr;  ID of port / dc interface / octavia loadbalancer vip port.
+    - `id` **required** *string* &rarr;  ID of port / dc interface / octavia loadbalancer vip port.
 
-  - `type` **required** *string* &rarr;  Type of association. Can be one of: port, dc_interface, octavia.
+    - `type` **required** *string* &rarr;  Type of association. Can be one of: port, dc_interface, octavia.
 
 
 - `description` optional *string* &rarr;  Description of the anycast IP.
 
 - `health_check` optional &rarr;  Health check settings.
-  - `port` optional *number* &rarr;  Port for check to connect to.
+    - `port` optional *number* &rarr;  Port for check to connect to.
 
-  - `type` optional *string* &rarr;  Check type. Can be one of: TCP, ICMP.
+    - `type` optional *string* &rarr;  Check type. Can be one of: TCP, ICMP.
 
 
 - `name` optional *string* &rarr;  Name of the anycast IP.

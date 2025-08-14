@@ -23,9 +23,9 @@ data "vkcs_dataplatform_products" "products" {}
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `products`  *list* &rarr;  List of products information
-  - `product_name` *string* &rarr;  Product name
+    - `product_name` *string* &rarr;  Product name
 
-  - `product_version` *string* &rarr;  Product version
+    - `product_version` *string* &rarr;  Product version
 
 
 

@@ -29,11 +29,11 @@ In addition to all arguments above, the following attributes are exported:
 - `id` *number* &rarr;  ID of the origin group.
 
 - `origins`  *list* &rarr;  List of origin sources in the origin group.
-  - `backup` *boolean* &rarr;  Defines whether the origin is a backup, meaning that it will not be used until one of active origins become unavailable.
+    - `backup` *boolean* &rarr;  Defines whether the origin is a backup, meaning that it will not be used until one of active origins become unavailable.
 
-  - `enabled` *boolean* &rarr;  Enables or disables an origin source in the origin group.
+    - `enabled` *boolean* &rarr;  Enables or disables an origin source in the origin group.
 
-  - `source` *string* &rarr;  IP address or domain name of the origin and the port, if custom port is used.
+    - `source` *string* &rarr;  IP address or domain name of the origin and the port, if custom port is used.
 
 
 - `use_next` *boolean* &rarr;  Defines whether to use the next origin from the origin group if origin responds with 4XX or 5XX codes.

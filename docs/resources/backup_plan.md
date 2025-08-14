@@ -79,23 +79,23 @@ resource "vkcs_backup_plan" "backup_plan" {
 - `name` **required** *string* &rarr;  Name of the backup plan
 
 - `schedule` ***required***
-  - `date` optional *string* &rarr;  List of days when to perform backups. If incremental_backups is enabled, only one day should be specified
+    - `date` optional *string* &rarr;  List of days when to perform backups. If incremental_backups is enabled, only one day should be specified
 
-  - `every_hours` optional *number* &rarr;  Hour interval of backups, must be one of: 3, 12, 24. This field is incompatible with date/time fields
+    - `every_hours` optional *number* &rarr;  Hour interval of backups, must be one of: 3, 12, 24. This field is incompatible with date/time fields
 
-  - `time` optional *string* &rarr;  Time of backup in format hh:mm (for UTC timezone) or hh:mm+tz (for other timezones, e.g. 10:00+03 for MSK, 10:00-04 for ET)
+    - `time` optional *string* &rarr;  Time of backup in format hh:mm (for UTC timezone) or hh:mm+tz (for other timezones, e.g. 10:00+03 for MSK, 10:00-04 for ET)
 
 
 - `full_retention` optional &rarr;  Parameters for full retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full. Incompatible with gfs_retention
-  - `max_full_backup` **required** *number* &rarr;  Maximum number of backups
+    - `max_full_backup` **required** *number* &rarr;  Maximum number of backups
 
 
 - `gfs_retention` optional &rarr;  Parameters for gfs retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full. Incompatible with full_retention
-  - `gfs_weekly` **required** *number* &rarr;  Number of weeks to store backups
+    - `gfs_weekly` **required** *number* &rarr;  Number of weeks to store backups
 
-  - `gfs_monthly` optional *number* &rarr;  Number of months to store backups
+    - `gfs_monthly` optional *number* &rarr;  Number of months to store backups
 
-  - `gfs_yearly` optional *number* &rarr;  Number of years to store backups
+    - `gfs_yearly` optional *number* &rarr;  Number of years to store backups
 
 
 - `provider_id` optional *string* &rarr;  ID of backup provider

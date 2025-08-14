@@ -22,20 +22,20 @@ data "vkcs_db_instance" "db_instance" {
 - `id` **required** *string* &rarr;  The id of the instance.
 
 - `backup_schedule` optional &rarr;  Object that represents configuration of PITR backup. This functionality is available only for postgres datastore.<br>**New since v0.1.4**.
-  - `interval_hours` **required** *number* &rarr;  Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.
+    - `interval_hours` **required** *number* &rarr;  Time interval between backups, specified in hours. Available values: 3, 6, 8, 12, 24.
 
-  - `keep_count` **required** *number* &rarr;  Number of backups to be stored.
+    - `keep_count` **required** *number* &rarr;  Number of backups to be stored.
 
-  - `name` **required** *string* &rarr;  Name of the schedule.
+    - `name` **required** *string* &rarr;  Name of the schedule.
 
-  - `start_hours` **required** *number* &rarr;  Hours part of timestamp of initial backup.
+    - `start_hours` **required** *number* &rarr;  Hours part of timestamp of initial backup.
 
-  - `start_minutes` **required** *number* &rarr;  Minutes part of timestamp of initial backup.
+    - `start_minutes` **required** *number* &rarr;  Minutes part of timestamp of initial backup.
 
 - `datastore` optional &rarr;  Object that represents datastore of the instance.
-  - `type` **required** *string* &rarr;  Type of the datastore.
+    - `type` **required** *string* &rarr;  Type of the datastore.
 
-  - `version` **required** *string* &rarr;  Version of the datastore.
+    - `version` **required** *string* &rarr;  Version of the datastore.
 
 - `flavor_id` optional *string* &rarr;  The ID of flavor for the instance.
 
@@ -50,13 +50,13 @@ data "vkcs_db_instance" "db_instance" {
 - `status` optional *string* &rarr;  Instance status.
 
 - `volume` optional &rarr;  Object that describes volume of the instance.
-  - `size` **required** *number* &rarr;  Size of the instance volume.
+    - `size` **required** *number* &rarr;  Size of the instance volume.
 
-  - `used` **required** *number* &rarr;  Size of the used volume space.
+    - `used` **required** *number* &rarr;  Size of the used volume space.
 
-  - `volume_id` **required** *string* &rarr;  ID of the instance volume.
+    - `volume_id` **required** *string* &rarr;  ID of the instance volume.
 
-  - `volume_type` **required** *string* &rarr;  Type of the instance volume.
+    - `volume_type` **required** *string* &rarr;  Type of the instance volume.
 
 
 ## Attributes Reference

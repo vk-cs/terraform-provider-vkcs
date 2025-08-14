@@ -29,13 +29,13 @@ data "vkcs_kubernetes_addons" "cluster_addons" {
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `addons`  *list*
-  - `id` *string* &rarr;  ID of an addon.
+    - `id` *string* &rarr;  ID of an addon.
 
-  - `installed` *boolean* &rarr;  Whether an addon was installed in the cluster.
+    - `installed` *boolean* &rarr;  Whether an addon was installed in the cluster.
 
-  - `name` *string* &rarr;  Name of an addon.
+    - `name` *string* &rarr;  Name of an addon.
 
-  - `version` *string* &rarr;  Version of an addon.
+    - `version` *string* &rarr;  Version of an addon.
 
 
 - `id` *string* &rarr;  ID of the resource.

@@ -28,19 +28,19 @@ resource "vkcs_lb_members" "front_workers" {
 - `pool_id` **required** *string* &rarr;  The id of the pool that members will be assigned to. Changing this creates a new members resource.
 
 - `member` optional &rarr;  A set of dictionaries containing member parameters. The structure is described below.
-  - `address` **required** *string* &rarr;  The IP address of the members to receive traffic from the load balancer.
+    - `address` **required** *string* &rarr;  The IP address of the members to receive traffic from the load balancer.
 
-  - `protocol_port` **required** *number* &rarr;  The port on which to listen for client traffic.
+    - `protocol_port` **required** *number* &rarr;  The port on which to listen for client traffic.
 
-  - `admin_state_up` optional *boolean* &rarr;  The administrative state of the member. A valid value is true (UP) or false (DOWN). Defaults to true.
+    - `admin_state_up` optional *boolean* &rarr;  The administrative state of the member. A valid value is true (UP) or false (DOWN). Defaults to true.
 
-  - `backup` optional *boolean* &rarr;  A bool that indicates whether the member is backup.
+    - `backup` optional *boolean* &rarr;  A bool that indicates whether the member is backup.
 
-  - `name` optional *string* &rarr;  Human-readable name for the member.
+    - `name` optional *string* &rarr;  Human-readable name for the member.
 
-  - `subnet_id` optional *string* &rarr;  The subnet in which to access the member.
+    - `subnet_id` optional *string* &rarr;  The subnet in which to access the member.
 
-  - `weight` optional *number* &rarr;  A positive integer value that indicates the relative portion of traffic that this members should receive from the pool. For example, a member with a weight of 10 receives five times as much traffic as a member with a weight of 2. Defaults to 1.
+    - `weight` optional *number* &rarr;  A positive integer value that indicates the relative portion of traffic that this members should receive from the pool. For example, a member with a weight of 10 receives five times as much traffic as a member with a weight of 2. Defaults to 1.
 
 - `region` optional *string* &rarr;  The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new members resource.
 
@@ -50,7 +50,7 @@ In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  ID of the resource.
 
 - `member` 
-  - `id` *string* &rarr;  The unique ID for the member.
+    - `id` *string* &rarr;  The unique ID for the member.
 
 
 

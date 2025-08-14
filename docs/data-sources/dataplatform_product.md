@@ -29,42 +29,42 @@ data "vkcs_dataplatform_product" "spark" {
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `configs` 
-  - `connections`  *list* &rarr;  Product connections configuration info
-    - `is_required` *boolean* &rarr;  Is connection required
+    - `connections`  *list* &rarr;  Product connections configuration info
+        - `is_required` *boolean* &rarr;  Is connection required
 
-    - `plug` *string* &rarr;  Connection type
+        - `plug` *string* &rarr;  Connection type
 
-    - `position` *number* &rarr;  Connection position
+        - `position` *number* &rarr;  Connection position
 
-    - `required_group` *string* &rarr;  Connection required group
+        - `required_group` *string* &rarr;  Connection required group
 
-    - `settings`  *list* &rarr;  Connection settings
-      - `alias` *string* &rarr;  Setting alias
+        - `settings`  *list* &rarr;  Connection settings
+            - `alias` *string* &rarr;  Setting alias
 
-      - `default_value` *string* &rarr;  Setting default value
+            - `default_value` *string* &rarr;  Setting default value
 
-      - `is_require` *boolean* &rarr;  Is setting required
+            - `is_require` *boolean* &rarr;  Is setting required
 
-      - `is_sensitive` *boolean* &rarr;  Is setting sensitive
+            - `is_sensitive` *boolean* &rarr;  Is setting sensitive
 
-      - `regexp` *string* &rarr;  Setting validation regexp
+            - `regexp` *string* &rarr;  Setting validation regexp
 
-      - `string_variation` *string* &rarr;  Available setting values
+            - `string_variation` *string* &rarr;  Available setting values
 
 
 
-  - `settings`  *list* &rarr;  Product settings
-    - `alias` *string* &rarr;  Setting alias
+    - `settings`  *list* &rarr;  Product settings
+        - `alias` *string* &rarr;  Setting alias
 
-    - `default_value` *string* &rarr;  Setting default value
+        - `default_value` *string* &rarr;  Setting default value
 
-    - `is_require` *boolean* &rarr;  Is setting required
+        - `is_require` *boolean* &rarr;  Is setting required
 
-    - `is_sensitive` *boolean* &rarr;  Is setting sensitive
+        - `is_sensitive` *boolean* &rarr;  Is setting sensitive
 
-    - `regexp` *string* &rarr;  Setting validation regexp
+        - `regexp` *string* &rarr;  Setting validation regexp
 
-    - `string_variation` *string* &rarr;  Available setting values
+        - `string_variation` *string* &rarr;  Available setting values
 
 
 
