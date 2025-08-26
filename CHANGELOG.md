@@ -6,7 +6,11 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-### v0.12.0
+#### v0.12.1 (unreleased)
+- Increase vkcs_dataplatform_cluster delete default timeout
+- Mark non-updateable arguments of vkcs_dataplatform_cluster resource as requiring replace
+
+#### v0.12.0
 - Add vkcs_dataplatform_products data source
 - Add vkcs_dataplatform_product data source
 - Support vkcs_dataplatform_cluster resource settings update

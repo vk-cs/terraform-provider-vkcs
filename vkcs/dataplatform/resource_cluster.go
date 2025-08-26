@@ -26,7 +26,7 @@ const (
 	clusterUpdateTimeout    = 90 * time.Minute
 	clusterDeleteDelay      = 5 * time.Second
 	clusterDeleteMinTimeout = 5 * time.Second
-	clusterDeleteTimeout    = 10 * time.Minute
+	clusterDeleteTimeout    = 60 * time.Minute
 )
 
 type clusterStatus string
