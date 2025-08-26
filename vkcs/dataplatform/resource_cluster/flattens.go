@@ -218,3 +218,51 @@ func FlattenClusterPodGroupsVolumes(ctx context.Context, o map[string]clusters.C
 
 	return result, nil
 }
+
+func FlattenClusterInfo(ctx context.Context, i *clusters.ClusterInfo) (InfoValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if i == nil {
+		return NewInfoValueNull(), nil
+	}
+
+	services, d := FlattenClusterInfoServices(ctx, i.Services)
+	diags.Append(d...)
+	if diags.HasError() {
+		return NewInfoValueNull(), nil
+	}
+
+	infoV := InfoValue{
+		Services: services,
+		state:    attr.ValueStateKnown,
+	}
+
+	return infoV, nil
+}
+
+func FlattenClusterInfoServices(ctx context.Context, o []clusters.ClusterInfoServices) (basetypes.ListValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if o == nil {
+		return types.ListNull(InfoServicesValue{}.Type(ctx)), nil
+	}
+
+	servicesV := make([]attr.Value, len(o))
+	for i, s := range o {
+		servicesV[i] = InfoServicesValue{
+			ConnectionString: types.StringValue(s.ConnectionString),
+			Description:      types.StringValue(s.Description),
+			Exposed:          types.BoolValue(s.Exposed),
+			ServiceType:      types.StringValue(s.Type),
+			state:            attr.ValueStateKnown,
+		}
+	}
+	result, d := types.ListValue(InfoServicesValue{}.Type(ctx), servicesV)
+
+	diags.Append(d...)
+	if diags.HasError() {
+		return types.ListUnknown(InfoServicesValue{}.Type(ctx)), diags
+	}
+
+	return result, nil
+}

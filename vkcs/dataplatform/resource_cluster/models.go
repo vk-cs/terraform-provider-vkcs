@@ -63,6 +63,13 @@ func (m *ClusterModel) UpdateFromCluster(ctx context.Context, cluster *clusters.
 		m.FloatingIpPool = types.StringValue(cluster.FloatingIPPool)
 	}
 
+	info, d := FlattenClusterInfo(ctx, cluster.Info)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+	m.Info = info
+
 	return diags
 }
 

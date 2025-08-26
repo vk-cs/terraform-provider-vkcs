@@ -452,6 +452,52 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "ID of the cluster.",
 				MarkdownDescription: "ID of the cluster.",
 			},
+			"info": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"services": schema.ListNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"connection_string": schema.StringAttribute{
+									Computed:            true,
+									Description:         "Service connection string",
+									MarkdownDescription: "Service connection string",
+								},
+								"description": schema.StringAttribute{
+									Computed:            true,
+									Description:         "Service description",
+									MarkdownDescription: "Service description",
+								},
+								"exposed": schema.BoolAttribute{
+									Computed:            true,
+									Description:         "Whether service is exposed",
+									MarkdownDescription: "Whether service is exposed",
+								},
+								"type": schema.StringAttribute{
+									Computed:            true,
+									Description:         "Service type",
+									MarkdownDescription: "Service type",
+								},
+							},
+							CustomType: InfoServicesType{
+								ObjectType: types.ObjectType{
+									AttrTypes: InfoServicesValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Application services info",
+						MarkdownDescription: "Application services info",
+					},
+				},
+				CustomType: InfoType{
+					ObjectType: types.ObjectType{
+						AttrTypes: InfoValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "Application info",
+				MarkdownDescription: "Application info",
+			},
 			"multiaz": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -691,6 +737,7 @@ type ClusterModel struct {
 	Description       types.String `tfsdk:"description"`
 	FloatingIpPool    types.String `tfsdk:"floating_ip_pool"`
 	Id                types.String `tfsdk:"id"`
+	Info              InfoValue    `tfsdk:"info"`
 	Multiaz           types.Bool   `tfsdk:"multiaz"`
 	Name              types.String `tfsdk:"name"`
 	NetworkId         types.String `tfsdk:"network_id"`
@@ -6473,6 +6520,854 @@ func (v ConfigsWarehousesConnectionsSettingsValue) AttributeTypes(ctx context.Co
 	return map[string]attr.Type{
 		"alias": basetypes.StringType{},
 		"value": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = InfoType{}
+
+type InfoType struct {
+	basetypes.ObjectType
+}
+
+func (t InfoType) Equal(o attr.Type) bool {
+	other, ok := o.(InfoType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t InfoType) String() string {
+	return "InfoType"
+}
+
+func (t InfoType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	servicesAttribute, ok := attributes["services"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`services is missing from object`)
+
+		return nil, diags
+	}
+
+	servicesVal, ok := servicesAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`services expected to be basetypes.ListValue, was: %T`, servicesAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return InfoValue{
+		Services: servicesVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewInfoValueNull() InfoValue {
+	return InfoValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewInfoValueUnknown() InfoValue {
+	return InfoValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewInfoValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (InfoValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing InfoValue Attribute Value",
+				"While creating a InfoValue value, a missing attribute value was detected. "+
+					"A InfoValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("InfoValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid InfoValue Attribute Type",
+				"While creating a InfoValue value, an invalid attribute value was detected. "+
+					"A InfoValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("InfoValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("InfoValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra InfoValue Attribute Value",
+				"While creating a InfoValue value, an extra attribute value was detected. "+
+					"A InfoValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra InfoValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewInfoValueUnknown(), diags
+	}
+
+	servicesAttribute, ok := attributes["services"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`services is missing from object`)
+
+		return NewInfoValueUnknown(), diags
+	}
+
+	servicesVal, ok := servicesAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`services expected to be basetypes.ListValue, was: %T`, servicesAttribute))
+	}
+
+	if diags.HasError() {
+		return NewInfoValueUnknown(), diags
+	}
+
+	return InfoValue{
+		Services: servicesVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewInfoValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) InfoValue {
+	object, diags := NewInfoValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewInfoValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t InfoType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewInfoValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewInfoValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewInfoValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewInfoValueMust(InfoValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t InfoType) ValueType(ctx context.Context) attr.Value {
+	return InfoValue{}
+}
+
+var _ basetypes.ObjectValuable = InfoValue{}
+
+type InfoValue struct {
+	Services basetypes.ListValue `tfsdk:"services"`
+	state    attr.ValueState
+}
+
+func (v InfoValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["services"] = basetypes.ListType{
+		ElemType: InfoServicesValue{}.Type(ctx),
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.Services.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["services"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v InfoValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v InfoValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v InfoValue) String() string {
+	return "InfoValue"
+}
+
+func (v InfoValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	services := types.ListValueMust(
+		InfoServicesType{
+			basetypes.ObjectType{
+				AttrTypes: InfoServicesValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.Services.Elements(),
+	)
+
+	if v.Services.IsNull() {
+		services = types.ListNull(
+			InfoServicesType{
+				basetypes.ObjectType{
+					AttrTypes: InfoServicesValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.Services.IsUnknown() {
+		services = types.ListUnknown(
+			InfoServicesType{
+				basetypes.ObjectType{
+					AttrTypes: InfoServicesValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"services": basetypes.ListType{
+			ElemType: InfoServicesValue{}.Type(ctx),
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"services": services,
+		})
+
+	return objVal, diags
+}
+
+func (v InfoValue) Equal(o attr.Value) bool {
+	other, ok := o.(InfoValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Services.Equal(other.Services) {
+		return false
+	}
+
+	return true
+}
+
+func (v InfoValue) Type(ctx context.Context) attr.Type {
+	return InfoType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v InfoValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"services": basetypes.ListType{
+			ElemType: InfoServicesValue{}.Type(ctx),
+		},
+	}
+}
+
+var _ basetypes.ObjectTypable = InfoServicesType{}
+
+type InfoServicesType struct {
+	basetypes.ObjectType
+}
+
+func (t InfoServicesType) Equal(o attr.Type) bool {
+	other, ok := o.(InfoServicesType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t InfoServicesType) String() string {
+	return "ServiceType"
+}
+
+func (t InfoServicesType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	connectionStringAttribute, ok := attributes["connection_string"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`connection_string is missing from object`)
+
+		return nil, diags
+	}
+
+	connectionStringVal, ok := connectionStringAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`connection_string expected to be basetypes.StringValue, was: %T`, connectionStringAttribute))
+	}
+
+	descriptionAttribute, ok := attributes["description"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`description is missing from object`)
+
+		return nil, diags
+	}
+
+	descriptionVal, ok := descriptionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`description expected to be basetypes.StringValue, was: %T`, descriptionAttribute))
+	}
+
+	exposedAttribute, ok := attributes["exposed"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`exposed is missing from object`)
+
+		return nil, diags
+	}
+
+	exposedVal, ok := exposedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`exposed expected to be basetypes.BoolValue, was: %T`, exposedAttribute))
+	}
+
+	typeAttribute, ok := attributes["type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`type is missing from object`)
+
+		return nil, diags
+	}
+
+	typeVal, ok := typeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`type expected to be basetypes.StringValue, was: %T`, typeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return InfoServicesValue{
+		ConnectionString: connectionStringVal,
+		Description:      descriptionVal,
+		Exposed:          exposedVal,
+		ServiceType:      typeVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewInfoServicesValueNull() InfoServicesValue {
+	return InfoServicesValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewInfoServicesValueUnknown() InfoServicesValue {
+	return InfoServicesValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewInfoServicesValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (InfoServicesValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing InfoServicesValue Attribute Value",
+				"While creating a InfoServicesValue value, a missing attribute value was detected. "+
+					"A InfoServicesValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("InfoServicesValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid InfoServicesValue Attribute Type",
+				"While creating a InfoServicesValue value, an invalid attribute value was detected. "+
+					"A InfoServicesValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("InfoServicesValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("InfoServicesValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra InfoServicesValue Attribute Value",
+				"While creating a InfoServicesValue value, an extra attribute value was detected. "+
+					"A InfoServicesValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra InfoServicesValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewInfoServicesValueUnknown(), diags
+	}
+
+	connectionStringAttribute, ok := attributes["connection_string"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`connection_string is missing from object`)
+
+		return NewInfoServicesValueUnknown(), diags
+	}
+
+	connectionStringVal, ok := connectionStringAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`connection_string expected to be basetypes.StringValue, was: %T`, connectionStringAttribute))
+	}
+
+	descriptionAttribute, ok := attributes["description"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`description is missing from object`)
+
+		return NewInfoServicesValueUnknown(), diags
+	}
+
+	descriptionVal, ok := descriptionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`description expected to be basetypes.StringValue, was: %T`, descriptionAttribute))
+	}
+
+	exposedAttribute, ok := attributes["exposed"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`exposed is missing from object`)
+
+		return NewInfoServicesValueUnknown(), diags
+	}
+
+	exposedVal, ok := exposedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`exposed expected to be basetypes.BoolValue, was: %T`, exposedAttribute))
+	}
+
+	typeAttribute, ok := attributes["type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`type is missing from object`)
+
+		return NewInfoServicesValueUnknown(), diags
+	}
+
+	typeVal, ok := typeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`type expected to be basetypes.StringValue, was: %T`, typeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewInfoServicesValueUnknown(), diags
+	}
+
+	return InfoServicesValue{
+		ConnectionString: connectionStringVal,
+		Description:      descriptionVal,
+		Exposed:          exposedVal,
+		ServiceType:      typeVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewInfoServicesValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) InfoServicesValue {
+	object, diags := NewInfoServicesValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewInfoServicesValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t InfoServicesType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewInfoServicesValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewInfoServicesValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewInfoServicesValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewInfoServicesValueMust(InfoServicesValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t InfoServicesType) ValueType(ctx context.Context) attr.Value {
+	return InfoServicesValue{}
+}
+
+var _ basetypes.ObjectValuable = InfoServicesValue{}
+
+type InfoServicesValue struct {
+	ConnectionString basetypes.StringValue `tfsdk:"connection_string"`
+	Description      basetypes.StringValue `tfsdk:"description"`
+	Exposed          basetypes.BoolValue   `tfsdk:"exposed"`
+	ServiceType      basetypes.StringValue `tfsdk:"type"`
+	state            attr.ValueState
+}
+
+func (v InfoServicesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["connection_string"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["description"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["exposed"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["type"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.ConnectionString.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["connection_string"] = val
+
+		val, err = v.Description.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["description"] = val
+
+		val, err = v.Exposed.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["exposed"] = val
+
+		val, err = v.ServiceType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["type"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v InfoServicesValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v InfoServicesValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v InfoServicesValue) String() string {
+	return "InfoServicesValue"
+}
+
+func (v InfoServicesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"connection_string": basetypes.StringType{},
+		"description":       basetypes.StringType{},
+		"exposed":           basetypes.BoolType{},
+		"type":              basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"connection_string": v.ConnectionString,
+			"description":       v.Description,
+			"exposed":           v.Exposed,
+			"type":              v.ServiceType,
+		})
+
+	return objVal, diags
+}
+
+func (v InfoServicesValue) Equal(o attr.Value) bool {
+	other, ok := o.(InfoServicesValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ConnectionString.Equal(other.ConnectionString) {
+		return false
+	}
+
+	if !v.Description.Equal(other.Description) {
+		return false
+	}
+
+	if !v.Exposed.Equal(other.Exposed) {
+		return false
+	}
+
+	if !v.ServiceType.Equal(other.ServiceType) {
+		return false
+	}
+
+	return true
+}
+
+func (v InfoServicesValue) Type(ctx context.Context) attr.Type {
+	return InfoServicesType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v InfoServicesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"connection_string": basetypes.StringType{},
+		"description":       basetypes.StringType{},
+		"exposed":           basetypes.BoolType{},
+		"type":              basetypes.StringType{},
 	}
 }
 
