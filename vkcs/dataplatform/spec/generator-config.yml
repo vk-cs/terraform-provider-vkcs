@@ -19,7 +19,6 @@ resources:
         - pod_groups.pod_group_template_id
         - pod_groups.node_processes
         - upgrades
-        - floating_ip_pool
         - info
         - project_id
         - import_source
@@ -123,6 +122,8 @@ resources:
             description: Warehouse ID.
           description:
             description: Cluster description.
+          floating_ip_pool:
+            description: Floating IP pool ID. Use `auto` for autoselect. Changing this creates a new resource.
           pod_groups:
             description: Cluster pod groups. Changing this creates a new resource.
           pod_groups.count:

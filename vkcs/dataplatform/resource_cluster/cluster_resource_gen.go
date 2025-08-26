@@ -438,6 +438,15 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Default: stringdefault.StaticString(""),
 			},
+			"floating_ip_pool": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Floating IP pool ID. Use `auto` for autoselect. Changing this creates a new resource.",
+				MarkdownDescription: "Floating IP pool ID. Use `auto` for autoselect. Changing this creates a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
+			},
 			"id": schema.StringAttribute{
 				Computed:            true,
 				Description:         "ID of the cluster.",
@@ -680,6 +689,7 @@ type ClusterModel struct {
 	Configs           ConfigsValue `tfsdk:"configs"`
 	CreatedAt         types.String `tfsdk:"created_at"`
 	Description       types.String `tfsdk:"description"`
+	FloatingIpPool    types.String `tfsdk:"floating_ip_pool"`
 	Id                types.String `tfsdk:"id"`
 	Multiaz           types.Bool   `tfsdk:"multiaz"`
 	Name              types.String `tfsdk:"name"`

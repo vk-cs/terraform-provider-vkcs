@@ -202,6 +202,8 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
 - `description` optional *string* &rarr;  Cluster description.
 
+- `floating_ip_pool` optional *string* &rarr;  Floating ip pool. Use `auto` for autoselect.  Changing this creates a new resource.
+
 - `multiaz` optional *boolean* &rarr;  Enables multi az support. Changing this creates a new resource.
 
 - `pod_groups`  *list* &rarr;  Cluster pod groups. Changing this creates a new resource.
