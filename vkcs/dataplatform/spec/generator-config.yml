@@ -34,63 +34,63 @@ resources:
           product_name:
             description: Name of the product.
           product_version:
-            description: Version of the product.
+            description: Version of the product. Changing this creates a new resource.
           product_type:
             description: Type of the product.
           cluster_template_id:
-            description: ID of the cluster template.
+            description: ID of the cluster template. Changing this creates a new resource.
           network_id:
-            description: ID of the cluster network.
+            description: ID of the cluster network. Changing this creates a new resource.
           configs:
             description: Product configuration.
           configs.maintenance:
-            description: Maintenance settings.
+            description: Maintenance settings. Changing this creates a new resource.
           configs.maintenance.start:
-            description: Maintenance cron schedule.
+            description: Maintenance cron schedule. Changing this creates a new resource.
           configs.maintenance.backup:
-            description: Backup settings.
+            description: Backup settings. Changing this creates a new resource.
           configs.maintenance.backup.full:
-            description: Full backup settings.
+            description: Full backup settings. Changing this creates a new resource.
           configs.maintenance.backup.full.start:
-            description: Full backup schedule.
+            description: Full backup schedule. Changing this creates a new resource.
           configs.maintenance.backup.full.keep_count:
-            description: Full backup keep count.
+            description: Full backup keep count. Changing this creates a new resource.
           configs.maintenance.backup.full.keep_time:
-            description: Full backup keep time.
+            description: Full backup keep time. Changing this creates a new resource.
           configs.maintenance.backup.full.enabled:
             description: Whether full backup is enabled.
           configs.maintenance.backup.incremental:
-            description: Incremental backup settings.
+            description: Incremental backup settings. Changing this creates a new resource.
           configs.maintenance.backup.incremental.start:
-            description: Incremental backup schedule.
+            description: Incremental backup schedule. Changing this creates a new resource.
           configs.maintenance.backup.incremental.keep_count:
-            description: Incremental backup keep count.
+            description: Incremental backup keep count. Changing this creates a new resource.
           configs.maintenance.backup.incremental.keep_time:
-            description: Incremental backup keep time.
+            description: Incremental backup keep time. Changing this creates a new resource.
           configs.maintenance.backup.incremental.enabled:
             description: Whether incremental backup is enabled.
           configs.maintenance.backup.differential:
-            description: Differential backup settings.
+            description: Differential backup settings. Changing this creates a new resource.
           configs.maintenance.backup.differential.start:
-            description: Differential backup schedule.
+            description: Differential backup schedule. Changing this creates a new resource.
           configs.maintenance.backup.differential.keep_count:
-            description: Differential backup keep count.
+            description: Differential backup keep count. Changing this creates a new resource.
           configs.maintenance.backup.differential.keep_time:
-            description: Differential backup keep time.
+            description: Differential backup keep time. Changing this creates a new resource.
           configs.maintenance.backup.differential.enabled:
             description: Whether differential backup is enabled.
           configs.maintenance.crontabs:
-            description: Cron tabs settings.
+            description: Cron tabs settings. Changing this creates a new resource.
           configs.maintenance.crontabs.name:
-            description: Cron tab name.
+            description: Cron tab name. Changing this creates a new resource.
           configs.maintenance.crontabs.start:
-            description: Cron tab schedule.
+            description: Cron tab schedule. Changing this creates a new resource.
           configs.maintenance.crontabs.settings:
-            description: Additional cron settings.
+            description: Additional cron settings. Changing this creates a new resource.
           configs.maintenance.crontabs.settings.alias:
-            description: Setting alias.
+            description: Setting alias. Changing this creates a new resource.
           configs.maintenance.crontabs.settings.value:
-            description: Setting value.
+            description: Setting value. Changing this creates a new resource.
           configs.maintenance.crontabs.required:
             description: Whether cron tab is required.
           configs.settings:
@@ -100,21 +100,21 @@ resources:
           configs.settings.value:
             description: Setting value.
           configs.warehouses:
-            description: Warehouses settings.
+            description: Warehouses settings. Changing this creates a new resource.
           configs.warehouses.name:
-            description: Warehouse name.
+            description: Warehouse name. Changing this creates a new resource.
           configs.warehouses.connections:
-            description: Warehouse connections.
+            description: Warehouse connections. Changing this creates a new resource.
           configs.warehouses.connections.plug:
-            description: Connection plug.
+            description: Connection plug. Changing this creates a new resource.
           configs.warehouses.connections.name:
-            description: Connection name.
+            description: Connection name. Changing this creates a new resource.
           configs.warehouses.connections.settings:
-            description: Additional warehouse settings.
+            description: Additional warehouse settings. Changing this creates a new resource.
           configs.warehouses.connections.settings.alias:
-            description: Setting alias.
+            description: Setting alias. Changing this creates a new resource.
           configs.warehouses.connections.settings.value:
-            description: Setting value.
+            description: Setting value. Changing this creates a new resource.
           configs.warehouses.connections.id:
             description: Connection ID.
           configs.warehouses.connections.created_at:
@@ -124,31 +124,31 @@ resources:
           description:
             description: Cluster description.
           pod_groups:
-            description: Cluster pod groups.
+            description: Cluster pod groups. Changing this creates a new resource.
           pod_groups.count:
-            description: Pod count.
+            description: Pod count. Changing this creates a new resource.
           pod_groups.floating_ip_pool:
-            description: Floating IP pool ID.
+            description: Floating IP pool ID. Changing this creates a new resource.
           pod_groups.resource:
-            description: Resource request settings.
+            description: Resource request settings. Changing this creates a new resource.
           pod_groups.resource.cpu_request:
-            description: Resource request settings.
+            description: Resource request settings. Changing this creates a new resource.
           pod_groups.resource.ram_request:
-            description: RAM request settings.
+            description: RAM request settings. Changing this creates a new resource.
           pod_groups.resource.cpu_limit:
             description: CPU limit.
           pod_groups.resource.ram_limit:
             description: RAM limit settings.
           pod_groups.volumes:
-            description: Volumes settings.
+            description: Volumes settings. Changing this creates a new resource.
           pod_groups.volumes.type:
-            description: Volume type.
+            description: Volume type. Changing this creates a new resource.
           pod_groups.volumes.count:
-            description: Volume count.
+            description: Volume count. Changing this creates a new resource.
           pod_groups.volumes.storageClassName:
-            description: Storage class name.
+            description: Storage class name. Changing this creates a new resource.
           pod_groups.volumes.storage:
-            description: Storage size.
+            description: Storage size. Changing this creates a new resource.
           pod_groups.id:
             description: Pod group ID.
           pod_groups.alias:
@@ -156,13 +156,13 @@ resources:
           pod_groups.name:
             description: Pod group name.
           subnet_id:
-            description: ID of the cluster subnet.
+            description: ID of the cluster subnet. Changing this creates a new resource.
           stack_id:
-            description: ID of the cluster stack.
+            description: ID of the cluster stack. Changing this creates a new resource.
           availability_zone:
-            description: Availability zone to create cluster in.
+            description: Availability zone to create cluster in. Changing this creates a new resource.
           multiaz:
-            description: Enables multi az support.
+            description: Enables multi az support. Changing this creates a new resource.
           created_at:
             description: Cluster creation timestamp.
 data_sources:

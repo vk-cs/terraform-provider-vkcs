@@ -239,7 +239,7 @@
 						"name": "availability_zone",
 						"string": {
 							"computed_optional_required": "computed_optional",
-							"description": "Availability zone to create cluster in.",
+							"description": "Availability zone to create cluster in. Changing this creates a new resource.",
 							"validators": [
 								{
 									"custom": {
@@ -251,6 +251,18 @@
 										"schema_definition": "stringvalidator.LengthAtMost(255)"
 									}
 								}
+							],
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplaceIfConfigured()"
+									}
+								}
 							]
 						}
 					},
@@ -258,7 +270,19 @@
 						"name": "cluster_template_id",
 						"string": {
 							"computed_optional_required": "computed_optional",
-							"description": "ID of the cluster template."
+							"description": "ID of the cluster template. Changing this creates a new resource.",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplaceIfConfigured()"
+									}
+								}
+							]
 						}
 					},
 					{
@@ -297,7 +321,7 @@
 																		"name": "start",
 																		"string": {
 																			"computed_optional_required": "required",
-																			"description": "Differential backup schedule.",
+																			"description": "Differential backup schedule. Changing this creates a new resource.",
 																			"validators": [
 																				{
 																					"custom": {
@@ -310,6 +334,18 @@
 																							}
 																						],
 																						"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(?#minute)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(?#hour)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(?#day_of_month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(?#month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(?#day_of_week)(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
+																					}
+																				}
+																			],
+																			"plan_modifiers": [
+																				{
+																					"custom": {
+																						"imports": [
+																							{
+																								"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																							}
+																						],
+																						"schema_definition": "stringplanmodifier.RequiresReplace()"
 																					}
 																				}
 																			]
@@ -326,7 +362,7 @@
 																		}
 																	}
 																],
-																"description": "Differential backup settings."
+																"description": "Differential backup settings. Changing this creates a new resource."
 															}
 														},
 														{
@@ -350,7 +386,7 @@
 																		"name": "start",
 																		"string": {
 																			"computed_optional_required": "required",
-																			"description": "Full backup schedule.",
+																			"description": "Full backup schedule. Changing this creates a new resource.",
 																			"validators": [
 																				{
 																					"custom": {
@@ -363,6 +399,18 @@
 																							}
 																						],
 																						"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(?#minute)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(?#hour)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(?#day_of_month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(?#month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(?#day_of_week)(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
+																					}
+																				}
+																			],
+																			"plan_modifiers": [
+																				{
+																					"custom": {
+																						"imports": [
+																							{
+																								"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																							}
+																						],
+																						"schema_definition": "stringplanmodifier.RequiresReplace()"
 																					}
 																				}
 																			]
@@ -379,7 +427,7 @@
 																		}
 																	}
 																],
-																"description": "Full backup settings."
+																"description": "Full backup settings. Changing this creates a new resource."
 															}
 														},
 														{
@@ -403,7 +451,7 @@
 																		"name": "start",
 																		"string": {
 																			"computed_optional_required": "required",
-																			"description": "Incremental backup schedule.",
+																			"description": "Incremental backup schedule. Changing this creates a new resource.",
 																			"validators": [
 																				{
 																					"custom": {
@@ -416,6 +464,18 @@
 																							}
 																						],
 																						"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(?#minute)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(?#hour)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(?#day_of_month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(?#month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(?#day_of_week)(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
+																					}
+																				}
+																			],
+																			"plan_modifiers": [
+																				{
+																					"custom": {
+																						"imports": [
+																							{
+																								"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																							}
+																						],
+																						"schema_definition": "stringplanmodifier.RequiresReplace()"
 																					}
 																				}
 																			]
@@ -432,11 +492,11 @@
 																		}
 																	}
 																],
-																"description": "Incremental backup settings."
+																"description": "Incremental backup settings. Changing this creates a new resource."
 															}
 														}
 													],
-													"description": "Backup settings."
+													"description": "Backup settings. Changing this creates a new resource."
 												}
 											},
 											{
@@ -449,7 +509,19 @@
 																"name": "name",
 																"string": {
 																	"computed_optional_required": "required",
-																	"description": "Cron tab name."
+																	"description": "Cron tab name. Changing this creates a new resource.",
+																	"plan_modifiers": [
+																		{
+																			"custom": {
+																				"imports": [
+																					{
+																						"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																					}
+																				],
+																				"schema_definition": "stringplanmodifier.RequiresReplace()"
+																			}
+																		}
+																	]
 																}
 															},
 															{
@@ -462,26 +534,50 @@
 																				"name": "alias",
 																				"string": {
 																					"computed_optional_required": "required",
-																					"description": "Setting alias."
+																					"description": "Setting alias. Changing this creates a new resource.",
+																					"plan_modifiers": [
+																						{
+																							"custom": {
+																								"imports": [
+																									{
+																										"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																									}
+																								],
+																								"schema_definition": "stringplanmodifier.RequiresReplace()"
+																							}
+																						}
+																					]
 																				}
 																			},
 																			{
 																				"name": "value",
 																				"string": {
 																					"computed_optional_required": "required",
-																					"description": "Setting value."
+																					"description": "Setting value. Changing this creates a new resource.",
+																					"plan_modifiers": [
+																						{
+																							"custom": {
+																								"imports": [
+																									{
+																										"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																									}
+																								],
+																								"schema_definition": "stringplanmodifier.RequiresReplace()"
+																							}
+																						}
+																					]
 																				}
 																			}
 																		]
 																	},
-																	"description": "Additional cron settings."
+																	"description": "Additional cron settings. Changing this creates a new resource."
 																}
 															},
 															{
 																"name": "start",
 																"string": {
 																	"computed_optional_required": "computed_optional",
-																	"description": "Cron tab schedule.",
+																	"description": "Cron tab schedule. Changing this creates a new resource.",
 																	"validators": [
 																		{
 																			"custom": {
@@ -494,6 +590,18 @@
 																					}
 																				],
 																				"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(?#minute)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(?#hour)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(?#day_of_month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(?#month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(?#day_of_week)(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
+																			}
+																		}
+																	],
+																	"plan_modifiers": [
+																		{
+																			"custom": {
+																				"imports": [
+																					{
+																						"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																					}
+																				],
+																				"schema_definition": "stringplanmodifier.RequiresReplaceIfConfigured()"
 																			}
 																		}
 																	]
@@ -514,14 +622,14 @@
 															}
 														]
 													},
-													"description": "Cron tabs settings."
+													"description": "Cron tabs settings. Changing this creates a new resource."
 												}
 											},
 											{
 												"name": "start",
 												"string": {
 													"computed_optional_required": "computed_optional",
-													"description": "Maintenance cron schedule.",
+													"description": "Maintenance cron schedule. Changing this creates a new resource.",
 													"validators": [
 														{
 															"custom": {
@@ -536,11 +644,23 @@
 																"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(?#minute)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(?#hour)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(?#day_of_month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(?#month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(?#day_of_week)(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
 															}
 														}
+													],
+													"plan_modifiers": [
+														{
+															"custom": {
+																"imports": [
+																	{
+																		"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																	}
+																],
+																"schema_definition": "stringplanmodifier.RequiresReplace()"
+															}
+														}
 													]
 												}
 											}
 										],
-										"description": "Maintenance settings."
+										"description": "Maintenance settings. Changing this creates a new resource."
 									}
 								},
 								{
@@ -584,7 +704,7 @@
 																	"name": "name",
 																	"string": {
 																		"computed_optional_required": "required",
-																		"description": "Connection name.",
+																		"description": "Connection name. Changing this creates a new resource.",
 																		"validators": [
 																			{
 																				"custom": {
@@ -596,6 +716,18 @@
 																					"schema_definition": "stringvalidator.LengthAtMost(255)"
 																				}
 																			}
+																		],
+																		"plan_modifiers": [
+																			{
+																				"custom": {
+																					"imports": [
+																						{
+																							"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																						}
+																					],
+																					"schema_definition": "stringplanmodifier.RequiresReplace()"
+																				}
+																			}
 																		]
 																	}
 																},
@@ -603,7 +735,7 @@
 																	"name": "plug",
 																	"string": {
 																		"computed_optional_required": "required",
-																		"description": "Connection plug.",
+																		"description": "Connection plug. Changing this creates a new resource.",
 																		"validators": [
 																			{
 																				"custom": {
@@ -613,6 +745,18 @@
 																						}
 																					],
 																					"schema_definition": "stringvalidator.LengthAtMost(255)"
+																				}
+																			}
+																		],
+																		"plan_modifiers": [
+																			{
+																				"custom": {
+																					"imports": [
+																						{
+																							"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																						}
+																					],
+																					"schema_definition": "stringplanmodifier.RequiresReplace()"
 																				}
 																			}
 																		]
@@ -628,7 +772,7 @@
 																					"name": "alias",
 																					"string": {
 																						"computed_optional_required": "required",
-																						"description": "Setting alias.",
+																						"description": "Setting alias. Changing this creates a new resource.",
 																						"validators": [
 																							{
 																								"custom": {
@@ -640,6 +784,18 @@
 																									"schema_definition": "stringvalidator.LengthAtMost(80)"
 																								}
 																							}
+																						],
+																						"plan_modifiers": [
+																							{
+																								"custom": {
+																									"imports": [
+																										{
+																											"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																										}
+																									],
+																									"schema_definition": "stringplanmodifier.RequiresReplace()"
+																								}
+																							}
 																						]
 																					}
 																				},
@@ -647,7 +803,7 @@
 																					"name": "value",
 																					"string": {
 																						"computed_optional_required": "required",
-																						"description": "Setting value.",
+																						"description": "Setting value. Changing this creates a new resource.",
 																						"validators": [
 																							{
 																								"custom": {
@@ -659,12 +815,24 @@
 																									"schema_definition": "stringvalidator.LengthAtMost(255)"
 																								}
 																							}
+																						],
+																						"plan_modifiers": [
+																							{
+																								"custom": {
+																									"imports": [
+																										{
+																											"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																										}
+																									],
+																									"schema_definition": "stringplanmodifier.RequiresReplace()"
+																								}
+																							}
 																						]
 																					}
 																				}
 																			]
 																		},
-																		"description": "Additional warehouse settings."
+																		"description": "Additional warehouse settings. Changing this creates a new resource."
 																	}
 																},
 																{
@@ -683,14 +851,14 @@
 																}
 															]
 														},
-														"description": "Warehouse connections."
+														"description": "Warehouse connections. Changing this creates a new resource."
 													}
 												},
 												{
 													"name": "name",
 													"string": {
 														"computed_optional_required": "computed_optional",
-														"description": "Warehouse name.",
+														"description": "Warehouse name. Changing this creates a new resource.",
 														"validators": [
 															{
 																"custom": {
@@ -715,6 +883,18 @@
 																	"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^[a-zA-Z0-9_]+$\"), \"\")"
 																}
 															}
+														],
+														"plan_modifiers": [
+															{
+																"custom": {
+																	"imports": [
+																		{
+																			"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																		}
+																	],
+																	"schema_definition": "stringplanmodifier.RequiresReplace()"
+																}
+															}
 														]
 													}
 												},
@@ -727,7 +907,7 @@
 												}
 											]
 										},
-										"description": "Warehouses settings."
+										"description": "Warehouses settings. Changing this creates a new resource."
 									}
 								}
 							],
@@ -763,7 +943,19 @@
 							"default": {
 								"static": false
 							},
-							"description": "Enables multi az support."
+							"description": "Enables multi az support. Changing this creates a new resource.",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+											}
+										],
+										"schema_definition": "boolplanmodifier.RequiresReplace()"
+									}
+								}
+							]
 						}
 					},
 					{
@@ -802,7 +994,19 @@
 						"name": "network_id",
 						"string": {
 							"computed_optional_required": "required",
-							"description": "ID of the cluster network."
+							"description": "ID of the cluster network. Changing this creates a new resource.",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplace()"
+									}
+								}
+							]
 						}
 					},
 					{
@@ -815,7 +1019,7 @@
 										"name": "count",
 										"int64": {
 											"computed_optional_required": "computed_optional",
-											"description": "Pod count.",
+											"description": "Pod count. Changing this creates a new resource.",
 											"validators": [
 												{
 													"custom": {
@@ -827,6 +1031,18 @@
 														"schema_definition": "int64validator.AtLeast(0)"
 													}
 												}
+											],
+											"plan_modifiers": [
+												{
+													"custom": {
+														"imports": [
+															{
+																"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+															}
+														],
+														"schema_definition": "int64planmodifier.RequiresReplace()"
+													}
+												}
 											]
 										}
 									},
@@ -834,7 +1050,7 @@
 										"name": "floating_ip_pool",
 										"string": {
 											"computed_optional_required": "computed_optional",
-											"description": "Floating IP pool ID.",
+											"description": "Floating IP pool ID. Changing this creates a new resource.",
 											"validators": [
 												{
 													"custom": {
@@ -844,6 +1060,18 @@
 															}
 														],
 														"schema_definition": "stringvalidator.LengthAtMost(36)"
+													}
+												}
+											],
+											"plan_modifiers": [
+												{
+													"custom": {
+														"imports": [
+															{
+																"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+															}
+														],
+														"schema_definition": "stringplanmodifier.RequiresReplace()"
 													}
 												}
 											]
@@ -858,7 +1086,7 @@
 													"name": "cpu_request",
 													"string": {
 														"computed_optional_required": "computed_optional",
-														"description": "Resource request settings.",
+														"description": "Resource request settings. Changing this creates a new resource.",
 														"validators": [
 															{
 																"custom": {
@@ -873,6 +1101,18 @@
 																	"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^\\\\d*\\\\.?\\\\d*$\"), \"\")"
 																}
 															}
+														],
+														"plan_modifiers": [
+															{
+																"custom": {
+																	"imports": [
+																		{
+																			"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																		}
+																	],
+																	"schema_definition": "stringplanmodifier.RequiresReplace()"
+																}
+															}
 														]
 													}
 												},
@@ -880,7 +1120,7 @@
 													"name": "ram_request",
 													"string": {
 														"computed_optional_required": "computed_optional",
-														"description": "RAM request settings.",
+														"description": "RAM request settings. Changing this creates a new resource.",
 														"validators": [
 															{
 																"custom": {
@@ -893,6 +1133,18 @@
 																		}
 																	],
 																	"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^\\\\d*\\\\.?\\\\d*$\"), \"\")"
+																}
+															}
+														],
+														"plan_modifiers": [
+															{
+																"custom": {
+																	"imports": [
+																		{
+																			"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																		}
+																	],
+																	"schema_definition": "stringplanmodifier.RequiresReplace()"
 																}
 															}
 														]
@@ -913,7 +1165,7 @@
 													}
 												}
 											],
-											"description": "Resource request settings."
+											"description": "Resource request settings. Changing this creates a new resource."
 										}
 									},
 									{
@@ -926,14 +1178,26 @@
 														"name": "count",
 														"int64": {
 															"computed_optional_required": "required",
-															"description": "Volume count."
+															"description": "Volume count. Changing this creates a new resource.",
+															"plan_modifiers": [
+																{
+																	"custom": {
+																		"imports": [
+																			{
+																				"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+																			}
+																		],
+																		"schema_definition": "int64planmodifier.RequiresReplace()"
+																	}
+																}
+															]
 														}
 													},
 													{
 														"name": "storage",
 														"string": {
 															"computed_optional_required": "required",
-															"description": "Storage size.",
+															"description": "Storage size. Changing this creates a new resource.",
 															"validators": [
 																{
 																	"custom": {
@@ -948,6 +1212,18 @@
 																		"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(\\\\d+|(\\\\d+)G)$\"), \"\")"
 																	}
 																}
+															],
+															"plan_modifiers": [
+																{
+																	"custom": {
+																		"imports": [
+																			{
+																				"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																			}
+																		],
+																		"schema_definition": "stringplanmodifier.RequiresReplace()"
+																	}
+																}
 															]
 														}
 													},
@@ -955,7 +1231,7 @@
 														"name": "storage_class_name",
 														"string": {
 															"computed_optional_required": "required",
-															"description": "Storage class name.",
+															"description": "Storage class name. Changing this creates a new resource.",
 															"validators": [
 																{
 																	"custom": {
@@ -967,12 +1243,24 @@
 																		"schema_definition": "stringvalidator.LengthAtMost(255)"
 																	}
 																}
+															],
+															"plan_modifiers": [
+																{
+																	"custom": {
+																		"imports": [
+																			{
+																				"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+																			}
+																		],
+																		"schema_definition": "stringplanmodifier.RequiresReplace()"
+																	}
+																}
 															]
 														}
 													}
 												]
 											},
-											"description": "Volumes settings."
+											"description": "Volumes settings. Changing this creates a new resource."
 										}
 									},
 									{
@@ -1004,7 +1292,7 @@
 									}
 								]
 							},
-							"description": "Cluster pod groups."
+							"description": "Cluster pod groups. Changing this creates a new resource."
 						}
 					},
 					{
@@ -1030,7 +1318,7 @@
 						"name": "product_version",
 						"string": {
 							"computed_optional_required": "required",
-							"description": "Version of the product.",
+							"description": "Version of the product. Changing this creates a new resource.",
 							"validators": [
 								{
 									"custom": {
@@ -1042,6 +1330,18 @@
 										"schema_definition": "stringvalidator.LengthAtMost(80)"
 									}
 								}
+							],
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplace()"
+									}
+								}
 							]
 						}
 					},
@@ -1049,14 +1349,38 @@
 						"name": "stack_id",
 						"string": {
 							"computed_optional_required": "computed_optional",
-							"description": "ID of the cluster stack."
+							"description": "ID of the cluster stack. Changing this creates a new resource.",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplace()"
+									}
+								}
+							]
 						}
 					},
 					{
 						"name": "subnet_id",
 						"string": {
 							"computed_optional_required": "computed_optional",
-							"description": "ID of the cluster subnet."
+							"description": "ID of the cluster subnet. Changing this creates a new resource.",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplace()"
+									}
+								}
+							]
 						}
 					},
 					{

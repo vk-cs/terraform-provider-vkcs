@@ -107,10 +107,10 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
 ## Argument Reference
 - `configs` ***required*** &rarr;  Product configuration.
-    - `maintenance` ***required*** &rarr;  Maintenance settings.
-        - `backup` optional &rarr;  Backup settings.
-            - `differential` optional &rarr;  Differential backup settings.
-                - `start` **required** *string* &rarr;  Differential backup schedule.
+    - `maintenance` ***required*** &rarr;  Maintenance settings. Changing this creates a new resource.
+        - `backup` optional &rarr;  Backup settings. Changing this creates a new resource.
+            - `differential` optional &rarr;  Differential backup settings. Changing this creates a new resource.
+                - `start` **required** *string* &rarr;  Differential backup schedule. Changing this creates a new resource.
 
                 - `keep_count` optional *number*
 
@@ -119,8 +119,8 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
                 - `enabled` read-only *boolean* &rarr;  Whether differential backup is enabled.
 
 
-            - `full` optional &rarr;  Full backup settings.
-                - `start` **required** *string* &rarr;  Full backup schedule.
+            - `full` optional &rarr;  Full backup settings. Changing this creates a new resource.
+                - `start` **required** *string* &rarr;  Full backup schedule. Changing this creates a new resource.
 
                 - `keep_count` optional *number*
 
@@ -129,8 +129,8 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
                 - `enabled` read-only *boolean* &rarr;  Whether full backup is enabled.
 
 
-            - `incremental` optional &rarr;  Incremental backup settings.
-                - `start` **required** *string* &rarr;  Incremental backup schedule.
+            - `incremental` optional &rarr;  Incremental backup settings. Changing this creates a new resource.
+                - `start` **required** *string* &rarr;  Incremental backup schedule. Changing this creates a new resource.
 
                 - `keep_count` optional *number*
 
@@ -140,23 +140,23 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
 
 
-        - `crontabs`  *list* &rarr;  Cron tabs settings.
-            - `name` **required** *string* &rarr;  Cron tab name.
+        - `crontabs`  *list* &rarr;  Cron tabs settings. Changing this creates a new resource.
+            - `name` **required** *string* &rarr;  Cron tab name. Changing this creates a new resource.
 
-            - `settings`  *list* &rarr;  Additional cron settings.
-                - `alias` **required** *string* &rarr;  Setting alias.
+            - `settings`  *list* &rarr;  Additional cron settings. Changing this creates a new resource.
+                - `alias` **required** *string* &rarr;  Setting alias. Changing this creates a new resource.
 
-                - `value` **required** *string* &rarr;  Setting value.
+                - `value` **required** *string* &rarr;  Setting value. Changing this creates a new resource.
 
 
-            - `start` optional *string* &rarr;  Cron tab schedule.
+            - `start` optional *string* &rarr;  Cron tab schedule. Changing this creates a new resource.
 
             - `id` read-only *string*
 
             - `required` read-only *boolean* &rarr;  Whether cron tab is required.
 
 
-        - `start` optional *string* &rarr;  Maintenance cron schedule.
+        - `start` optional *string* &rarr;  Maintenance cron schedule. Changing this creates a new resource.
 
 
     - `settings`  *list* &rarr;  Additional common settings.
@@ -165,16 +165,16 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
         - `value` **required** *string* &rarr;  Setting value.
 
 
-    - `warehouses`  *list* &rarr;  Warehouses settings.
-        - `connections`  *list* &rarr;  Warehouse connections.
-            - `name` **required** *string* &rarr;  Connection name.
+    - `warehouses`  *list* &rarr;  Warehouses settings. Changing this creates a new resource.
+        - `connections`  *list* &rarr;  Warehouse connections. Changing this creates a new resource.
+            - `name` **required** *string* &rarr;  Connection name. Changing this creates a new resource.
 
-            - `plug` **required** *string* &rarr;  Connection plug.
+            - `plug` **required** *string* &rarr;  Connection plug. Changing this creates a new resource.
 
-            - `settings`  *list* &rarr;  Additional warehouse settings.
-                - `alias` **required** *string* &rarr;  Setting alias.
+            - `settings`  *list* &rarr;  Additional warehouse settings. Changing this creates a new resource.
+                - `alias` **required** *string* &rarr;  Setting alias. Changing this creates a new resource.
 
-                - `value` **required** *string* &rarr;  Setting value.
+                - `value` **required** *string* &rarr;  Setting value. Changing this creates a new resource.
 
 
             - `created_at` read-only *string* &rarr;  Connection creation timestamp.
@@ -182,7 +182,7 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
             - `id` read-only *string* &rarr;  Connection ID.
 
 
-        - `name` optional *string* &rarr;  Warehouse name.
+        - `name` optional *string* &rarr;  Warehouse name. Changing this creates a new resource.
 
         - `id` read-only *string* &rarr;  Warehouse ID.
 
@@ -190,43 +190,43 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
 - `name` **required** *string* &rarr;  Name of the cluster.
 
-- `network_id` **required** *string* &rarr;  ID of the cluster network.
+- `network_id` **required** *string* &rarr;  ID of the cluster network. Changing this creates a new resource.
 
 - `product_name` **required** *string* &rarr;  Name of the product.
 
-- `product_version` **required** *string* &rarr;  Version of the product.
+- `product_version` **required** *string* &rarr;  Version of the product. Changing this creates a new resource.
 
-- `availability_zone` optional *string* &rarr;  Availability zone to create cluster in.
+- `availability_zone` optional *string* &rarr;  Availability zone to create cluster in. Changing this creates a new resource.
 
-- `cluster_template_id` optional *string* &rarr;  ID of the cluster template.
+- `cluster_template_id` optional *string* &rarr;  ID of the cluster template. Changing this creates a new resource.
 
 - `description` optional *string* &rarr;  Cluster description.
 
-- `multiaz` optional *boolean* &rarr;  Enables multi az support.
+- `multiaz` optional *boolean* &rarr;  Enables multi az support. Changing this creates a new resource.
 
-- `pod_groups`  *list* &rarr;  Cluster pod groups.
+- `pod_groups`  *list* &rarr;  Cluster pod groups. Changing this creates a new resource.
     - `name` **required** *string* &rarr;  Pod group name.
 
-    - `count` optional *number* &rarr;  Pod count.
+    - `count` optional *number* &rarr;  Pod count. Changing this creates a new resource.
 
-    - `floating_ip_pool` optional *string* &rarr;  Floating IP pool ID.
+    - `floating_ip_pool` optional *string* &rarr;  Floating IP pool ID. Changing this creates a new resource.
 
-    - `resource` optional &rarr;  Resource request settings.
-        - `cpu_request` optional *string* &rarr;  Resource request settings.
+    - `resource` optional &rarr;  Resource request settings. Changing this creates a new resource.
+        - `cpu_request` optional *string* &rarr;  Resource request settings. Changing this creates a new resource.
 
-        - `ram_request` optional *string* &rarr;  RAM request settings.
+        - `ram_request` optional *string* &rarr;  RAM request settings. Changing this creates a new resource.
 
         - `cpu_limit` read-only *string* &rarr;  CPU limit.
 
         - `ram_limit` read-only *string* &rarr;  RAM limit settings.
 
 
-    - `volumes`  *map* &rarr;  Volumes settings.
-        - `count` **required** *number* &rarr;  Volume count.
+    - `volumes`  *map* &rarr;  Volumes settings. Changing this creates a new resource.
+        - `count` **required** *number* &rarr;  Volume count. Changing this creates a new resource.
 
-        - `storage` **required** *string* &rarr;  Storage size.
+        - `storage` **required** *string* &rarr;  Storage size. Changing this creates a new resource.
 
-        - `storage_class_name` **required** *string* &rarr;  Storage class name.
+        - `storage_class_name` **required** *string* &rarr;  Storage class name. Changing this creates a new resource.
 
 
     - `alias` read-only *string* &rarr;  Pod group alias.
@@ -238,9 +238,9 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
 - `region` optional *string* &rarr;  The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.
 
-- `stack_id` optional *string* &rarr;  ID of the cluster stack.
+- `stack_id` optional *string* &rarr;  ID of the cluster stack. Changing this creates a new resource.
 
-- `subnet_id` optional *string* &rarr;  ID of the cluster subnet.
+- `subnet_id` optional *string* &rarr;  ID of the cluster subnet. Changing this creates a new resource.
 
 
 ## Attributes Reference
