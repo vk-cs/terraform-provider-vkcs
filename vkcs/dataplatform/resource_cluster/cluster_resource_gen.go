@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -29,8 +31,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 			"availability_zone": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Availability zone to create cluster in.",
-				MarkdownDescription: "Availability zone to create cluster in.",
+				Description:         "Availability zone to create cluster in. Changing this creates a new resource.",
+				MarkdownDescription: "Availability zone to create cluster in. Changing this creates a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(255),
 				},
@@ -38,8 +43,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 			"cluster_template_id": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "ID of the cluster template.",
-				MarkdownDescription: "ID of the cluster template.",
+				Description:         "ID of the cluster template. Changing this creates a new resource.",
+				MarkdownDescription: "ID of the cluster template. Changing this creates a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
 			},
 			"configs": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -65,8 +73,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											"start": schema.StringAttribute{
 												Required:            true,
-												Description:         "Differential backup schedule.",
-												MarkdownDescription: "Differential backup schedule.",
+												Description:         "Differential backup schedule. Changing this creates a new resource.",
+												MarkdownDescription: "Differential backup schedule. Changing this creates a new resource.",
+												PlanModifiers: []planmodifier.String{
+													stringplanmodifier.RequiresReplace(),
+												},
 												Validators: []validator.String{
 													stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), ""),
 												},
@@ -79,8 +90,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 										},
 										Optional:            true,
 										Computed:            true,
-										Description:         "Differential backup settings.",
-										MarkdownDescription: "Differential backup settings.",
+										Description:         "Differential backup settings. Changing this creates a new resource.",
+										MarkdownDescription: "Differential backup settings. Changing this creates a new resource.",
 									},
 									"full": schema.SingleNestedAttribute{
 										Attributes: map[string]schema.Attribute{
@@ -100,8 +111,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											"start": schema.StringAttribute{
 												Required:            true,
-												Description:         "Full backup schedule.",
-												MarkdownDescription: "Full backup schedule.",
+												Description:         "Full backup schedule. Changing this creates a new resource.",
+												MarkdownDescription: "Full backup schedule. Changing this creates a new resource.",
+												PlanModifiers: []planmodifier.String{
+													stringplanmodifier.RequiresReplace(),
+												},
 												Validators: []validator.String{
 													stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), "")},
 											},
@@ -113,8 +127,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 										},
 										Optional:            true,
 										Computed:            true,
-										Description:         "Full backup settings.",
-										MarkdownDescription: "Full backup settings.",
+										Description:         "Full backup settings. Changing this creates a new resource.",
+										MarkdownDescription: "Full backup settings. Changing this creates a new resource.",
 									},
 									"incremental": schema.SingleNestedAttribute{
 										Attributes: map[string]schema.Attribute{
@@ -134,8 +148,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											"start": schema.StringAttribute{
 												Required:            true,
-												Description:         "Incremental backup schedule.",
-												MarkdownDescription: "Incremental backup schedule.",
+												Description:         "Incremental backup schedule. Changing this creates a new resource.",
+												MarkdownDescription: "Incremental backup schedule. Changing this creates a new resource.",
+												PlanModifiers: []planmodifier.String{
+													stringplanmodifier.RequiresReplace(),
+												},
 												Validators: []validator.String{
 													stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), "")},
 											},
@@ -147,8 +164,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 										},
 										Optional:            true,
 										Computed:            true,
-										Description:         "Incremental backup settings.",
-										MarkdownDescription: "Incremental backup settings.",
+										Description:         "Incremental backup settings. Changing this creates a new resource.",
+										MarkdownDescription: "Incremental backup settings. Changing this creates a new resource.",
 									},
 								},
 								CustomType: ConfigsMaintenanceBackupType{
@@ -158,8 +175,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								},
 								Optional:            true,
 								Computed:            true,
-								Description:         "Backup settings.",
-								MarkdownDescription: "Backup settings.",
+								Description:         "Backup settings. Changing this creates a new resource.",
+								MarkdownDescription: "Backup settings. Changing this creates a new resource.",
 							},
 							"crontabs": schema.ListNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
@@ -169,8 +186,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 										},
 										"name": schema.StringAttribute{
 											Required:            true,
-											Description:         "Cron tab name.",
-											MarkdownDescription: "Cron tab name.",
+											Description:         "Cron tab name. Changing this creates a new resource.",
+											MarkdownDescription: "Cron tab name. Changing this creates a new resource.",
+											PlanModifiers: []planmodifier.String{
+												stringplanmodifier.RequiresReplace(),
+											},
 										},
 										"required": schema.BoolAttribute{
 											Computed:            true,
@@ -182,13 +202,19 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 												Attributes: map[string]schema.Attribute{
 													"alias": schema.StringAttribute{
 														Required:            true,
-														Description:         "Setting alias.",
-														MarkdownDescription: "Setting alias.",
+														Description:         "Setting alias. Changing this creates a new resource.",
+														MarkdownDescription: "Setting alias. Changing this creates a new resource.",
+														PlanModifiers: []planmodifier.String{
+															stringplanmodifier.RequiresReplace(),
+														},
 													},
 													"value": schema.StringAttribute{
 														Required:            true,
-														Description:         "Setting value.",
-														MarkdownDescription: "Setting value.",
+														Description:         "Setting value. Changing this creates a new resource.",
+														MarkdownDescription: "Setting value. Changing this creates a new resource.",
+														PlanModifiers: []planmodifier.String{
+															stringplanmodifier.RequiresReplace(),
+														},
 													},
 												},
 												CustomType: ConfigsMaintenanceCrontabsSettingsType{
@@ -199,14 +225,17 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											Optional:            true,
 											Computed:            true,
-											Description:         "Additional cron settings.",
-											MarkdownDescription: "Additional cron settings.",
+											Description:         "Additional cron settings. Changing this creates a new resource.",
+											MarkdownDescription: "Additional cron settings. Changing this creates a new resource.",
 										},
 										"start": schema.StringAttribute{
 											Optional:            true,
 											Computed:            true,
-											Description:         "Cron tab schedule.",
-											MarkdownDescription: "Cron tab schedule.",
+											Description:         "Cron tab schedule. Changing this creates a new resource.",
+											MarkdownDescription: "Cron tab schedule. Changing this creates a new resource.",
+											PlanModifiers: []planmodifier.String{
+												stringplanmodifier.RequiresReplaceIfConfigured(),
+											},
 											Validators: []validator.String{
 												stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), "")},
 										},
@@ -219,14 +248,17 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								},
 								Optional:            true,
 								Computed:            true,
-								Description:         "Cron tabs settings.",
-								MarkdownDescription: "Cron tabs settings.",
+								Description:         "Cron tabs settings. Changing this creates a new resource.",
+								MarkdownDescription: "Cron tabs settings. Changing this creates a new resource.",
 							},
 							"start": schema.StringAttribute{
 								Optional:            true,
 								Computed:            true,
-								Description:         "Maintenance cron schedule.",
-								MarkdownDescription: "Maintenance cron schedule.",
+								Description:         "Maintenance cron schedule. Changing this creates a new resource.",
+								MarkdownDescription: "Maintenance cron schedule. Changing this creates a new resource.",
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.RequiresReplace(),
+								},
 								Validators: []validator.String{
 									stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), "")},
 							},
@@ -237,8 +269,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Required:            true,
-						Description:         "Maintenance settings.",
-						MarkdownDescription: "Maintenance settings.",
+						Description:         "Maintenance settings. Changing this creates a new resource.",
+						MarkdownDescription: "Maintenance settings. Changing this creates a new resource.",
 					},
 					"settings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -283,16 +315,22 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											"name": schema.StringAttribute{
 												Required:            true,
-												Description:         "Connection name.",
-												MarkdownDescription: "Connection name.",
+												Description:         "Connection name. Changing this creates a new resource.",
+												MarkdownDescription: "Connection name. Changing this creates a new resource.",
+												PlanModifiers: []planmodifier.String{
+													stringplanmodifier.RequiresReplace(),
+												},
 												Validators: []validator.String{
 													stringvalidator.LengthAtMost(255),
 												},
 											},
 											"plug": schema.StringAttribute{
 												Required:            true,
-												Description:         "Connection plug.",
-												MarkdownDescription: "Connection plug.",
+												Description:         "Connection plug. Changing this creates a new resource.",
+												MarkdownDescription: "Connection plug. Changing this creates a new resource.",
+												PlanModifiers: []planmodifier.String{
+													stringplanmodifier.RequiresReplace(),
+												},
 												Validators: []validator.String{
 													stringvalidator.LengthAtMost(255),
 												},
@@ -302,16 +340,22 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 													Attributes: map[string]schema.Attribute{
 														"alias": schema.StringAttribute{
 															Required:            true,
-															Description:         "Setting alias.",
-															MarkdownDescription: "Setting alias.",
+															Description:         "Setting alias. Changing this creates a new resource.",
+															MarkdownDescription: "Setting alias. Changing this creates a new resource.",
+															PlanModifiers: []planmodifier.String{
+																stringplanmodifier.RequiresReplace(),
+															},
 															Validators: []validator.String{
 																stringvalidator.LengthAtMost(80),
 															},
 														},
 														"value": schema.StringAttribute{
 															Required:            true,
-															Description:         "Setting value.",
-															MarkdownDescription: "Setting value.",
+															Description:         "Setting value. Changing this creates a new resource.",
+															MarkdownDescription: "Setting value. Changing this creates a new resource.",
+															PlanModifiers: []planmodifier.String{
+																stringplanmodifier.RequiresReplace(),
+															},
 															Validators: []validator.String{
 																stringvalidator.LengthAtMost(255),
 															},
@@ -324,8 +368,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 													},
 												},
 												Required:            true,
-												Description:         "Additional warehouse settings.",
-												MarkdownDescription: "Additional warehouse settings.",
+												Description:         "Additional warehouse settings. Changing this creates a new resource.",
+												MarkdownDescription: "Additional warehouse settings. Changing this creates a new resource.",
 											},
 										},
 										CustomType: ConfigsWarehousesConnectionsType{
@@ -336,8 +380,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 									},
 									Optional:            true,
 									Computed:            true,
-									Description:         "Warehouse connections.",
-									MarkdownDescription: "Warehouse connections.",
+									Description:         "Warehouse connections. Changing this creates a new resource.",
+									MarkdownDescription: "Warehouse connections. Changing this creates a new resource.",
 								},
 								"id": schema.StringAttribute{
 									Computed:            true,
@@ -347,8 +391,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								"name": schema.StringAttribute{
 									Optional:            true,
 									Computed:            true,
-									Description:         "Warehouse name.",
-									MarkdownDescription: "Warehouse name.",
+									Description:         "Warehouse name. Changing this creates a new resource.",
+									MarkdownDescription: "Warehouse name. Changing this creates a new resource.",
+									PlanModifiers: []planmodifier.String{
+										stringplanmodifier.RequiresReplace(),
+									},
 									Validators: []validator.String{
 										stringvalidator.LengthAtMost(63),
 										stringvalidator.RegexMatches(regexp.MustCompile("^[a-zA-Z0-9_]+$"), ""),
@@ -363,8 +410,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 						},
 						Optional:            true,
 						Computed:            true,
-						Description:         "Warehouses settings.",
-						MarkdownDescription: "Warehouses settings.",
+						Description:         "Warehouses settings. Changing this creates a new resource.",
+						MarkdownDescription: "Warehouses settings. Changing this creates a new resource.",
 					},
 				},
 				CustomType: ConfigsType{
@@ -399,9 +446,12 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 			"multiaz": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Enables multi az support.",
-				MarkdownDescription: "Enables multi az support.",
-				Default:             booldefault.StaticBool(false),
+				Description:         "Enables multi az support. Changing this creates a new resource.",
+				MarkdownDescription: "Enables multi az support. Changing this creates a new resource.",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.RequiresReplace(),
+				},
+				Default: booldefault.StaticBool(false),
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
@@ -414,8 +464,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"network_id": schema.StringAttribute{
 				Required:            true,
-				Description:         "ID of the cluster network.",
-				MarkdownDescription: "ID of the cluster network.",
+				Description:         "ID of the cluster network. Changing this creates a new resource.",
+				MarkdownDescription: "ID of the cluster network. Changing this creates a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"pod_groups": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
@@ -431,8 +484,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 						"count": schema.Int64Attribute{
 							Optional:            true,
 							Computed:            true,
-							Description:         "Pod count.",
-							MarkdownDescription: "Pod count.",
+							Description:         "Pod count. Changing this creates a new resource.",
+							MarkdownDescription: "Pod count. Changing this creates a new resource.",
+							PlanModifiers: []planmodifier.Int64{
+								int64planmodifier.RequiresReplace(),
+							},
 							Validators: []validator.Int64{
 								int64validator.AtLeast(0),
 							},
@@ -440,8 +496,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 						"floating_ip_pool": schema.StringAttribute{
 							Optional:            true,
 							Computed:            true,
-							Description:         "Floating IP pool ID.",
-							MarkdownDescription: "Floating IP pool ID.",
+							Description:         "Floating IP pool ID. Changing this creates a new resource.",
+							MarkdownDescription: "Floating IP pool ID. Changing this creates a new resource.",
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.RequiresReplaceIfConfigured(),
+							},
 							Validators: []validator.String{
 								stringvalidator.LengthAtMost(36),
 							},
@@ -466,8 +525,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								"cpu_request": schema.StringAttribute{
 									Optional:            true,
 									Computed:            true,
-									Description:         "Resource request settings.",
-									MarkdownDescription: "Resource request settings.",
+									Description:         "Resource request settings. Changing this creates a new resource.",
+									MarkdownDescription: "Resource request settings. Changing this creates a new resource.",
+									PlanModifiers: []planmodifier.String{
+										stringplanmodifier.RequiresReplace(),
+									},
 									Validators: []validator.String{
 										stringvalidator.RegexMatches(regexp.MustCompile("^\\d*\\.?\\d*$"), ""),
 									},
@@ -480,8 +542,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								"ram_request": schema.StringAttribute{
 									Optional:            true,
 									Computed:            true,
-									Description:         "RAM request settings.",
-									MarkdownDescription: "RAM request settings.",
+									Description:         "RAM request settings. Changing this creates a new resource.",
+									MarkdownDescription: "RAM request settings. Changing this creates a new resource.",
+									PlanModifiers: []planmodifier.String{
+										stringplanmodifier.RequiresReplace(),
+									},
 									Validators: []validator.String{
 										stringvalidator.RegexMatches(regexp.MustCompile("^\\d*\\.?\\d*$"), ""),
 									},
@@ -494,29 +559,38 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 							},
 							Optional:            true,
 							Computed:            true,
-							Description:         "Resource request settings.",
-							MarkdownDescription: "Resource request settings.",
+							Description:         "Resource request settings. Changing this creates a new resource.",
+							MarkdownDescription: "Resource request settings. Changing this creates a new resource.",
 						},
 						"volumes": schema.MapNestedAttribute{
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"count": schema.Int64Attribute{
 										Required:            true,
-										Description:         "Volume count.",
-										MarkdownDescription: "Volume count.",
+										Description:         "Volume count. Changing this creates a new resource.",
+										MarkdownDescription: "Volume count. Changing this creates a new resource.",
+										PlanModifiers: []planmodifier.Int64{
+											int64planmodifier.RequiresReplace(),
+										},
 									},
 									"storage": schema.StringAttribute{
 										Required:            true,
-										Description:         "Storage size.",
-										MarkdownDescription: "Storage size.",
+										Description:         "Storage size. Changing this creates a new resource.",
+										MarkdownDescription: "Storage size. Changing this creates a new resource.",
+										PlanModifiers: []planmodifier.String{
+											stringplanmodifier.RequiresReplace(),
+										},
 										Validators: []validator.String{
 											stringvalidator.RegexMatches(regexp.MustCompile("^(\\d+|(\\d+)G)$"), ""),
 										},
 									},
 									"storage_class_name": schema.StringAttribute{
 										Required:            true,
-										Description:         "Storage class name.",
-										MarkdownDescription: "Storage class name.",
+										Description:         "Storage class name. Changing this creates a new resource.",
+										MarkdownDescription: "Storage class name. Changing this creates a new resource.",
+										PlanModifiers: []planmodifier.String{
+											stringplanmodifier.RequiresReplace(),
+										},
 										Validators: []validator.String{
 											stringvalidator.LengthAtMost(255),
 										},
@@ -530,8 +604,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 							},
 							Optional:            true,
 							Computed:            true,
-							Description:         "Volumes settings.",
-							MarkdownDescription: "Volumes settings.",
+							Description:         "Volumes settings. Changing this creates a new resource.",
+							MarkdownDescription: "Volumes settings. Changing this creates a new resource.",
 						},
 					},
 					CustomType: PodGroupsType{
@@ -542,8 +616,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Optional:            true,
 				Computed:            true,
-				Description:         "Cluster pod groups.",
-				MarkdownDescription: "Cluster pod groups.",
+				Description:         "Cluster pod groups. Changing this creates a new resource.",
+				MarkdownDescription: "Cluster pod groups. Changing this creates a new resource.",
 			},
 			"product_name": schema.StringAttribute{
 				Required:            true,
@@ -560,8 +634,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"product_version": schema.StringAttribute{
 				Required:            true,
-				Description:         "Version of the product.",
-				MarkdownDescription: "Version of the product.",
+				Description:         "Version of the product. Changing this creates a new resource.",
+				MarkdownDescription: "Version of the product. Changing this creates a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(80),
 				},
@@ -569,14 +646,20 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 			"stack_id": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "ID of the cluster stack.",
-				MarkdownDescription: "ID of the cluster stack.",
+				Description:         "ID of the cluster stack. Changing this creates a new resource.",
+				MarkdownDescription: "ID of the cluster stack. Changing this creates a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
 			},
 			"subnet_id": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "ID of the cluster subnet.",
-				MarkdownDescription: "ID of the cluster subnet.",
+				Description:         "ID of the cluster subnet. Changing this creates a new resource.",
+				MarkdownDescription: "ID of the cluster subnet. Changing this creates a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"region": schema.StringAttribute{
 				Optional:            true,
