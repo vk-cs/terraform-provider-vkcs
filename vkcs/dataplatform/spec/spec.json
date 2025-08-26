@@ -1417,6 +1417,54 @@
 						}
 					},
 					{
+						"name": "info",
+						"single_nested": {
+							"computed_optional_required": "computed",
+							"attributes": [
+								{
+									"name": "services",
+									"list_nested": {
+										"computed_optional_required": "computed",
+										"nested_object": {
+											"attributes": [
+												{
+													"name": "connection_string",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "Service connection string"
+													}
+												},
+												{
+													"name": "description",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "Service description"
+													}
+												},
+												{
+													"name": "exposed",
+													"bool": {
+														"computed_optional_required": "computed",
+														"description": "Whether service is exposed"
+													}
+												},
+												{
+													"name": "type",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "Service type"
+													}
+												}
+											]
+										},
+										"description": "Application services info"
+									}
+								}
+							],
+							"description": "Application info"
+						}
+					},
+					{
 						"name": "product_type",
 						"string": {
 							"computed_optional_required": "computed",

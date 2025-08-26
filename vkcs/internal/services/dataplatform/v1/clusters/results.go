@@ -24,6 +24,7 @@ type Cluster struct {
 	AvailabilityZone  string            `json:"availability_zone"`
 	MultiAZ           bool              `json:"multi_az"`
 	FloatingIPPool    string            `json:"floating_ip_pool"`
+	Info              *ClusterInfo      `json:"info"`
 }
 
 type ClusterConfig struct {
@@ -110,6 +111,17 @@ type ClusterPodGroupVolume struct {
 	StorageClassName string `json:"storageClassName"`
 	Storage          string `json:"storage"`
 	Count            int    `json:"count"`
+}
+
+type ClusterInfo struct {
+	Services []ClusterInfoServices `json:"services"`
+}
+
+type ClusterInfoServices struct {
+	Type             string `json:"type"`
+	Exposed          bool   `json:"exposed"`
+	Description      string `json:"description"`
+	ConnectionString string `json:"connection_string"`
 }
 
 type ClusterShortResp struct {

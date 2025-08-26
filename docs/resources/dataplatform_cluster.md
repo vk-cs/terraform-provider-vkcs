@@ -251,6 +251,18 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` *string* &rarr;  ID of the cluster.
 
+- `info`  &rarr;  Application info
+    - `services`  *list* &rarr;  Application services info
+        - `connection_string` *string* &rarr;  Service connection string
+
+        - `description` *string* &rarr;  Service description
+
+        - `exposed` *boolean* &rarr;  Whether service is exposed
+
+        - `type` *string* &rarr;  Service type
+
+
+
 - `product_type` *string* &rarr;  Type of the product.
 
 
