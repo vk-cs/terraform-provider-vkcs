@@ -3,6 +3,8 @@ package resource_cluster
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -13,6 +15,10 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dataplatform/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dataplatform/v1/templates"
 )
+
+const floatingIPAutoMode = "auto"
+
+var floatingIPAutoID = uuid.Nil.String()
 
 func (m *ClusterModel) UpdateState(ctx context.Context, cluster *clusters.Cluster, state *tfsdk.State, oldSettings basetypes.ListValue) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -50,6 +56,12 @@ func (m *ClusterModel) UpdateFromCluster(ctx context.Context, cluster *clusters.
 	m.ProductType = types.StringValue(cluster.ProductType)
 	m.ProductVersion = types.StringValue(cluster.ProductVersion)
 	m.StackId = types.StringValue(cluster.StackID)
+
+	if cluster.FloatingIPPool == floatingIPAutoID {
+		m.FloatingIpPool = types.StringValue(floatingIPAutoMode)
+	} else {
+		m.FloatingIpPool = types.StringValue(cluster.FloatingIPPool)
+	}
 
 	return diags
 }

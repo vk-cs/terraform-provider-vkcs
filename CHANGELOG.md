@@ -7,6 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 #### v0.12.1 (unreleased)
+- Add floating_ip_pool argument for vkcs_dataplatform_cluster resource
 - Increase vkcs_dataplatform_cluster delete default timeout
 - Mark non-updateable arguments of vkcs_dataplatform_cluster resource as requiring replace
 

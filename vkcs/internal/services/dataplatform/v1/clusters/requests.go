@@ -23,6 +23,7 @@ type ClusterCreate struct {
 	PodGroups         []ClusterCreatePodGroup `json:"pod_groups" required:"true"`
 	Description       string                  `json:"description,omitempty"`
 	StackID           string                  `json:"stack_id,omitempty"`
+	FloatingIPPool    string                  `json:"floating_ip_pool,omitempty"`
 }
 
 type ClusterUpdate struct {
