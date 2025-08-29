@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.12.1 (unreleased)
+#### v0.12.1
 - Add info attribute for vkcs_dataplatfrom_cluster resource
 - Add floating_ip_pool argument for vkcs_dataplatform_cluster resource
 - Increase vkcs_dataplatform_cluster delete default timeout
