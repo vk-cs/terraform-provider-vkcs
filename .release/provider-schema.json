@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.12.0",
+  "provider_version": "v0.12.1",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -1004,13 +1004,13 @@
           "availability_zone": {
             "type": "TypeString",
             "optional": true,
-            "description": "Availability zone to create cluster in.",
+            "description": "Availability zone to create cluster in. Changing this creates a new resource.",
             "computed": true
           },
           "cluster_template_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "ID of the cluster template.",
+            "description": "ID of the cluster template. Changing this creates a new resource.",
             "computed": true
           },
           "configs": {
@@ -1028,15 +1028,27 @@
             "description": "Cluster description.",
             "computed": true
           },
+          "floating_ip_pool": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Floating IP pool ID. Use `auto` for autoselect. Changing this creates a new resource.",
+            "computed": true,
+            "new_since": "v0.12.1"
+          },
           "id": {
             "type": "TypeString",
             "description": "ID of the cluster.",
             "computed": true
           },
+          "info": {
+            "description": "Application info",
+            "computed": true,
+            "new_since": "v0.12.1"
+          },
           "multiaz": {
             "type": "TypeBool",
             "optional": true,
-            "description": "Enables multi az support.",
+            "description": "Enables multi az support. Changing this creates a new resource.",
             "computed": true
           },
           "name": {
@@ -1047,12 +1059,12 @@
           "network_id": {
             "type": "TypeString",
             "required": true,
-            "description": "ID of the cluster network."
+            "description": "ID of the cluster network. Changing this creates a new resource."
           },
           "pod_groups": {
             "type": "TypeList",
             "optional": true,
-            "description": "Cluster pod groups.",
+            "description": "Cluster pod groups. Changing this creates a new resource.",
             "computed": true,
             "elem": {
               "schema": {
@@ -1068,13 +1080,13 @@
                 "count": {
                   "type": "TypeInt",
                   "optional": true,
-                  "description": "Pod count.",
+                  "description": "Pod count. Changing this creates a new resource.",
                   "computed": true
                 },
                 "floating_ip_pool": {
                   "type": "TypeString",
                   "optional": true,
-                  "description": "Floating IP pool ID.",
+                  "description": "Floating IP pool ID. Changing this creates a new resource.",
                   "computed": true
                 },
                 "id": {
@@ -1089,30 +1101,30 @@
                 },
                 "resource": {
                   "optional": true,
-                  "description": "Resource request settings.",
+                  "description": "Resource request settings. Changing this creates a new resource.",
                   "computed": true
                 },
                 "volumes": {
                   "type": "TypeMap",
                   "optional": true,
-                  "description": "Volumes settings.",
+                  "description": "Volumes settings. Changing this creates a new resource.",
                   "computed": true,
                   "elem": {
                     "schema": {
                       "count": {
                         "type": "TypeInt",
                         "required": true,
-                        "description": "Volume count."
+                        "description": "Volume count. Changing this creates a new resource."
                       },
                       "storage": {
                         "type": "TypeString",
                         "required": true,
-                        "description": "Storage size."
+                        "description": "Storage size. Changing this creates a new resource."
                       },
                       "storage_class_name": {
                         "type": "TypeString",
                         "required": true,
-                        "description": "Storage class name."
+                        "description": "Storage class name. Changing this creates a new resource."
                       }
                     }
                   }
@@ -1133,7 +1145,7 @@
           "product_version": {
             "type": "TypeString",
             "required": true,
-            "description": "Version of the product."
+            "description": "Version of the product. Changing this creates a new resource."
           },
           "region": {
             "type": "TypeString",
@@ -1144,13 +1156,13 @@
           "stack_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "ID of the cluster stack.",
+            "description": "ID of the cluster stack. Changing this creates a new resource.",
             "computed": true
           },
           "subnet_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "ID of the cluster subnet.",
+            "description": "ID of the cluster subnet. Changing this creates a new resource.",
             "computed": true
           }
         },
