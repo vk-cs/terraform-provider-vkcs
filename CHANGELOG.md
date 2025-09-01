@@ -6,7 +6,10 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.13.0
+#### v0.13.1 (unreleased)
+- Add backup_targets for vkcs_backup_plan resource
+
+#### v0.13.0 
 - Add vkcs_iam_service_user resource
 - Add vkcs_iam_service_user data source
 - Add vkcs_dataplatform_template data source
