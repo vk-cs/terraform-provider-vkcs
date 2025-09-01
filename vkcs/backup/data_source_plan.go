@@ -40,6 +40,7 @@ type PlanDataSourceModel struct {
 	ProviderID        types.String                    `tfsdk:"provider_id"`
 	InstanceIDs       []types.String                  `tfsdk:"instance_ids"`
 	Region            types.String                    `tfsdk:"region"`
+	BackupTargets     []PlanResourceBackupTargetModel `tfsdk:"backup_targets"`
 }
 
 func (d *PlanDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -127,6 +128,24 @@ func (d *PlanDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 			"provider_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "ID of backup provider",
+			},
+
+			"backup_targets": schema.ListNestedAttribute{
+				Computed:    true,
+				Description: "List of backup targets specifying instance_id and volume_ids for each instance.",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"instance_id": schema.StringAttribute{
+							Required:    true,
+							Description: "ID of the instance for which specific volumes are backed up.",
+						},
+						"volume_ids": schema.SetAttribute{
+							ElementType: types.StringType,
+							Optional:    true,
+							Description: "List of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.",
+						},
+					},
+				},
 			},
 
 			"instance_ids": schema.ListAttribute{
@@ -225,11 +244,28 @@ func (d *PlanDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	data.Name = types.StringValue(planResp.Name)
 	data.ProviderID = types.StringValue(planResp.ProviderID)
 
-	resources := make([]types.String, len(planResp.Resources))
+	backupTargets := make([]PlanResourceBackupTargetModel, len(planResp.Resources))
 	for i, respResource := range planResp.Resources {
-		resources[i] = types.StringValue(respResource.ID)
+		var volumeIDs []types.String
+		if len(respResource.Resources) > 0 {
+			volumeIDs = make([]types.String, len(respResource.Resources))
+			for j, resource := range respResource.Resources {
+				volumeIDs[j] = types.StringValue(resource.ID)
+			}
+		}
+		backupTargets[i] = PlanResourceBackupTargetModel{
+			InstanceID: types.StringValue(respResource.ID),
+			VolumeIDs:  volumeIDs,
+		}
 	}
-	data.InstanceIDs = resources
+	data.BackupTargets = backupTargets
+
+	instanceIDs := make([]types.String, len(planResp.Resources))
+	for i, respResource := range planResp.Resources {
+		instanceIDs[i] = types.StringValue(respResource.ID)
+	}
+	data.InstanceIDs = instanceIDs
+
 	data.Region = types.StringValue(region)
 
 	if planResp.FullDay != nil {
@@ -238,15 +274,16 @@ func (d *PlanDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		data.IncrementalBackup = types.BoolValue(false)
 	}
 
-	if planResp.RetentionType == RetentionFull {
+	switch planResp.RetentionType {
+	case RetentionFull:
 		fullRetention := PlanResourceFullRetentionModel{
 			MaxFullBackup: types.Int64Value(int64(triggerResp.Properties.MaxBackups)),
 		}
 		data.FullRetention = &fullRetention
 		data.GFSRetention = nil
-	} else if planResp.RetentionType == RetentionGFS {
-		gfsRetention := flattenGFS(planResp)
-		data.GFSRetention = gfsRetention
+
+	case RetentionGFS:
+		data.GFSRetention = flattenGFS(planResp)
 		data.FullRetention = nil
 	}
 
