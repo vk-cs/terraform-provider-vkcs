@@ -28,6 +28,8 @@ const (
 	TroveInstance     = "OS::Trove::Instance"
 	TroveCluster      = "OS::Trove::Cluster"
 
+	CinderVolume = "OS::Cinder::Volume"
+
 	RetentionFull = "max_backups"
 	RetentionGFS  = "gfs"
 
@@ -53,6 +55,7 @@ func getResourcesInfo(config clients.Config, region string, instancesID []types.
 	if resourceType == ProviderNameTrove {
 		return getTroveResourceInfo(config, region, instancesID)
 	}
+
 	return nil, fmt.Errorf("error getting resources info: unknown resource type")
 }
 
@@ -72,26 +75,27 @@ func getNovaResourceInfo(config clients.Config, region string, instancesID []typ
 		return nil, fmt.Errorf("error getting servers info: %s", err)
 	}
 
+	serversMap := make(map[string]servers.Server)
+	for _, server := range allServers {
+		serversMap[server.ID] = server
+	}
+
 	resourcesInfo := make([]*plans.BackupPlanResource, 0)
 	missingResources := make([]string, 0)
+
 	for _, instanceID := range instancesID {
-		found := false
-		for _, server := range allServers {
-			if instanceID.ValueString() == server.ID {
-				resourceInfo := plans.BackupPlanResource{
-					ID:   server.ID,
-					Type: NovaInstance,
-					Name: server.Name,
-				}
-				resourcesInfo = append(resourcesInfo, &resourceInfo)
-				found = true
-				break
+		if serv, ok := serversMap[instanceID.ValueString()]; ok {
+			resourceInfo := plans.BackupPlanResource{
+				ID:   serv.ID,
+				Type: NovaInstance,
+				Name: serv.Name,
 			}
-		}
-		if !found {
+			resourcesInfo = append(resourcesInfo, &resourceInfo)
+		} else {
 			missingResources = append(missingResources, instanceID.ValueString())
 		}
 	}
+
 	if len(missingResources) > 0 {
 		return nil, fmt.Errorf("error getting resources info: could not find resources: %s", strings.Join(missingResources, ", "))
 	}
@@ -125,46 +129,57 @@ func getTroveResourceInfo(config clients.Config, region string, instancesID []ty
 		return nil, fmt.Errorf("error getting database clusters info: %s", err)
 	}
 
+	instancesMap := make(map[string]instances.InstanceResp, len(allInstances))
+	for _, inst := range allInstances {
+		instancesMap[inst.ID] = inst
+	}
+
+	clustersMap := make(map[string]clusters.ClusterResp)
+	for _, cluster := range allClusters {
+		clustersMap[cluster.ID] = cluster
+	}
+
 	resourcesInfo := make([]*plans.BackupPlanResource, 0)
 	missingResources := make([]string, 0)
-	for _, instanceID := range instancesID {
-		found := false
-		for _, dbInstance := range allInstances {
-			if instanceID.ValueString() == dbInstance.ID {
-				resourceInfo := plans.BackupPlanResource{
-					ID:   dbInstance.ID,
-					Type: TroveInstance,
-					Name: dbInstance.Name,
-				}
-				resourcesInfo = append(resourcesInfo, &resourceInfo)
-				found = true
-				break
-			}
-		}
-		if !found {
-			for _, dbCluster := range allClusters {
-				if instanceID.ValueString() == dbCluster.ID {
-					resourceInfo := plans.BackupPlanResource{
-						ID:   dbCluster.ID,
-						Type: TroveCluster,
-						Name: dbCluster.Name,
-					}
-					resourcesInfo = append(resourcesInfo, &resourceInfo)
-					found = true
-					break
-				}
-			}
-		}
 
-		if !found {
-			missingResources = append(missingResources, instanceID.ValueString())
+	for _, instanceID := range instancesID {
+		id := instanceID.ValueString()
+		if inst, ok := instancesMap[id]; ok {
+			resourcesInfo = append(resourcesInfo, &plans.BackupPlanResource{
+				ID:   inst.ID,
+				Type: TroveInstance,
+				Name: inst.Name,
+			})
+		} else if cl, ok := clustersMap[id]; ok {
+			resourcesInfo = append(resourcesInfo, &plans.BackupPlanResource{
+				ID:   cl.ID,
+				Type: TroveCluster,
+				Name: cl.Name,
+			})
+		} else {
+			missingResources = append(missingResources, id)
 		}
 	}
+
 	if len(missingResources) > 0 {
 		return nil, fmt.Errorf("error getting resources info: could not find resources: %s", strings.Join(missingResources, ", "))
 	}
 
 	return resourcesInfo, nil
+}
+
+func enrichWithVolumes(resources []*plans.BackupPlanResource, backupTargets []PlanResourceBackupTargetModel) []*plans.BackupPlanResource {
+	for i, backupTarget := range backupTargets {
+		for _, volume := range backupTarget.VolumeIDs {
+			volumeResourceInfo := plans.BackupPlanResource{
+				ID:   volume.ValueString(),
+				Type: CinderVolume,
+			}
+			resources[i].Resources = append(resources[i].Resources, &volumeResourceInfo)
+		}
+	}
+
+	return resources
 }
 
 func dayToNumber(day string) int {
@@ -296,6 +311,7 @@ func flattenSchedule(planResp *plans.PlanResponse, triggerResp *triggers.Trigger
 	}
 	return &planSchedule
 }
+
 func findProvider(client *gophercloud.ServiceClient, providerID string, providerName string) (*providers.Provider, error) {
 	allProviders, err := providers.List(client).Extract()
 	if err != nil {

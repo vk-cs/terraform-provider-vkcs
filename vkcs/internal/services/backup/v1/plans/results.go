@@ -22,9 +22,10 @@ type PlanResponse struct {
 
 // BackupPlanResource represents a backup plan resource info
 type BackupPlanResource struct {
-	ID   string `json:"id" required:"true"`
-	Type string `json:"type" required:"true"`
-	Name string `json:"name" required:"true"`
+	ID        string                `json:"id" required:"true"`
+	Type      string                `json:"type" required:"true"`
+	Name      string                `json:"name,omitempty"`
+	Resources []*BackupPlanResource `json:"resources,omitempty"`
 }
 
 // BackupPlanGFS represents a backup plan gfs policy info
