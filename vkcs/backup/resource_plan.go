@@ -53,6 +53,7 @@ type PlanResourceModel struct {
 	ProviderName      types.String                    `tfsdk:"provider_name"`
 	InstanceIDs       []types.String                  `tfsdk:"instance_ids"`
 	Region            types.String                    `tfsdk:"region"`
+	BackupTargets     []PlanResourceBackupTargetModel `tfsdk:"backup_targets"`
 }
 
 type PlanResourceScheduleModel struct {
@@ -69,6 +70,11 @@ type PlanResourceGFSRetentionModel struct {
 	GFSWeekly  types.Int64 `tfsdk:"gfs_weekly"`
 	GFSMonthly types.Int64 `tfsdk:"gfs_monthly"`
 	GFSYearly  types.Int64 `tfsdk:"gfs_yearly"`
+}
+
+type PlanResourceBackupTargetModel struct {
+	InstanceID types.String   `tfsdk:"instance_id"`
+	VolumeIDs  []types.String `tfsdk:"volume_ids"`
 }
 
 func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -212,6 +218,24 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Optional:    true,
 				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
 			},
+
+			"backup_targets": schema.ListNestedAttribute{
+				Computed:    true,
+				Description: "List of backup targets specifying instance_id and volume_ids for each instance",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"instance_id": schema.StringAttribute{
+							Computed:    true,
+							Description: "ID of the instance for which specific volumes are backed up",
+						},
+						"volume_ids": schema.ListAttribute{
+							ElementType: types.StringType,
+							Computed:    true,
+							Description: "List of volume IDs to back up for the instance",
+						},
+					},
+				},
+			},
 		},
 		Description: "Manages a backup plan resource.",
 	}
@@ -249,7 +273,7 @@ func (r *PlanResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	resourcesInfo, err := getResourcesInfo(r.config, region, plan.InstanceIDs, providerInfo.Name)
+	resourcesInfo, err := getResourcesInfo(r.config, region, plan.InstanceIDs, plan.BackupTargets, providerInfo.Name)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating vkcs_backup_plan", err.Error())
 		return
@@ -459,7 +483,7 @@ func (r *PlanResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	resourcesInfo, err := getResourcesInfo(r.config, region, plan.InstanceIDs, providerInfo.Name)
+	resourcesInfo, err := getResourcesInfo(r.config, region, plan.InstanceIDs, plan.BackupTargets, providerInfo.Name)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating vkcs_backup_plan", err.Error())
 		return

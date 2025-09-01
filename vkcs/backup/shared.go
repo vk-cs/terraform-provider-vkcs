@@ -46,7 +46,19 @@ func getProviderNames() []string {
 	return names
 }
 
-func getResourcesInfo(config clients.Config, region string, instancesID []types.String, resourceType string) ([]*plans.BackupPlanResource, error) {
+func getResourcesInfo(config clients.Config, region string, instancesID []types.String, backupTargets []PlanResourceBackupTargetModel, resourceType string) ([]*plans.BackupPlanResource, error) {
+	if len(backupTargets) > 0 {
+		return getResourcesInfoByBackupTargets(config, region, backupTargets, resourceType)
+	} else {
+		return getResourcesInfoByInstancesID(config, region, instancesID, resourceType)
+	}
+}
+
+func getResourcesInfoByBackupTargets(config clients.Config, region string, backupTargets []PlanResourceBackupTargetModel, resourceType string) ([]*plans.BackupPlanResource, error) {
+	return nil, nil
+}
+
+func getResourcesInfoByInstancesID(config clients.Config, region string, instancesID []types.String, resourceType string) ([]*plans.BackupPlanResource, error) {
 	if resourceType == ProviderNameNova {
 		return getNovaResourceInfo(config, region, instancesID)
 	}
@@ -72,26 +84,27 @@ func getNovaResourceInfo(config clients.Config, region string, instancesID []typ
 		return nil, fmt.Errorf("error getting servers info: %s", err)
 	}
 
+	serversMap := make(map[string]servers.Server)
+	for _, server := range allServers {
+		serversMap[server.ID] = server
+	}
+
 	resourcesInfo := make([]*plans.BackupPlanResource, 0)
 	missingResources := make([]string, 0)
+
 	for _, instanceID := range instancesID {
-		found := false
-		for _, server := range allServers {
-			if instanceID.ValueString() == server.ID {
-				resourceInfo := plans.BackupPlanResource{
-					ID:   server.ID,
-					Type: NovaInstance,
-					Name: server.Name,
-				}
-				resourcesInfo = append(resourcesInfo, &resourceInfo)
-				found = true
-				break
+		if serv, ok := serversMap[instanceID.ValueString()]; ok {
+			resourceInfo := plans.BackupPlanResource{
+				ID:   serv.ID,
+				Type: NovaInstance,
+				Name: serv.Name,
 			}
-		}
-		if !found {
+			resourcesInfo = append(resourcesInfo, &resourceInfo)
+		} else {
 			missingResources = append(missingResources, instanceID.ValueString())
 		}
 	}
+
 	if len(missingResources) > 0 {
 		return nil, fmt.Errorf("error getting resources info: could not find resources: %s", strings.Join(missingResources, ", "))
 	}
@@ -125,41 +138,38 @@ func getTroveResourceInfo(config clients.Config, region string, instancesID []ty
 		return nil, fmt.Errorf("error getting database clusters info: %s", err)
 	}
 
+	instancesMap := make(map[string]instances.InstanceResp, len(allInstances))
+	for _, inst := range allInstances {
+		instancesMap[inst.ID] = inst
+	}
+
+	clustersMap := make(map[string]clusters.ClusterResp)
+	for _, cluster := range allClusters {
+		clustersMap[cluster.ID] = cluster
+	}
+
 	resourcesInfo := make([]*plans.BackupPlanResource, 0)
 	missingResources := make([]string, 0)
-	for _, instanceID := range instancesID {
-		found := false
-		for _, dbInstance := range allInstances {
-			if instanceID.ValueString() == dbInstance.ID {
-				resourceInfo := plans.BackupPlanResource{
-					ID:   dbInstance.ID,
-					Type: TroveInstance,
-					Name: dbInstance.Name,
-				}
-				resourcesInfo = append(resourcesInfo, &resourceInfo)
-				found = true
-				break
-			}
-		}
-		if !found {
-			for _, dbCluster := range allClusters {
-				if instanceID.ValueString() == dbCluster.ID {
-					resourceInfo := plans.BackupPlanResource{
-						ID:   dbCluster.ID,
-						Type: TroveCluster,
-						Name: dbCluster.Name,
-					}
-					resourcesInfo = append(resourcesInfo, &resourceInfo)
-					found = true
-					break
-				}
-			}
-		}
 
-		if !found {
-			missingResources = append(missingResources, instanceID.ValueString())
+	for _, instanceID := range instancesID {
+		id := instanceID.ValueString()
+		if inst, ok := instancesMap[id]; ok {
+			resourcesInfo = append(resourcesInfo, &plans.BackupPlanResource{
+				ID:   inst.ID,
+				Type: TroveInstance,
+				Name: inst.Name,
+			})
+		} else if cl, ok := clustersMap[id]; ok {
+			resourcesInfo = append(resourcesInfo, &plans.BackupPlanResource{
+				ID:   cl.ID,
+				Type: TroveCluster,
+				Name: cl.Name,
+			})
+		} else {
+			missingResources = append(missingResources, id)
 		}
 	}
+
 	if len(missingResources) > 0 {
 		return nil, fmt.Errorf("error getting resources info: could not find resources: %s", strings.Join(missingResources, ", "))
 	}

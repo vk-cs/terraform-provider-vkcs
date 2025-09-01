@@ -40,6 +40,7 @@ type PlanDataSourceModel struct {
 	ProviderID        types.String                    `tfsdk:"provider_id"`
 	InstanceIDs       []types.String                  `tfsdk:"instance_ids"`
 	Region            types.String                    `tfsdk:"region"`
+	BackupTargets     []PlanResourceBackupTargetModel `tfsdk:"backup_targets"`
 }
 
 func (d *PlanDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -139,6 +140,24 @@ func (d *PlanDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				Computed:    true,
 				Optional:    true,
 				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+			},
+
+			"backup_targets": schema.ListNestedAttribute{
+				Computed:    true,
+				Description: "List of backup targets specifying instance_id and volume_ids for each instance",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"instance_id": schema.StringAttribute{
+							Computed:    true,
+							Description: "ID of the instance for which specific volumes are backed up",
+						},
+						"volume_ids": schema.ListAttribute{
+							ElementType: types.StringType,
+							Computed:    true,
+							Description: "List of volume IDs to back up for the instance",
+						},
+					},
+				},
 			},
 		},
 		Description: "Use this data source to get backup plan info",
