@@ -143,17 +143,17 @@ func (d *PlanDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 			},
 
 			"backup_targets": schema.ListNestedAttribute{
-				Computed:    true,
+				Optional:    true,
 				Description: "List of backup targets specifying instance_id and volume_ids for each instance",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"instance_id": schema.StringAttribute{
-							Computed:    true,
+							Required:    true,
 							Description: "ID of the instance for which specific volumes are backed up",
 						},
 						"volume_ids": schema.ListAttribute{
 							ElementType: types.StringType,
-							Computed:    true,
+							Optional:    true,
 							Description: "List of volume IDs to back up for the instance",
 						},
 					},

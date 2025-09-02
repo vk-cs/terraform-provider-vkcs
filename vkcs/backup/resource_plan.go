@@ -209,7 +209,7 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 
 			"instance_ids": schema.ListAttribute{
 				ElementType: types.StringType,
-				Required:    true,
+				Optional:    true,
 				Description: "List of ids of instances to make backup for",
 			},
 
@@ -220,17 +220,17 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 
 			"backup_targets": schema.ListNestedAttribute{
-				Computed:    true,
+				Optional:    true,
 				Description: "List of backup targets specifying instance_id and volume_ids for each instance",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"instance_id": schema.StringAttribute{
-							Computed:    true,
+							Required:    true,
 							Description: "ID of the instance for which specific volumes are backed up",
 						},
 						"volume_ids": schema.ListAttribute{
 							ElementType: types.StringType,
-							Computed:    true,
+							Optional:    true,
 							Description: "List of volume IDs to back up for the instance",
 						},
 					},
@@ -588,6 +588,10 @@ func (r *PlanResource) ConfigValidators(ctx context.Context) []resource.ConfigVa
 			path.MatchRoot("schedule").AtName("date"),
 			path.MatchRoot("schedule").AtName("time"),
 			path.MatchRoot("schedule").AtName("every_hours"),
+		),
+		resourcevalidator.AtLeastOneOf(
+			path.MatchRoot("instance_ids"),
+			path.MatchRoot("backup_targets"),
 		),
 	}
 }
