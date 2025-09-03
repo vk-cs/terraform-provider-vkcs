@@ -1,0 +1,17 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Get information on a VKCS IAM service user.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+{{tffile "examples/iam/service_user/main-datasource.tf"}}
+
+{{ .SchemaMarkdown }}

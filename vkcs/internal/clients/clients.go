@@ -123,3 +123,12 @@ func newDataPlatform(client *gophercloud.ProviderClient, eo gophercloud.Endpoint
 	sc, err := initClientOpts(client, eo, "dataplatform")
 	return sc, err
 }
+
+func newIAMServiceUsersV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
+	// TODO(panic): replace with catalog endpoint locator
+	sc := new(gophercloud.ServiceClient)
+	sc.ProviderClient = client
+	sc.Endpoint = "https://msk.cloud.vk.com/service-users/public/v1/"
+	sc.Type = "iam-service-users"
+	return sc, nil
+}

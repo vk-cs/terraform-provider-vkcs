@@ -12,6 +12,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/dataplatform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/dc"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/iam"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/images"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	wrapper "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/providerwrapper/framework"
@@ -115,6 +116,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		db.NewDatastoreCapabilitiesDataSource,
 		db.NewDatastoreParametersDataSource,
 		dc.NewAPIOptionsDataSource,
+		iam.NewServiceUserDataSource,
 		images.NewImagesDataSource,
 		keymanager.NewContainerDataSource,
 		keymanager.NewSecretDataSource,
@@ -149,6 +151,7 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		dc.NewVRRPAddressResource,
 		dc.NewConntrackHelperResource,
 		dc.NewIPPortForwardingResource,
+		iam.NewServiceUserResource,
 		kubernetes.NewAddonResource,
 		kubernetes.NewSecurityPolicyResource,
 		mlplatform.NewJupyterHubResource,

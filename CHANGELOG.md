@@ -6,6 +6,10 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.13.0 (unreleased)
+- Add vkcs_iam_service_user resource
+- Add vkcs_iam_service_user data source
+
 #### v0.12.1
 - Add info attribute for vkcs_dataplatfrom_cluster resource
 - Add floating_ip_pool argument for vkcs_dataplatform_cluster resource
