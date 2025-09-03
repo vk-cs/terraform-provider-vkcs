@@ -244,11 +244,30 @@ func (d *PlanDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	data.Name = types.StringValue(planResp.Name)
 	data.ProviderID = types.StringValue(planResp.ProviderID)
 
-	resources := make([]types.String, len(planResp.Resources))
-	for i, respResource := range planResp.Resources {
-		resources[i] = types.StringValue(respResource.ID)
+	if len(data.BackupTargets) > 0 {
+		resources := make([]PlanResourceBackupTargetModel, len(planResp.Resources))
+		for i, respResource := range planResp.Resources {
+			var volumeIDs []types.String
+			if len(respResource.Resources) > 0 {
+				volumeIDs = make([]types.String, len(respResource.Resources))
+				for j, resource := range respResource.Resources {
+					volumeIDs[j] = types.StringValue(resource.ID)
+				}
+			}
+			resources[i] = PlanResourceBackupTargetModel{
+				InstanceID: types.StringValue(respResource.ID),
+				VolumeIDs:  volumeIDs,
+			}
+		}
+		data.BackupTargets = resources
+	} else {
+		resources := make([]types.String, len(planResp.Resources))
+		for i, respResource := range planResp.Resources {
+			resources[i] = types.StringValue(respResource.ID)
+		}
+		data.InstanceIDs = resources
 	}
-	data.InstanceIDs = resources
+
 	data.Region = types.StringValue(region)
 
 	if planResp.FullDay != nil {
