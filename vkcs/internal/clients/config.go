@@ -52,6 +52,7 @@ type Config interface {
 	TemplaterV2Client(region string, projectID string) (*gophercloud.ServiceClient, error)
 	CDNV1Client(region string) (*gophercloud.ServiceClient, error)
 	DataPlatformClient(region string) (*gophercloud.ServiceClient, error)
+	IAMServiceUsersV1Client(region string) (*gophercloud.ServiceClient, error)
 	GetMutex() *mutexkv.MutexKV
 }
 
@@ -254,6 +255,11 @@ func (c *configer) CDNV1Client(region string) (*gophercloud.ServiceClient, error
 
 func (c *configer) DataPlatformClient(region string) (*gophercloud.ServiceClient, error) {
 	client, err := c.CommonServiceClientInit(newDataPlatform, region, "dataplatform")
+	return client, err
+}
+
+func (c *configer) IAMServiceUsersV1Client(region string) (*gophercloud.ServiceClient, error) {
+	client, err := c.CommonServiceClientInit(newIAMServiceUsersV1, region, "iam")
 	return client, err
 }
 
