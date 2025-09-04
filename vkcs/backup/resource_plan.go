@@ -228,7 +228,7 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 							Required:    true,
 							Description: "ID of the instance for which specific volumes are backed up",
 						},
-						"volume_ids": schema.ListAttribute{
+						"volume_ids": schema.SetAttribute{
 							ElementType: types.StringType,
 							Optional:    true,
 							Description: "List of volume IDs to back up for the instance",
@@ -430,13 +430,14 @@ func (r *PlanResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		plan.IncrementalBackup = types.BoolValue(false)
 	}
 
-	if planResp.RetentionType == RetentionFull {
+	switch planResp.RetentionType {
+	case RetentionFull:
 		fullRetention := PlanResourceFullRetentionModel{
 			MaxFullBackup: types.Int64Value(int64(triggerResp.Properties.MaxBackups)),
 		}
 		plan.FullRetention = &fullRetention
 		plan.GFSRetention = nil
-	} else if planResp.RetentionType == RetentionGFS {
+	case RetentionGFS:
 		gfsRetention := flattenGFS(planResp)
 		plan.GFSRetention = gfsRetention
 		plan.FullRetention = nil

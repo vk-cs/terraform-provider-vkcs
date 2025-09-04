@@ -133,7 +133,7 @@ func aggregateVolumesResourceInfo(attachedVolumes []servers.AttachedVolume, volu
 			volumeResourceInfo := plans.BackupPlanResource{
 				ID:   volID.ValueString(),
 				Type: CinderVolume,
-				// ToDo : Name
+				Name: volID.ValueString(), // ToDo : Name
 			}
 			volumesResourceInfo = append(volumesResourceInfo, &volumeResourceInfo)
 		} else {

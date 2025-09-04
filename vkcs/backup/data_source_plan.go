@@ -151,7 +151,7 @@ func (d *PlanDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 							Required:    true,
 							Description: "ID of the instance for which specific volumes are backed up",
 						},
-						"volume_ids": schema.ListAttribute{
+						"volume_ids": schema.SetAttribute{
 							ElementType: types.StringType,
 							Optional:    true,
 							Description: "List of volume IDs to back up for the instance",
