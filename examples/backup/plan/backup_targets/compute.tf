@@ -36,16 +36,3 @@ resource "vkcs_compute_instance" "basic" {
     vkcs_networking_router_interface.app
   ]
 }
-
-# resource "vkcs_blockstorage_volume" "data1" {
-#   name        = "data-disk-1"
-#   size        = 20
-#   volume_type = "ceph-ssd"
-#   availability_zone = "GZ1"
-# }
-
-# resource "vkcs_compute_volume_attach" "attach_data1" {
-#   instance_id = vkcs_compute_instance.basic.id
-#   volume_id   = vkcs_blockstorage_volume.data1.id
-# }
-
