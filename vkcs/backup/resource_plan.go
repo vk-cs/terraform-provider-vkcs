@@ -53,6 +53,7 @@ type PlanResourceModel struct {
 	ProviderName      types.String                    `tfsdk:"provider_name"`
 	InstanceIDs       []types.String                  `tfsdk:"instance_ids"`
 	Region            types.String                    `tfsdk:"region"`
+	BackupTargets     []PlanResourceBackupTargetModel `tfsdk:"backup_targets"`
 }
 
 type PlanResourceScheduleModel struct {
@@ -69,6 +70,11 @@ type PlanResourceGFSRetentionModel struct {
 	GFSWeekly  types.Int64 `tfsdk:"gfs_weekly"`
 	GFSMonthly types.Int64 `tfsdk:"gfs_monthly"`
 	GFSYearly  types.Int64 `tfsdk:"gfs_yearly"`
+}
+
+type PlanResourceBackupTargetModel struct {
+	InstanceID types.String   `tfsdk:"instance_id"`
+	VolumeIDs  []types.String `tfsdk:"volume_ids"`
 }
 
 func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -203,7 +209,7 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 
 			"instance_ids": schema.ListAttribute{
 				ElementType: types.StringType,
-				Required:    true,
+				Optional:    true,
 				Description: "List of ids of instances to make backup for",
 			},
 
@@ -211,6 +217,24 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Computed:    true,
 				Optional:    true,
 				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+			},
+
+			"backup_targets": schema.ListNestedAttribute{
+				Optional:    true,
+				Description: "List of backup targets specifying instance_id and volume_ids for each instance",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"instance_id": schema.StringAttribute{
+							Required:    true,
+							Description: "ID of the instance for which specific volumes are backed up",
+						},
+						"volume_ids": schema.SetAttribute{
+							ElementType: types.StringType,
+							Optional:    true,
+							Description: "List of volume IDs to back up for the instance",
+						},
+					},
+				},
 			},
 		},
 		Description: "Manages a backup plan resource.",
@@ -249,7 +273,7 @@ func (r *PlanResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	resourcesInfo, err := getResourcesInfo(r.config, region, plan.InstanceIDs, providerInfo.Name)
+	resourcesInfo, err := getResourcesInfo(r.config, region, plan.InstanceIDs, plan.BackupTargets, providerInfo.Name)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating vkcs_backup_plan", err.Error())
 		return
@@ -374,11 +398,30 @@ func (r *PlanResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	plan.Name = types.StringValue(planResp.Name)
 
-	resources := make([]types.String, len(planResp.Resources))
-	for i, respResource := range planResp.Resources {
-		resources[i] = types.StringValue(respResource.ID)
+	if len(plan.BackupTargets) > 0 {
+		resources := make([]PlanResourceBackupTargetModel, len(planResp.Resources))
+		for i, respResource := range planResp.Resources {
+			var volumeIDs []types.String
+			if len(respResource.Resources) > 0 {
+				volumeIDs = make([]types.String, len(respResource.Resources))
+				for j, resource := range respResource.Resources {
+					volumeIDs[j] = types.StringValue(resource.ID)
+				}
+			}
+			resources[i] = PlanResourceBackupTargetModel{
+				InstanceID: types.StringValue(respResource.ID),
+				VolumeIDs:  volumeIDs,
+			}
+		}
+		plan.BackupTargets = resources
+	} else {
+		resources := make([]types.String, len(planResp.Resources))
+		for i, respResource := range planResp.Resources {
+			resources[i] = types.StringValue(respResource.ID)
+		}
+		plan.InstanceIDs = resources
 	}
-	plan.InstanceIDs = resources
+
 	plan.Region = types.StringValue(region)
 
 	if planResp.FullDay != nil {
@@ -387,13 +430,14 @@ func (r *PlanResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		plan.IncrementalBackup = types.BoolValue(false)
 	}
 
-	if planResp.RetentionType == RetentionFull {
+	switch planResp.RetentionType {
+	case RetentionFull:
 		fullRetention := PlanResourceFullRetentionModel{
 			MaxFullBackup: types.Int64Value(int64(triggerResp.Properties.MaxBackups)),
 		}
 		plan.FullRetention = &fullRetention
 		plan.GFSRetention = nil
-	} else if planResp.RetentionType == RetentionGFS {
+	case RetentionGFS:
 		gfsRetention := flattenGFS(planResp)
 		plan.GFSRetention = gfsRetention
 		plan.FullRetention = nil
@@ -459,7 +503,7 @@ func (r *PlanResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	resourcesInfo, err := getResourcesInfo(r.config, region, plan.InstanceIDs, providerInfo.Name)
+	resourcesInfo, err := getResourcesInfo(r.config, region, plan.InstanceIDs, plan.BackupTargets, providerInfo.Name)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating vkcs_backup_plan", err.Error())
 		return
@@ -564,6 +608,10 @@ func (r *PlanResource) ConfigValidators(ctx context.Context) []resource.ConfigVa
 			path.MatchRoot("schedule").AtName("date"),
 			path.MatchRoot("schedule").AtName("time"),
 			path.MatchRoot("schedule").AtName("every_hours"),
+		),
+		resourcevalidator.AtLeastOneOf(
+			path.MatchRoot("instance_ids"),
+			path.MatchRoot("backup_targets"),
 		),
 	}
 }
