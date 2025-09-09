@@ -119,12 +119,19 @@ func FlattenClusterConfigsMaintenanceBackupObj(ctx context.Context, o *clusters.
 	}
 
 	objV := ConfigsMaintenanceBackupDifferentialValue{
-		Enabled:   types.BoolValue(o.Enabled),
-		KeepCount: types.Int64Value(int64(o.KeepCount)),
-		KeepTime:  types.Int64Value(int64(o.KeepTime)),
-		Start:     types.StringValue(o.Start),
-		state:     attr.ValueStateKnown,
+		Start: types.StringValue(o.Start),
+		state: attr.ValueStateKnown,
 	}
+	if o.Enabled != nil {
+		objV.Enabled = types.BoolValue(*o.Enabled)
+	}
+	if o.KeepCount != nil {
+		objV.KeepCount = types.Int64Value(int64(*o.KeepCount))
+	}
+	if o.KeepTime != nil {
+		objV.KeepTime = types.Int64Value(int64(*o.KeepTime))
+	}
+
 	result, d := objV.ToObjectValue(ctx)
 	diags.Append(d...)
 	if diags.HasError() {

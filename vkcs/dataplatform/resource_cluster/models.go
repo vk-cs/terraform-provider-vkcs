@@ -20,7 +20,7 @@ const floatingIPAutoMode = "auto"
 
 var floatingIPAutoID = uuid.Nil.String()
 
-func (m *ClusterModel) UpdateState(ctx context.Context, cluster *clusters.Cluster, state *tfsdk.State, oldSettings basetypes.ListValue) diag.Diagnostics {
+func (m *ClusterModel) UpdateState(ctx context.Context, cluster *clusters.Cluster, oldConfigs ConfigsValue, state *tfsdk.State) diag.Diagnostics {
 	var diags diag.Diagnostics
 	diags.Append(m.UpdateFromCluster(ctx, cluster)...)
 	if diags.HasError() {
@@ -29,9 +29,38 @@ func (m *ClusterModel) UpdateState(ctx context.Context, cluster *clusters.Cluste
 
 	diags.Append(state.Set(ctx, m)...)
 
-	diags.Append(UpdateClusterConfigs(ctx, cluster.Configs, state)...)
+	if cluster.Configs != nil {
+		maintenance, d := FlattenClusterConfigsMaintenance(ctx, cluster.Configs.Maintenance)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+
+		d = state.SetAttribute(ctx, path.Root("configs").AtName("maintenance"), maintenance)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+
+		d = UpdateClusterConfigsUsers(ctx, cluster.Configs.Users, oldConfigs.Users, path.Root("configs").AtName("users"), state)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+
+		d = UpdateClusterConfigsWarehouses(ctx, cluster.Configs.Warehouses, path.Root("configs").AtName("warehouses"), state)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+
+		d = UpdateClusterConfigsSettings(ctx, cluster.Configs.Settings, oldConfigs.Settings, path.Root("configs").AtName("settings"), state)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+	}
 	diags.Append(UpdateClusterPodGroups(ctx, cluster.PodGroups, state)...)
-	diags.Append(UpdateClusterConfigsSettings(ctx, oldSettings, cluster.Configs.Settings, state)...)
 
 	return diags
 }
@@ -73,32 +102,51 @@ func (m *ClusterModel) UpdateFromCluster(ctx context.Context, cluster *clusters.
 	return diags
 }
 
-func UpdateClusterConfigs(ctx context.Context, config *clusters.ClusterConfig, state *tfsdk.State) diag.Diagnostics {
+func UpdateClusterConfigsUsers(ctx context.Context, users []clusters.ClusterConfigUser, oldUsers basetypes.ListValue, path path.Path, state *tfsdk.State) diag.Diagnostics {
 	var diags diag.Diagnostics
-	var d diag.Diagnostics
 
-	if config == nil {
-		return nil
+	usersV := make([]ConfigsUsersValue, 0, len(oldUsers.Elements()))
+	if len(oldUsers.Elements()) > 0 {
+		d := oldUsers.ElementsAs(ctx, &usersV, false)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
 	}
 
-	maintenance, d := FlattenClusterConfigsMaintenance(ctx, config.Maintenance)
-	diags.Append(d...)
-	if diags.HasError() {
-		return diags
+	for _, u := range users {
+		updated := false
+		for i, user := range usersV {
+			if user.Username.ValueString() == u.Username {
+				usersV[i].CreatedAt = types.StringValue(u.CreatedAt)
+				usersV[i].Id = types.StringValue(u.ID)
+				usersV[i].Role = types.StringValue(u.Role)
+				updated = true
+			}
+		}
+		if !updated {
+			usersV = append(usersV, ConfigsUsersValue{
+				CreatedAt: types.StringValue(u.CreatedAt),
+				Id:        types.StringValue(u.ID),
+				Role:      types.StringValue(u.Role),
+				Username:  types.StringValue(u.Username),
+				state:     attr.ValueStateKnown,
+			})
+		}
 	}
-
-	d = state.SetAttribute(ctx, path.Root("configs").AtName("maintenance"), maintenance)
-	diags.Append(d...)
-	if diags.HasError() {
-		return diags
+	if len(usersV) == 0 {
+		d := state.SetAttribute(ctx, path, types.ListNull(ConfigsUsersValue{}.Type(ctx)))
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+	} else {
+		d := state.SetAttribute(ctx, path, usersV)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
 	}
-
-	d = UpdateClusterConfigsWarehouses(ctx, config.Warehouses, path.Root("configs").AtName("warehouses"), state)
-	diags.Append(d...)
-	if diags.HasError() {
-		return diags
-	}
-
 	return nil
 }
 
@@ -134,7 +182,12 @@ func UpdateClusterConfigsWarehouses(ctx context.Context, warehouses []clusters.C
 func UpdateClusterConfigsWarehousesConnections(ctx context.Context, i int, connections []clusters.ClusterConfigWarehouseConnection, path path.Path, state *tfsdk.State) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	if connections == nil {
+	if len(connections) == 0 {
+		d := state.SetAttribute(ctx, path, types.ListNull(ConfigsWarehousesConnectionsValue{}.Type(ctx)))
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
 		return nil
 	}
 
@@ -166,7 +219,7 @@ func UpdateClusterConfigsWarehousesConnections(ctx context.Context, i int, conne
 	return nil
 }
 
-func UpdateClusterConfigsSettings(ctx context.Context, oldSettings basetypes.ListValue, o []clusters.ClusterConfigSetting, state *tfsdk.State) diag.Diagnostics {
+func UpdateClusterConfigsSettings(ctx context.Context, o []clusters.ClusterConfigSetting, oldSettings basetypes.ListValue, path path.Path, state *tfsdk.State) diag.Diagnostics {
 	var diags diag.Diagnostics
 	settingsV := make([]ConfigsSettingsValue, 0, len(oldSettings.Elements()))
 	if len(oldSettings.Elements()) > 0 {
@@ -194,13 +247,13 @@ func UpdateClusterConfigsSettings(ctx context.Context, oldSettings basetypes.Lis
 		}
 	}
 	if len(settingsV) == 0 {
-		d := state.SetAttribute(ctx, path.Root("configs").AtName("settings"), types.ListNull(ConfigsSettingsValue{}.Type(ctx)))
+		d := state.SetAttribute(ctx, path, types.ListNull(ConfigsSettingsValue{}.Type(ctx)))
 		diags.Append(d...)
 		if diags.HasError() {
 			return diags
 		}
 	} else {
-		d := state.SetAttribute(ctx, path.Root("configs").AtName("settings"), settingsV)
+		d := state.SetAttribute(ctx, path, settingsV)
 		diags.Append(d...)
 		if diags.HasError() {
 			return diags

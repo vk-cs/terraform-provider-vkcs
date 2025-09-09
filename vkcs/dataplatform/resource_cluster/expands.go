@@ -29,6 +29,14 @@ func ExpandClusterConfigs(ctx context.Context, v ConfigsValue) (*clusters.Cluste
 		result.Settings = settings
 	}
 
+	if o := v.Users; !o.IsUnknown() && !o.IsNull() {
+		users, diags := ExpandClusterConfigsUsers(ctx, o)
+		if diags != nil && diags.HasError() {
+			return nil, diags
+		}
+		result.Users = users
+	}
+
 	if o := v.Warehouses; !o.IsUnknown() && !o.IsNull() {
 		warehouses, diags := ExpandClusterWarehouses(ctx, o)
 		if diags != nil && diags.HasError() {
@@ -68,6 +76,32 @@ func ExpandClusterConfigsSettings(ctx context.Context, o basetypes.ListValue) ([
 		}
 	}
 	return result, nil
+}
+
+func ExpandClusterConfigsUsers(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigUser, diag.Diagnostics) {
+	usersV, diags := ReadClusterConfigsUsers(ctx, o)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	result := make([]clusters.ClusterCreateConfigUser, len(usersV))
+	for i, u := range usersV {
+		result[i] = clusters.ClusterCreateConfigUser{
+			Username: u.Username.ValueString(),
+			Password: u.Password.ValueString(),
+			Role:     u.Role.ValueString(),
+		}
+	}
+	return result, nil
+}
+
+func ReadClusterConfigsUsers(ctx context.Context, o basetypes.ListValue) ([]ConfigsUsersValue, diag.Diagnostics) {
+	usersV := make([]ConfigsUsersValue, 0, len(o.Elements()))
+	diags := o.ElementsAs(ctx, &usersV, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+	return usersV, nil
 }
 
 func ExpandClusterWarehouses(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigWarehouse, diag.Diagnostics) {
@@ -157,8 +191,9 @@ func ExpandClusterPodGroups(ctx context.Context, template *templates.ClusterTemp
 			diags.AddError("unknown pod group name", "could not find pod group template")
 		}
 
+		count := int(v.Count.ValueInt64())
 		result[i] = clusters.ClusterCreatePodGroup{
-			Count:              int(v.Count.ValueInt64()),
+			Count:              &count,
 			PodGroupTemplateID: podGroupTemplateID,
 		}
 

@@ -10,6 +10,10 @@ type OptsBuilder interface {
 	Map() (map[string]interface{}, error)
 }
 
+type OptsQueryBuilder interface {
+	ToQuery() (string, error)
+}
+
 // ClusterCreate represents dataplatform cluster creation parameters
 type ClusterCreate struct {
 	Name              string                  `json:"name" required:"true"`
@@ -34,6 +38,7 @@ type ClusterUpdate struct {
 type ClusterCreateConfig struct {
 	Settings    []ClusterCreateConfigSetting    `json:"settings,omitempty"`
 	Maintenance *ClusterCreateConfigMaintenance `json:"maintenance" required:"true"`
+	Users       []ClusterCreateConfigUser       `json:"users,omitempty"`
 	Warehouses  []ClusterCreateConfigWarehouse  `json:"warehouses" required:"true"`
 }
 
@@ -56,8 +61,8 @@ type ClusterCreateConfigMaintenanceBackup struct {
 
 type ClusterCreateConfigMaintenanceBackupObj struct {
 	Start     string `json:"start" required:"true"`
-	KeepCount int    `json:"keep_count,omitempty"`
-	KeepTime  int    `json:"keep_time,omitempty"`
+	KeepCount int    `json:"keepCount,omitempty"`
+	KeepTime  int    `json:"keepTime,omitempty"`
 }
 
 type ClusterCreateConfigMaintenanceCronTabs struct {
@@ -66,10 +71,17 @@ type ClusterCreateConfigMaintenanceCronTabs struct {
 	Settings []ClusterCreateConfigSetting `json:"settings,omitempty"`
 }
 
+type ClusterCreateConfigUser struct {
+	Username string `json:"username" required:"true"`
+	Password string `json:"password" required:"true"`
+	Role     string `json:"role,omitempty"`
+}
+
 type ClusterCreateConfigWarehouse struct {
 	Name        string                                   `json:"name,omitempty"`
-	Connections []ClusterCreateConfigWarehouseConnection `json:"connections" required:"true"`
+	Connections []ClusterCreateConfigWarehouseConnection `json:"connections,omitempty"`
 	Extensions  []ClusterCreateConfigWarehouseExtension  `json:"extensions,omitempty"`
+	Users       []string                                 `json:"users,omitempty"`
 }
 
 type ClusterCreateConfigWarehouseConnection struct {
@@ -85,7 +97,7 @@ type ClusterCreateConfigWarehouseExtension struct {
 }
 
 type ClusterCreatePodGroup struct {
-	Count              int                                    `json:"count" required:"true"`
+	Count              *int                                   `json:"count" required:"true"`
 	Resource           *ClusterCreatePodGroupResource         `json:"resource" required:"true"`
 	PodGroupTemplateID string                                 `json:"pod_group_template_id" required:"true"`
 	Volumes            map[string]ClusterCreatePodGroupVolume `json:"volumes,omitempty"`
@@ -110,6 +122,20 @@ type ClusterUpdateSettings struct {
 type ClusterUpdateSetting struct {
 	Alias string `json:"alias" required:"true"`
 	Value string `json:"value" required:"true"`
+}
+
+type ClusterUpdateUsers struct {
+	Users []ClusterUpdateUser `json:"users" required:"true"`
+}
+
+type ClusterUpdateUser struct {
+	Username string `json:"username" required:"true"`
+	Password string `json:"password" required:"true"`
+	Role     string `json:"role,omitempty"`
+}
+
+type ClusterDeleteUsers struct {
+	ClusterUsersIDs []string `q:"cluster_users_ids"`
 }
 
 // Map converts opts to a map (for a request body)
@@ -161,6 +187,12 @@ func (opts *ClusterCreateConfigMaintenanceCronTabs) Map() (map[string]interface{
 }
 
 // Map converts opts to a map (for a request body)
+func (opts *ClusterCreateConfigUser) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
+// Map converts opts to a map (for a request body)
 func (opts *ClusterCreateConfigWarehouse) Map() (map[string]interface{}, error) {
 	body, err := gophercloud.BuildRequestBody(*opts, "")
 	return body, err
@@ -206,6 +238,23 @@ func (opts *ClusterUpdateSettings) Map() (map[string]interface{}, error) {
 func (opts *ClusterUpdateSetting) Map() (map[string]interface{}, error) {
 	body, err := gophercloud.BuildRequestBody(*opts, "")
 	return body, err
+}
+
+// Map converts opts to a map (for a request body)
+func (opts *ClusterUpdateUsers) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
+// Map converts opts to a map (for a request body)
+func (opts *ClusterUpdateUser) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
+func (opts *ClusterDeleteUsers) ToQuery() (string, error) {
+	q, err := gophercloud.BuildQueryString(opts)
+	return q.String(), err
 }
 
 // Create performs request to create database cluster
@@ -262,6 +311,40 @@ func UpdateSettings(client *gophercloud.ServiceClient, id string, opts OptsBuild
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
+}
+
+func AddClusterUsers(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r UpdateResult) {
+	common.SetHeaders(client)
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := client.Post(clusterUsersURL(client, id), &b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{201},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+func DeleteClusterUsers(client *gophercloud.ServiceClient, id string, opts OptsQueryBuilder) (r DeleteResult) {
+	common.SetHeaders(client)
+	url := clusterUsersURL(client, id)
+	query, err := opts.ToQuery()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	url += query
+
+	resp, err := client.Delete(url, &gophercloud.RequestOpts{
+		OkCodes: []int{204},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+
 }
 
 func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
