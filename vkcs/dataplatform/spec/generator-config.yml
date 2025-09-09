@@ -11,16 +11,23 @@ resources:
     schema:
       ignores:
         - configs.features
-        - configs.users
+        - configs.users.access
+        - configs.users.connection_store
+        - configs.users.settings
+        - configs.warehouses.connections.connection_store
+        - configs.warehouses.connections.connection_store_id
         - configs.warehouses.extensions
         - configs.warehouses.users
         - status
         - status_description
         - pod_groups.pod_group_template_id
         - pod_groups.node_processes
+        - pod_groups.replicas
         - upgrades
         - project_id
         - import_source
+        - blocking_operation_id
+        - operator_status
       attributes:
         aliases:
           cluster_id: id
@@ -97,6 +104,14 @@ resources:
             description: Setting alias.
           configs.settings.value:
             description: Setting value.
+          configs.users:
+            description: Users settings.
+          configs.users.username:
+            description: Username
+          configs.users.password:
+            description: Password. Changing this creates a new resource.
+          configs.users.role:
+            description: User role. Changing this creates a new resource.
           configs.warehouses:
             description: Warehouses settings. Changing this creates a new resource.
           configs.warehouses.name:
@@ -187,6 +202,7 @@ data_sources:
         - features
         - mode
         - products.configs
+        - sockets
       attributes:
         overrides:
           products:

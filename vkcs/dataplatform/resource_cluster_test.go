@@ -1,9 +1,16 @@
 package dataplatform_test
 
 import (
+	"bytes"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+
+	"text/template"
 
 	"testing"
 
@@ -60,6 +67,68 @@ func TestAccDataPlatformClusterResource_update_big(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "description", newDescription),
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.settings.0.alias", "sparkproxy.spark_version"),
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.settings.0.value", newVersion),
+				),
+			},
+		},
+	})
+}
+
+type DataplatformClusterUser struct {
+	Username string
+	Password string
+	Role     string
+}
+
+func testRenderDataplatformClusterUsers(users []DataplatformClusterUser) string {
+	usersTmpl := template.Must(template.New("users").Option("missingkey=error").Parse(testAccDataPlatformClusterResourceIcebergUsers))
+	var buf bytes.Buffer
+
+	_ = usersTmpl.Execute(&buf, users)
+	return buf.String()
+}
+
+func TestAccDataPlatformClusterIcebergAddAndDeleteUser_big(t *testing.T) {
+	oneUser := testRenderDataplatformClusterUsers([]DataplatformClusterUser{{Username: "vkdata", Password: "Test_p#ssword-12-3", Role: "dbOwner"}})
+	twoUsers := testRenderDataplatformClusterUsers([]DataplatformClusterUser{{Username: "vkdata", Password: "Test_p#ssword-12-3", Role: "dbOwner"}, {Username: "vkdata1", Password: "Test_p#ssword-12-4", Role: "common"}})
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataPlatformClusterResourceBaseNetwork,
+				Check: func(state *terraform.State) error {
+					time.Sleep(30 * time.Second)
+					return nil
+				},
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
+					"TestAccDataPlatformClusterResourceBaseNetwork":  testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers": oneUser,
+				}),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "name", "tf-basic-iceberg"),
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "description", "tf-basic-iceberg-description"),
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.users.#", "1"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
+					"TestAccDataPlatformClusterResourceBaseNetwork":  testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers": twoUsers,
+				}),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.users.#", "2"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
+					"TestAccDataPlatformClusterResourceBaseNetwork":  testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers": oneUser,
+				}),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.users.#", "1"),
 				),
 			},
 		},
@@ -240,6 +309,78 @@ resource "vkcs_dataplatform_cluster" "basic" {
           storage            = "5"
           count              = 1
         }
+      }
+    }
+  ]
+}
+`
+
+const testAccDataPlatformClusterResourceIcebergUsers = `
+	users = [{{range .}}
+	  {
+		username = "{{.Username}}"
+		password = "{{.Password}}"
+		role = "{{.Role}}"
+	  },{{end}}
+	]
+`
+
+const testAccDataPlatformClusterResourceIceberg = `
+{{ .TestAccDataPlatformClusterResourceBaseNetwork }}
+
+resource "vkcs_dataplatform_cluster" "basic" {
+  name            = "tf-basic-iceberg"
+  description     = "tf-basic-iceberg-description"
+  network_id      = vkcs_networking_network.db.id
+  subnet_id       = vkcs_networking_subnet.db.id
+  product_name    = "iceberg-metastore"
+  product_version = "17.2.0"
+
+  availability_zone = "GZ1"
+  configs = {
+    maintenance = {
+      start = "0 0 1 * *"
+      backup = {
+        full = {
+          keep_time = 10
+          start = "0 0 1 * *"
+        }
+      }
+    }
+    warehouses = [
+      {
+        name = "metastore"
+      }
+    ]
+    {{ .TestAccDataPlatformClusterResourceIcebergUsers }} 
+  }
+  pod_groups = [
+    {
+      name  = "postgres"
+      count = 1
+      resource = {
+        cpu_request = "0.5"
+        ram_request = "1"
+      }
+      volumes = {
+        "data" = {
+          storage_class_name = "ceph-ssd"
+          storage            = "10"
+          count              = 1
+        }
+        "wal" = {
+          storage_class_name = "ceph-ssd"
+          storage = "10"
+          count = 1
+        }
+      }
+    },
+    {
+      name = "bouncer"
+      count = 1
+      resource = {
+        cpu_request = "0.2"
+        ram_request = "1"
       }
     }
   ]

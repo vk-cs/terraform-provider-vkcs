@@ -502,9 +502,6 @@
 																		"name": "enabled",
 																		"bool": {
 																			"computed_optional_required": "computed",
-																			"default": {
-																				"static": true
-																			},
 																			"description": "Whether differential backup is enabled."
 																		}
 																	}
@@ -567,9 +564,6 @@
 																		"name": "enabled",
 																		"bool": {
 																			"computed_optional_required": "computed",
-																			"default": {
-																				"static": true
-																			},
 																			"description": "Whether full backup is enabled."
 																		}
 																	}
@@ -632,9 +626,6 @@
 																		"name": "enabled",
 																		"bool": {
 																			"computed_optional_required": "computed",
-																			"default": {
-																				"static": true
-																			},
 																			"description": "Whether incremental backup is enabled."
 																		}
 																	}
@@ -833,6 +824,126 @@
 											]
 										},
 										"description": "Additional common settings."
+									}
+								},
+								{
+									"name": "users",
+									"list_nested": {
+										"computed_optional_required": "computed_optional",
+										"nested_object": {
+											"attributes": [
+												{
+													"name": "password",
+													"string": {
+														"computed_optional_required": "required",
+														"description": "Password. Changing this creates a new resource.",
+														"validators": [
+															{
+																"custom": {
+																	"imports": [
+																		{
+																			"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+																		}
+																	],
+																	"schema_definition": "stringvalidator.LengthBetween(16, 50)"
+																}
+															},
+															{
+																"custom": {
+																	"imports": [
+																		{
+																			"path": "regexp"
+																		},
+																		{
+																			"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+																		}
+																	],
+																	"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^[^'`:;,.@\u0026\u003c\u003e' ]+$\"), \"\")"
+																}
+															}
+														],
+														"plan_modifiers": [
+															{
+																"custom": {
+																	"imports": [
+																		{
+																			"path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/dataplatform/resource_cluster/planmodifiers",
+																			"alias": "cluster_planmodifiers"
+																		}
+																	],
+																	"schema_definition": "cluster_planmodifiers.RequiresReplaceIfWasPresent()"
+																}
+															}
+														],
+														"sensitive": true
+													}
+												},
+												{
+													"name": "role",
+													"string": {
+														"computed_optional_required": "computed_optional",
+														"description": "User role. Changing this creates a new resource.",
+														"validators": [
+															{
+																"custom": {
+																	"imports": [
+																		{
+																			"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+																		}
+																	],
+																	"schema_definition": "stringvalidator.LengthAtMost(80)"
+																}
+															}
+														],
+														"plan_modifiers": [
+															{
+																"custom": {
+																	"imports": [
+																		{
+																			"path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/dataplatform/resource_cluster/planmodifiers",
+																			"alias": "cluster_planmodifiers"
+																		}
+																	],
+																	"schema_definition": "cluster_planmodifiers.RequiresReplaceIfWasPresent()"
+																}
+															}
+														]
+													}
+												},
+												{
+													"name": "username",
+													"string": {
+														"computed_optional_required": "required",
+														"description": "Username",
+														"validators": [
+															{
+																"custom": {
+																	"imports": [
+																		{
+																			"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+																		}
+																	],
+																	"schema_definition": "stringvalidator.LengthAtMost(128)"
+																}
+															}
+														]
+													}
+												},
+												{
+													"name": "created_at",
+													"string": {
+														"computed_optional_required": "computed"
+													}
+												},
+												{
+													"name": "id",
+													"string": {
+														"computed_optional_required": "computed"
+													}
+												}
+											]
+										},
+										"description": "Users settings."
 									}
 								},
 								{

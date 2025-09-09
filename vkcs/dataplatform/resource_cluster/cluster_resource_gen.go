@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	cluster_planmodifiers "github.com/vk-cs/terraform-provider-vkcs/vkcs/dataplatform/resource_cluster/planmodifiers"
 	"regexp"
 	"strings"
 
@@ -61,7 +62,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 												Computed:            true,
 												Description:         "Whether differential backup is enabled.",
 												MarkdownDescription: "Whether differential backup is enabled.",
-												Default:             booldefault.StaticBool(true),
 											},
 											"keep_count": schema.Int64Attribute{
 												Optional: true,
@@ -99,7 +99,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 												Computed:            true,
 												Description:         "Whether full backup is enabled.",
 												MarkdownDescription: "Whether full backup is enabled.",
-												Default:             booldefault.StaticBool(true),
 											},
 											"keep_count": schema.Int64Attribute{
 												Optional: true,
@@ -136,7 +135,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 												Computed:            true,
 												Description:         "Whether incremental backup is enabled.",
 												MarkdownDescription: "Whether incremental backup is enabled.",
-												Default:             booldefault.StaticBool(true),
 											},
 											"keep_count": schema.Int64Attribute{
 												Optional: true,
@@ -296,6 +294,60 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Additional common settings.",
 						MarkdownDescription: "Additional common settings.",
+					},
+					"users": schema.ListNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"created_at": schema.StringAttribute{
+									Computed: true,
+								},
+								"id": schema.StringAttribute{
+									Computed: true,
+								},
+								"password": schema.StringAttribute{
+									Required:            true,
+									Sensitive:           true,
+									Description:         "Password. Changing this creates a new resource.",
+									MarkdownDescription: "Password. Changing this creates a new resource.",
+									PlanModifiers: []planmodifier.String{
+										cluster_planmodifiers.RequiresReplaceIfWasPresent(),
+									},
+									Validators: []validator.String{
+										stringvalidator.LengthBetween(16, 50),
+										stringvalidator.RegexMatches(regexp.MustCompile("^[^'`:;,.@&<>' ]+$"), ""),
+									},
+								},
+								"role": schema.StringAttribute{
+									Optional:            true,
+									Computed:            true,
+									Description:         "User role. Changing this creates a new resource.",
+									MarkdownDescription: "User role. Changing this creates a new resource.",
+									PlanModifiers: []planmodifier.String{
+										cluster_planmodifiers.RequiresReplaceIfWasPresent(),
+									},
+									Validators: []validator.String{
+										stringvalidator.LengthAtMost(80),
+									},
+								},
+								"username": schema.StringAttribute{
+									Required:            true,
+									Description:         "Username",
+									MarkdownDescription: "Username",
+									Validators: []validator.String{
+										stringvalidator.LengthAtMost(128),
+									},
+								},
+							},
+							CustomType: ConfigsUsersType{
+								ObjectType: types.ObjectType{
+									AttrTypes: ConfigsUsersValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Optional:            true,
+						Computed:            true,
+						Description:         "Users settings.",
+						MarkdownDescription: "Users settings.",
 					},
 					"warehouses": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -811,6 +863,24 @@ func (t ConfigsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`settings expected to be basetypes.ListValue, was: %T`, settingsAttribute))
 	}
 
+	usersAttribute, ok := attributes["users"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`users is missing from object`)
+
+		return nil, diags
+	}
+
+	usersVal, ok := usersAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`users expected to be basetypes.ListValue, was: %T`, usersAttribute))
+	}
+
 	warehousesAttribute, ok := attributes["warehouses"]
 
 	if !ok {
@@ -836,6 +906,7 @@ func (t ConfigsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	return ConfigsValue{
 		Maintenance: maintenanceVal,
 		Settings:    settingsVal,
+		Users:       usersVal,
 		Warehouses:  warehousesVal,
 		state:       attr.ValueStateKnown,
 	}, diags
@@ -940,6 +1011,24 @@ func NewConfigsValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`settings expected to be basetypes.ListValue, was: %T`, settingsAttribute))
 	}
 
+	usersAttribute, ok := attributes["users"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`users is missing from object`)
+
+		return NewConfigsValueUnknown(), diags
+	}
+
+	usersVal, ok := usersAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`users expected to be basetypes.ListValue, was: %T`, usersAttribute))
+	}
+
 	warehousesAttribute, ok := attributes["warehouses"]
 
 	if !ok {
@@ -965,6 +1054,7 @@ func NewConfigsValue(attributeTypes map[string]attr.Type, attributes map[string]
 	return ConfigsValue{
 		Maintenance: maintenanceVal,
 		Settings:    settingsVal,
+		Users:       usersVal,
 		Warehouses:  warehousesVal,
 		state:       attr.ValueStateKnown,
 	}, diags
@@ -1040,12 +1130,13 @@ var _ basetypes.ObjectValuable = ConfigsValue{}
 type ConfigsValue struct {
 	Maintenance basetypes.ObjectValue `tfsdk:"maintenance"`
 	Settings    basetypes.ListValue   `tfsdk:"settings"`
+	Users       basetypes.ListValue   `tfsdk:"users"`
 	Warehouses  basetypes.ListValue   `tfsdk:"warehouses"`
 	state       attr.ValueState
 }
 
 func (v ConfigsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 3)
+	attrTypes := make(map[string]tftypes.Type, 4)
 
 	var val tftypes.Value
 	var err error
@@ -1056,6 +1147,9 @@ func (v ConfigsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	attrTypes["settings"] = basetypes.ListType{
 		ElemType: ConfigsSettingsValue{}.Type(ctx),
 	}.TerraformType(ctx)
+	attrTypes["users"] = basetypes.ListType{
+		ElemType: ConfigsUsersValue{}.Type(ctx),
+	}.TerraformType(ctx)
 	attrTypes["warehouses"] = basetypes.ListType{
 		ElemType: ConfigsWarehousesValue{}.Type(ctx),
 	}.TerraformType(ctx)
@@ -1064,7 +1158,7 @@ func (v ConfigsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 3)
+		vals := make(map[string]tftypes.Value, 4)
 
 		val, err = v.Maintenance.ToTerraformValue(ctx)
 
@@ -1081,6 +1175,14 @@ func (v ConfigsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		}
 
 		vals["settings"] = val
+
+		val, err = v.Users.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["users"] = val
 
 		val, err = v.Warehouses.ToTerraformValue(ctx)
 
@@ -1169,6 +1271,35 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		)
 	}
 
+	users := types.ListValueMust(
+		ConfigsUsersType{
+			basetypes.ObjectType{
+				AttrTypes: ConfigsUsersValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.Users.Elements(),
+	)
+
+	if v.Users.IsNull() {
+		users = types.ListNull(
+			ConfigsUsersType{
+				basetypes.ObjectType{
+					AttrTypes: ConfigsUsersValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.Users.IsUnknown() {
+		users = types.ListUnknown(
+			ConfigsUsersType{
+				basetypes.ObjectType{
+					AttrTypes: ConfigsUsersValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
 	warehouses := types.ListValueMust(
 		ConfigsWarehousesType{
 			basetypes.ObjectType{
@@ -1205,6 +1336,9 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		"settings": basetypes.ListType{
 			ElemType: ConfigsSettingsValue{}.Type(ctx),
 		},
+		"users": basetypes.ListType{
+			ElemType: ConfigsUsersValue{}.Type(ctx),
+		},
 		"warehouses": basetypes.ListType{
 			ElemType: ConfigsWarehousesValue{}.Type(ctx),
 		},
@@ -1223,6 +1357,7 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		map[string]attr.Value{
 			"maintenance": maintenance,
 			"settings":    settings,
+			"users":       users,
 			"warehouses":  warehouses,
 		})
 
@@ -1252,6 +1387,10 @@ func (v ConfigsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.Users.Equal(other.Users) {
+		return false
+	}
+
 	if !v.Warehouses.Equal(other.Warehouses) {
 		return false
 	}
@@ -1274,6 +1413,9 @@ func (v ConfigsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		},
 		"settings": basetypes.ListType{
 			ElemType: ConfigsSettingsValue{}.Type(ctx),
+		},
+		"users": basetypes.ListType{
+			ElemType: ConfigsUsersValue{}.Type(ctx),
 		},
 		"warehouses": basetypes.ListType{
 			ElemType: ConfigsWarehousesValue{}.Type(ctx),
@@ -5093,6 +5235,550 @@ func (v ConfigsSettingsValue) AttributeTypes(ctx context.Context) map[string]att
 	return map[string]attr.Type{
 		"alias": basetypes.StringType{},
 		"value": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigsUsersType{}
+
+type ConfigsUsersType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigsUsersType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigsUsersType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigsUsersType) String() string {
+	return "ConfigsUsersType"
+}
+
+func (t ConfigsUsersType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	createdAtAttribute, ok := attributes["created_at"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`created_at is missing from object`)
+
+		return nil, diags
+	}
+
+	createdAtVal, ok := createdAtAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`created_at expected to be basetypes.StringValue, was: %T`, createdAtAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.StringValue, was: %T`, idAttribute))
+	}
+
+	passwordAttribute, ok := attributes["password"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`password is missing from object`)
+
+		return nil, diags
+	}
+
+	passwordVal, ok := passwordAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`password expected to be basetypes.StringValue, was: %T`, passwordAttribute))
+	}
+
+	roleAttribute, ok := attributes["role"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`role is missing from object`)
+
+		return nil, diags
+	}
+
+	roleVal, ok := roleAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`role expected to be basetypes.StringValue, was: %T`, roleAttribute))
+	}
+
+	usernameAttribute, ok := attributes["username"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`username is missing from object`)
+
+		return nil, diags
+	}
+
+	usernameVal, ok := usernameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`username expected to be basetypes.StringValue, was: %T`, usernameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigsUsersValue{
+		CreatedAt: createdAtVal,
+		Id:        idVal,
+		Password:  passwordVal,
+		Role:      roleVal,
+		Username:  usernameVal,
+		state:     attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigsUsersValueNull() ConfigsUsersValue {
+	return ConfigsUsersValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigsUsersValueUnknown() ConfigsUsersValue {
+	return ConfigsUsersValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigsUsersValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigsUsersValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigsUsersValue Attribute Value",
+				"While creating a ConfigsUsersValue value, a missing attribute value was detected. "+
+					"A ConfigsUsersValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigsUsersValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigsUsersValue Attribute Type",
+				"While creating a ConfigsUsersValue value, an invalid attribute value was detected. "+
+					"A ConfigsUsersValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigsUsersValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigsUsersValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigsUsersValue Attribute Value",
+				"While creating a ConfigsUsersValue value, an extra attribute value was detected. "+
+					"A ConfigsUsersValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigsUsersValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigsUsersValueUnknown(), diags
+	}
+
+	createdAtAttribute, ok := attributes["created_at"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`created_at is missing from object`)
+
+		return NewConfigsUsersValueUnknown(), diags
+	}
+
+	createdAtVal, ok := createdAtAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`created_at expected to be basetypes.StringValue, was: %T`, createdAtAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewConfigsUsersValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.StringValue, was: %T`, idAttribute))
+	}
+
+	passwordAttribute, ok := attributes["password"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`password is missing from object`)
+
+		return NewConfigsUsersValueUnknown(), diags
+	}
+
+	passwordVal, ok := passwordAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`password expected to be basetypes.StringValue, was: %T`, passwordAttribute))
+	}
+
+	roleAttribute, ok := attributes["role"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`role is missing from object`)
+
+		return NewConfigsUsersValueUnknown(), diags
+	}
+
+	roleVal, ok := roleAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`role expected to be basetypes.StringValue, was: %T`, roleAttribute))
+	}
+
+	usernameAttribute, ok := attributes["username"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`username is missing from object`)
+
+		return NewConfigsUsersValueUnknown(), diags
+	}
+
+	usernameVal, ok := usernameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`username expected to be basetypes.StringValue, was: %T`, usernameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigsUsersValueUnknown(), diags
+	}
+
+	return ConfigsUsersValue{
+		CreatedAt: createdAtVal,
+		Id:        idVal,
+		Password:  passwordVal,
+		Role:      roleVal,
+		Username:  usernameVal,
+		state:     attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigsUsersValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigsUsersValue {
+	object, diags := NewConfigsUsersValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigsUsersValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigsUsersType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigsUsersValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigsUsersValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigsUsersValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigsUsersValueMust(ConfigsUsersValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigsUsersType) ValueType(ctx context.Context) attr.Value {
+	return ConfigsUsersValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigsUsersValue{}
+
+type ConfigsUsersValue struct {
+	CreatedAt basetypes.StringValue `tfsdk:"created_at"`
+	Id        basetypes.StringValue `tfsdk:"id"`
+	Password  basetypes.StringValue `tfsdk:"password"`
+	Role      basetypes.StringValue `tfsdk:"role"`
+	Username  basetypes.StringValue `tfsdk:"username"`
+	state     attr.ValueState
+}
+
+func (v ConfigsUsersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 5)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["created_at"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["password"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["role"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["username"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 5)
+
+		val, err = v.CreatedAt.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["created_at"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Password.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["password"] = val
+
+		val, err = v.Role.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["role"] = val
+
+		val, err = v.Username.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["username"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigsUsersValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigsUsersValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigsUsersValue) String() string {
+	return "ConfigsUsersValue"
+}
+
+func (v ConfigsUsersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"created_at": basetypes.StringType{},
+		"id":         basetypes.StringType{},
+		"password":   basetypes.StringType{},
+		"role":       basetypes.StringType{},
+		"username":   basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"created_at": v.CreatedAt,
+			"id":         v.Id,
+			"password":   v.Password,
+			"role":       v.Role,
+			"username":   v.Username,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigsUsersValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigsUsersValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.CreatedAt.Equal(other.CreatedAt) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Password.Equal(other.Password) {
+		return false
+	}
+
+	if !v.Role.Equal(other.Role) {
+		return false
+	}
+
+	if !v.Username.Equal(other.Username) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigsUsersValue) Type(ctx context.Context) attr.Type {
+	return ConfigsUsersType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigsUsersValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"created_at": basetypes.StringType{},
+		"id":         basetypes.StringType{},
+		"password":   basetypes.StringType{},
+		"role":       basetypes.StringType{},
+		"username":   basetypes.StringType{},
 	}
 }
 

@@ -3,6 +3,10 @@ package dataplatform
 import (
 	"context"
 
+	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -154,7 +158,7 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 
 	data.ClusterTemplateId = types.StringValue(clusterTemplate.ID)
 
-	resp.Diagnostics.Append(data.UpdateState(ctx, cluster, &resp.State, data.Configs.Settings)...)
+	resp.Diagnostics.Append(data.UpdateState(ctx, cluster, data.Configs, &resp.State)...)
 }
 
 func (r *clusterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -193,7 +197,7 @@ func (r *clusterResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	tflog.Trace(ctx, "Called Data Platform API to retrieve cluster", map[string]interface{}{"cluster": fmt.Sprintf("%#v", cluster)})
 
-	resp.Diagnostics.Append(data.UpdateState(ctx, cluster, &resp.State, data.Configs.Settings)...)
+	resp.Diagnostics.Append(data.UpdateState(ctx, cluster, data.Configs, &resp.State)...)
 }
 
 func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -239,44 +243,152 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	if !plan.Configs.Settings.IsUnknown() && !plan.Configs.Settings.IsNull() {
-		updateSettingsOpts := make([]clusters.ClusterUpdateSetting, 0)
-		planSettings, diags := resource_cluster.ExpandClusterConfigsSettings(ctx, plan.Configs.Settings)
+		diags := clusterUpdateConfigsSettings(ctx, client, id, plan.Configs.Settings)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
 		}
-		for _, planSetting := range planSettings {
-			updateSettingsOpts = append(updateSettingsOpts, clusters.ClusterUpdateSetting(planSetting))
-		}
-		if len(updateSettingsOpts) > 0 {
-			_, err = clusters.UpdateSettings(client, id, &clusters.ClusterUpdateSettings{Settings: updateSettingsOpts}).Extract()
-			if err != nil {
-				resp.Diagnostics.AddError("Error calling Data Platform API to update cluster settings", err.Error())
-				return
-			}
+	}
 
-			stateConf := &retry.StateChangeConf{
-				Pending:    []string{string(clusterStatusConfiguring), string(clusterStatusUpdating)},
-				Target:     []string{string(clusterStatusActive)},
-				Refresh:    clusterStateRefreshFunc(client, id),
-				Timeout:    clusterUpdateTimeout,
-				Delay:      clusterUpdateDelay,
-				MinTimeout: clusterUpdateMinTimeout,
-			}
-			_, err = stateConf.WaitForStateContext(ctx)
-			if err != nil {
-				resp.Diagnostics.AddError("Error waiting for cluster update", err.Error())
-				return
-			}
+	if !plan.Configs.Users.IsUnknown() && !plan.Configs.Users.IsNull() {
+		diags := clusterUpdateConfigsUsers(ctx, client, id, data.Configs.Users, plan.Configs.Users)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
 		}
 	}
+
 	cluster, err := clusters.Get(client, id).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting cluster", err.Error())
+		return
 	}
 	tflog.Trace(ctx, "Called Data Platform API to update cluster", map[string]interface{}{"cluster": fmt.Sprintf("%#v", cluster)})
 
-	resp.Diagnostics.Append(data.UpdateState(ctx, cluster, &resp.State, plan.Configs.Settings)...)
+	resp.Diagnostics.Append(data.UpdateState(ctx, cluster, plan.Configs, &resp.State)...)
+}
+
+func clusterUpdateConfigsSettings(ctx context.Context, client *gophercloud.ServiceClient, id string, settings basetypes.ListValue) diag.Diagnostics {
+	var diags diag.Diagnostics
+	var d diag.Diagnostics
+
+	updateSettingsOpts := make([]clusters.ClusterUpdateSetting, 0)
+	planSettings, d := resource_cluster.ExpandClusterConfigsSettings(ctx, settings)
+	if d.HasError() {
+		return d
+	}
+	for _, planSetting := range planSettings {
+		updateSettingsOpts = append(updateSettingsOpts, clusters.ClusterUpdateSetting(planSetting))
+	}
+	if len(updateSettingsOpts) > 0 {
+		_, err := clusters.UpdateSettings(client, id, &clusters.ClusterUpdateSettings{Settings: updateSettingsOpts}).Extract()
+		if err != nil {
+			diags.AddError("Error calling Data Platform API to update cluster settings", err.Error())
+			return diags
+		}
+
+		stateConf := &retry.StateChangeConf{
+			Pending:    []string{string(clusterStatusConfiguring), string(clusterStatusUpdating)},
+			Target:     []string{string(clusterStatusActive)},
+			Refresh:    clusterStateRefreshFunc(client, id),
+			Timeout:    clusterUpdateTimeout,
+			Delay:      clusterUpdateDelay,
+			MinTimeout: clusterUpdateMinTimeout,
+		}
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			diags.AddError("Error waiting for cluster update", err.Error())
+			return diags
+		}
+	}
+	return nil
+}
+
+func clusterUpdateConfigsUsers(ctx context.Context, client *gophercloud.ServiceClient, id string, dataUsersRaw basetypes.ListValue, planUsersRaw basetypes.ListValue) diag.Diagnostics {
+	var diags diag.Diagnostics
+	var d diag.Diagnostics
+
+	dataUsers, d := resource_cluster.ReadClusterConfigsUsers(ctx, dataUsersRaw)
+	if d.HasError() {
+		return d
+	}
+
+	planUsers, d := resource_cluster.ReadClusterConfigsUsers(ctx, planUsersRaw)
+	if d.HasError() {
+		return d
+	}
+
+	var usersToAdd []clusters.ClusterUpdateUser
+	var usersToDelete []string
+	remainingUsers := make(map[string]bool)
+	userIDs := make(map[string]string)
+
+	for _, user := range dataUsers {
+		remainingUsers[user.Username.ValueString()] = false
+		userIDs[user.Username.ValueString()] = user.Id.ValueString()
+	}
+
+	for _, planUser := range planUsers {
+		if _, ok := remainingUsers[planUser.Username.ValueString()]; !ok {
+			usersToAdd = append(usersToAdd, clusters.ClusterUpdateUser{
+				Username: planUser.Username.ValueString(),
+				Password: planUser.Password.ValueString(),
+				Role:     planUser.Role.ValueString(),
+			})
+		} else {
+			remainingUsers[planUser.Username.ValueString()] = true
+		}
+	}
+
+	for userName, isRemaining := range remainingUsers {
+		if !isRemaining {
+			usersToDelete = append(usersToDelete, userIDs[userName])
+		}
+	}
+
+	if len(usersToAdd) > 0 {
+		_, err := clusters.AddClusterUsers(client, id, &clusters.ClusterUpdateUsers{Users: usersToAdd}).Extract()
+		if err != nil {
+			diags.AddError("Error calling Data Platform API to add cluster users", err.Error())
+			return diags
+		}
+
+		stateConf := &retry.StateChangeConf{
+			Pending:    []string{string(clusterStatusConfiguring), string(clusterStatusUpdating)},
+			Target:     []string{string(clusterStatusActive)},
+			Refresh:    clusterStateRefreshFunc(client, id),
+			Timeout:    clusterUpdateTimeout,
+			Delay:      clusterUpdateDelay,
+			MinTimeout: clusterUpdateMinTimeout,
+		}
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			diags.AddError("Error waiting for cluster update", err.Error())
+			return diags
+		}
+	}
+
+	if len(usersToDelete) > 0 {
+		err := clusters.DeleteClusterUsers(client, id, &clusters.ClusterDeleteUsers{ClusterUsersIDs: usersToDelete}).ExtractErr()
+		if err != nil {
+			diags.AddError("Error calling Data Platform API to delete cluster users", err.Error())
+			return diags
+		}
+		stateConf := &retry.StateChangeConf{
+			Pending:    []string{string(clusterStatusConfiguring), string(clusterStatusUpdating)},
+			Target:     []string{string(clusterStatusActive)},
+			Refresh:    clusterStateRefreshFunc(client, id),
+			Timeout:    clusterUpdateTimeout,
+			Delay:      clusterUpdateDelay,
+			MinTimeout: clusterUpdateMinTimeout,
+		}
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			diags.AddError("Error waiting for cluster update", err.Error())
+			return diags
+		}
+	}
+	return nil
 }
 
 func (r *clusterResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

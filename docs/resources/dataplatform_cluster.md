@@ -165,6 +165,18 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
         - `value` **required** *string* &rarr;  Setting value.
 
 
+    - `users`  *list* &rarr;  Users settings.
+        - `password` **required** sensitive *string* &rarr;  Password. Changing this creates a new resource.
+
+        - `username` **required** *string* &rarr;  Username
+
+        - `role` optional *string* &rarr;  User role. Changing this creates a new resource.
+
+        - `created_at` read-only *string*
+
+        - `id` read-only *string*
+
+
     - `warehouses`  *list* &rarr;  Warehouses settings. Changing this creates a new resource.
         - `connections`  *list* &rarr;  Warehouse connections. Changing this creates a new resource.
             - `name` **required** *string* &rarr;  Connection name. Changing this creates a new resource.

@@ -30,6 +30,7 @@ type Cluster struct {
 type ClusterConfig struct {
 	Settings    []ClusterConfigSetting    `json:"settings"`
 	Maintenance *ClusterConfigMaintenance `json:"maintenance"`
+	Users       []ClusterConfigUser       `json:"users"`
 	Warehouses  []ClusterConfigWarehouse  `json:"warehouses"`
 }
 
@@ -51,10 +52,10 @@ type ClusterConfigMaintenanceBackup struct {
 }
 
 type ClusterConfigMaintenanceBackupObj struct {
-	Enabled   bool   `json:"enabled,omitempty"`
+	Enabled   *bool  `json:"enabled,omitempty"`
 	Start     string `json:"start" required:"true"`
-	KeepCount int    `json:"keep_count,omitempty"`
-	KeepTime  int    `json:"keep_time,omitempty"`
+	KeepCount *int   `json:"keepCount,omitempty"`
+	KeepTime  *int   `json:"keepTime,omitempty"`
 }
 
 type ClusterConfigMaintenanceCronTabs struct {
@@ -65,11 +66,19 @@ type ClusterConfigMaintenanceCronTabs struct {
 	Settings []ClusterConfigSetting `json:"settings,omitempty"`
 }
 
+type ClusterConfigUser struct {
+	ID        string `json:"id"`
+	Username  string `json:"username"`
+	CreatedAt string `json:"created_at"`
+	Role      string `json:"role"`
+}
+
 type ClusterConfigWarehouse struct {
 	ID          string                             `json:"id"`
 	Name        string                             `json:"name"`
 	Connections []ClusterConfigWarehouseConnection `json:"connections"`
 	Extensions  []ClusterConfigWarehouseExtension  `json:"extensions,omitempty"`
+	Users       []string                           `json:"users,omitempty"`
 }
 
 type ClusterConfigWarehouseConnection struct {
