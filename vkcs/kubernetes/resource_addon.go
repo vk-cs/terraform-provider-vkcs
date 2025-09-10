@@ -83,14 +83,14 @@ func (r *AddonResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			},
 
 			"region": schema.StringAttribute{
-				Computed:    true,
-				Optional:    true,
-				Description: "The region in which to obtain the Container Infra Addons client. If omitted, the `region` argument of the provider is used. Changing this creates a new addon.",
+				Optional: true,
+				Computed: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIf(planmodifiers.GetRegionPlanModifier(resp),
 						"require replacement if configuration value changes", "require replacement if configuration value changes"),
 					stringplanmodifier.UseStateForUnknown(),
 				},
+				Description: "The region in which to obtain the Container Infra Addons client. If omitted, the `region` argument of the provider is used. Changing this creates a new addon.",
 			},
 
 			"cluster_id": schema.StringAttribute{

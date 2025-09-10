@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/planmodifiers"
 	conntrackhelpers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dc/v2/conntrack_helpers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
@@ -110,9 +111,14 @@ func (r *ConntrackHelperResource) Schema(ctx context.Context, req resource.Schem
 			},
 
 			"region": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+				Optional: true,
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIf(planmodifiers.GetRegionPlanModifier(resp),
+						"require replacement if configuration value changes", "require replacement if configuration value changes"),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new conntrack_helper.",
 			},
 		},
 		Description: "Manages a direct connect conntrack helper resource._note_ This resource requires Sprut SDN to be enabled in your project.",
