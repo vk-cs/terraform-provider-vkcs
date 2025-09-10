@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/planmodifiers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dc/v2/bgpneighbors"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
@@ -150,9 +151,14 @@ func (r *BGPNeighborResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 
 			"region": schema.StringAttribute{
-				Computed:    true,
-				Optional:    true,
-				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+				Optional: true,
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIf(planmodifiers.GetRegionPlanModifier(resp),
+						"require replacement if configuration value changes", "require replacement if configuration value changes"),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new bgp_neighbor.",
 			},
 		},
 		Description: "Manages a direct connect BGP neighbor resource._note_ This resource requires Sprut SDN to be enabled in your project.",

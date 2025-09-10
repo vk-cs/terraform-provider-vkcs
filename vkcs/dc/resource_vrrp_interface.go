@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/planmodifiers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/dc/v2/vrrpinterfaces"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
@@ -114,9 +115,14 @@ func (r *VRRPInterfaceResource) Schema(ctx context.Context, req resource.SchemaR
 			},
 
 			"region": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+				Optional: true,
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIf(planmodifiers.GetRegionPlanModifier(resp),
+						"require replacement if configuration value changes", "require replacement if configuration value changes"),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new vrrp_interface.",
 			},
 		},
 		Description: "Manages a direct connect VRRP interface resource._note_ This resource requires Sprut SDN to be enabled in your project.",

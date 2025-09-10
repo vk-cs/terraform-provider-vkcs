@@ -58,7 +58,7 @@ func (r *сloudMonitoringResource) Schema(_ context.Context, _ resource.SchemaRe
 						"require replacement if configuration value changes", "require replacement if configuration value changes"),
 					stringplanmodifier.UseStateForUnknown(),
 				},
-				Description: "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+				Description: "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used. Changing this creates a new cloud_monitoring.",
 			},
 
 			"image_id": schema.StringAttribute{
