@@ -226,14 +226,14 @@ func (r *SparkK8SResource) Schema(ctx context.Context, req resource.SchemaReques
 			},
 
 			"region": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The `region` in which ML Platform client is obtained, defaults to the provider's `region`.",
+				Optional: true,
+				Computed: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIf(planmodifiers.GetRegionPlanModifier(resp),
 						"require replacement if configuration value changes", "require replacement if configuration value changes"),
 					stringplanmodifier.UseStateForUnknown(),
 				},
+				Description: "The `region` in which ML Platform client is obtained, defaults to the provider's `region`. Changing this creates a new spark_k8s.",
 			},
 
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{

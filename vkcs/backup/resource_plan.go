@@ -14,9 +14,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/planmodifiers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/plans"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/triggers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
@@ -208,9 +211,14 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 
 			"region": schema.StringAttribute{
-				Computed:    true,
-				Optional:    true,
-				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+				Optional: true,
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIf(planmodifiers.GetRegionPlanModifier(resp),
+						"require replacement if configuration value changes", "require replacement if configuration value changes"),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Description: "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new plan.",
 			},
 		},
 		Description: "Manages a backup plan resource.",

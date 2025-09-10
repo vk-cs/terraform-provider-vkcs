@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/planmodifiers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/backups"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/clusters"
@@ -86,9 +87,14 @@ func (r *BackupResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			},
 
 			"region": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+				Optional: true,
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIf(planmodifiers.GetRegionPlanModifier(resp),
+						"require replacement if configuration value changes", "require replacement if configuration value changes"),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Description: "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used. Changing this creates a new backup.",
 			},
 
 			"container_prefix": schema.StringAttribute{
