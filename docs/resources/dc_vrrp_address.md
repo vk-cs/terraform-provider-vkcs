@@ -33,7 +33,7 @@ resource "vkcs_dc_vrrp_address" "dc_vrrp_address" {
 
 - `name` optional *string* &rarr;  Name of the VRRP
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new vrrp_address.
 
 
 ## Attributes Reference

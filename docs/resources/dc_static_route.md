@@ -39,7 +39,7 @@ resource "vkcs_dc_static_route" "dc_static_route" {
 
 - `name` optional *string* &rarr;  Name of the static route
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new static_route.
 
 
 ## Attributes Reference

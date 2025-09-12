@@ -33,7 +33,7 @@ resource "vkcs_dc_router" "dc_router" {
 
 - `name` optional *string* &rarr;  Name of the router
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new router.
 
 
 ## Attributes Reference

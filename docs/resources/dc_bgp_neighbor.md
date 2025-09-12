@@ -49,7 +49,7 @@ resource "vkcs_dc_bgp_neighbor" "dc_bgp_neighbor" {
 
 - `name` optional *string* &rarr;  Name of the BGP neighbor
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new bgp_neighbor.
 
 
 ## Attributes Reference

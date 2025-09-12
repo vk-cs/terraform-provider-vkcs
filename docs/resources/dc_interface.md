@@ -49,7 +49,7 @@ resource "vkcs_dc_interface" "dc_interface_internet" {
 
 - `name` optional *string* &rarr;  Name of the interface
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new interface.
 
 - `subnet_id` optional *string* &rarr;  Subnet ID to attach. Changing this creates a new resource
 

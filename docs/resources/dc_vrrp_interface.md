@@ -42,7 +42,7 @@ resource "vkcs_dc_vrrp_interface" "dc_vrrp_interface" {
 
 - `priority` optional *number* &rarr;  VRRP interface priority. Default is 100
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new vrrp_interface.
 
 
 ## Attributes Reference

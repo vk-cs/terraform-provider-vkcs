@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 #### v0.12.2 (unrealised)
 - Fix changing region in resources (backup_plan, db_backup, dc_bgp_instance, dc_bgp_neighbor, dc_bgp_static_announce, dc_conntrack_helper, dc_interface, dc_ip_port_forwarding, dc_router, dc_static_route, dc_vrrp, dc_vrrp_address, dc_vrrp_interface)
+- Add templates data_source into dataplatform 
 
 #### v0.12.1
 - Add info attribute for vkcs_dataplatfrom_cluster resource

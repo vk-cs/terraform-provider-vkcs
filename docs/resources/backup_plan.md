@@ -102,7 +102,7 @@ resource "vkcs_backup_plan" "backup_plan" {
 
 - `provider_name` optional *string* &rarr;  Name of backup provider, must be one of: cloud_servers, dbaas
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new plan.
 
 
 ## Attributes Reference

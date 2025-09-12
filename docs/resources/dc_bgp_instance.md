@@ -46,7 +46,7 @@ resource "vkcs_dc_bgp_instance" "dc_bgp_instance" {
 
 - `name` optional *string* &rarr;  Name of the router
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new bgp_instance.
 
 
 ## Attributes Reference

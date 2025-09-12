@@ -40,7 +40,7 @@ resource "vkcs_dc_ip_port_forwarding" "dc_ip_port_forwarding" {
 
 - `port` optional *number* &rarr;  Port selector.
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new ip_port_forwarding.
 
 - `source` optional *string* &rarr;  Source address selector.
 
