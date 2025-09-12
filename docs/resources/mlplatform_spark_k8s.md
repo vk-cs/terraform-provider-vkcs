@@ -81,7 +81,7 @@ resource "vkcs_mlplatform_spark_k8s" "spark_k8s" {
 
 - `environment_variables` optional *string* &rarr;  Environment variables. Read more about this parameter here: https://cloud.vk.com/docs/en/ml/spark-to-k8s/instructions/create. Changing this creates a new resource
 
-- `region` optional *string* &rarr;  The `region` in which ML Platform client is obtained, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` in which ML Platform client is obtained, defaults to the provider's `region`. Changing this creates a new spark_k8s.
 
 - `spark_configuration` optional *string* &rarr;  Spark configuration. Read more about this parameter here: https://cloud.vk.com/docs/en/ml/spark-to-k8s/instructions/create. Changing this creates a new resource
 

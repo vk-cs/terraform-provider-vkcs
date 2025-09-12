@@ -44,7 +44,7 @@ resource "vkcs_kubernetes_security_policy" "replicalimits" {
 
 - `enabled` optional *boolean* &rarr;  Controls whether the security policy is enabled. Default is true.
 
-- `region` optional *string* &rarr;  The region in which to obtain the Container Infra client. If omitted, the `region` argument of the provider is used. Changing this creates a new security policy.
+- `region` optional *string* &rarr;  The region in which to obtain the Container Infra client. If omitted, the `region` argument of the provider is used. Changing this creates a new security_policy.
 
 
 ## Attributes Reference

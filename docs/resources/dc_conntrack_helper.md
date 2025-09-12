@@ -39,7 +39,7 @@ resource "vkcs_dc_conntrack_helper" "dc_conntrack_helper" {
 
 - `name` optional *string* &rarr;  Name of the conntrack helper
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new conntrack_helper.
 
 
 ## Attributes Reference
