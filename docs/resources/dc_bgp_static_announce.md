@@ -38,7 +38,7 @@ resource "vkcs_dc_bgp_static_announce" "dc_bgp_static_announce" {
 
 - `name` optional *string* &rarr;  Name of the BGP neighbor
 
-- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`.
+- `region` optional *string* &rarr;  The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new bgp_static_announce.
 
 
 ## Attributes Reference

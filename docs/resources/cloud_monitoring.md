@@ -27,7 +27,7 @@ resource "vkcs_cloud_monitoring" "basic" {
 ## Argument Reference
 - `image_id` **required** *string* &rarr;  ID of the image to create cloud monitoring for.
 
-- `region` optional *string* &rarr;  The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.
+- `region` optional *string* &rarr;  The region in which to obtain the service client. If omitted, the `region` argument of the provider is used. Changing this creates a new cloud_monitoring.
 
 
 ## Attributes Reference
