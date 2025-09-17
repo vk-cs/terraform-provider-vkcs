@@ -195,3 +195,64 @@ data_sources:
             description: Product name
           products.product_version:
             description: Product version
+  template:
+    read:
+      path: /api/templates
+      method: GET
+    schema:
+      ignores:
+        - cluster_templates.pod_groups.meta
+        - cluster_templates.configs
+        - cluster_templates.meta
+        - cluster_templates.presets
+        - cluster_templates.created_at
+        - cluster_templates.description
+        - cluster_templates.product_type
+        - cluster_templates.template_type
+        - cluster_templates.multiaz
+        - cluster_templates.availability_zone
+        - cluster_templates.is_hidden
+        - cluster_templates.pod_groups.created_at
+        - cluster_templates.pod_groups.node_processes
+        - cluster_templates.pod_groups.template_type
+        - cluster_templates.pod_groups.backref
+        - cluster_templates.pod_groups.alias
+        - cluster_templates.pod_groups.cluster_template_id
+        - cluster_templates.pod_groups.id
+        - cluster_templates.pod_groups.description
+      attributes:
+        overrides:
+          cluster_templates:
+            description: List of cluster templates.
+          cluster_templates.id:
+            description: ID of the cluster template.
+          cluster_templates.name:
+            description: Name of the cluster template.
+          cluster_templates.product_name:
+            description: Product name.
+          cluster_templates.product_version:
+            description: Product version.
+          cluster_templates.pod_groups:
+            description: List of pod groups in the template.
+          cluster_templates.pod_groups.name:
+            description: Pod group name.
+          cluster_templates.pod_groups.resource:
+            description: Resource settings for the pod group.
+          cluster_templates.pod_groups.resource.cpu_request:
+            description: CPU request for the pod group.
+          cluster_templates.pod_groups.resource.cpu_margin:
+            description: CPU margin for the pod group.
+          cluster_templates.pod_groups.resource.ram_request:
+            description: RAM request for the pod group.
+          cluster_templates.pod_groups.resource.ram_margin:
+            description: RAM margin for the pod group.
+          cluster_templates.pod_groups.volumes:
+            description: Volumes configuration for the pod group.
+          cluster_templates.pod_groups.volumes.count:
+            description: Volume count.
+          cluster_templates.pod_groups.volumes.storageClassName:
+            description: Storage class name for the volume.
+          cluster_templates.pod_groups.volumes.storage:
+            description: Volume storage size.
+          cluster_templates.pod_groups.count:
+            description: Number of pods in the pod group.

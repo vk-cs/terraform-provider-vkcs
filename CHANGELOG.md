@@ -6,9 +6,10 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.12.2 (unreleased)
+#### v0.13.0 (unreleased)
 - Fix changing region in resources (backup_plan, db_backup, dc_bgp_instance, dc_bgp_neighbor, dc_bgp_static_announce, dc_conntrack_helper, dc_interface, dc_ip_port_forwarding, dc_router, dc_static_route, dc_vrrp, dc_vrrp_address, dc_vrrp_interface)
 - Add user_roles attribute to vkcs_dataplatform_product data source
+- Add vkcs_dataplatform_template data source
 
 #### v0.12.1
 - Add info attribute for vkcs_dataplatfrom_cluster resource

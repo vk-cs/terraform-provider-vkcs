@@ -243,6 +243,135 @@
 					}
 				]
 			}
+		},
+		{
+			"name": "template",
+			"schema": {
+				"attributes": [
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "ID of the cluster template."
+						}
+					},
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Name of the cluster template."
+						}
+					},
+					{
+						"name": "pod_groups",
+						"list_nested": {
+							"computed_optional_required": "computed",
+							"nested_object": {
+								"attributes": [
+									{
+										"name": "count",
+										"int64": {
+											"computed_optional_required": "computed",
+											"description": "Number of pods in the pod group."
+										}
+									},
+									{
+										"name": "name",
+										"string": {
+											"computed_optional_required": "computed",
+											"description": "Pod group name."
+										}
+									},
+									{
+										"name": "resource",
+										"single_nested": {
+											"computed_optional_required": "computed",
+											"attributes": [
+												{
+													"name": "cpu_margin",
+													"number": {
+														"computed_optional_required": "computed",
+														"description": "CPU margin for the pod group."
+													}
+												},
+												{
+													"name": "cpu_request",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "CPU request for the pod group."
+													}
+												},
+												{
+													"name": "ram_margin",
+													"number": {
+														"computed_optional_required": "computed",
+														"description": "RAM margin for the pod group."
+													}
+												},
+												{
+													"name": "ram_request",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "RAM request for the pod group."
+													}
+												}
+											],
+											"description": "Resource settings for the pod group."
+										}
+									},
+									{
+										"name": "volumes",
+										"map_nested": {
+											"computed_optional_required": "computed",
+											"nested_object": {
+												"attributes": [
+													{
+														"name": "count",
+														"int64": {
+															"computed_optional_required": "computed",
+															"description": "Volume count."
+														}
+													},
+													{
+														"name": "storage",
+														"string": {
+															"computed_optional_required": "computed",
+															"description": "Volume storage size."
+														}
+													},
+													{
+														"name": "storage_class_name",
+														"string": {
+															"computed_optional_required": "computed",
+															"description": "Storage class name for the volume."
+														}
+													}
+												]
+											},
+											"description": "Volumes configuration for the pod group."
+										}
+									}
+								]
+							},
+							"description": "List of pod groups in the template."
+						}
+					},
+					{
+						"name": "product_name",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "Product name."
+						}
+					},
+					{
+						"name": "product_version",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Product version."
+						}
+					}
+				]
+			}
 		}
 	],
 	"provider": {
