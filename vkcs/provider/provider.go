@@ -108,6 +108,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		cdn.NewSslCertificateDataSource,
 		dataplatform.NewProductsDataSource,
 		dataplatform.NewProductDataSource,
+		dataplatform.NewTemplateDataSource,
 		db.NewBackupDataSource,
 		db.NewConfigGroupDataSource,
 		db.NewDatastoreDataSource,
