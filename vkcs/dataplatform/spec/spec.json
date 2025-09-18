@@ -198,6 +198,24 @@
 										},
 										"description": "Product settings"
 									}
+								},
+								{
+									"name": "user_roles",
+									"list_nested": {
+										"computed_optional_required": "computed",
+										"nested_object": {
+											"attributes": [
+												{
+													"name": "name",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "User role name"
+													}
+												}
+											]
+										},
+										"description": "User roles list"
+									}
 								}
 							]
 						}

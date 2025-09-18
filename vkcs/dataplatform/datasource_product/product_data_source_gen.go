@@ -144,6 +144,25 @@ func ProductDataSourceSchema(ctx context.Context) schema.Schema {
 						Description:         "Product settings",
 						MarkdownDescription: "Product settings",
 					},
+					"user_roles": schema.ListNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"name": schema.StringAttribute{
+									Computed:            true,
+									Description:         "User role name",
+									MarkdownDescription: "User role name",
+								},
+							},
+							CustomType: ConfigsUserRolesType{
+								ObjectType: types.ObjectType{
+									AttrTypes: ConfigsUserRolesValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "User roles list",
+						MarkdownDescription: "User roles list",
+					},
 				},
 				CustomType: ConfigsType{
 					ObjectType: types.ObjectType{
@@ -241,6 +260,24 @@ func (t ConfigsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`settings expected to be basetypes.ListValue, was: %T`, settingsAttribute))
 	}
 
+	userRolesAttribute, ok := attributes["user_roles"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`user_roles is missing from object`)
+
+		return nil, diags
+	}
+
+	userRolesVal, ok := userRolesAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`user_roles expected to be basetypes.ListValue, was: %T`, userRolesAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -248,6 +285,7 @@ func (t ConfigsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	return ConfigsValue{
 		Connections: connectionsVal,
 		Settings:    settingsVal,
+		UserRoles:   userRolesVal,
 		state:       attr.ValueStateKnown,
 	}, diags
 }
@@ -351,6 +389,24 @@ func NewConfigsValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`settings expected to be basetypes.ListValue, was: %T`, settingsAttribute))
 	}
 
+	userRolesAttribute, ok := attributes["user_roles"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`user_roles is missing from object`)
+
+		return NewConfigsValueUnknown(), diags
+	}
+
+	userRolesVal, ok := userRolesAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`user_roles expected to be basetypes.ListValue, was: %T`, userRolesAttribute))
+	}
+
 	if diags.HasError() {
 		return NewConfigsValueUnknown(), diags
 	}
@@ -358,6 +414,7 @@ func NewConfigsValue(attributeTypes map[string]attr.Type, attributes map[string]
 	return ConfigsValue{
 		Connections: connectionsVal,
 		Settings:    settingsVal,
+		UserRoles:   userRolesVal,
 		state:       attr.ValueStateKnown,
 	}, diags
 }
@@ -432,11 +489,12 @@ var _ basetypes.ObjectValuable = ConfigsValue{}
 type ConfigsValue struct {
 	Connections basetypes.ListValue `tfsdk:"connections"`
 	Settings    basetypes.ListValue `tfsdk:"settings"`
+	UserRoles   basetypes.ListValue `tfsdk:"user_roles"`
 	state       attr.ValueState
 }
 
 func (v ConfigsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 2)
+	attrTypes := make(map[string]tftypes.Type, 3)
 
 	var val tftypes.Value
 	var err error
@@ -447,12 +505,15 @@ func (v ConfigsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	attrTypes["settings"] = basetypes.ListType{
 		ElemType: ConfigsSettingsValue{}.Type(ctx),
 	}.TerraformType(ctx)
+	attrTypes["user_roles"] = basetypes.ListType{
+		ElemType: ConfigsUserRolesValue{}.Type(ctx),
+	}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 2)
+		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.Connections.ToTerraformValue(ctx)
 
@@ -469,6 +530,14 @@ func (v ConfigsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		}
 
 		vals["settings"] = val
+
+		val, err = v.UserRoles.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["user_roles"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -557,12 +626,44 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		)
 	}
 
+	userRoles := types.ListValueMust(
+		ConfigsUserRolesType{
+			basetypes.ObjectType{
+				AttrTypes: ConfigsUserRolesValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.UserRoles.Elements(),
+	)
+
+	if v.UserRoles.IsNull() {
+		userRoles = types.ListNull(
+			ConfigsUserRolesType{
+				basetypes.ObjectType{
+					AttrTypes: ConfigsUserRolesValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.UserRoles.IsUnknown() {
+		userRoles = types.ListUnknown(
+			ConfigsUserRolesType{
+				basetypes.ObjectType{
+					AttrTypes: ConfigsUserRolesValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
 	attributeTypes := map[string]attr.Type{
 		"connections": basetypes.ListType{
 			ElemType: ConfigsConnectionsValue{}.Type(ctx),
 		},
 		"settings": basetypes.ListType{
 			ElemType: ConfigsSettingsValue{}.Type(ctx),
+		},
+		"user_roles": basetypes.ListType{
+			ElemType: ConfigsUserRolesValue{}.Type(ctx),
 		},
 	}
 
@@ -579,6 +680,7 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		map[string]attr.Value{
 			"connections": connections,
 			"settings":    settings,
+			"user_roles":  userRoles,
 		})
 
 	return objVal, diags
@@ -607,6 +709,10 @@ func (v ConfigsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.UserRoles.Equal(other.UserRoles) {
+		return false
+	}
+
 	return true
 }
 
@@ -625,6 +731,9 @@ func (v ConfigsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		},
 		"settings": basetypes.ListType{
 			ElemType: ConfigsSettingsValue{}.Type(ctx),
+		},
+		"user_roles": basetypes.ListType{
+			ElemType: ConfigsUserRolesValue{}.Type(ctx),
 		},
 	}
 }
@@ -2465,5 +2574,329 @@ func (v ConfigsSettingsValue) AttributeTypes(ctx context.Context) map[string]att
 		"string_variation": basetypes.ListType{
 			ElemType: types.StringType,
 		},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigsUserRolesType{}
+
+type ConfigsUserRolesType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigsUserRolesType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigsUserRolesType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigsUserRolesType) String() string {
+	return "ConfigsUserRolesType"
+}
+
+func (t ConfigsUserRolesType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigsUserRolesValue{
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigsUserRolesValueNull() ConfigsUserRolesValue {
+	return ConfigsUserRolesValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigsUserRolesValueUnknown() ConfigsUserRolesValue {
+	return ConfigsUserRolesValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigsUserRolesValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigsUserRolesValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigsUserRolesValue Attribute Value",
+				"While creating a ConfigsUserRolesValue value, a missing attribute value was detected. "+
+					"A ConfigsUserRolesValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigsUserRolesValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigsUserRolesValue Attribute Type",
+				"While creating a ConfigsUserRolesValue value, an invalid attribute value was detected. "+
+					"A ConfigsUserRolesValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigsUserRolesValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigsUserRolesValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigsUserRolesValue Attribute Value",
+				"While creating a ConfigsUserRolesValue value, an extra attribute value was detected. "+
+					"A ConfigsUserRolesValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigsUserRolesValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigsUserRolesValueUnknown(), diags
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewConfigsUserRolesValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigsUserRolesValueUnknown(), diags
+	}
+
+	return ConfigsUserRolesValue{
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigsUserRolesValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigsUserRolesValue {
+	object, diags := NewConfigsUserRolesValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigsUserRolesValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigsUserRolesType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigsUserRolesValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigsUserRolesValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigsUserRolesValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigsUserRolesValueMust(ConfigsUserRolesValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigsUserRolesType) ValueType(ctx context.Context) attr.Value {
+	return ConfigsUserRolesValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigsUserRolesValue{}
+
+type ConfigsUserRolesValue struct {
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v ConfigsUserRolesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigsUserRolesValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigsUserRolesValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigsUserRolesValue) String() string {
+	return "ConfigsUserRolesValue"
+}
+
+func (v ConfigsUserRolesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigsUserRolesValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigsUserRolesValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigsUserRolesValue) Type(ctx context.Context) attr.Type {
+	return ConfigsUserRolesType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigsUserRolesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"name": basetypes.StringType{},
 	}
 }
