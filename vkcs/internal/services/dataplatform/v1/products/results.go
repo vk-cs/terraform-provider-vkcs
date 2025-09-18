@@ -17,6 +17,7 @@ type Product struct {
 type ProductConfig struct {
 	Settings    []ProductConfigSetting    `json:"settings"`
 	Connections []ProductConfigConnection `json:"connections"`
+	UserRoles   []ProductConfigUserRole   `json:"user_roles"`
 }
 
 type ProductConfigSetting struct {
@@ -43,6 +44,10 @@ type ProductConfigConnectionSetting struct {
 	StringVariation []string `json:"string_variation"`
 	IsRequired      bool     `json:"is_require"`
 	IsSensitive     bool     `json:"is_sensitive"`
+}
+
+type ProductConfigUserRole struct {
+	Name string `json:"name"`
 }
 
 type commonProductResult struct {

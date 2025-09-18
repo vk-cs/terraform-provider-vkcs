@@ -29,9 +29,16 @@ func FlattenConfigs(ctx context.Context, o *products.ProductConfig) (ConfigsValu
 		return NewConfigsValueUnknown(), diags
 	}
 
+	userRoles, d := FlattenConfigsUserRoles(ctx, o.UserRoles)
+	diags.Append(d...)
+	if diags.HasError() {
+		return NewConfigsValueUnknown(), diags
+	}
+
 	configsV := ConfigsValue{
 		Connections: connections,
 		Settings:    settings,
+		UserRoles:   userRoles,
 		state:       attr.ValueStateKnown,
 	}
 
@@ -165,6 +172,27 @@ func FlattenConfigsSettingsStringVariation(ctx context.Context, o []string) (bas
 	diags.Append(d...)
 	if diags.HasError() {
 		return types.ListUnknown(types.StringType), diags
+	}
+	return result, nil
+}
+
+func FlattenConfigsUserRoles(ctx context.Context, o []products.ProductConfigUserRole) (basetypes.ListValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	if o == nil {
+		return types.ListNull(ConfigsUserRolesValue{}.Type(ctx)), nil
+	}
+
+	userRolesV := make([]attr.Value, len(o))
+	for i, s := range o {
+		userRolesV[i] = ConfigsUserRolesValue{
+			Name:  types.StringValue(s.Name),
+			state: attr.ValueStateKnown,
+		}
+	}
+	result, d := types.ListValue(ConfigsUserRolesValue{}.Type(ctx), userRolesV)
+	diags.Append(d...)
+	if diags.HasError() {
+		return types.ListUnknown(ConfigsUserRolesValue{}.Type(ctx)), diags
 	}
 	return result, nil
 }
