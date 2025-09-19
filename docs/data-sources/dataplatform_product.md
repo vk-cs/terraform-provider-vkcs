@@ -67,5 +67,9 @@ In addition to all arguments above, the following attributes are exported:
         - `string_variation` *string* &rarr;  Available setting values
 
 
+    - `user_roles`  *list* &rarr;  User roles list
+        - `name` *string* &rarr;  User role name
+
+
 
 
