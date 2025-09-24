@@ -7,6 +7,7 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
   product_version = "3.5.1"
 
   availability_zone = "GZ1"
+
   configs = {
     settings = [
       {
@@ -17,6 +18,7 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
     maintenance = {
       start = "0 0 1 * *"
     }
+    
     warehouses = [
       {
         name = "spark"
