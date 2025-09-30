@@ -58,7 +58,67 @@ func ExpandClusterConfigsMaintenance(ctx context.Context, o basetypes.ObjectValu
 	result := clusters.ClusterCreateConfigMaintenance{
 		Start: maintenance.Start.ValueString(),
 	}
+
+	if o := maintenance.Crontabs; !o.IsUnknown() && !o.IsNull() {
+		crontabs, crDiags := ExpandClusterCrontabs(ctx, o)
+		if crDiags.HasError() {
+			return nil, crDiags
+		}
+		result.CronTabs = crontabs
+	}
+
+	if o := maintenance.Backup; !o.IsUnknown() && !o.IsNull() {
+		backup, crDiags := ExpandClusterBackup(ctx, o)
+		if crDiags.HasError() {
+			return nil, crDiags
+		}
+		result.Backup = backup
+	}
+
 	return &result, nil
+}
+
+func ExpandClusterCrontabs(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigMaintenanceCronTabs, diag.Diagnostics) {
+	crontabs := make([]ConfigsMaintenanceCrontabsValue, 0, len(o.Elements()))
+	diags := o.ElementsAs(ctx, &crontabs, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	result := make([]clusters.ClusterCreateConfigMaintenanceCronTabs, len(crontabs))
+	for i, v := range crontabs {
+		var settings []clusters.ClusterCreateConfigSetting
+		settings, diags = ExpandClusterCrontabSettings(ctx, &v.Settings)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		result[i] = clusters.ClusterCreateConfigMaintenanceCronTabs{
+			Name:     v.Name.ValueString(),
+			Start:    v.Start.ValueString(),
+			Settings: settings,
+		}
+	}
+
+	return result, nil
+}
+
+func ExpandClusterCrontabSettings(ctx context.Context, o *basetypes.ListValue) ([]clusters.ClusterCreateConfigSetting, diag.Diagnostics) {
+	settings := make([]ConfigsMaintenanceCrontabsSettingsValue, 0, len(o.Elements()))
+	diags := o.ElementsAs(ctx, &settings, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	result := make([]clusters.ClusterCreateConfigSetting, len(settings))
+	for i, s := range settings {
+		result[i] = clusters.ClusterCreateConfigSetting{
+			Alias: s.Alias.ValueString(),
+			Value: s.Value.ValueString(),
+		}
+	}
+
+	return result, nil
 }
 
 func ExpandClusterConfigsSettings(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigSetting, diag.Diagnostics) {
@@ -76,6 +136,102 @@ func ExpandClusterConfigsSettings(ctx context.Context, o basetypes.ListValue) ([
 		}
 	}
 	return result, nil
+}
+
+func ExpandClusterBackup(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterCreateConfigMaintenanceBackup, diag.Diagnostics) {
+	backupObjV, diags := ConfigsMaintenanceBackupType{}.ValueFromObject(ctx, o)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	backup := backupObjV.(ConfigsMaintenanceBackupValue)
+
+	var result clusters.ClusterCreateConfigMaintenanceBackup
+	var hasValue bool
+
+	if o := backup.Full; !o.IsUnknown() && !o.IsNull() {
+		full, diags := ExpandClusterBackupFull(ctx, o)
+		if diags.HasError() {
+			return nil, diags
+		}
+		result.Full = full
+		hasValue = true
+	}
+
+	if o := backup.Incremental; !o.IsUnknown() && !o.IsNull() {
+		incremental, diags := ExpandClusterBackupIncremental(ctx, o)
+		if diags.HasError() {
+			return nil, diags
+		}
+		result.Incremental = incremental
+		hasValue = true
+	}
+
+	if o := backup.Differential; !o.IsUnknown() && !o.IsNull() {
+		differential, diags := ExpandClusterBackupDifferential(ctx, o)
+		if diags.HasError() {
+			return nil, diags
+		}
+		result.Differential = differential
+		hasValue = true
+	}
+
+	if !hasValue {
+		return nil, nil
+	}
+
+	return &result, nil
+}
+
+func ExpandClusterBackupFull(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterCreateConfigMaintenanceBackupObj, diag.Diagnostics) {
+	fullObjV, diags := ConfigsMaintenanceBackupFullType{}.ValueFromObject(ctx, o)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	backupFull := fullObjV.(ConfigsMaintenanceBackupFullValue)
+
+	result := clusters.ClusterCreateConfigMaintenanceBackupObj{
+		Start:     backupFull.Start.ValueString(),
+		KeepCount: int(backupFull.KeepCount.ValueInt64()),
+		KeepTime:  int(backupFull.KeepTime.ValueInt64()),
+	}
+
+	return &result, nil
+}
+
+func ExpandClusterBackupIncremental(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterCreateConfigMaintenanceBackupObj, diag.Diagnostics) {
+	incrementalObjV, diags := ConfigsMaintenanceBackupIncrementalType{}.ValueFromObject(ctx, o)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	backupIncremental := incrementalObjV.(ConfigsMaintenanceBackupIncrementalValue)
+
+	result := clusters.ClusterCreateConfigMaintenanceBackupObj{
+		Start:     backupIncremental.Start.ValueString(),
+		KeepCount: int(backupIncremental.KeepCount.ValueInt64()),
+		KeepTime:  int(backupIncremental.KeepTime.ValueInt64()),
+	}
+
+	return &result, nil
+}
+
+func ExpandClusterBackupDifferential(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterCreateConfigMaintenanceBackupObj, diag.Diagnostics) {
+	differentialObjV, diags := ConfigsMaintenanceBackupDifferentialType{}.ValueFromObject(ctx, o)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	backupDifferential := differentialObjV.(ConfigsMaintenanceBackupDifferentialValue)
+
+	result := clusters.ClusterCreateConfigMaintenanceBackupObj{
+		Start:     backupDifferential.Start.ValueString(),
+		KeepCount: int(backupDifferential.KeepCount.ValueInt64()),
+		KeepTime:  int(backupDifferential.KeepTime.ValueInt64()),
+	}
+
+	return &result, nil
 }
 
 func ExpandClusterConfigsUsers(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigUser, diag.Diagnostics) {
