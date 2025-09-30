@@ -50,7 +50,7 @@ type ClusterCreateConfigSetting struct {
 type ClusterCreateConfigMaintenance struct {
 	Start    string                                   `json:"start" required:"true"`
 	Backup   *ClusterCreateConfigMaintenanceBackup    `json:"backup,omitempty"`
-	CronTabs []ClusterCreateConfigMaintenanceCronTabs `json:"cron_tabs,omitempty"`
+	CronTabs []ClusterCreateConfigMaintenanceCronTabs `json:"crontabs,omitempty"`
 }
 
 type ClusterCreateConfigMaintenanceBackup struct {

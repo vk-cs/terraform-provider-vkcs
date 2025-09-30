@@ -18,6 +18,7 @@ description: |-
 - Add deprecation warning for vkcs_networking_floatingip address argument
 - Add getting vkcs_images_image datasource by id
 - Decrease vkcs_dataplatform_cluster create and update default timeouts
+- Support backup and crontabs in maintenance for dataplatform_cluster
 
 #### v0.12.1
 - Add info attribute for vkcs_dataplatfrom_cluster resource
