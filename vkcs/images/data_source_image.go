@@ -287,6 +287,11 @@ func dataSourceImagesImageRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("file", image.File)
 	d.Set("schema", image.Schema)
 
+	properties := resourceImagesImageExpandProperties(image.Properties)
+	if err := d.Set("properties", properties); err != nil {
+		log.Printf("[WARN] unable to set properties for image %s: %s", image.ID, err)
+	}
+
 	if image.Hidden {
 		return diag.Diagnostics{
 			diag.Diagnostic{
