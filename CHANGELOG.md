@@ -12,6 +12,8 @@ description: |-
 - Add vkcs_dataplatform_template data source
 - Add configs.users argument for vkcs_dataplatform_cluster
 - Support adding and removing users for vkcs_dataplatform_cluster
+- Add vkcs_iam_service_user resource
+- Add vkcs_iam_service_user data source
 
 #### v0.12.1
 - Add info attribute for vkcs_dataplatfrom_cluster resource
