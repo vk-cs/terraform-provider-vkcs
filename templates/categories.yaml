@@ -18,3 +18,4 @@ subCategoryMapping:
   monitoring: Cloud Monitoring
   cdn: CDN
   dataplatform: Data Platform
+  iam: Manage Access (IAM)

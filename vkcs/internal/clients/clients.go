@@ -123,3 +123,8 @@ func newDataPlatform(client *gophercloud.ProviderClient, eo gophercloud.Endpoint
 	sc, err := initClientOpts(client, eo, "dataplatform")
 	return sc, err
 }
+
+func newIAMServiceUsersV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
+	sc, err := initClientOpts(client, eo, "service-users")
+	return sc, err
+}

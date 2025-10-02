@@ -1,0 +1,1 @@
+terraform import vkcs_iam_service_user.service_user <service_user_id>
