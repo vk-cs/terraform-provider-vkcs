@@ -12,6 +12,7 @@ description: |-
 - Add vkcs_dataplatform_template data source
 - Add configs.users argument for vkcs_dataplatform_cluster
 - Support adding and removing users for vkcs_dataplatform_cluster
+- Add fill properties computed argument for vkcs_images_image datasource
 
 #### v0.12.1
 - Add info attribute for vkcs_dataplatfrom_cluster resource
