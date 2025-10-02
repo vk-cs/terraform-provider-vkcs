@@ -51,7 +51,7 @@ func ResourceNetworkingFloating() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				ForceNew:    true,
-				Description: "The actual floating IP address itself.",
+				Description: "The actual floating IP address itself. _note_ This argument is read-only, please do not set it.",
 			},
 
 			"pool": {

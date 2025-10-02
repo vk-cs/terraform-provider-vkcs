@@ -31,7 +31,7 @@ resource "vkcs_networking_floatingip" "associated_fip" {
 ## Argument Reference
 - `pool` **required** *string* &rarr;  The name of the pool from which to obtain the floating IP. Changing this creates a new floating IP.
 
-- `address` optional *string* &rarr;  The actual floating IP address itself.
+- `address` optional *string* &rarr;  The actual floating IP address itself. <br>**Note:** This argument is read-only, please do not set it.
 
 - `description` optional *string* &rarr;  Human-readable description for the floating IP.
 
