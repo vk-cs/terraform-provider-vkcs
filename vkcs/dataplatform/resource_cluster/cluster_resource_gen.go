@@ -595,11 +595,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 						"count": schema.Int64Attribute{
 							Optional:            true,
 							Computed:            true,
-							Description:         "Pod count. Changing this creates a new resource.",
-							MarkdownDescription: "Pod count. Changing this creates a new resource.",
-							PlanModifiers: []planmodifier.Int64{
-								int64planmodifier.RequiresReplace(),
-							},
+							Description:         "Pod count.",
+							MarkdownDescription: "Pod count.",
 							Validators: []validator.Int64{
 								int64validator.AtLeast(0),
 							},

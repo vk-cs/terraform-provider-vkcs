@@ -1308,7 +1308,7 @@
 										"name": "count",
 										"int64": {
 											"computed_optional_required": "computed_optional",
-											"description": "Pod count. Changing this creates a new resource.",
+											"description": "Pod count.",
 											"validators": [
 												{
 													"custom": {
@@ -1318,18 +1318,6 @@
 															}
 														],
 														"schema_definition": "int64validator.AtLeast(0)"
-													}
-												}
-											],
-											"plan_modifiers": [
-												{
-													"custom": {
-														"imports": [
-															{
-																"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-															}
-														],
-														"schema_definition": "int64planmodifier.RequiresReplace()"
 													}
 												}
 											]
