@@ -38,6 +38,7 @@ type clusterStatus string
 const (
 	clusterStatusCreating        clusterStatus = "InfraUpdating"
 	clusterStatusConfiguring     clusterStatus = "Configuring"
+	clusterStatusScaling         clusterStatus = "Scaling"
 	clusterStatusUpdating        clusterStatus = "Updating"
 	clusterStatusActive          clusterStatus = "Active"
 	clusterStatusWaitingDeleting clusterStatus = "Waiting deleting"
@@ -258,6 +259,14 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 	}
 
+	if !plan.PodGroups.IsUnknown() && !plan.PodGroups.IsNull() {
+		diags := clusterUpdatePodGroups(ctx, client, id, data.PodGroups, plan.PodGroups)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+	}
+
 	cluster, err := clusters.Get(client, id).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting cluster", err.Error())
@@ -388,6 +397,76 @@ func clusterUpdateConfigsUsers(ctx context.Context, client *gophercloud.ServiceC
 			return diags
 		}
 	}
+	return nil
+}
+
+func clusterUpdatePodGroups(ctx context.Context, client *gophercloud.ServiceClient, id string, dataPodGroupsRaw basetypes.ListValue, planPodGroupsRaw basetypes.ListValue) diag.Diagnostics {
+	var diags diag.Diagnostics
+	var d diag.Diagnostics
+
+	dataPodGroups, d := resource_cluster.ReadClusterPodGroups(ctx, dataPodGroupsRaw)
+	if d.HasError() {
+		return d
+	}
+
+	planPodGroups, d := resource_cluster.ReadClusterPodGroups(ctx, planPodGroupsRaw)
+	if d.HasError() {
+		return d
+	}
+
+	podGroups := make(map[string]resource_cluster.PodGroupsValue)
+	for _, dataPodGroup := range dataPodGroups {
+		podGroups[dataPodGroup.Name.ValueString()] = dataPodGroup
+	}
+
+	var podGroupsToUpdate []clusters.ClusterUpdatePodGroup
+	for _, planPodGroup := range planPodGroups {
+		oldCount := int(podGroups[planPodGroup.Name.ValueString()].Count.ValueInt64())
+		newCount := int(planPodGroup.Count.ValueInt64())
+
+		if oldCount == newCount {
+			continue
+		}
+
+		podGroupID := podGroups[planPodGroup.Name.ValueString()].Id.ValueString()
+
+		resource, d := resource_cluster.ReadClusterPodGroupResources(ctx, planPodGroup.Resource)
+		if d.HasError() {
+			return d
+		}
+
+		podGroupsToUpdate = append(podGroupsToUpdate, clusters.ClusterUpdatePodGroup{
+			ID:    podGroupID,
+			Count: &newCount,
+			Resource: clusters.ClusterUpdatePodGroupResource{
+				CPURequest: resource.CpuRequest.ValueString(),
+				RAMRequest: resource.RamRequest.ValueString(),
+			},
+		})
+	}
+
+	if len(podGroupsToUpdate) > 0 {
+		_, err := clusters.UpdateClusterPodGroup(client, id, &clusters.ClusterUpdatePodGroups{PodGroups: podGroupsToUpdate}).Extract()
+		if err != nil {
+			diags.AddError("Error calling Data Platform API to update cluster pod groups", err.Error())
+			return diags
+		}
+
+		stateConf := &retry.StateChangeConf{
+			Pending:    []string{string(clusterStatusConfiguring), string(clusterStatusUpdating), string(clusterStatusScaling)},
+			Target:     []string{string(clusterStatusActive)},
+			Refresh:    clusterStateRefreshFunc(client, id),
+			Timeout:    clusterUpdateTimeout,
+			Delay:      clusterUpdateDelay,
+			MinTimeout: clusterUpdateMinTimeout,
+		}
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			diags.AddError("Error waiting for cluster update", err.Error())
+			return diags
+		}
+	}
+
 	return nil
 }
 
