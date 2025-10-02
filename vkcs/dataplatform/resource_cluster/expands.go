@@ -368,12 +368,11 @@ func ExpandClusterPodGroups(ctx context.Context, template *templates.ClusterTemp
 }
 
 func ExpandClusterPodGroupsResource(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterCreatePodGroupResource, diag.Diagnostics) {
-	resourceV, diags := PodGroupsResourceType{}.ValueFromObject(ctx, o)
+	resource, diags := ReadClusterPodGroupResources(ctx, o)
 	if diags.HasError() {
 		return nil, diags
 	}
 
-	resource := resourceV.(PodGroupsResourceValue)
 	result := clusters.ClusterCreatePodGroupResource{
 		CPURequest: resource.CpuRequest.ValueString(),
 		RAMRequest: resource.RamRequest.ValueString(),
@@ -397,4 +396,22 @@ func ExpandClusterPodGroupsVolumes(ctx context.Context, o basetypes.MapValue) (m
 		}
 	}
 	return result, nil
+}
+
+func ReadClusterPodGroups(ctx context.Context, o basetypes.ListValue) ([]PodGroupsValue, diag.Diagnostics) {
+	podGroupsV := make([]PodGroupsValue, 0, len(o.Elements()))
+	diags := o.ElementsAs(ctx, &podGroupsV, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+	return podGroupsV, nil
+}
+
+func ReadClusterPodGroupResources(ctx context.Context, o basetypes.ObjectValue) (*PodGroupsResourceValue, diag.Diagnostics) {
+	resourceV, diags := PodGroupsResourceType{}.ValueFromObject(ctx, o)
+	if diags.HasError() {
+		return nil, diags
+	}
+	resource := resourceV.(PodGroupsResourceValue)
+	return &resource, nil
 }

@@ -134,6 +134,21 @@ type ClusterUpdateUser struct {
 	Role     string `json:"role,omitempty"`
 }
 
+type ClusterUpdatePodGroups struct {
+	PodGroups []ClusterUpdatePodGroup `json:"pod_groups" required:"true"`
+}
+
+type ClusterUpdatePodGroup struct {
+	ID       string                        `json:"id" required:"true"`
+	Resource ClusterUpdatePodGroupResource `json:"resource,omitempty"`
+	Count    *int                          `json:"count" required:"true"`
+}
+
+type ClusterUpdatePodGroupResource struct {
+	CPURequest string `json:"cpu_request,omitempty"`
+	RAMRequest string `json:"ram_request,omitempty"`
+}
+
 type ClusterDeleteUsers struct {
 	ClusterUsersIDs []string `q:"cluster_users_ids"`
 }
@@ -252,6 +267,18 @@ func (opts *ClusterUpdateUser) Map() (map[string]interface{}, error) {
 	return body, err
 }
 
+// Map converts opts to a map (for a request body)
+func (opts *ClusterUpdatePodGroups) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
+// Map converts opts to a map (for a request body)
+func (opts *ClusterUpdatePodGroup) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
 func (opts *ClusterDeleteUsers) ToQuery() (string, error) {
 	q, err := gophercloud.BuildQueryString(opts)
 	return q.String(), err
@@ -344,7 +371,21 @@ func DeleteClusterUsers(client *gophercloud.ServiceClient, id string, opts OptsQ
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
+}
 
+func UpdateClusterPodGroup(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r UpdateResult) {
+	common.SetHeaders(client)
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := client.Patch(clusterPodGroupsURL(client, id), &b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
 }
 
 func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
