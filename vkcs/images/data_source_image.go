@@ -286,6 +286,7 @@ func dataSourceImagesImageRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("updated_at", image.UpdatedAt.Format(time.RFC3339))
 	d.Set("file", image.File)
 	d.Set("schema", image.Schema)
+	d.Set("properties", image.Properties)
 
 	if image.Hidden {
 		return diag.Diagnostics{
