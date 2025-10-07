@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.12.1",
+  "provider_version": "v0.13.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -94,7 +94,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new plan.",
             "computed": true
           },
           "schedule": {
@@ -421,7 +421,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used. Changing this creates a new cloud_monitoring.",
             "computed": true
           },
           "script": {
@@ -1238,7 +1238,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used.",
+            "description": "The region in which to obtain the service client. If omitted, the `region` argument of the provider is used. Changing this creates a new backup.",
             "computed": true,
             "new_since": "v0.4.0"
           },
@@ -2519,7 +2519,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new bgp_instance.",
             "computed": true
           },
           "updated_at": {
@@ -2599,7 +2599,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new bgp_neighbor.",
             "computed": true
           },
           "remote_asn": {
@@ -2669,7 +2669,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new bgp_static_announce.",
             "computed": true
           },
           "updated_at": {
@@ -2728,7 +2728,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new conntrack_helper.",
             "computed": true
           },
           "updated_at": {
@@ -2809,7 +2809,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new interface.",
             "computed": true
           },
           "sdn": {
@@ -2879,7 +2879,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new ip_port_forwarding.",
             "computed": true
           },
           "source": {
@@ -2945,7 +2945,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new router.",
             "computed": true
           },
           "updated_at": {
@@ -3005,7 +3005,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new static_route.",
             "computed": true
           },
           "updated_at": {
@@ -3066,7 +3066,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new vrrp.",
             "computed": true
           },
           "sdn": {
@@ -3132,7 +3132,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new vrrp_address.",
             "computed": true
           },
           "updated_at": {
@@ -3199,7 +3199,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`.",
+            "description": "The `region` to fetch availability zones from, defaults to the provider's `region`. Changing this creates a new vrrp_interface.",
             "computed": true
           },
           "updated_at": {
@@ -3210,6 +3210,62 @@
         },
         "description": "Manages a direct connect VRRP interface resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
+      },
+      "vkcs_iam_service_user": {
+        "schema": {
+          "created_at": {
+            "type": "TypeString",
+            "description": "Service user creation timestamp.",
+            "computed": true
+          },
+          "creator_name": {
+            "type": "TypeString",
+            "description": "Name of the user who created the service user.",
+            "computed": true
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the service user. The maximum length is 256 characters. Changing this creates a new resource.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the service user.",
+            "computed": true
+          },
+          "login": {
+            "type": "TypeString",
+            "description": "Login name of the service user.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Name of the service user. The name must be unique. The length must be between 3 and 32 characters. Changing this creates a new resource."
+          },
+          "password": {
+            "type": "TypeString",
+            "description": "Password of the service user. _note_ This is a sensitive attribute.",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the IAM Service Users client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+            "computed": true
+          },
+          "role_names": {
+            "type": "TypeList",
+            "required": true,
+            "description": "Names of roles assigned to the service user. Changing this creates a new resource.",
+            "elem": {
+              "type": "TypeString"
+            }
+          }
+        },
+        "description": "Manages an IAM service user within VKCS.",
+        "new_since": "v0.13.0"
       },
       "vkcs_images_image": {
         "schema": {
@@ -4134,7 +4190,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The region in which to obtain the Container Infra client. If omitted, the `region` argument of the provider is used. Changing this creates a new security policy.",
+            "description": "The region in which to obtain the Container Infra client. If omitted, the `region` argument of the provider is used. Changing this creates a new security_policy.",
             "computed": true
           },
           "security_policy_template_id": {
@@ -5313,7 +5369,7 @@
           "region": {
             "type": "TypeString",
             "optional": true,
-            "description": "The `region` in which ML Platform client is obtained, defaults to the provider's `region`.",
+            "description": "The `region` in which ML Platform client is obtained, defaults to the provider's `region`. Changing this creates a new spark_k8s.",
             "computed": true
           },
           "registry_id": {
@@ -7966,6 +8022,79 @@
         },
         "new_since": "v0.12.0"
       },
+      "vkcs_dataplatform_template": {
+        "schema": {
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the cluster template.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "description": "Name of the cluster template.",
+            "computed": true
+          },
+          "pod_groups": {
+            "type": "TypeList",
+            "description": "List of pod groups in the template.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "count": {
+                  "type": "TypeInt",
+                  "description": "Number of pods in the pod group.",
+                  "computed": true
+                },
+                "name": {
+                  "type": "TypeString",
+                  "description": "Pod group name.",
+                  "computed": true
+                },
+                "resource": {
+                  "description": "Resource settings for the pod group.",
+                  "computed": true
+                },
+                "volumes": {
+                  "type": "TypeMap",
+                  "description": "Volumes configuration for the pod group.",
+                  "computed": true,
+                  "elem": {
+                    "schema": {
+                      "count": {
+                        "type": "TypeInt",
+                        "description": "Volume count.",
+                        "computed": true
+                      },
+                      "storage": {
+                        "type": "TypeString",
+                        "description": "Volume storage size.",
+                        "computed": true
+                      },
+                      "storage_class_name": {
+                        "type": "TypeString",
+                        "description": "Storage class name for the volume.",
+                        "computed": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "product_name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Product name."
+          },
+          "product_version": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Product version.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.13.0"
+      },
       "vkcs_db_backup": {
         "schema": {
           "backup_id": {
@@ -8653,6 +8782,53 @@
         },
         "description": "Use this data source to get direct connect api options._note_ This data source requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
+      },
+      "vkcs_iam_service_user": {
+        "schema": {
+          "created_at": {
+            "type": "TypeString",
+            "description": "Service user creation timestamp.",
+            "computed": true
+          },
+          "creator_name": {
+            "type": "TypeString",
+            "description": "Name of the user who created the service user.",
+            "computed": true
+          },
+          "description": {
+            "type": "TypeString",
+            "description": "Service user description.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "ID of the service user.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the service user.",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the IAM Service Users client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          },
+          "role_names": {
+            "type": "TypeList",
+            "description": "Names of roles assigned to the service user.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          }
+        },
+        "description": "Use this data source to get information about an IAM service user.",
+        "new_since": "v0.13.0"
       },
       "vkcs_images_image": {
         "schema": {
