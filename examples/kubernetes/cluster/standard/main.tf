@@ -24,4 +24,11 @@ resource "vkcs_kubernetes_cluster" "k8s_cluster" {
   depends_on = [
     vkcs_networking_router_interface.app,
   ]
+
+  # under heavy load master flavor can be scaled automatically,
+  # you can manually set new flavor in terraform manifest,
+  # or use this option to ignore these changes
+  lifecycle {
+    ignore_changes = [master_flavor]
+  }
 }
