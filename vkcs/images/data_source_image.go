@@ -30,7 +30,7 @@ func DataSourceImagesImage() *schema.Resource {
 
 			"id": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "The UUID of the image.",
 			},
 
@@ -324,6 +324,18 @@ func mostRecentImage(images []images.Image) images.Image {
 
 func filterAllImages(allImages []images.Image, d *schema.ResourceData) (*images.Image, bool, diag.Diagnostics) {
 	var image images.Image
+
+	if v, ok := d.GetOk("id"); ok {
+		id := v.(string)
+		for _, img := range allImages {
+			if img.ID == id {
+				log.Printf("[DEBUG] Found image by ID: %s", id)
+				return &img, true, nil
+			}
+		}
+		return nil, false, diag.Errorf("No image found with ID: %s", id)
+	}
+
 	if d.Get("default").(bool) {
 		allImages = filterImagesByDefault(allImages)
 		log.Printf("[DEBUG] Image list filtered by default flag")
