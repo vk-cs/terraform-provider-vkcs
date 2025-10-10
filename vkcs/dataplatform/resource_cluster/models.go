@@ -31,13 +31,9 @@ func (m *ClusterModel) UpdateState(ctx context.Context, cluster *clusters.Cluste
 	diags.Append(state.Set(ctx, m)...)
 
 	if cluster.Configs != nil {
-		maintenance, d := FlattenClusterConfigsMaintenance(ctx, cluster.Configs.Maintenance)
-		diags.Append(d...)
-		if diags.HasError() {
-			return diags
-		}
+		var d diag.Diagnostics
 
-		d = state.SetAttribute(ctx, path.Root("configs").AtName("maintenance"), maintenance)
+		d = UpdateClusterConfigsMaintenance(ctx, cluster.Configs.Maintenance, oldConfigs.Maintenance, path.Root("configs").AtName("maintenance"), state)
 		diags.Append(d...)
 		if diags.HasError() {
 			return diags
@@ -103,6 +99,66 @@ func (m *ClusterModel) UpdateFromCluster(ctx context.Context, cluster *clusters.
 	return diags
 }
 
+func UpdateClusterConfigsMaintenance(ctx context.Context, maintenance *clusters.ClusterConfigMaintenance, oldMaintenanceV basetypes.ObjectValue, path path.Path, state *tfsdk.State) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	oldMaintenance, d := ExpandClusterConfigsMaintenance(ctx, oldMaintenanceV)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+
+	maintenance.CronTabs = MergeClusterConfigsMaintenanceCronTabs(maintenance.CronTabs, oldMaintenance.CronTabs)
+
+	maintenanceV, d := FlattenClusterConfigsMaintenance(ctx, maintenance)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+
+	d = state.SetAttribute(ctx, path, maintenanceV)
+	diags.Append(d...)
+
+	return diags
+}
+
+func MergeClusterConfigsMaintenanceCronTabs(newCrontabs []clusters.ClusterConfigMaintenanceCronTabs, oldCrontabs []clusters.ClusterCreateConfigMaintenanceCronTabs) []clusters.ClusterConfigMaintenanceCronTabs {
+	result := make([]clusters.ClusterConfigMaintenanceCronTabs, 0, len(newCrontabs))
+
+	oldCronTabsByName := make(map[string]clusters.ClusterCreateConfigMaintenanceCronTabs, len(oldCrontabs))
+	for _, old := range oldCrontabs {
+		oldCronTabsByName[old.Name] = old
+	}
+
+	for _, newCron := range newCrontabs {
+		oldCron, ok := oldCronTabsByName[newCron.Name]
+		if !ok {
+			continue
+		}
+
+		newCron.Settings = MergeClusterConfigsMaintenanceCronTabsSettings(newCron.Settings, oldCron.Settings)
+		result = append(result, newCron)
+	}
+
+	return result
+}
+
+func MergeClusterConfigsMaintenanceCronTabsSettings(newSettings []clusters.ClusterConfigSetting, oldSettings []clusters.ClusterCreateConfigSetting) []clusters.ClusterConfigSetting {
+	existing := make(map[string]struct{}, len(oldSettings))
+	for _, s := range oldSettings {
+		existing[s.Alias] = struct{}{}
+	}
+
+	filtered := make([]clusters.ClusterConfigSetting, 0, len(newSettings))
+	for _, s := range newSettings {
+		if _, ok := existing[s.Alias]; ok {
+			filtered = append(filtered, s)
+		}
+	}
+
+	return filtered
+}
+
 func UpdateClusterConfigsUsers(ctx context.Context, users []clusters.ClusterConfigUser, oldUsers basetypes.ListValue, path path.Path, state *tfsdk.State) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -117,11 +173,19 @@ func UpdateClusterConfigsUsers(ctx context.Context, users []clusters.ClusterConf
 
 	for _, u := range users {
 		updated := false
+
+		var roleValue types.String
+		if u.Role == "" {
+			roleValue = types.StringNull()
+		} else {
+			roleValue = types.StringValue(u.Role)
+		}
+
 		for i, user := range usersV {
 			if user.Username.ValueString() == u.Username {
 				usersV[i].CreatedAt = types.StringValue(u.CreatedAt)
 				usersV[i].Id = types.StringValue(u.ID)
-				usersV[i].Role = types.StringValue(u.Role)
+				usersV[i].Role = roleValue
 				updated = true
 			}
 		}
@@ -129,7 +193,7 @@ func UpdateClusterConfigsUsers(ctx context.Context, users []clusters.ClusterConf
 			usersV = append(usersV, ConfigsUsersValue{
 				CreatedAt: types.StringValue(u.CreatedAt),
 				Id:        types.StringValue(u.ID),
-				Role:      types.StringValue(u.Role),
+				Role:      roleValue,
 				Username:  types.StringValue(u.Username),
 				Password:  types.StringValue(importedPassword),
 				state:     attr.ValueStateKnown,
@@ -221,46 +285,47 @@ func UpdateClusterConfigsWarehousesConnections(ctx context.Context, i int, conne
 	return nil
 }
 
-func UpdateClusterConfigsSettings(ctx context.Context, o []clusters.ClusterConfigSetting, oldSettings basetypes.ListValue, path path.Path, state *tfsdk.State) diag.Diagnostics {
+func UpdateClusterConfigsSettings(ctx context.Context, newSettings []clusters.ClusterConfigSetting, oldSettings basetypes.ListValue, path path.Path, state *tfsdk.State) diag.Diagnostics {
 	var diags diag.Diagnostics
-	settingsV := make([]ConfigsSettingsValue, 0, len(oldSettings.Elements()))
-	if len(oldSettings.Elements()) > 0 {
-		d := oldSettings.ElementsAs(ctx, &settingsV, false)
+
+	oldElems := oldSettings.Elements()
+	oldSettingsV := make([]ConfigsSettingsValue, 0, len(oldElems))
+	if len(oldElems) > 0 {
+		d := oldSettings.ElementsAs(ctx, &oldSettingsV, false)
 		diags.Append(d...)
 		if diags.HasError() {
 			return diags
 		}
 	}
 
-	for _, s := range o {
-		updated := false
-		for i, setting := range settingsV {
-			if setting.Alias.ValueString() == s.Alias {
-				settingsV[i].Value = types.StringValue(s.Value)
-				updated = true
-			}
-		}
-		if !updated {
-			settingsV = append(settingsV, ConfigsSettingsValue{
-				Alias: types.StringValue(s.Alias),
-				Value: types.StringValue(s.Value),
-				state: attr.ValueStateKnown,
+	existingAliases := make(map[string]struct{}, len(oldSettingsV))
+	for _, old := range oldSettingsV {
+		existingAliases[old.Alias.ValueString()] = struct{}{}
+	}
+
+	updatedSettingsV := make([]ConfigsSettingsValue, 0, len(newSettings))
+	for _, newSetting := range newSettings {
+		if _, exists := existingAliases[newSetting.Alias]; exists {
+			updatedSettingsV = append(updatedSettingsV, ConfigsSettingsValue{
+				Alias: types.StringValue(newSetting.Alias),
+				Value: types.StringValue(newSetting.Value),
 			})
 		}
 	}
-	if len(settingsV) == 0 {
-		d := state.SetAttribute(ctx, path, types.ListNull(ConfigsSettingsValue{}.Type(ctx)))
-		diags.Append(d...)
-		if diags.HasError() {
-			return diags
-		}
+
+	var value any
+	if len(updatedSettingsV) == 0 {
+		value = types.ListNull(ConfigsSettingsValue{}.Type(ctx))
 	} else {
-		d := state.SetAttribute(ctx, path, settingsV)
-		diags.Append(d...)
-		if diags.HasError() {
-			return diags
-		}
+		value = updatedSettingsV
 	}
+
+	d := state.SetAttribute(ctx, path, value)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+
 	return nil
 }
 

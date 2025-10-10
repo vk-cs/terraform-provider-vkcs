@@ -11,6 +11,8 @@ description: |-
 - Add enable_private_dns to vkcs_networking_subnet resource and data source
 - Support external users import for vkcs_dataplatform_cluster
 - Correctly mark some vkcs_kubernetes_node_group data source arguments as attributes
+- Fix the ability to specify cronTabs.settings for vkcs_dataplatform_cluster
+- Fix the ability to specify setiings for vkcs_dataplatform_cluster
 
 #### v0.13.0 
 - Add vkcs_iam_service_user resource
