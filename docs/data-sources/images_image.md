@@ -43,6 +43,8 @@ data "vkcs_images_image" "eurolinux9" {
 ## Argument Reference
 - `default` optional *boolean* &rarr;  Search for an image that is available for virtual machine creation.<br>**New since v0.4.2**.
 
+- `id` optional *string* &rarr;  The UUID of the image.
+
 - `member_status` optional *string* &rarr;  Status for adding a new member (tenant) to an image member list.
 
 - `most_recent` optional *boolean* &rarr;  If more than one result is returned, use the most recent image.
@@ -75,8 +77,6 @@ In addition to all arguments above, the following attributes are exported:
 - `disk_format` *string* &rarr;  The format of the image's disk.
 
 - `file` *string* &rarr;  The trailing path after the endpoint that represent the location of the image or the path to retrieve it.
-
-- `id` *string* &rarr;  The UUID of the image.
 
 - `metadata` *map of* *string* &rarr;  The metadata associated with the image. Image metadata allow for meaningfully define the image properties and tags. See https://docs.openstack.org/glance/latest/user/metadefs-concepts.html.
 
