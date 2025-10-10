@@ -269,72 +269,76 @@ func UpdateClusterPodGroups(ctx context.Context, o []clusters.ClusterPodGroup, s
 		return nil
 	}
 
+	clusterPodgroupsMap := make(map[string]clusters.ClusterPodGroup)
 	for _, p := range o {
-		var statePodGroups []PodGroupsValue
-		d := state.GetAttribute(ctx, path.Root("pod_groups"), &statePodGroups)
-		diags.Append(d...)
-		if diags.HasError() {
-			return diags
-		}
+		clusterPodgroupsMap[p.Name] = p
+	}
 
-		for i, group := range statePodGroups {
-			if group.Name.ValueString() == p.Name {
-				d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("alias"), p.Alias)
-				diags.Append(d...)
-				if diags.HasError() {
-					return diags
-				}
+	var statePodGroups []PodGroupsValue
+	d := state.GetAttribute(ctx, path.Root("pod_groups"), &statePodGroups)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
 
-				d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("availability_zone"), p.AvailabilityZone)
-				diags.Append(d...)
-				if diags.HasError() {
-					return diags
-				}
+	for i, group := range statePodGroups {
+		if clusterPodGroup, ok := clusterPodgroupsMap[group.Name.ValueString()]; ok {
+			d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("alias"), clusterPodGroup.Alias)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
 
-				d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("count"), p.Count)
-				diags.Append(d...)
-				if diags.HasError() {
-					return diags
-				}
+			d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("availability_zone"), clusterPodGroup.AvailabilityZone)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
 
-				d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("floating_ip_pool"), p.FloatingIPPool)
-				diags.Append(d...)
-				if diags.HasError() {
-					return diags
-				}
+			d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("count"), clusterPodGroup.Count)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
 
-				d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("id"), p.ID)
-				diags.Append(d...)
-				if diags.HasError() {
-					return diags
-				}
+			d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("floating_ip_pool"), clusterPodGroup.FloatingIPPool)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
 
-				volumes, d := FlattenClusterPodGroupsVolumes(ctx, p.Volumes)
-				diags.Append(d...)
-				if diags.HasError() {
-					return diags
-				}
+			d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("id"), clusterPodGroup.ID)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
 
-				d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("volumes"), volumes)
-				diags.Append(d...)
-				if diags.HasError() {
-					return diags
-				}
+			volumes, d := FlattenClusterPodGroupsVolumes(ctx, clusterPodGroup.Volumes)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
 
-				resource, d := FlattenClusterPodGroupsResource(ctx, p.Resource)
-				diags.Append(d...)
-				if diags.HasError() {
-					return diags
-				}
+			d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("volumes"), volumes)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
 
-				d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("resource"), resource)
-				diags.Append(d...)
-				if diags.HasError() {
-					return diags
-				}
+			resource, d := FlattenClusterPodGroupsResource(ctx, clusterPodGroup.Resource)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
+
+			d = state.SetAttribute(ctx, path.Root("pod_groups").AtListIndex(i).AtName("resource"), resource)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
 			}
 		}
 	}
+
 	return nil
 }
 

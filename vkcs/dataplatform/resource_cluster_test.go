@@ -104,8 +104,9 @@ func TestAccDataPlatformClusterIcebergAddAndDeleteUser_big(t *testing.T) {
 			},
 			{
 				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
-					"TestAccDataPlatformClusterResourceBaseNetwork":  testAccDataPlatformClusterResourceBaseNetwork,
-					"TestAccDataPlatformClusterResourceIcebergUsers": oneUser,
+					"TestAccDataPlatformClusterResourceBaseNetwork":         testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers":        oneUser,
+					"TestAccDataPlatformClusterResourceIcebergBouncerCount": "0",
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "name", "tf-basic-iceberg"),
@@ -115,8 +116,9 @@ func TestAccDataPlatformClusterIcebergAddAndDeleteUser_big(t *testing.T) {
 			},
 			{
 				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
-					"TestAccDataPlatformClusterResourceBaseNetwork":  testAccDataPlatformClusterResourceBaseNetwork,
-					"TestAccDataPlatformClusterResourceIcebergUsers": twoUsers,
+					"TestAccDataPlatformClusterResourceBaseNetwork":         testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers":        twoUsers,
+					"TestAccDataPlatformClusterResourceIcebergBouncerCount": "0",
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.users.#", "2"),
@@ -124,11 +126,52 @@ func TestAccDataPlatformClusterIcebergAddAndDeleteUser_big(t *testing.T) {
 			},
 			{
 				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
-					"TestAccDataPlatformClusterResourceBaseNetwork":  testAccDataPlatformClusterResourceBaseNetwork,
-					"TestAccDataPlatformClusterResourceIcebergUsers": oneUser,
+					"TestAccDataPlatformClusterResourceBaseNetwork":         testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers":        oneUser,
+					"TestAccDataPlatformClusterResourceIcebergBouncerCount": "0",
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.users.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataPlatformClusterIcebergScale_big(t *testing.T) {
+	user := testRenderDataplatformClusterUsers([]DataplatformClusterUser{{Username: "vkdata", Password: "Test_p#ssword-12-3", Role: "dbOwner"}})
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataPlatformClusterResourceBaseNetwork,
+				Check: func(state *terraform.State) error {
+					time.Sleep(30 * time.Second)
+					return nil
+				},
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
+					"TestAccDataPlatformClusterResourceBaseNetwork":         testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers":        user,
+					"TestAccDataPlatformClusterResourceIcebergBouncerCount": "0",
+				}),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "name", "tf-basic-iceberg"),
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "description", "tf-basic-iceberg-description"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
+					"TestAccDataPlatformClusterResourceBaseNetwork":         testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers":        user,
+					"TestAccDataPlatformClusterResourceIcebergBouncerCount": "1",
+				}),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "pod_groups.0.count", "1"),
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "pod_groups.1.count", "1"),
 				),
 			},
 		},
@@ -377,7 +420,7 @@ resource "vkcs_dataplatform_cluster" "basic" {
     },
     {
       name = "bouncer"
-      count = 1
+      count = {{ .TestAccDataPlatformClusterResourceIcebergBouncerCount }} 
       resource = {
         cpu_request = "0.2"
         ram_request = "1"
