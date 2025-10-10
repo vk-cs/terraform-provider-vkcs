@@ -1,0 +1,1 @@
+/home/shamil/vk/terraform-provider-vkcs/examples/dataplatform/cluster/base-db.tf

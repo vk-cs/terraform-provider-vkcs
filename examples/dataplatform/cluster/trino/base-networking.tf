@@ -1,0 +1,1 @@
+/home/shamil/vk/terraform-provider-vkcs/examples/networking/main.tf
