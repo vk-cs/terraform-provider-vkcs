@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
-	imonitoring "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/templater"
+	imonitoring "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/monitoring/templater"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/monitoring"
 
 	"github.com/gophercloud/gophercloud"

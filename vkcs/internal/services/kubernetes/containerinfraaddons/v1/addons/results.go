@@ -3,8 +3,9 @@ package addons
 import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/pagination"
-	v1 "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfraaddons/v1"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfraaddons/v1/clusteraddons"
+
+	v1 "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfraaddons/v1"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfraaddons/v1/clusteraddons"
 )
 
 type GetAvailableAddonResult struct {

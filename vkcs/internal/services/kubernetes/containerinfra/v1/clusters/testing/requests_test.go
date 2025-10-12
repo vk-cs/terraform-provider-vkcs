@@ -2,13 +2,15 @@ package testing
 
 import (
 	"fmt"
+
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v1/clusters"
+
 	"net/http"
 	"testing"
 
 	th "github.com/gophercloud/gophercloud/testhelper"
 	fake "github.com/gophercloud/gophercloud/testhelper/client"
 	"github.com/stretchr/testify/assert"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/containerinfra/v1/clusters"
 )
 
 func TestClusterCreateOpts(t *testing.T) {
