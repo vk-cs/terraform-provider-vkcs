@@ -24,10 +24,10 @@ import (
 const (
 	clusterCreateDelay      = 5 * time.Second
 	clusterCreateMinTimeout = 5 * time.Second
-	clusterCreateTimeout    = 90 * time.Minute
+	clusterCreateTimeout    = 60 * time.Minute
 	clusterUpdateDelay      = 5 * time.Second
 	clusterUpdateMinTimeout = 5 * time.Second
-	clusterUpdateTimeout    = 90 * time.Minute
+	clusterUpdateTimeout    = 60 * time.Minute
 	clusterDeleteDelay      = 5 * time.Second
 	clusterDeleteMinTimeout = 5 * time.Second
 	clusterDeleteTimeout    = 60 * time.Minute
