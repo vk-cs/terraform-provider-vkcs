@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/planmodifiers"
-	icapabilities "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/imagecapabilities"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/templater"
+	icapabilities "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/images/imagecapabilities"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/monitoring/templater"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
