@@ -18,6 +18,11 @@ import (
 type subnetExtended struct {
 	subnets.Subnet
 	networking.SDNExt
+	EnablePrivateDNSExt
+}
+
+type EnablePrivateDNSExt struct {
+	EnablePrivateDNS bool `json:"enable_private_dns"`
 }
 
 // networkingSubnetStateRefreshFunc returns a standard retry.StateRefreshFunc to wait for subnet status.

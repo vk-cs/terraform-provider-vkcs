@@ -10,7 +10,8 @@ import (
 // SubnetCreateOpts represents the attributes used when creating a new subnet.
 type SubnetCreateOpts struct {
 	subnets.CreateOpts
-	ValueSpecs map[string]string `json:"value_specs,omitempty"`
+	ValueSpecs       map[string]string `json:"value_specs,omitempty"`
+	EnablePrivateDNS *bool             `json:"enable_private_dns,omitempty"`
 }
 
 // ToSubnetCreateMap casts a CreateOpts struct to a map.
