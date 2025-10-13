@@ -308,6 +308,46 @@ func testAccCheckSDN(value string) error {
 	return nil
 }
 
+func TestAccNetworkingSubnet_enablePrivateDNS(t *testing.T) {
+	var subnet subnets.Subnet
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNetworkingSubnetEnablePrivateDNS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
+					resource.TestCheckResourceAttr(
+						"vkcs_networking_subnet.subnet_1", "enable_private_dns", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNetworkingSubnet_disablePrivateDNS(t *testing.T) {
+	var subnet subnets.Subnet
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckNetworkingSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNetworkingSubnetDisablePrivateDNS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNetworkingSubnetExists("vkcs_networking_subnet.subnet_1", &subnet),
+					resource.TestCheckResourceAttr(
+						"vkcs_networking_subnet.subnet_1", "enable_private_dns", "false"),
+				),
+			},
+		},
+	})
+}
+
 const testAccNetworkingSubnetBasic = `
 resource "vkcs_networking_network" "network_1" {
   name = "network_1"
@@ -528,5 +568,33 @@ resource "vkcs_networking_subnet" "subnet_1" {
     start = "192.168.199.100"
     end = "192.168.199.200"
   }
+}
+`
+
+const testAccNetworkingSubnetEnablePrivateDNS = `
+resource "vkcs_networking_network" "network_1" {
+  name = "network_1"
+  admin_state_up = "true"
+}
+
+resource "vkcs_networking_subnet" "subnet_1" {
+  name = "subnet_1"
+  cidr = "192.168.199.0/24"
+  enable_private_dns = true
+  network_id = vkcs_networking_network.network_1.id
+}
+`
+
+const testAccNetworkingSubnetDisablePrivateDNS = `
+resource "vkcs_networking_network" "network_1" {
+  name = "network_1"
+  admin_state_up = "true"
+}
+
+resource "vkcs_networking_subnet" "subnet_1" {
+  name = "subnet_1"
+  cidr = "192.168.199.0/24"
+  enable_private_dns = false
+  network_id = vkcs_networking_network.network_1.id
 }
 `
