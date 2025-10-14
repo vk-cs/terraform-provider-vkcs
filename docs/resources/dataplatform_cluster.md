@@ -8,6 +8,7 @@ description: |-
 
 # vkcs_dataplatform_cluster
 
+~> **Note:** Dataplatform cluster resource is currently in beta status.
 
 
 ## Example Usage
