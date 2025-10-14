@@ -221,7 +221,7 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 - `pod_groups`  *list* &rarr;  Cluster pod groups. Changing this creates a new resource.
     - `name` **required** *string* &rarr;  Pod group name.
 
-    - `count` optional *number* &rarr;  Pod count. Changing this creates a new resource.
+    - `count` optional *number* &rarr;  Pod count.
 
     - `floating_ip_pool` optional *string* &rarr;  Floating IP pool ID. Changing this creates a new resource.
 
