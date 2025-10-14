@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.13.0 (unreleased)
+#### v0.13.0
 - Add vkcs_iam_service_user resource
 - Add vkcs_iam_service_user data source
 - Add vkcs_dataplatform_template data source

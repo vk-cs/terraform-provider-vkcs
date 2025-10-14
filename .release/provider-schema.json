@@ -1080,7 +1080,7 @@
                 "count": {
                   "type": "TypeInt",
                   "optional": true,
-                  "description": "Pod count. Changing this creates a new resource.",
+                  "description": "Pod count.",
                   "computed": true
                 },
                 "floating_ip_pool": {
@@ -5477,7 +5477,7 @@
           "address": {
             "type": "TypeString",
             "optional": true,
-            "description": "The actual floating IP address itself.",
+            "description": "The actual floating IP address itself. _note_ This argument is read-only, please do not set it.",
             "computed": true,
             "force_new": true
           },
@@ -8865,8 +8865,8 @@
           },
           "id": {
             "type": "TypeString",
-            "description": "The UUID of the image.",
-            "computed": true
+            "optional": true,
+            "description": "The UUID of the image."
           },
           "member_status": {
             "type": "TypeString",
