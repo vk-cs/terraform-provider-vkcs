@@ -36,6 +36,8 @@ resource "vkcs_lb_members" "front_workers" {
 
     - `backup` optional *boolean* &rarr;  A bool that indicates whether the member is backup.
 
+    - `id` optional *string* &rarr;  The unique ID for the member. <br>**Note:** Please don't set this parameter.
+
     - `name` optional *string* &rarr;  Human-readable name for the member.
 
     - `subnet_id` optional *string* &rarr;  The subnet in which to access the member.
@@ -48,9 +50,6 @@ resource "vkcs_lb_members" "front_workers" {
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  ID of the resource.
-
-- `member` 
-    - `id` *string* &rarr;  The unique ID for the member.
 
 
 

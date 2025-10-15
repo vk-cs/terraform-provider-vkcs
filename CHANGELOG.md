@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.13.1 (unreleased)
+- Mark id attribute of vkcs_lb_members.member as optional
+
 #### v0.13.0
 - Add vkcs_iam_service_user resource
 - Add vkcs_iam_service_user data source
