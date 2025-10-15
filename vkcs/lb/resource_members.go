@@ -56,8 +56,8 @@ func ResourceMembers() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The unique ID for the member.",
+							Optional:    true,
+							Description: "The unique ID for the member. _note_ Please don't set this parameter.",
 						},
 
 						"name": {
