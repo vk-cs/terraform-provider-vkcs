@@ -415,3 +415,344 @@ func ReadClusterPodGroupResources(ctx context.Context, o basetypes.ObjectValue) 
 	resource := resourceV.(PodGroupsResourceValue)
 	return &resource, nil
 }
+
+func BuildUpdateClusterConfigsMaintenance(ctx context.Context, currentMaintenance basetypes.ObjectValue, planMaintenance basetypes.ObjectValue) (*clusters.ClusterUpdateConfigsMaintenance, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var current, plan *clusters.ClusterConfigMaintenance
+	current, diags = ReadExpandClusterConfigsMaintenance(ctx, currentMaintenance)
+	if diags.HasError() {
+		return nil, diags
+	}
+	plan, diags = ReadExpandClusterConfigsMaintenance(ctx, planMaintenance)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	var changed bool
+	update := &clusters.ClusterUpdateConfigsMaintenance{}
+
+	update.Start = plan.Start
+	if current.Start != plan.Start {
+		changed = true
+	}
+
+	if !backupEqual(current.Backup, plan.Backup) {
+		if plan.Backup == nil {
+			update.Backup = clusters.ClusterConfigMaintenanceBackup{}
+		} else {
+			update.Backup = *plan.Backup
+		}
+		changed = true
+	}
+
+	crontabs := buildCrontabChanges(current.CronTabs, plan.CronTabs)
+	if len(crontabs.Create) > 0 || len(crontabs.Update) > 0 || len(crontabs.Delete) > 0 {
+		update.Crontabs = crontabs
+		changed = true
+	}
+
+	if changed {
+		return update, nil
+	}
+
+	return nil, nil
+}
+
+func backupEqual(a, b *clusters.ClusterConfigMaintenanceBackup) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return backupObjEqual(a.Full, b.Full) &&
+		backupObjEqual(a.Incremental, b.Incremental) &&
+		backupObjEqual(a.Differential, b.Differential)
+}
+
+func backupObjEqual(x, y *clusters.ClusterConfigMaintenanceBackupObj) bool {
+	if x == nil && y == nil {
+		return true
+	}
+	if x == nil || y == nil {
+		return false
+	}
+
+	if x.Start != y.Start {
+		return false
+	}
+
+	if (x.Enabled == nil) != (y.Enabled == nil) || (x.Enabled != nil && *x.Enabled != *y.Enabled) {
+		return false
+	}
+
+	if (x.KeepCount == nil) != (y.KeepCount == nil) || (x.KeepCount != nil && *x.KeepCount != *y.KeepCount) {
+		return false
+	}
+
+	if (x.KeepTime == nil) != (y.KeepTime == nil) || (x.KeepTime != nil && *x.KeepTime != *y.KeepTime) {
+		return false
+	}
+
+	return true
+}
+
+func buildCrontabChanges(current, plan []clusters.ClusterConfigMaintenanceCronTabs) clusters.ClusterUpdateConfigsMaintenanceCrontabs {
+	result := clusters.ClusterUpdateConfigsMaintenanceCrontabs{}
+
+	currentByName := make(map[string]clusters.ClusterConfigMaintenanceCronTabs)
+	for _, c := range current {
+		currentByName[c.Name] = c
+	}
+
+	planNames := make(map[string]struct{})
+
+	for _, p := range plan {
+		planNames[p.Name] = struct{}{}
+
+		c, exists := currentByName[p.Name]
+		if !exists {
+			result.Create = append(result.Create, clusters.ClusterUpdateConfigsMaintenanceCrontabsCreate{
+				Name:     p.Name,
+				Start:    p.Start,
+				Settings: toUpdateSettings(p.Settings),
+			})
+			continue
+		}
+
+		if c.Start != p.Start || !settingsEqual(c.Settings, p.Settings) {
+			result.Update = append(result.Update, clusters.ClusterUpdateConfigsMaintenanceCrontabsUpdate{
+				ID:       c.ID,
+				Start:    p.Start,
+				Settings: toUpdateSettings(p.Settings),
+			})
+		}
+	}
+
+	for _, c := range current {
+		if _, exists := planNames[c.Name]; !exists {
+			result.Delete = append(result.Delete, clusters.ClusterUpdateConfigsMaintenanceCrontabsDelete{ID: c.ID})
+		}
+	}
+
+	return result
+}
+
+func settingsEqual(a, b []clusters.ClusterConfigSetting) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	m := make(map[string]string, len(a))
+	for _, s := range a {
+		m[s.Alias] = s.Value
+	}
+	for _, s := range b {
+		if v, ok := m[s.Alias]; !ok || v != s.Value {
+			return false
+		}
+	}
+	return true
+}
+
+func toUpdateSettings(settings []clusters.ClusterConfigSetting) []clusters.ClusterCreateConfigSetting {
+	out := make([]clusters.ClusterCreateConfigSetting, 0, len(settings))
+	for _, s := range settings {
+		out = append(out, clusters.ClusterCreateConfigSetting{
+			Alias: s.Alias,
+			Value: s.Value,
+		})
+	}
+	return out
+}
+
+func ReadExpandClusterConfigsMaintenance(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterConfigMaintenance, diag.Diagnostics) {
+	maintenanceObjV, diags := ConfigsMaintenanceType{}.ValueFromObject(ctx, o)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	maintenance := maintenanceObjV.(ConfigsMaintenanceValue)
+	result := clusters.ClusterConfigMaintenance{
+		Start: maintenance.Start.ValueString(),
+	}
+
+	if o := maintenance.Crontabs; !o.IsUnknown() && !o.IsNull() {
+		crontabs, diags := ReadExpandClusterCrontabs(ctx, o)
+		if diags.HasError() {
+			return nil, diags
+		}
+		result.CronTabs = crontabs
+	}
+
+	if o := maintenance.Backup; !o.IsUnknown() && !o.IsNull() {
+		backup, diags := ReadExpandClusterBackup(ctx, o)
+		if diags.HasError() {
+			return nil, diags
+		}
+		// normalize empty backup
+		if backup.Full == nil && backup.Incremental == nil && backup.Differential == nil {
+			result.Backup = nil
+		} else {
+			result.Backup = backup
+		}
+	}
+
+	return &result, nil
+}
+
+func ReadExpandClusterCrontabs(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterConfigMaintenanceCronTabs, diag.Diagnostics) {
+	crontabs := make([]ConfigsMaintenanceCrontabsValue, 0, len(o.Elements()))
+	diags := o.ElementsAs(ctx, &crontabs, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	result := make([]clusters.ClusterConfigMaintenanceCronTabs, len(crontabs))
+	for i, v := range crontabs {
+		result[i] = clusters.ClusterConfigMaintenanceCronTabs{
+			ID:       v.Id.ValueString(),
+			Required: v.Required.ValueBool(),
+			Name:     v.Name.ValueString(),
+			Start:    v.Start.ValueString(),
+		}
+
+		if o := v.Settings; !o.IsUnknown() && !o.IsNull() {
+			var settings []clusters.ClusterConfigSetting
+			settings, diags = ReadExpandClusterCrontabSettings(ctx, &v.Settings)
+			if diags.HasError() {
+				return nil, diags
+			}
+
+			result[i].Settings = settings
+		}
+	}
+
+	return result, nil
+}
+
+func ReadExpandClusterCrontabSettings(ctx context.Context, o *basetypes.ListValue) ([]clusters.ClusterConfigSetting, diag.Diagnostics) {
+	settings := make([]ConfigsMaintenanceCrontabsSettingsValue, 0, len(o.Elements()))
+	diags := o.ElementsAs(ctx, &settings, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	result := make([]clusters.ClusterConfigSetting, len(settings))
+	for i, s := range settings {
+		result[i] = clusters.ClusterConfigSetting{
+			Alias: s.Alias.ValueString(),
+			Value: s.Value.ValueString(),
+		}
+	}
+
+	return result, nil
+}
+
+func ReadExpandClusterBackup(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterConfigMaintenanceBackup, diag.Diagnostics) {
+	backupObjV, diags := ConfigsMaintenanceBackupType{}.ValueFromObject(ctx, o)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	backup := backupObjV.(ConfigsMaintenanceBackupValue)
+
+	var result clusters.ClusterConfigMaintenanceBackup
+
+	if o := backup.Full; !o.IsUnknown() && !o.IsNull() {
+		full, diags := ReadExpandClusterBackupFull(ctx, o)
+		if diags.HasError() {
+			return nil, diags
+		}
+		result.Full = full
+	}
+
+	if o := backup.Incremental; !o.IsUnknown() && !o.IsNull() {
+		incremental, diags := ReadExpandClusterBackupIncremental(ctx, o)
+		if diags.HasError() {
+			return nil, diags
+		}
+		result.Incremental = incremental
+	}
+
+	if o := backup.Differential; !o.IsUnknown() && !o.IsNull() {
+		differential, diags := ReadExpandClusterBackupDifferential(ctx, o)
+		if diags.HasError() {
+			return nil, diags
+		}
+		result.Differential = differential
+	}
+
+	return &result, nil
+}
+
+func ReadExpandClusterBackupFull(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterConfigMaintenanceBackupObj, diag.Diagnostics) {
+	fullObjV, diags := ConfigsMaintenanceBackupFullType{}.ValueFromObject(ctx, o)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	backupFull := fullObjV.(ConfigsMaintenanceBackupFullValue)
+
+	var keepCount *int
+	var keepTime *int
+
+	if !backupFull.KeepCount.IsNull() && !backupFull.KeepCount.IsUnknown() {
+		v := int(backupFull.KeepCount.ValueInt64())
+		keepCount = &v
+	}
+
+	if !backupFull.KeepTime.IsNull() && !backupFull.KeepTime.IsUnknown() {
+		v := int(backupFull.KeepTime.ValueInt64())
+		keepTime = &v
+	}
+
+	result := clusters.ClusterConfigMaintenanceBackupObj{
+		Start:     backupFull.Start.ValueString(),
+		KeepCount: keepCount,
+		KeepTime:  keepTime,
+	}
+
+	return &result, nil
+}
+
+func ReadExpandClusterBackupIncremental(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterConfigMaintenanceBackupObj, diag.Diagnostics) {
+	incrementalObjV, diags := ConfigsMaintenanceBackupIncrementalType{}.ValueFromObject(ctx, o)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	backupIncremental := incrementalObjV.(ConfigsMaintenanceBackupIncrementalValue)
+
+	keepCount := int(backupIncremental.KeepCount.ValueInt64())
+	keepTime := int(backupIncremental.KeepTime.ValueInt64())
+
+	result := clusters.ClusterConfigMaintenanceBackupObj{
+		Start:     backupIncremental.Start.ValueString(),
+		KeepCount: &keepCount,
+		KeepTime:  &keepTime,
+	}
+
+	return &result, nil
+}
+
+func ReadExpandClusterBackupDifferential(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterConfigMaintenanceBackupObj, diag.Diagnostics) {
+	differentialObjV, diags := ConfigsMaintenanceBackupDifferentialType{}.ValueFromObject(ctx, o)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	backupDifferential := differentialObjV.(ConfigsMaintenanceBackupDifferentialValue)
+
+	keepCount := int(backupDifferential.KeepCount.ValueInt64())
+	keepTime := int(backupDifferential.KeepTime.ValueInt64())
+
+	result := clusters.ClusterConfigMaintenanceBackupObj{
+		Enabled:   backupDifferential.Enabled.ValueBoolPointer(),
+		Start:     backupDifferential.Start.ValueString(),
+		KeepCount: &keepCount,
+		KeepTime:  &keepTime,
+	}
+
+	return &result, nil
+}

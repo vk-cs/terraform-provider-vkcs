@@ -153,6 +153,34 @@ type ClusterDeleteUsers struct {
 	ClusterUsersIDs []string `q:"cluster_users_ids"`
 }
 
+type ClusterUpdateConfigsMaintenance struct {
+	Start    string                                  `json:"start"`
+	Backup   ClusterConfigMaintenanceBackup          `json:"backup"`
+	Crontabs ClusterUpdateConfigsMaintenanceCrontabs `json:"crontabs"`
+}
+
+type ClusterUpdateConfigsMaintenanceCrontabs struct {
+	Create []ClusterUpdateConfigsMaintenanceCrontabsCreate `json:"create,omitempty"`
+	Update []ClusterUpdateConfigsMaintenanceCrontabsUpdate `json:"update,omitempty"`
+	Delete []ClusterUpdateConfigsMaintenanceCrontabsDelete `json:"delete,omitempty"`
+}
+
+type ClusterUpdateConfigsMaintenanceCrontabsCreate struct {
+	Name     string                       `json:"name"`
+	Start    string                       `json:"start"`
+	Settings []ClusterCreateConfigSetting `json:"settings"`
+}
+
+type ClusterUpdateConfigsMaintenanceCrontabsUpdate struct {
+	ID       string                       `json:"id"`
+	Start    string                       `json:"start"`
+	Settings []ClusterCreateConfigSetting `json:"settings"`
+}
+
+type ClusterUpdateConfigsMaintenanceCrontabsDelete struct {
+	ID string `json:"id"`
+}
+
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreate) Map() (map[string]interface{}, error) {
 	body, err := gophercloud.BuildRequestBody(*opts, "")
@@ -284,6 +312,11 @@ func (opts *ClusterDeleteUsers) ToQuery() (string, error) {
 	return q.String(), err
 }
 
+// Map converts opts to a map (for a request body)
+func (opts *ClusterUpdateConfigsMaintenance) Map() (map[string]interface{}, error) {
+	return gophercloud.BuildRequestBody(*opts, "")
+}
+
 // Create performs request to create database cluster
 func Create(client *gophercloud.ServiceClient, opts OptsBuilder) (r CreateResult) {
 	common.SetHeaders(client)
@@ -318,6 +351,21 @@ func Update(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r U
 		return
 	}
 	resp, err := client.Patch(clusterURL(client, id), &b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+func UpdateMaintenance(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r UpdateResult) {
+	common.SetHeaders(client)
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := client.Patch(clusterMaintenanceURL(client, id), &b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)

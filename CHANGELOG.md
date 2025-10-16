@@ -13,6 +13,7 @@ description: |-
 - Correctly mark some vkcs_kubernetes_node_group data source arguments as attributes
 - Fix the ability to specify cronTabs.settings for vkcs_dataplatform_cluster
 - Fix the ability to specify setiings for vkcs_dataplatform_cluster
+- Add update maintenance for vkcs_dataplatform_cluster resource
 
 #### v0.13.0 
 - Add vkcs_iam_service_user resource
