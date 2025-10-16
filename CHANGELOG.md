@@ -8,6 +8,7 @@ description: |-
 # VKCS Provider's changelog
 #### v0.13.1 (unreleased)
 - Add backup_targets for vkcs_backup_plan resource
+- Add enable_private_dns to vkcs_networking_subnet resource and data source
 
 #### v0.13.0 
 - Add vkcs_iam_service_user resource

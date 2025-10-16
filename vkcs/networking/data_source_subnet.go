@@ -37,22 +37,23 @@ type SubnetDataSourceModel struct {
 	SDN    types.String `tfsdk:"sdn"`
 	Region types.String `tfsdk:"region"`
 
-	AllTags         types.Set                             `tfsdk:"all_tags"`
-	AllocationPools []SubnetDataSourceAllocationPoolModel `tfsdk:"allocation_pools"`
-	CIDR            types.String                          `tfsdk:"cidr"`
-	Description     types.String                          `tfsdk:"description"`
-	DHCPEnabled     types.Bool                            `tfsdk:"dhcp_enabled"`
-	DNSNameservers  types.Set                             `tfsdk:"dns_nameservers"`
-	EnableDHCP      types.Bool                            `tfsdk:"enable_dhcp"`
-	GatewayIP       types.String                          `tfsdk:"gateway_ip"`
-	HostRoutes      []SubnetDataSourceHostRouteModel      `tfsdk:"host_routes"`
-	ID              types.String                          `tfsdk:"id"`
-	Name            types.String                          `tfsdk:"name"`
-	NetworkID       types.String                          `tfsdk:"network_id"`
-	SubnetID        types.String                          `tfsdk:"subnet_id"`
-	SubnetPoolID    types.String                          `tfsdk:"subnetpool_id"`
-	Tags            types.Set                             `tfsdk:"tags"`
-	TenantID        types.String                          `tfsdk:"tenant_id"`
+	AllTags          types.Set                             `tfsdk:"all_tags"`
+	AllocationPools  []SubnetDataSourceAllocationPoolModel `tfsdk:"allocation_pools"`
+	CIDR             types.String                          `tfsdk:"cidr"`
+	Description      types.String                          `tfsdk:"description"`
+	DHCPEnabled      types.Bool                            `tfsdk:"dhcp_enabled"`
+	DNSNameservers   types.Set                             `tfsdk:"dns_nameservers"`
+	EnableDHCP       types.Bool                            `tfsdk:"enable_dhcp"`
+	GatewayIP        types.String                          `tfsdk:"gateway_ip"`
+	HostRoutes       []SubnetDataSourceHostRouteModel      `tfsdk:"host_routes"`
+	ID               types.String                          `tfsdk:"id"`
+	Name             types.String                          `tfsdk:"name"`
+	NetworkID        types.String                          `tfsdk:"network_id"`
+	SubnetID         types.String                          `tfsdk:"subnet_id"`
+	SubnetPoolID     types.String                          `tfsdk:"subnetpool_id"`
+	Tags             types.Set                             `tfsdk:"tags"`
+	TenantID         types.String                          `tfsdk:"tenant_id"`
+	EnablePrivateDNS types.Bool                            `tfsdk:"enable_private_dns"`
 }
 
 type SubnetDataSourceAllocationPoolModel struct {
@@ -208,6 +209,10 @@ func (d *SubnetDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 				Computed:    true,
 				Description: "The owner of the subnet.",
 			},
+			"enable_private_dns": schema.BoolAttribute{
+				Computed:    true,
+				Description: "Flag indicating whether private DNS is enabled.",
+			},
 		},
 		Description: "Use this data source to get the ID of an available VKCS subnet.",
 	}
@@ -324,6 +329,7 @@ func (d *SubnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	data.Name = types.StringValue(subnet.Name)
 	data.NetworkID = types.StringValue(subnet.NetworkID)
 	data.SubnetPoolID = types.StringValue(subnet.SubnetPoolID)
+	data.EnablePrivateDNS = types.BoolValue(subnet.EnablePrivateDNS)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

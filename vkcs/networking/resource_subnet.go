@@ -179,6 +179,14 @@ func ResourceNetworkingSubnet() *schema.Resource {
 				ValidateDiagFunc: ValidateSDN(),
 				Description:      "SDN to use for this resource. Must be one of following: \"neutron\", \"sprut\". Default value is project's default SDN.",
 			},
+
+			"enable_private_dns": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     true,
+				Description: "Option to control private DNS in a subnet. Enabled by default.",
+			},
 		},
 		Description: "Manages a subnet resource within VKCS.",
 	}
@@ -248,6 +256,9 @@ func resourceNetworkingSubnetCreate(ctx context.Context, d *schema.ResourceData,
 	enableDHCP := d.Get("enable_dhcp").(bool)
 	createOpts.EnableDHCP = &enableDHCP
 
+	enablePrivateDNS := d.Get("enable_private_dns").(bool)
+	createOpts.EnablePrivateDNS = &enablePrivateDNS
+
 	log.Printf("[DEBUG] vkcs_networking_subnet create options: %#v", createOpts)
 	s, err := isubnets.Create(networkingClient, createOpts).Extract()
 	if err != nil {
@@ -307,6 +318,7 @@ func resourceNetworkingSubnetRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("enable_dhcp", s.EnableDHCP)
 	d.Set("network_id", s.NetworkID)
 	d.Set("subnetpool_id", s.SubnetPoolID)
+	d.Set("enable_private_dns", s.EnablePrivateDNS)
 
 	NetworkingReadAttributesTags(d, s.Tags)
 
