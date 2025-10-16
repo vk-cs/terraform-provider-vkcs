@@ -30,6 +30,12 @@ data "vkcs_backup_plan" "plan_datasource" {
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
+- `backup_targets`  *list* &rarr;  List of backup targets specifying instance_id and volume_ids for each instance.
+    - `instance_id` *string* &rarr;  ID of the instance for which specific volumes are backed up.
+
+    - `volume_ids` *set of* *string* &rarr;  List of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.
+
+
 - `full_retention`  &rarr;  Parameters for full retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full
     - `max_full_backup` *number* &rarr;  Maximum number of backups
 
