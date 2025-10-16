@@ -5,6 +5,9 @@ package resource_cluster
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -20,8 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	cluster_planmodifiers "github.com/vk-cs/terraform-provider-vkcs/vkcs/dataplatform/resource_cluster/planmodifiers"
-	"regexp"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -73,11 +74,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											"start": schema.StringAttribute{
 												Required:            true,
-												Description:         "Differential backup schedule. Changing this creates a new resource.",
-												MarkdownDescription: "Differential backup schedule. Changing this creates a new resource.",
-												PlanModifiers: []planmodifier.String{
-													stringplanmodifier.RequiresReplace(),
-												},
+												Description:         "Differential backup schedule. Defined in UTC.",
+												MarkdownDescription: "Differential backup schedule. Defined in UTC.",
 												Validators: []validator.String{
 													stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), ""),
 												},
@@ -90,8 +88,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 										},
 										Optional:            true,
 										Computed:            true,
-										Description:         "Differential backup settings. Changing this creates a new resource.",
-										MarkdownDescription: "Differential backup settings. Changing this creates a new resource.",
+										Description:         "Differential backup settings.",
+										MarkdownDescription: "Differential backup settings.",
 									},
 									"full": schema.SingleNestedAttribute{
 										Attributes: map[string]schema.Attribute{
@@ -110,11 +108,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											"start": schema.StringAttribute{
 												Required:            true,
-												Description:         "Full backup schedule. Changing this creates a new resource.",
-												MarkdownDescription: "Full backup schedule. Changing this creates a new resource.",
-												PlanModifiers: []planmodifier.String{
-													stringplanmodifier.RequiresReplace(),
-												},
+												Description:         "Full backup schedule. Defined in UTC. _note_ `configs.maintenance.backup.full.start` must be equal to `configs.maintenance.start`.",
+												MarkdownDescription: "Full backup schedule. Defined in UTC. _note_ `configs.maintenance.backup.full.start` must be equal to `configs.maintenance.start`.",
 												Validators: []validator.String{
 													stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), "")},
 											},
@@ -126,8 +121,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 										},
 										Optional:            true,
 										Computed:            true,
-										Description:         "Full backup settings. Changing this creates a new resource.",
-										MarkdownDescription: "Full backup settings. Changing this creates a new resource.",
+										Description:         "Full backup settings.",
+										MarkdownDescription: "Full backup settings.",
 									},
 									"incremental": schema.SingleNestedAttribute{
 										Attributes: map[string]schema.Attribute{
@@ -146,11 +141,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											"start": schema.StringAttribute{
 												Required:            true,
-												Description:         "Incremental backup schedule. Changing this creates a new resource.",
-												MarkdownDescription: "Incremental backup schedule. Changing this creates a new resource.",
-												PlanModifiers: []planmodifier.String{
-													stringplanmodifier.RequiresReplace(),
-												},
+												Description:         "Incremental backup schedule. Defined in UTC.",
+												MarkdownDescription: "Incremental backup schedule. Defined in UTC.",
 												Validators: []validator.String{
 													stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), "")},
 											},
@@ -162,8 +154,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 										},
 										Optional:            true,
 										Computed:            true,
-										Description:         "Incremental backup settings. Changing this creates a new resource.",
-										MarkdownDescription: "Incremental backup settings. Changing this creates a new resource.",
+										Description:         "Incremental backup settings.",
+										MarkdownDescription: "Incremental backup settings.",
 									},
 								},
 								CustomType: ConfigsMaintenanceBackupType{
@@ -173,8 +165,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								},
 								Optional:            true,
 								Computed:            true,
-								Description:         "Backup settings. Changing this creates a new resource.",
-								MarkdownDescription: "Backup settings. Changing this creates a new resource.",
+								Description:         "Backup settings.",
+								MarkdownDescription: "Backup settings.",
 							},
 							"crontabs": schema.ListNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
@@ -184,11 +176,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 										},
 										"name": schema.StringAttribute{
 											Required:            true,
-											Description:         "Cron tab name. Changing this creates a new resource.",
-											MarkdownDescription: "Cron tab name. Changing this creates a new resource.",
-											PlanModifiers: []planmodifier.String{
-												stringplanmodifier.RequiresReplace(),
-											},
+											Description:         "Cron tab name.",
+											MarkdownDescription: "Cron tab name.",
 										},
 										"required": schema.BoolAttribute{
 											Computed:            true,
@@ -200,19 +189,13 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 												Attributes: map[string]schema.Attribute{
 													"alias": schema.StringAttribute{
 														Required:            true,
-														Description:         "Setting alias. Changing this creates a new resource.",
-														MarkdownDescription: "Setting alias. Changing this creates a new resource.",
-														PlanModifiers: []planmodifier.String{
-															stringplanmodifier.RequiresReplace(),
-														},
+														Description:         "Setting alias.",
+														MarkdownDescription: "Setting alias.",
 													},
 													"value": schema.StringAttribute{
 														Required:            true,
-														Description:         "Setting value. Changing this creates a new resource.",
-														MarkdownDescription: "Setting value. Changing this creates a new resource.",
-														PlanModifiers: []planmodifier.String{
-															stringplanmodifier.RequiresReplace(),
-														},
+														Description:         "Setting value.",
+														MarkdownDescription: "Setting value.",
 													},
 												},
 												CustomType: ConfigsMaintenanceCrontabsSettingsType{
@@ -223,17 +206,14 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											Optional:            true,
 											Computed:            true,
-											Description:         "Additional cron settings. Changing this creates a new resource.",
-											MarkdownDescription: "Additional cron settings. Changing this creates a new resource.",
+											Description:         "Additional cron settings.",
+											MarkdownDescription: "Additional cron settings.",
 										},
 										"start": schema.StringAttribute{
 											Optional:            true,
 											Computed:            true,
-											Description:         "Cron tab schedule. Changing this creates a new resource.",
-											MarkdownDescription: "Cron tab schedule. Changing this creates a new resource.",
-											PlanModifiers: []planmodifier.String{
-												stringplanmodifier.RequiresReplaceIfConfigured(),
-											},
+											Description:         "Cron tab schedule. Defined in UTC.",
+											MarkdownDescription: "Cron tab schedule. Defined in UTC.",
 											Validators: []validator.String{
 												stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), "")},
 										},
@@ -246,17 +226,14 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								},
 								Optional:            true,
 								Computed:            true,
-								Description:         "Cron tabs settings. Changing this creates a new resource.",
-								MarkdownDescription: "Cron tabs settings. Changing this creates a new resource.",
+								Description:         "Cron tabs settings.",
+								MarkdownDescription: "Cron tabs settings.",
 							},
 							"start": schema.StringAttribute{
 								Optional:            true,
 								Computed:            true,
-								Description:         "Maintenance cron schedule. Changing this creates a new resource.",
-								MarkdownDescription: "Maintenance cron schedule. Changing this creates a new resource.",
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.RequiresReplace(),
-								},
+								Description:         "Maintenance cron schedule. Defined in UTC.",
+								MarkdownDescription: "Maintenance cron schedule. Defined in UTC.",
 								Validators: []validator.String{
 									stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), "")},
 							},
@@ -267,8 +244,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Required:            true,
-						Description:         "Maintenance settings. Changing this creates a new resource.",
-						MarkdownDescription: "Maintenance settings. Changing this creates a new resource.",
+						Description:         "Maintenance settings.",
+						MarkdownDescription: "Maintenance settings.",
 					},
 					"settings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -394,9 +371,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 															Required:            true,
 															Description:         "Setting alias. Changing this creates a new resource.",
 															MarkdownDescription: "Setting alias. Changing this creates a new resource.",
-															PlanModifiers: []planmodifier.String{
-																stringplanmodifier.RequiresReplace(),
-															},
 															Validators: []validator.String{
 																stringvalidator.LengthAtMost(80),
 															},
@@ -405,9 +379,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 															Required:            true,
 															Description:         "Setting value. Changing this creates a new resource.",
 															MarkdownDescription: "Setting value. Changing this creates a new resource.",
-															PlanModifiers: []planmodifier.String{
-																stringplanmodifier.RequiresReplace(),
-															},
 															Validators: []validator.String{
 																stringvalidator.LengthAtMost(255),
 															},
@@ -753,6 +724,7 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "ID of the cluster stack. Changing this creates a new resource.",
 				MarkdownDescription: "ID of the cluster stack. Changing this creates a new resource.",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
