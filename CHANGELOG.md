@@ -12,6 +12,7 @@ description: |-
 - Support external users import for vkcs_dataplatform_cluster
 - Fix the ability to specify settings and cronTabs.settings for vkcs_dataplatform_cluster resource
 - Correctly mark some vkcs_kubernetes_node_group data source arguments as attributes
+- Add the ability to update configs.maintenance for vkcs_dataplatform_cluster resource
 
 #### v0.13.0 
 - Add vkcs_iam_service_user resource

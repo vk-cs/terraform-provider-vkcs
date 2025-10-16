@@ -108,10 +108,10 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
 ## Argument Reference
 - `configs` ***required*** &rarr;  Product configuration.
-    - `maintenance` ***required*** &rarr;  Maintenance settings. Changing this creates a new resource.
-        - `backup` optional &rarr;  Backup settings. Changing this creates a new resource.
-            - `differential` optional &rarr;  Differential backup settings. Changing this creates a new resource.
-                - `start` **required** *string* &rarr;  Differential backup schedule. Changing this creates a new resource.
+    - `maintenance` ***required*** &rarr;  Maintenance settings.
+        - `backup` optional &rarr;  Backup settings.
+            - `differential` optional &rarr;  Differential backup settings.
+                - `start` **required** *string* &rarr;  Differential backup schedule. Defined in UTC.
 
                 - `keep_count` optional *number*
 
@@ -120,8 +120,8 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
                 - `enabled` read-only *boolean* &rarr;  Whether differential backup is enabled.
 
 
-            - `full` optional &rarr;  Full backup settings. Changing this creates a new resource.
-                - `start` **required** *string* &rarr;  Full backup schedule. Changing this creates a new resource.
+            - `full` optional &rarr;  Full backup settings.
+                - `start` **required** *string* &rarr;  Full backup schedule. Defined in UTC. <br>**Note:** `configs.maintenance.backup.full.start` must be equal to `configs.maintenance.start`.
 
                 - `keep_count` optional *number*
 
@@ -130,8 +130,8 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
                 - `enabled` read-only *boolean* &rarr;  Whether full backup is enabled.
 
 
-            - `incremental` optional &rarr;  Incremental backup settings. Changing this creates a new resource.
-                - `start` **required** *string* &rarr;  Incremental backup schedule. Changing this creates a new resource.
+            - `incremental` optional &rarr;  Incremental backup settings.
+                - `start` **required** *string* &rarr;  Incremental backup schedule. Defined in UTC.
 
                 - `keep_count` optional *number*
 
@@ -141,23 +141,23 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
 
 
-        - `crontabs`  *list* &rarr;  Cron tabs settings. Changing this creates a new resource.
-            - `name` **required** *string* &rarr;  Cron tab name. Changing this creates a new resource.
+        - `crontabs`  *list* &rarr;  Cron tabs settings.
+            - `name` **required** *string* &rarr;  Cron tab name.
 
-            - `settings`  *list* &rarr;  Additional cron settings. Changing this creates a new resource.
-                - `alias` **required** *string* &rarr;  Setting alias. Changing this creates a new resource.
+            - `settings`  *list* &rarr;  Additional cron settings.
+                - `alias` **required** *string* &rarr;  Setting alias.
 
-                - `value` **required** *string* &rarr;  Setting value. Changing this creates a new resource.
+                - `value` **required** *string* &rarr;  Setting value.
 
 
-            - `start` optional *string* &rarr;  Cron tab schedule. Changing this creates a new resource.
+            - `start` optional *string* &rarr;  Cron tab schedule. Defined in UTC.
 
             - `id` read-only *string*
 
             - `required` read-only *boolean* &rarr;  Whether cron tab is required.
 
 
-        - `start` optional *string* &rarr;  Maintenance cron schedule. Changing this creates a new resource.
+        - `start` optional *string* &rarr;  Maintenance cron schedule. Defined in UTC.
 
 
     - `settings`  *list* &rarr;  Additional common settings.

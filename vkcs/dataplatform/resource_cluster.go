@@ -243,6 +243,14 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
+	if !plan.Configs.Maintenance.IsUnknown() && !plan.Configs.Maintenance.IsNull() {
+		diags := clusterUpdateConfigsMaintenance(ctx, client, id, data.Configs.Maintenance, plan.Configs.Maintenance)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+	}
+
 	if !plan.Configs.Settings.IsUnknown() && !plan.Configs.Settings.IsNull() {
 		diags := clusterUpdateConfigsSettings(ctx, client, id, plan.Configs.Settings)
 		if diags.HasError() {
@@ -277,6 +285,44 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 	resp.Diagnostics.Append(data.UpdateState(ctx, cluster, plan.Configs, &resp.State)...)
 }
 
+func clusterUpdateConfigsMaintenance(ctx context.Context, client *gophercloud.ServiceClient, id string, currentMaintenance basetypes.ObjectValue, planMaintenance basetypes.ObjectValue) diag.Diagnostics {
+	var diags diag.Diagnostics
+	var d diag.Diagnostics
+
+	updateMaintenanceOpts, d := resource_cluster.BuildUpdateClusterConfigsMaintenance(ctx, currentMaintenance, planMaintenance)
+	if d.HasError() {
+		return d
+	}
+
+	if updateMaintenanceOpts != nil {
+		tflog.Trace(ctx, "Calling Data Platform API to update cluster maintenance", map[string]interface{}{"opts": fmt.Sprintf("%#v", planMaintenance)})
+
+		resp, err := clusters.UpdateMaintenance(client, id, updateMaintenanceOpts).Extract()
+		if err != nil {
+			diags.AddError("Error calling Data Platform API to update cluster maintenance", err.Error())
+			return diags
+		}
+
+		tflog.Info(ctx, "Cluster maintenance update request sent", map[string]interface{}{"resp": resp})
+
+		stateConf := &retry.StateChangeConf{
+			Pending:    []string{string(clusterStatusConfiguring), string(clusterStatusUpdating)},
+			Target:     []string{string(clusterStatusActive)},
+			Refresh:    clusterStateRefreshFunc(client, id),
+			Timeout:    clusterUpdateTimeout,
+			Delay:      clusterUpdateDelay,
+			MinTimeout: clusterUpdateMinTimeout,
+		}
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			diags.AddError("Error waiting for cluster update configs.maintenance", err.Error())
+			return diags
+		}
+	}
+
+	return nil
+}
+
 func clusterUpdateConfigsSettings(ctx context.Context, client *gophercloud.ServiceClient, id string, settings basetypes.ListValue) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var d diag.Diagnostics
@@ -307,7 +353,7 @@ func clusterUpdateConfigsSettings(ctx context.Context, client *gophercloud.Servi
 		}
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
-			diags.AddError("Error waiting for cluster update", err.Error())
+			diags.AddError("Error waiting for cluster update configs.settings", err.Error())
 			return diags
 		}
 	}
@@ -374,7 +420,7 @@ func clusterUpdateConfigsUsers(ctx context.Context, client *gophercloud.ServiceC
 		}
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
-			diags.AddError("Error waiting for cluster update", err.Error())
+			diags.AddError("Error waiting for cluster update configs.users", err.Error())
 			return diags
 		}
 	}
@@ -396,7 +442,7 @@ func clusterUpdateConfigsUsers(ctx context.Context, client *gophercloud.ServiceC
 		}
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
-			diags.AddError("Error waiting for cluster update", err.Error())
+			diags.AddError("Error waiting for cluster update configs.users", err.Error())
 			return diags
 		}
 	}
@@ -466,7 +512,7 @@ func clusterUpdatePodGroups(ctx context.Context, client *gophercloud.ServiceClie
 		}
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
-			diags.AddError("Error waiting for cluster update", err.Error())
+			diags.AddError("Error waiting for cluster update podGroups", err.Error())
 			return diags
 		}
 	}

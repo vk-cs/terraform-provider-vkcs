@@ -175,6 +175,10 @@ func ExpandClusterBackup(ctx context.Context, o basetypes.ObjectValue) (*cluster
 		result.Differential = differential
 	}
 
+	if result.Full == nil && result.Incremental == nil && result.Differential == nil {
+		return nil, nil
+	}
+
 	return &result, nil
 }
 
@@ -414,4 +418,154 @@ func ReadClusterPodGroupResources(ctx context.Context, o basetypes.ObjectValue) 
 	}
 	resource := resourceV.(PodGroupsResourceValue)
 	return &resource, nil
+}
+
+func BuildUpdateClusterConfigsMaintenance(ctx context.Context, stateMaintenance basetypes.ObjectValue, planMaintenance basetypes.ObjectValue) (*clusters.ClusterUpdateConfigsMaintenance, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	stateMaintenanceObj, d := ConfigsMaintenanceType{}.ValueFromObject(ctx, stateMaintenance)
+	diags.Append(d...)
+	if diags.HasError() {
+		return nil, diags
+	}
+	stateVal := stateMaintenanceObj.(ConfigsMaintenanceValue)
+
+	planMaintenanceObj, d := ConfigsMaintenanceType{}.ValueFromObject(ctx, planMaintenance)
+	diags.Append(d...)
+	if diags.HasError() {
+		return nil, diags
+	}
+	planVal := planMaintenanceObj.(ConfigsMaintenanceValue)
+
+	var changed bool
+	update := &clusters.ClusterUpdateConfigsMaintenance{}
+
+	if (!planVal.Start.IsUnknown() && !planVal.Start.IsNull()) && !planVal.Start.Equal(stateVal.Start) {
+		start := planVal.Start.ValueString()
+		update.Start = &start
+		changed = true
+	}
+
+	if !planVal.Backup.IsNull() && !planVal.Backup.IsUnknown() {
+		if stateVal.Backup.IsNull() || stateVal.Backup.IsUnknown() || !stateVal.Backup.Equal(planVal.Backup) {
+			backup, d := ExpandClusterBackup(ctx, planVal.Backup)
+			diags.Append(d...)
+			if diags.HasError() {
+				return nil, diags
+			}
+			update.Backup = backup
+			changed = true
+		}
+	}
+
+	if !planVal.Crontabs.IsNull() && !planVal.Crontabs.IsUnknown() {
+		crontabChanges, d := expandClusterCrontabsUpdate(ctx, stateVal.Crontabs, planVal.Crontabs)
+		diags.Append(d...)
+		if diags.HasError() {
+			return nil, diags
+		}
+		if crontabChanges != nil {
+			update.Crontabs = crontabChanges
+			changed = true
+		}
+	}
+
+	if !changed {
+		return nil, diags
+	}
+
+	return update, nil
+}
+
+func expandClusterCrontabsUpdate(ctx context.Context, stateLV, planLV basetypes.ListValue) (*clusters.ClusterUpdateConfigsMaintenanceCrontabs, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	result := clusters.ClusterUpdateConfigsMaintenanceCrontabs{}
+
+	var stateCrontabs []ConfigsMaintenanceCrontabsValue
+	if !stateLV.IsNull() && !stateLV.IsUnknown() {
+		d := stateLV.ElementsAs(ctx, &stateCrontabs, false)
+		diags.Append(d...)
+		if diags.HasError() {
+			return nil, diags
+		}
+	}
+
+	var planCrontabs []ConfigsMaintenanceCrontabsValue
+	if !planLV.IsNull() && !planLV.IsUnknown() {
+		d := planLV.ElementsAs(ctx, &planCrontabs, false)
+		diags.Append(d...)
+		if diags.HasError() {
+			return nil, diags
+		}
+	}
+
+	stateCrontabsByName := make(map[string]ConfigsMaintenanceCrontabsValue)
+	for _, c := range stateCrontabs {
+		stateCrontabsByName[c.Name.ValueString()] = c
+	}
+
+	planNames := make(map[string]struct{})
+	for _, p := range planCrontabs {
+		name := p.Name.ValueString()
+		planNames[name] = struct{}{}
+
+		c, exists := stateCrontabsByName[name]
+		if !exists {
+			var settings []clusters.ClusterCreateConfigSetting
+
+			if !p.Settings.IsNull() && !p.Settings.IsUnknown() {
+				var d diag.Diagnostics
+				settings, d = ExpandClusterCrontabSettings(ctx, &p.Settings)
+				diags.Append(d...)
+				if diags.HasError() {
+					return nil, diags
+				}
+			}
+
+			result.Create = append(result.Create, clusters.ClusterUpdateConfigsMaintenanceCrontabsCreate{
+				Name:     p.Name.ValueString(),
+				Start:    p.Start.ValueString(),
+				Settings: settings,
+			})
+			continue
+		}
+
+		needUpdateSettings := false
+		pEmpty := p.Settings.IsNull() || p.Settings.IsUnknown()
+		cEmpty := c.Settings.IsNull() || c.Settings.IsUnknown()
+		if (pEmpty && !cEmpty) || (!pEmpty && cEmpty) || (!pEmpty && !cEmpty && !p.Settings.Equal(c.Settings)) {
+			needUpdateSettings = true
+		}
+
+		if p.Start.ValueString() != c.Start.ValueString() || needUpdateSettings {
+			var settings []clusters.ClusterCreateConfigSetting
+
+			if !p.Settings.IsNull() && !p.Settings.IsUnknown() {
+				var d diag.Diagnostics
+				settings, d = ExpandClusterCrontabSettings(ctx, &p.Settings)
+				diags.Append(d...)
+				if diags.HasError() {
+					return nil, diags
+				}
+			}
+
+			result.Update = append(result.Update, clusters.ClusterUpdateConfigsMaintenanceCrontabsUpdate{
+				ID:       c.Id.ValueString(),
+				Start:    p.Start.ValueString(),
+				Settings: settings,
+			})
+		}
+	}
+
+	for _, c := range stateCrontabs {
+		if _, exists := planNames[c.Name.ValueString()]; !exists {
+			result.Delete = append(result.Delete, clusters.ClusterUpdateConfigsMaintenanceCrontabsDelete{ID: c.Id.ValueString()})
+		}
+	}
+
+	if result.Create == nil && result.Update == nil && result.Delete == nil {
+		return nil, nil
+	}
+
+	return &result, diags
 }

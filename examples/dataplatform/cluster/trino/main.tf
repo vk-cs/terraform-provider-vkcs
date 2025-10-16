@@ -1,3 +1,12 @@
+locals {
+  iceberg_host      = regex(".*@([^:/]+):([0-9]+).*", vkcs_dataplatform_cluster.basic_iceberg.info.services[0].connection_string)[0]
+  iceberg_port      = regex(".*@([^:/]+):([0-9]+).*", vkcs_dataplatform_cluster.basic_iceberg.info.services[0].connection_string)[1]
+  iceberg_host_port = "${local.iceberg_host}:${local.iceberg_port}"
+  iceberg_username  = vkcs_dataplatform_cluster.basic_iceberg.configs.users[0].username
+  iceberg_password  = vkcs_dataplatform_cluster.basic_iceberg.configs.users[0].password
+  iceberg_stack_id  = vkcs_dataplatform_cluster.basic_iceberg.stack_id
+}
+
 resource "vkcs_dataplatform_cluster" "basic_trino" {
   name              = "tf-basic-trino"
   description       = "tf-basic-description"
@@ -5,11 +14,11 @@ resource "vkcs_dataplatform_cluster" "basic_trino" {
   product_version   = "0.468.1"
   availability_zone = "GZ1"
 
-  network_id = vkcs_networking_network.app.id
-  subnet_id  = vkcs_networking_subnet.app.id
+  network_id = vkcs_networking_network.db.id
+  subnet_id  = vkcs_networking_subnet.db.id
 
   # in order to create a trino in the same cluster as the iceberg
-  stack_id = vkcs_dataplatform_cluster.basic_iceberg.stack_id
+  stack_id = local.iceberg_stack_id
 
   configs = {
     users = [
@@ -43,15 +52,15 @@ resource "vkcs_dataplatform_cluster" "basic_trino" {
               },
               {
                 alias = "hostname"
-                value = regex(".*@([^/]+).*", vkcs_dataplatform_cluster.basic_iceberg.info.services[0].connection_string)[0]
+                value = local.iceberg_host_port
               },
               {
                 alias = "username"
-                value = vkcs_dataplatform_cluster.basic_iceberg.configs.users[0].username
+                value = local.iceberg_username
               },
               {
                 alias = "password"
-                value = vkcs_dataplatform_cluster.basic_iceberg.configs.users[0].password
+                value = local.iceberg_password
               },
               {
                 alias = "s3_bucket"
