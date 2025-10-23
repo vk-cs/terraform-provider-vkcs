@@ -18,6 +18,10 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
+const (
+	deprecationMessage = "`Deprecated: read-only field.` "
+)
+
 var (
 	_ datasource.DataSource              = &NodeGroupDataSource{}
 	_ datasource.DataSourceWithConfigure = &NodeGroupDataSource{}
@@ -79,9 +83,10 @@ func (d *NodeGroupDataSource) Schema(ctx context.Context, req datasource.SchemaR
 			},
 
 			"autoscaling_enabled": schema.BoolAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "Determines whether the autoscaling is enabled.",
+				Optional: true,
+				Computed: true,
+				Description: deprecationMessage +
+					"Determines whether the autoscaling is enabled.",
 			},
 
 			"availability_zones": schema.ListAttribute{
@@ -96,39 +101,45 @@ func (d *NodeGroupDataSource) Schema(ctx context.Context, req datasource.SchemaR
 			},
 
 			"flavor_id": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The id of the flavor.",
+				Optional: true,
+				Computed: true,
+				Description: deprecationMessage +
+					"The id of the flavor.",
 			},
 
 			"max_node_unavailable": schema.Int64Attribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "Specified as a percentage. The maximum number of nodes that can fail during an upgrade.",
+				Optional: true,
+				Computed: true,
+				Description: deprecationMessage +
+					"Specified as a percentage. The maximum number of nodes that can fail during an upgrade.",
 			},
 
 			"max_nodes": schema.Int64Attribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The maximum amount of nodes in the node group.",
+				Optional: true,
+				Computed: true,
+				Description: deprecationMessage +
+					"The maximum amount of nodes in the node group.",
 			},
 
 			"min_nodes": schema.Int64Attribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The minimum amount of nodes in the node group.",
+				Optional: true,
+				Computed: true,
+				Description: deprecationMessage +
+					"The minimum amount of nodes in the node group.",
 			},
 
 			"name": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the node group.",
+				Optional: true,
+				Computed: true,
+				Description: deprecationMessage +
+					"The name of the node group.",
 			},
 
 			"node_count": schema.Int64Attribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The count of nodes in the node group.",
+				Optional: true,
+				Computed: true,
+				Description: deprecationMessage +
+					"The count of nodes in the node group.",
 			},
 
 			"nodes": schema.ListNestedAttribute{
@@ -182,15 +193,17 @@ func (d *NodeGroupDataSource) Schema(ctx context.Context, req datasource.SchemaR
 			},
 
 			"volume_size": schema.Int64Attribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The amount of memory in the volume in GB",
+				Optional: true,
+				Computed: true,
+				Description: deprecationMessage +
+					"The amount of memory in the volume in GB",
 			},
 
 			"volume_type": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The type of the volume.",
+				Optional: true,
+				Computed: true,
+				Description: deprecationMessage +
+					"The type of the volume.",
 			},
 		},
 		Description: "Use this data source to get information on VKCS Kubernetes cluster's node group.",
