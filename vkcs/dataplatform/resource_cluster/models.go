@@ -17,6 +17,7 @@ import (
 )
 
 const floatingIPAutoMode = "auto"
+const importedPassword = "IMPORTED_PASSWORD"
 
 var floatingIPAutoID = uuid.Nil.String()
 
@@ -130,6 +131,7 @@ func UpdateClusterConfigsUsers(ctx context.Context, users []clusters.ClusterConf
 				Id:        types.StringValue(u.ID),
 				Role:      types.StringValue(u.Role),
 				Username:  types.StringValue(u.Username),
+				Password:  types.StringValue(importedPassword),
 				state:     attr.ValueStateKnown,
 			})
 		}

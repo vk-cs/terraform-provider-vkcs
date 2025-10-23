@@ -286,3 +286,5 @@ A Dataplaform cluster can be imported using the `id`, e.g.
 ```shell
 terraform import vkcs_dataplatform_cluster.mycluster 83e08ade-c7cd-4382-8ee2-d297abbfc8d0
 ```
+
+**Note:** Please, use `IMPORTED_PASSWORD` as value for external users' passwords.

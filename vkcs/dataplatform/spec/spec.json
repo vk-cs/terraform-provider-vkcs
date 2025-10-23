@@ -798,19 +798,7 @@
 												}
 											}
 										],
-										"description": "Maintenance settings. Changing this creates a new resource.",
-										"plan_modifiers": [
-											{
-												"custom": {
-													"imports": [
-														{
-															"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
-														}
-													],
-													"schema_definition": "objectplanmodifier.RequiresReplace()"
-												}
-											}
-										]
+										"description": "Maintenance settings. Changing this creates a new resource."
 									}
 								},
 								{
