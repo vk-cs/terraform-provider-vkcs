@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -270,9 +269,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 						Required:            true,
 						Description:         "Maintenance settings. Changing this creates a new resource.",
 						MarkdownDescription: "Maintenance settings. Changing this creates a new resource.",
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.RequiresReplace(),
-						},
 					},
 					"settings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
