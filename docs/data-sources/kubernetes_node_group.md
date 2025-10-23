@@ -17,29 +17,29 @@ data "vkcs_kubernetes_node_group" "k8s_node_group" {
 }
 ```
 ## Argument Reference
-- `autoscaling_enabled` optional *boolean* &rarr;  Determines whether the autoscaling is enabled.
+- `autoscaling_enabled` optional *boolean* &rarr;  `Deprecated: read-only field.` Determines whether the autoscaling is enabled.
 
-- `flavor_id` optional *string* &rarr;  The id of the flavor.
+- `flavor_id` optional *string* &rarr;  `Deprecated: read-only field.` The id of the flavor.
 
 - `id` optional *string* &rarr;  The UUID of the cluster's node group.
 
-- `max_node_unavailable` optional *number* &rarr;  Specified as a percentage. The maximum number of nodes that can fail during an upgrade.
+- `max_node_unavailable` optional *number* &rarr;  `Deprecated: read-only field.` Specified as a percentage. The maximum number of nodes that can fail during an upgrade.
 
-- `max_nodes` optional *number* &rarr;  The maximum amount of nodes in the node group.
+- `max_nodes` optional *number* &rarr;  `Deprecated: read-only field.` The maximum amount of nodes in the node group.
 
-- `min_nodes` optional *number* &rarr;  The minimum amount of nodes in the node group.
+- `min_nodes` optional *number* &rarr;  `Deprecated: read-only field.` The minimum amount of nodes in the node group.
 
-- `name` optional *string* &rarr;  The name of the node group.
+- `name` optional *string* &rarr;  `Deprecated: read-only field.` The name of the node group.
 
-- `node_count` optional *number* &rarr;  The count of nodes in the node group.
+- `node_count` optional *number* &rarr;  `Deprecated: read-only field.` The count of nodes in the node group.
 
 - `region` optional *string* &rarr;  The region to obtain the service client. If omitted, the `region` argument of the provider is used.<br>**New since v0.4.0**.
 
 - `uuid` optional deprecated *string* &rarr;  The UUID of the cluster's node group. **Deprecated** This argument is deprecated, please, use the `id` attribute instead.
 
-- `volume_size` optional *number* &rarr;  The amount of memory in the volume in GB
+- `volume_size` optional *number* &rarr;  `Deprecated: read-only field.` The amount of memory in the volume in GB
 
-- `volume_type` optional *string* &rarr;  The type of the volume.
+- `volume_type` optional *string* &rarr;  `Deprecated: read-only field.` The type of the volume.
 
 
 ## Attributes Reference
