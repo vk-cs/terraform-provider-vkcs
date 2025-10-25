@@ -49,6 +49,8 @@ resource "vkcs_networking_subnet" "subnet_with_dns_tf_example" {
 
 - `enable_dhcp` optional *boolean* &rarr;  The administrative state of the network. Acceptable values are "true" and "false". Changing this value enables or disables the DHCP capabilities of the existing subnet. Defaults to true.
 
+- `enable_private_dns` optional *boolean* &rarr;  Option to control private DNS in a subnet. Enabled by default.
+
 - `gateway_ip` optional *string* &rarr;  Default gateway used by devices in this subnet. Leaving this blank and not setting `no_gateway` will cause a default value. For the Sprut SDN, this field cannot be changed after creation.
 
 - `name` optional *string* &rarr;  The name of the subnet. Changing this updates the name of the existing subnet.
