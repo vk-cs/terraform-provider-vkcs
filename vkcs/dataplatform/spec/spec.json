@@ -468,7 +468,7 @@
 																		"name": "start",
 																		"string": {
 																			"computed_optional_required": "required",
-																			"description": "Differential backup schedule. Changing this creates a new resource.",
+																			"description": "Differential backup schedule. Defined in UTC. Changing this creates a new resource.",
 																			"validators": [
 																				{
 																					"custom": {
@@ -530,7 +530,7 @@
 																		"name": "start",
 																		"string": {
 																			"computed_optional_required": "required",
-																			"description": "Full backup schedule. Changing this creates a new resource.",
+																			"description": "Full backup schedule. Defined in UTC. Changing this creates a new resource.",
 																			"validators": [
 																				{
 																					"custom": {
@@ -592,7 +592,7 @@
 																		"name": "start",
 																		"string": {
 																			"computed_optional_required": "required",
-																			"description": "Incremental backup schedule. Changing this creates a new resource.",
+																			"description": "Incremental backup schedule. Defined in UTC. Changing this creates a new resource.",
 																			"validators": [
 																				{
 																					"custom": {
@@ -715,7 +715,7 @@
 																"name": "start",
 																"string": {
 																	"computed_optional_required": "computed_optional",
-																	"description": "Cron tab schedule. Changing this creates a new resource.",
+																	"description": "Cron tab schedule. Defined in UTC. Changing this creates a new resource.",
 																	"validators": [
 																		{
 																			"custom": {
@@ -767,7 +767,7 @@
 												"name": "start",
 												"string": {
 													"computed_optional_required": "computed_optional",
-													"description": "Maintenance cron schedule. Changing this creates a new resource.",
+													"description": "Maintenance cron schedule. Defined in UTC. Changing this creates a new resource.",
 													"validators": [
 														{
 															"custom": {

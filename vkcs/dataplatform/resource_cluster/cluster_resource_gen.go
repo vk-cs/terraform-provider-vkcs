@@ -5,6 +5,9 @@ package resource_cluster
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -20,8 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	cluster_planmodifiers "github.com/vk-cs/terraform-provider-vkcs/vkcs/dataplatform/resource_cluster/planmodifiers"
-	"regexp"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -73,8 +74,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											"start": schema.StringAttribute{
 												Required:            true,
-												Description:         "Differential backup schedule. Changing this creates a new resource.",
-												MarkdownDescription: "Differential backup schedule. Changing this creates a new resource.",
+												Description:         "Differential backup schedule. Defined in UTC. Changing this creates a new resource.",
+												MarkdownDescription: "Differential backup schedule. Defined in UTC. Changing this creates a new resource.",
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.RequiresReplace(),
 												},
@@ -110,8 +111,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											"start": schema.StringAttribute{
 												Required:            true,
-												Description:         "Full backup schedule. Changing this creates a new resource.",
-												MarkdownDescription: "Full backup schedule. Changing this creates a new resource.",
+												Description:         "Full backup schedule. Defined in UTC. Changing this creates a new resource.",
+												MarkdownDescription: "Full backup schedule. Defined in UTC. Changing this creates a new resource.",
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.RequiresReplace(),
 												},
@@ -146,8 +147,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											"start": schema.StringAttribute{
 												Required:            true,
-												Description:         "Incremental backup schedule. Changing this creates a new resource.",
-												MarkdownDescription: "Incremental backup schedule. Changing this creates a new resource.",
+												Description:         "Incremental backup schedule. Defined in UTC. Changing this creates a new resource.",
+												MarkdownDescription: "Incremental backup schedule. Defined in UTC. Changing this creates a new resource.",
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.RequiresReplace(),
 												},
@@ -229,8 +230,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 										"start": schema.StringAttribute{
 											Optional:            true,
 											Computed:            true,
-											Description:         "Cron tab schedule. Changing this creates a new resource.",
-											MarkdownDescription: "Cron tab schedule. Changing this creates a new resource.",
+											Description:         "Cron tab schedule. Defined in UTC. Changing this creates a new resource.",
+											MarkdownDescription: "Cron tab schedule. Defined in UTC. Changing this creates a new resource.",
 											PlanModifiers: []planmodifier.String{
 												stringplanmodifier.RequiresReplaceIfConfigured(),
 											},
@@ -252,8 +253,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 							"start": schema.StringAttribute{
 								Optional:            true,
 								Computed:            true,
-								Description:         "Maintenance cron schedule. Changing this creates a new resource.",
-								MarkdownDescription: "Maintenance cron schedule. Changing this creates a new resource.",
+								Description:         "Maintenance cron schedule. Defined in UTC. Changing this creates a new resource.",
+								MarkdownDescription: "Maintenance cron schedule. Defined in UTC. Changing this creates a new resource.",
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.RequiresReplace(),
 								},
