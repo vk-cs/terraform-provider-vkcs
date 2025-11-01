@@ -157,6 +157,7 @@ func FlattenClusterConfigsMaintenanceCronTabs(ctx context.Context, o []clusters.
 		}
 
 		cronTabsV[i] = ConfigsMaintenanceCrontabsValue{
+			Id:       types.StringValue(s.ID),
 			Name:     types.StringValue(s.Name),
 			Required: types.BoolValue(s.Required),
 			Settings: settings,

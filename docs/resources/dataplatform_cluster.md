@@ -111,7 +111,7 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
     - `maintenance` ***required*** &rarr;  Maintenance settings. Changing this creates a new resource.
         - `backup` optional &rarr;  Backup settings. Changing this creates a new resource.
             - `differential` optional &rarr;  Differential backup settings. Changing this creates a new resource.
-                - `start` **required** *string* &rarr;  Differential backup schedule. Changing this creates a new resource.
+                - `start` **required** *string* &rarr;  Differential backup schedule. Defined in UTC. Changing this creates a new resource.
 
                 - `keep_count` optional *number*
 
@@ -121,7 +121,7 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
 
             - `full` optional &rarr;  Full backup settings. Changing this creates a new resource.
-                - `start` **required** *string* &rarr;  Full backup schedule. Changing this creates a new resource.
+                - `start` **required** *string* &rarr;  Full backup schedule. Defined in UTC. Changing this creates a new resource.
 
                 - `keep_count` optional *number*
 
@@ -131,7 +131,7 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
 
             - `incremental` optional &rarr;  Incremental backup settings. Changing this creates a new resource.
-                - `start` **required** *string* &rarr;  Incremental backup schedule. Changing this creates a new resource.
+                - `start` **required** *string* &rarr;  Incremental backup schedule. Defined in UTC. Changing this creates a new resource.
 
                 - `keep_count` optional *number*
 
@@ -150,14 +150,14 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
                 - `value` **required** *string* &rarr;  Setting value. Changing this creates a new resource.
 
 
-            - `start` optional *string* &rarr;  Cron tab schedule. Changing this creates a new resource.
+            - `start` optional *string* &rarr;  Cron tab schedule. Defined in UTC. Changing this creates a new resource.
 
             - `id` read-only *string*
 
             - `required` read-only *boolean* &rarr;  Whether cron tab is required.
 
 
-        - `start` optional *string* &rarr;  Maintenance cron schedule. Changing this creates a new resource.
+        - `start` optional *string* &rarr;  Maintenance cron schedule. Defined in UTC. Changing this creates a new resource.
 
 
     - `settings`  *list* &rarr;  Additional common settings.

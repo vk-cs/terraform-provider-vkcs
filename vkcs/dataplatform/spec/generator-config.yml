@@ -51,13 +51,13 @@ resources:
           configs.maintenance:
             description: Maintenance settings. Changing this creates a new resource.
           configs.maintenance.start:
-            description: Maintenance cron schedule. Changing this creates a new resource.
+            description: Maintenance cron schedule. Defined in UTC. Changing this creates a new resource.
           configs.maintenance.backup:
             description: Backup settings. Changing this creates a new resource.
           configs.maintenance.backup.full:
             description: Full backup settings. Changing this creates a new resource.
           configs.maintenance.backup.full.start:
-            description: Full backup schedule. Changing this creates a new resource.
+            description: Full backup schedule. Defined in UTC. Changing this creates a new resource.
           configs.maintenance.backup.full.keep_count:
             description: Full backup keep count. Changing this creates a new resource.
           configs.maintenance.backup.full.keep_time:
@@ -67,7 +67,7 @@ resources:
           configs.maintenance.backup.incremental:
             description: Incremental backup settings. Changing this creates a new resource.
           configs.maintenance.backup.incremental.start:
-            description: Incremental backup schedule. Changing this creates a new resource.
+            description: Incremental backup schedule. Defined in UTC. Changing this creates a new resource.
           configs.maintenance.backup.incremental.keep_count:
             description: Incremental backup keep count. Changing this creates a new resource.
           configs.maintenance.backup.incremental.keep_time:
@@ -77,7 +77,7 @@ resources:
           configs.maintenance.backup.differential:
             description: Differential backup settings. Changing this creates a new resource.
           configs.maintenance.backup.differential.start:
-            description: Differential backup schedule. Changing this creates a new resource.
+            description: Differential backup schedule. Defined in UTC. Changing this creates a new resource.
           configs.maintenance.backup.differential.keep_count:
             description: Differential backup keep count. Changing this creates a new resource.
           configs.maintenance.backup.differential.keep_time:
@@ -89,7 +89,7 @@ resources:
           configs.maintenance.crontabs.name:
             description: Cron tab name. Changing this creates a new resource.
           configs.maintenance.crontabs.start:
-            description: Cron tab schedule. Changing this creates a new resource.
+            description: Cron tab schedule. Defined in UTC. Changing this creates a new resource.
           configs.maintenance.crontabs.settings:
             description: Additional cron settings. Changing this creates a new resource.
           configs.maintenance.crontabs.settings.alias:
