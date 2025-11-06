@@ -64,7 +64,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `enable_dhcp` *boolean* &rarr;  Whether the subnet has DHCP enabled or not.
 
-- `enable_private_dns` *boolean* &rarr;  Flag indicating whether private DNS is enabled.
+- `enable_private_dns` *boolean* &rarr;  Flag indicating whether private DNS is enabled.<br>**New since v0.13.1**.
 
 - `host_routes`  *list* &rarr;  Host Routes of the subnet.
     - `destination_cidr` *string*

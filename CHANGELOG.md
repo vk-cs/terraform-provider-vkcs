@@ -6,13 +6,12 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.13.1 (unreleased)
-- Add backup_targets for vkcs_backup_plan resource
-- Add enable_private_dns to vkcs_networking_subnet resource and data source
+#### v0.13.1
+- Add backup_targets argument for vkcs_backup_plan resource
+- Add enable_private_dns argument and attribute to vkcs_networking_subnet resource and data source
 - Support external users import for vkcs_dataplatform_cluster
+- Fix the ability to specify settings and cronTabs.settings for vkcs_dataplatform_cluster resource
 - Correctly mark some vkcs_kubernetes_node_group data source arguments as attributes
-- Fix the ability to specify cronTabs.settings for vkcs_dataplatform_cluster
-- Fix the ability to specify setiings for vkcs_dataplatform_cluster
 
 #### v0.13.0 
 - Add vkcs_iam_service_user resource
