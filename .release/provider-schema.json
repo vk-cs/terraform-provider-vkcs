@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.13.0",
+  "provider_version": "v0.13.1",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -48,6 +48,29 @@
     "resources": {
       "vkcs_backup_plan": {
         "schema": {
+          "backup_targets": {
+            "type": "TypeList",
+            "optional": true,
+            "description": "List of backup targets specifying instance_id and volume_ids for each instance. Either backup_targets or instance_ids must be specified, but not both.",
+            "elem": {
+              "schema": {
+                "instance_id": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "ID of the instance for which specific volumes are backed up."
+                },
+                "volume_ids": {
+                  "type": "TypeSet",
+                  "optional": true,
+                  "description": "List of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.",
+                  "elem": {
+                    "type": "TypeString"
+                  }
+                }
+              }
+            },
+            "new_since": "v0.13.1"
+          },
           "full_retention": {
             "optional": true,
             "description": "Parameters for full retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full. Incompatible with gfs_retention"
@@ -68,8 +91,8 @@
           },
           "instance_ids": {
             "type": "TypeList",
-            "required": true,
-            "description": "List of ids of instances to make backup for",
+            "optional": true,
+            "description": "List of ids of instances to make backup for. Either backup_targets or instance_ids must be specified, but not both.",
             "elem": {
               "type": "TypeString"
             }
@@ -6296,6 +6319,14 @@
             "default": true,
             "description": "The administrative state of the network. Acceptable values are \"true\" and \"false\". Changing this value enables or disables the DHCP capabilities of the existing subnet. Defaults to true."
           },
+          "enable_private_dns": {
+            "type": "TypeBool",
+            "optional": true,
+            "default": true,
+            "description": "Option to control private DNS in a subnet. Enabled by default.",
+            "force_new": true,
+            "new_since": "v0.13.1"
+          },
           "gateway_ip": {
             "type": "TypeString",
             "optional": true,
@@ -7242,6 +7273,29 @@
     "data_sources": {
       "vkcs_backup_plan": {
         "schema": {
+          "backup_targets": {
+            "type": "TypeList",
+            "description": "List of backup targets specifying instance_id and volume_ids for each instance.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "instance_id": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "ID of the instance for which specific volumes are backed up."
+                },
+                "volume_ids": {
+                  "type": "TypeSet",
+                  "optional": true,
+                  "description": "List of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.",
+                  "elem": {
+                    "type": "TypeString"
+                  }
+                }
+              }
+            },
+            "new_since": "v0.13.1"
+          },
           "full_retention": {
             "description": "Parameters for full retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full",
             "computed": true
@@ -9867,7 +9921,7 @@
           "autoscaling_enabled": {
             "type": "TypeBool",
             "optional": true,
-            "description": "Determines whether the autoscaling is enabled.",
+            "description": "`Deprecated: read-only field.` Determines whether the autoscaling is enabled.",
             "computed": true
           },
           "availability_zones": {
@@ -9886,7 +9940,7 @@
           "flavor_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The id of the flavor.",
+            "description": "`Deprecated: read-only field.` The id of the flavor.",
             "computed": true
           },
           "id": {
@@ -9898,31 +9952,31 @@
           "max_node_unavailable": {
             "type": "TypeInt",
             "optional": true,
-            "description": "Specified as a percentage. The maximum number of nodes that can fail during an upgrade.",
+            "description": "`Deprecated: read-only field.` Specified as a percentage. The maximum number of nodes that can fail during an upgrade.",
             "computed": true
           },
           "max_nodes": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The maximum amount of nodes in the node group.",
+            "description": "`Deprecated: read-only field.` The maximum amount of nodes in the node group.",
             "computed": true
           },
           "min_nodes": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The minimum amount of nodes in the node group.",
+            "description": "`Deprecated: read-only field.` The minimum amount of nodes in the node group.",
             "computed": true
           },
           "name": {
             "type": "TypeString",
             "optional": true,
-            "description": "The name of the node group.",
+            "description": "`Deprecated: read-only field.` The name of the node group.",
             "computed": true
           },
           "node_count": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The count of nodes in the node group.",
+            "description": "`Deprecated: read-only field.` The count of nodes in the node group.",
             "computed": true
           },
           "nodes": {
@@ -9981,13 +10035,13 @@
           "volume_size": {
             "type": "TypeInt",
             "optional": true,
-            "description": "The amount of memory in the volume in GB",
+            "description": "`Deprecated: read-only field.` The amount of memory in the volume in GB",
             "computed": true
           },
           "volume_type": {
             "type": "TypeString",
             "optional": true,
-            "description": "The type of the volume.",
+            "description": "`Deprecated: read-only field.` The type of the volume.",
             "computed": true
           }
         },
@@ -10762,6 +10816,12 @@
             "type": "TypeBool",
             "description": "Whether the subnet has DHCP enabled or not.",
             "computed": true
+          },
+          "enable_private_dns": {
+            "type": "TypeBool",
+            "description": "Flag indicating whether private DNS is enabled.",
+            "computed": true,
+            "new_since": "v0.13.1"
           },
           "gateway_ip": {
             "type": "TypeString",

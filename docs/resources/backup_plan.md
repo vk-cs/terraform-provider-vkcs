@@ -84,7 +84,7 @@ resource "vkcs_backup_plan" "backup_plan" {
     - `time` optional *string* &rarr;  Time of backup in format hh:mm (for UTC timezone) or hh:mm+tz (for other timezones, e.g. 10:00+03 for MSK, 10:00-04 for ET)
 
 
-- `backup_targets`  *list* &rarr;  List of backup targets specifying instance_id and volume_ids for each instance. Either backup_targets or instance_ids must be specified, but not both.
+- `backup_targets`  *list* &rarr;  List of backup targets specifying instance_id and volume_ids for each instance. Either backup_targets or instance_ids must be specified, but not both.<br>**New since v0.13.1**.
     - `instance_id` **required** *string* &rarr;  ID of the instance for which specific volumes are backed up.
 
     - `volume_ids` optional *set of* *string* &rarr;  List of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.
