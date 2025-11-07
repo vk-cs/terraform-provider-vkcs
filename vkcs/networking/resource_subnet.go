@@ -183,6 +183,7 @@ func ResourceNetworkingSubnet() *schema.Resource {
 			"enable_private_dns": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "Option to control private DNS in a subnet. Enabled by default.",
 			},
@@ -255,8 +256,8 @@ func resourceNetworkingSubnetCreate(ctx context.Context, d *schema.ResourceData,
 	enableDHCP := d.Get("enable_dhcp").(bool)
 	createOpts.EnableDHCP = &enableDHCP
 
-	if v, ok := d.GetOk("enable_private_dns"); ok {
-		enablePrivateDNS := v.(bool)
+	if !d.GetRawConfig().GetAttr("enable_private_dns").IsNull() {
+		enablePrivateDNS := d.Get("enable_private_dns").(bool)
 		createOpts.EnablePrivateDNS = &enablePrivateDNS
 	}
 
