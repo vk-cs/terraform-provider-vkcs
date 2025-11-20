@@ -74,11 +74,11 @@ type ClusterConfigUser struct {
 }
 
 type ClusterConfigWarehouse struct {
-	ID          string                             `json:"id"`
-	Name        string                             `json:"name"`
-	Connections []ClusterConfigWarehouseConnection `json:"connections"`
-	Extensions  []ClusterConfigWarehouseExtension  `json:"extensions,omitempty"`
-	Users       []string                           `json:"users,omitempty"`
+	ID          string                              `json:"id"`
+	Name        string                              `json:"name"`
+	Connections *[]ClusterConfigWarehouseConnection `json:"connections"`
+	Extensions  []ClusterConfigWarehouseExtension   `json:"extensions,omitempty"`
+	Users       []string                            `json:"users,omitempty"`
 }
 
 type ClusterConfigWarehouseConnection struct {

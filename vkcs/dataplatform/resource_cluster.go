@@ -267,6 +267,14 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 	}
 
+	if !plan.Configs.Warehouses.IsUnknown() && !plan.Configs.Users.IsNull() {
+		diags := clusterUpdateConfigsWarehouses(ctx, client, id, data.Configs.Warehouses, plan.Configs.Warehouses)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+	}
+
 	if !plan.PodGroups.IsUnknown() && !plan.PodGroups.IsNull() {
 		diags := clusterUpdatePodGroups(ctx, client, id, data.PodGroups, plan.PodGroups)
 		if diags.HasError() {
@@ -443,6 +451,152 @@ func clusterUpdateConfigsUsers(ctx context.Context, client *gophercloud.ServiceC
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			diags.AddError("Error waiting for cluster update configs.users", err.Error())
+			return diags
+		}
+	}
+	return nil
+}
+
+func clusterUpdateConfigsWarehouses(ctx context.Context, client *gophercloud.ServiceClient, clusterID string, dataWarehousesRaw basetypes.ListValue, planWarehousesRaw basetypes.ListValue) diag.Diagnostics {
+	var d diag.Diagnostics
+
+	dataWarehouses, d := resource_cluster.ReadClusterConfigsWarehouses(ctx, dataWarehousesRaw)
+	if d.HasError() {
+		return d
+	}
+
+	planWarehouses, d := resource_cluster.ReadClusterConfigsWarehouses(ctx, planWarehousesRaw)
+	if d.HasError() {
+		return d
+	}
+
+	warehouses := make(map[string]resource_cluster.ConfigsWarehousesValue)
+	for _, dataWarehouse := range dataWarehouses {
+		warehouses[dataWarehouse.Name.ValueString()] = dataWarehouse
+	}
+
+	for _, planWarehouse := range planWarehouses {
+		dataConnections := warehouses[planWarehouse.Name.ValueString()].Connections
+		if !dataConnections.Equal(planWarehouse.Connections) {
+			d := clusterUpdateConfigsWarehousesConnections(ctx, client, clusterID, warehouses[planWarehouse.Name.ValueString()].Id.ValueString(), dataConnections, planWarehouse.Connections)
+			if d.HasError() {
+				return d
+			}
+		}
+	}
+
+	return nil
+}
+
+func clusterUpdateConfigsWarehousesConnections(ctx context.Context, client *gophercloud.ServiceClient, clusterID string, warehouseID string, dataConnectionsRaw basetypes.ListValue, planConnectionsRaw basetypes.ListValue) diag.Diagnostics {
+	var diags diag.Diagnostics
+	var d diag.Diagnostics
+
+	var dataConnections []resource_cluster.ConfigsWarehousesConnectionsValue
+	var planConnections []resource_cluster.ConfigsWarehousesConnectionsValue
+
+	if !dataConnectionsRaw.IsNull() && !dataConnectionsRaw.IsUnknown() {
+		dataConnections, d = resource_cluster.ReadClusterConfigsWarehousesConnections(ctx, dataConnectionsRaw)
+		if d.HasError() {
+			return d
+		}
+	}
+
+	if !planConnectionsRaw.IsNull() && !planConnectionsRaw.IsUnknown() {
+		planConnections, d = resource_cluster.ReadClusterConfigsWarehousesConnections(ctx, planConnectionsRaw)
+		if d.HasError() {
+			return d
+		}
+	}
+
+	var connectionsToAdd []clusters.ClusterAddConnection
+	var connectionsToDelete []string
+	remainingConnections := make(map[string]bool)
+	connectionIDs := make(map[string]string)
+
+	for _, connection := range dataConnections {
+		remainingConnections[connection.Name.ValueString()] = false
+		connectionIDs[connection.Name.ValueString()] = connection.Id.ValueString()
+	}
+
+	for _, planConnection := range planConnections {
+		if _, ok := remainingConnections[planConnection.Name.ValueString()]; !ok {
+			settings, d := resource_cluster.ReadClusterConfigsWarehousesConnectionsSettings(ctx, planConnection.Settings)
+			if d.HasError() {
+				return d
+			}
+
+			planSettings := make([]clusters.ClusterAddConnectionSetting, len(settings))
+			for i, setting := range settings {
+				planSettings[i] = clusters.ClusterAddConnectionSetting{
+					Alias: setting.Alias.ValueString(),
+					Value: setting.Value.ValueString(),
+				}
+			}
+
+			connectionsToAdd = append(connectionsToAdd, clusters.ClusterAddConnection{
+				Plug:     planConnection.Plug.ValueString(),
+				Name:     planConnection.Name.ValueString(),
+				Settings: planSettings,
+			})
+		} else {
+			remainingConnections[planConnection.Name.ValueString()] = true
+		}
+	}
+
+	for connectionName, isRemaining := range remainingConnections {
+		if !isRemaining {
+			connectionsToDelete = append(connectionsToDelete, connectionIDs[connectionName])
+		}
+	}
+
+	if len(connectionsToAdd) > 0 {
+		tflog.Trace(ctx, "Calling Data Platform API to add cluster connections", map[string]interface{}{"opts": fmt.Sprintf("%#v", connectionsToAdd)})
+		_, err := clusters.AddClusterConfigsWarehouseConnections(client, clusterID, &clusters.ClusterAddWarehouseConnections{
+			WarehouseID: warehouseID,
+			Connections: connectionsToAdd,
+		}).Extract()
+		if err != nil {
+			diags.AddError("Error calling Data Platform API to add cluster connections", err.Error())
+			return diags
+		}
+
+		stateConf := &retry.StateChangeConf{
+			Pending:    []string{string(clusterStatusConfiguring), string(clusterStatusUpdating)},
+			Target:     []string{string(clusterStatusActive)},
+			Refresh:    clusterStateRefreshFunc(client, clusterID),
+			Timeout:    clusterUpdateTimeout,
+			Delay:      clusterUpdateDelay,
+			MinTimeout: clusterUpdateMinTimeout,
+		}
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			diags.AddError("Error waiting for cluster update", err.Error())
+			return diags
+		}
+	}
+
+	if len(connectionsToDelete) > 0 {
+		tflog.Trace(ctx, "Calling Data Platform API to delete cluster connections", map[string]interface{}{"opts": fmt.Sprintf("%#v", connectionsToDelete)})
+		err := clusters.DeleteClusterConnections(client, clusterID, &clusters.ClusterDeleteWarehouseConnections{
+			ClusterConnections: connectionsToDelete,
+			WarehouseID:        warehouseID,
+		}).ExtractErr()
+		if err != nil {
+			diags.AddError("Error calling Data Platform API to delete cluster connections", err.Error())
+			return diags
+		}
+		stateConf := &retry.StateChangeConf{
+			Pending:    []string{string(clusterStatusConfiguring), string(clusterStatusUpdating)},
+			Target:     []string{string(clusterStatusActive)},
+			Refresh:    clusterStateRefreshFunc(client, clusterID),
+			Timeout:    clusterUpdateTimeout,
+			Delay:      clusterUpdateDelay,
+			MinTimeout: clusterUpdateMinTimeout,
+		}
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			diags.AddError("Error waiting for cluster update", err.Error())
 			return diags
 		}
 	}

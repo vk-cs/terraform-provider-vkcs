@@ -134,6 +134,22 @@ type ClusterUpdateUser struct {
 	Role     string `json:"role,omitempty"`
 }
 
+type ClusterAddWarehouseConnections struct {
+	WarehouseID string                 `json:"warehouse_id" required:"true"`
+	Connections []ClusterAddConnection `json:"connections" required:"true"`
+}
+
+type ClusterAddConnection struct {
+	Plug     string                        `json:"plug"`
+	Name     string                        `json:"name"`
+	Settings []ClusterAddConnectionSetting `json:"settings"`
+}
+
+type ClusterAddConnectionSetting struct {
+	Alias string `json:"alias" required:"true"`
+	Value string `json:"value" required:"true"`
+}
+
 type ClusterUpdatePodGroups struct {
 	PodGroups []ClusterUpdatePodGroup `json:"pod_groups" required:"true"`
 }
@@ -179,6 +195,11 @@ type ClusterUpdateConfigsMaintenanceCrontabsUpdate struct {
 
 type ClusterUpdateConfigsMaintenanceCrontabsDelete struct {
 	ID string `json:"id"`
+}
+
+type ClusterDeleteWarehouseConnections struct {
+	ClusterConnections []string `q:"cluster_connections"`
+	WarehouseID        string   `q:"warehouse_id"`
 }
 
 // Map converts opts to a map (for a request body)
@@ -296,25 +317,48 @@ func (opts *ClusterUpdateUser) Map() (map[string]interface{}, error) {
 }
 
 // Map converts opts to a map (for a request body)
+func (opts *ClusterAddWarehouseConnections) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
+// Map converts opts to a map (for a request body)
+func (opts *ClusterAddConnection) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
+// Map converts opts to a map (for a request body)
+func (opts *ClusterAddConnectionSetting) Map() (map[string]interface{}, error) {
+	body, err := gophercloud.BuildRequestBody(*opts, "")
+	return body, err
+}
+
+// Map converts opts to a map (for a request body)
 func (opts *ClusterUpdatePodGroups) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(opts, "")
+	body, err := gophercloud.BuildRequestBody(*opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterUpdatePodGroup) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(opts, "")
+	body, err := gophercloud.BuildRequestBody(*opts, "")
 	return body, err
 }
 
 func (opts *ClusterDeleteUsers) ToQuery() (string, error) {
-	q, err := gophercloud.BuildQueryString(opts)
+	q, err := gophercloud.BuildQueryString(*opts)
+	return q.String(), err
+}
+
+func (opts *ClusterDeleteWarehouseConnections) ToQuery() (string, error) {
+	q, err := gophercloud.BuildQueryString(*opts)
 	return q.String(), err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterUpdateConfigsMaintenance) Map() (map[string]interface{}, error) {
-	return gophercloud.BuildRequestBody(opts, "")
+	return gophercloud.BuildRequestBody(*opts, "")
 }
 
 // Create performs request to create database cluster
@@ -406,6 +450,39 @@ func AddClusterUsers(client *gophercloud.ServiceClient, id string, opts OptsBuil
 func DeleteClusterUsers(client *gophercloud.ServiceClient, id string, opts OptsQueryBuilder) (r DeleteResult) {
 	common.SetHeaders(client)
 	url := clusterUsersURL(client, id)
+	query, err := opts.ToQuery()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	url += query
+
+	resp, err := client.Delete(url, &gophercloud.RequestOpts{
+		OkCodes: []int{204},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+func AddClusterConfigsWarehouseConnections(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r UpdateResult) {
+	common.SetHeaders(client)
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := client.Post(clusterConnectionsURL(client, id), &b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{201},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+func DeleteClusterConnections(client *gophercloud.ServiceClient, clusterID string, opts OptsQueryBuilder) (r DeleteResult) {
+	common.SetHeaders(client)
+	url := clusterConnectionsURL(client, clusterID)
 	query, err := opts.ToQuery()
 	if err != nil {
 		r.Err = err
