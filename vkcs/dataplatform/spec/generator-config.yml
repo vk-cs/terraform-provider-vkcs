@@ -117,17 +117,17 @@ resources:
           configs.warehouses.name:
             description: Warehouse name. Changing this creates a new resource.
           configs.warehouses.connections:
-            description: Warehouse connections. Changing this creates a new resource.
+            description: Warehouse connections.
           configs.warehouses.connections.plug:
-            description: Connection plug. Changing this creates a new resource.
+            description: Connection plug.
           configs.warehouses.connections.name:
-            description: Connection name. Changing this creates a new resource.
+            description: Connection name.
           configs.warehouses.connections.settings:
-            description: Additional warehouse settings. Changing this creates a new resource.
+            description: Additional warehouse settings.
           configs.warehouses.connections.settings.alias:
-            description: Setting alias. Changing this creates a new resource.
+            description: Setting alias.
           configs.warehouses.connections.settings.value:
-            description: Setting value. Changing this creates a new resource.
+            description: Setting value.
           configs.warehouses.connections.id:
             description: Connection ID.
           configs.warehouses.connections.created_at:

@@ -24,6 +24,10 @@ func clusterUsersURL(c *gophercloud.ServiceClient, id string) string {
 	return c.ServiceURL(baseURL(), id, "users")
 }
 
+func clusterConnectionsURL(c *gophercloud.ServiceClient, id string) string {
+	return c.ServiceURL(baseURL(), id, "connections")
+}
+
 func clusterPodGroupsURL(c *gophercloud.ServiceClient, id string) string {
 	return c.ServiceURL(baseURL(), id, "scale")
 }
