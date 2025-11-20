@@ -245,10 +245,10 @@ func UpdateClusterConfigsWarehouses(ctx context.Context, warehouses []clusters.C
 	return nil
 }
 
-func UpdateClusterConfigsWarehousesConnections(ctx context.Context, i int, connections []clusters.ClusterConfigWarehouseConnection, path path.Path, state *tfsdk.State) diag.Diagnostics {
+func UpdateClusterConfigsWarehousesConnections(ctx context.Context, i int, connections *[]clusters.ClusterConfigWarehouseConnection, path path.Path, state *tfsdk.State) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	if len(connections) == 0 {
+	if connections == nil {
 		d := state.SetAttribute(ctx, path, types.ListNull(ConfigsWarehousesConnectionsValue{}.Type(ctx)))
 		diags.Append(d...)
 		if diags.HasError() {
@@ -257,7 +257,22 @@ func UpdateClusterConfigsWarehousesConnections(ctx context.Context, i int, conne
 		return nil
 	}
 
-	for j, c := range connections {
+	if len(*connections) == 0 {
+		connectionsV, d := types.ListValue(ConfigsWarehousesConnectionsValue{}.Type(ctx), []attr.Value{})
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+
+		d = state.SetAttribute(ctx, path, connectionsV)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+		return nil
+	}
+
+	for j, c := range *connections {
 		d := state.SetAttribute(ctx, path.AtListIndex(j).AtName("created_at"), c.CreatedAt)
 		diags.Append(d...)
 		if diags.HasError() {
