@@ -38,7 +38,7 @@ func ExpandClusterConfigs(ctx context.Context, v ConfigsValue) (*clusters.Cluste
 	}
 
 	if o := v.Warehouses; !o.IsUnknown() && !o.IsNull() {
-		warehouses, diags := ExpandClusterWarehouses(ctx, o)
+		warehouses, diags := ExpandClusterConfigsWarehouses(ctx, o)
 		if diags != nil && diags.HasError() {
 			return nil, diags
 		}
@@ -259,9 +259,8 @@ func ReadClusterConfigsUsers(ctx context.Context, o basetypes.ListValue) ([]Conf
 	return usersV, nil
 }
 
-func ExpandClusterWarehouses(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigWarehouse, diag.Diagnostics) {
-	warehousesV := make([]ConfigsWarehousesValue, 0, len(o.Elements()))
-	diags := o.ElementsAs(ctx, &warehousesV, false)
+func ExpandClusterConfigsWarehouses(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigWarehouse, diag.Diagnostics) {
+	warehousesV, diags := ReadClusterConfigsWarehouses(ctx, o)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -273,7 +272,7 @@ func ExpandClusterWarehouses(ctx context.Context, o basetypes.ListValue) ([]clus
 		}
 
 		if o := v.Connections; !o.IsUnknown() && !o.IsNull() {
-			wConnections, diags := ExpandClusterWarehousesConnections(ctx, o)
+			wConnections, diags := ExpandClusterConfigsWarehousesConnections(ctx, o)
 			if diags.HasError() {
 				return nil, diags
 			}
@@ -283,9 +282,17 @@ func ExpandClusterWarehouses(ctx context.Context, o basetypes.ListValue) ([]clus
 	return result, nil
 }
 
-func ExpandClusterWarehousesConnections(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigWarehouseConnection, diag.Diagnostics) {
-	connectionsV := make([]ConfigsWarehousesConnectionsValue, 0, len(o.Elements()))
-	diags := o.ElementsAs(ctx, &connectionsV, false)
+func ReadClusterConfigsWarehouses(ctx context.Context, o basetypes.ListValue) ([]ConfigsWarehousesValue, diag.Diagnostics) {
+	warehousesV := make([]ConfigsWarehousesValue, 0, len(o.Elements()))
+	diags := o.ElementsAs(ctx, &warehousesV, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+	return warehousesV, nil
+}
+
+func ExpandClusterConfigsWarehousesConnections(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigWarehouseConnection, diag.Diagnostics) {
+	connectionsV, diags := ReadClusterConfigsWarehousesConnections(ctx, o)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -308,6 +315,15 @@ func ExpandClusterWarehousesConnections(ctx context.Context, o basetypes.ListVal
 	return result, nil
 }
 
+func ReadClusterConfigsWarehousesConnections(ctx context.Context, o basetypes.ListValue) ([]ConfigsWarehousesConnectionsValue, diag.Diagnostics) {
+	connectionsV := make([]ConfigsWarehousesConnectionsValue, 0, len(o.Elements()))
+	diags := o.ElementsAs(ctx, &connectionsV, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+	return connectionsV, nil
+}
+
 func ExpandClusterWarehousesConnectionsSettings(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigSetting, diag.Diagnostics) {
 	settingsV := make([]ConfigsWarehousesConnectionsSettingsValue, 0, len(o.Elements()))
 	diags := o.ElementsAs(ctx, &settingsV, false)
@@ -323,6 +339,15 @@ func ExpandClusterWarehousesConnectionsSettings(ctx context.Context, o basetypes
 		}
 	}
 	return result, nil
+}
+
+func ReadClusterConfigsWarehousesConnectionsSettings(ctx context.Context, o basetypes.ListValue) ([]ConfigsWarehousesConnectionsSettingsValue, diag.Diagnostics) {
+	settingsV := make([]ConfigsWarehousesConnectionsSettingsValue, 0, len(o.Elements()))
+	diags := o.ElementsAs(ctx, &settingsV, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+	return settingsV, nil
 }
 
 func ExpandClusterPodGroups(ctx context.Context, template *templates.ClusterTemplate, o basetypes.ListValue) ([]clusters.ClusterCreatePodGroup, diag.Diagnostics) {

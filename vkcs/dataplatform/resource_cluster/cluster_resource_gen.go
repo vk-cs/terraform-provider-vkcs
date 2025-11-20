@@ -344,22 +344,16 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											},
 											"name": schema.StringAttribute{
 												Required:            true,
-												Description:         "Connection name. Changing this creates a new resource.",
-												MarkdownDescription: "Connection name. Changing this creates a new resource.",
-												PlanModifiers: []planmodifier.String{
-													stringplanmodifier.RequiresReplace(),
-												},
+												Description:         "Connection name.",
+												MarkdownDescription: "Connection name.",
 												Validators: []validator.String{
 													stringvalidator.LengthAtMost(255),
 												},
 											},
 											"plug": schema.StringAttribute{
 												Required:            true,
-												Description:         "Connection plug. Changing this creates a new resource.",
-												MarkdownDescription: "Connection plug. Changing this creates a new resource.",
-												PlanModifiers: []planmodifier.String{
-													stringplanmodifier.RequiresReplace(),
-												},
+												Description:         "Connection plug.",
+												MarkdownDescription: "Connection plug.",
 												Validators: []validator.String{
 													stringvalidator.LengthAtMost(255),
 												},
@@ -369,16 +363,16 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 													Attributes: map[string]schema.Attribute{
 														"alias": schema.StringAttribute{
 															Required:            true,
-															Description:         "Setting alias. Changing this creates a new resource.",
-															MarkdownDescription: "Setting alias. Changing this creates a new resource.",
+															Description:         "Setting alias.",
+															MarkdownDescription: "Setting alias.",
 															Validators: []validator.String{
 																stringvalidator.LengthAtMost(80),
 															},
 														},
 														"value": schema.StringAttribute{
 															Required:            true,
-															Description:         "Setting value. Changing this creates a new resource.",
-															MarkdownDescription: "Setting value. Changing this creates a new resource.",
+															Description:         "Setting value.",
+															MarkdownDescription: "Setting value.",
 															Validators: []validator.String{
 																stringvalidator.LengthAtMost(255),
 															},
@@ -391,8 +385,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 													},
 												},
 												Required:            true,
-												Description:         "Additional warehouse settings. Changing this creates a new resource.",
-												MarkdownDescription: "Additional warehouse settings. Changing this creates a new resource.",
+												Description:         "Additional warehouse settings.",
+												MarkdownDescription: "Additional warehouse settings.",
 											},
 										},
 										CustomType: ConfigsWarehousesConnectionsType{
@@ -403,8 +397,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 									},
 									Optional:            true,
 									Computed:            true,
-									Description:         "Warehouse connections. Changing this creates a new resource.",
-									MarkdownDescription: "Warehouse connections. Changing this creates a new resource.",
+									Description:         "Warehouse connections.",
+									MarkdownDescription: "Warehouse connections.",
 								},
 								"id": schema.StringAttribute{
 									Computed:            true,

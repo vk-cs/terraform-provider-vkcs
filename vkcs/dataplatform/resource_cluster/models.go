@@ -45,7 +45,7 @@ func (m *ClusterModel) UpdateState(ctx context.Context, cluster *clusters.Cluste
 			return diags
 		}
 
-		d = UpdateClusterConfigsWarehouses(ctx, cluster.Configs.Warehouses, path.Root("configs").AtName("warehouses"), state)
+		d = UpdateClusterConfigsWarehouses(ctx, cluster.Configs.Warehouses, oldConfigs.Warehouses, path.Root("configs").AtName("warehouses"), state)
 		diags.Append(d...)
 		if diags.HasError() {
 			return diags
@@ -217,15 +217,29 @@ func UpdateClusterConfigsUsers(ctx context.Context, users []clusters.ClusterConf
 	return nil
 }
 
-func UpdateClusterConfigsWarehouses(ctx context.Context, warehouses []clusters.ClusterConfigWarehouse, path path.Path, state *tfsdk.State) diag.Diagnostics {
+func UpdateClusterConfigsWarehouses(ctx context.Context, warehouses []clusters.ClusterConfigWarehouse, oldWarehouses basetypes.ListValue, path path.Path, state *tfsdk.State) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if warehouses == nil {
 		return nil
 	}
 
+	warehousesV := make([]ConfigsWarehousesValue, 0, len(oldWarehouses.Elements()))
+	if len(oldWarehouses.Elements()) > 0 {
+		d := oldWarehouses.ElementsAs(ctx, &warehousesV, false)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+	}
+
+	var oldWarehousesMap = make(map[string]ConfigsWarehousesValue, len(warehousesV))
+	for _, w := range warehousesV {
+		oldWarehousesMap[w.Name.ValueString()] = w
+	}
+
 	for i, w := range warehouses {
-		d := UpdateClusterConfigsWarehousesConnections(ctx, i, w.Connections, path.AtListIndex(i).AtName("connections"), state)
+		d := UpdateClusterConfigsWarehousesConnections(ctx, i, w.Connections, oldWarehousesMap[w.Name].Connections, path.AtListIndex(i).AtName("connections"), state)
 		diags.Append(d...)
 		if diags.HasError() {
 			return diags
@@ -246,10 +260,10 @@ func UpdateClusterConfigsWarehouses(ctx context.Context, warehouses []clusters.C
 	return nil
 }
 
-func UpdateClusterConfigsWarehousesConnections(ctx context.Context, i int, connections []clusters.ClusterConfigWarehouseConnection, path path.Path, state *tfsdk.State) diag.Diagnostics {
+func UpdateClusterConfigsWarehousesConnections(ctx context.Context, i int, connections *[]clusters.ClusterConfigWarehouseConnection, oldConnections basetypes.ListValue, path path.Path, state *tfsdk.State) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	if len(connections) == 0 {
+	if connections == nil {
 		d := state.SetAttribute(ctx, path, types.ListNull(ConfigsWarehousesConnectionsValue{}.Type(ctx)))
 		diags.Append(d...)
 		if diags.HasError() {
@@ -258,8 +272,50 @@ func UpdateClusterConfigsWarehousesConnections(ctx context.Context, i int, conne
 		return nil
 	}
 
-	for j, c := range connections {
-		d := state.SetAttribute(ctx, path.AtListIndex(j).AtName("created_at"), c.CreatedAt)
+	if len(*connections) == 0 {
+		connectionsV, d := types.ListValue(ConfigsWarehousesConnectionsValue{}.Type(ctx), []attr.Value{})
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+
+		d = state.SetAttribute(ctx, path, connectionsV)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+		return nil
+	}
+
+	connectionsV := make([]ConfigsWarehousesConnectionsValue, 0, len(oldConnections.Elements()))
+	if len(oldConnections.Elements()) > 0 {
+		d := oldConnections.ElementsAs(ctx, &connectionsV, false)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+	}
+
+	var oldConnectionsMap = make(map[string]ConfigsWarehousesConnectionsValue, len(connectionsV))
+	for _, c := range connectionsV {
+		oldConnectionsMap[c.Name.ValueString()] = c
+	}
+	for j, c := range *connections {
+		oldConnection := oldConnectionsMap[c.Name]
+		d := UpdateClusterConfigsWarehousesConnectionsSettings(ctx, c.Settings, oldConnection.Settings, path.AtListIndex(j).AtName("settings"), state)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+
+		var stateSettings []ConfigsWarehousesConnectionsSettingsValue
+		d = state.GetAttribute(ctx, path.AtListIndex(j).AtName("settings"), &stateSettings)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+
+		d = state.SetAttribute(ctx, path.AtListIndex(j).AtName("created_at"), c.CreatedAt)
 		diags.Append(d...)
 		if diags.HasError() {
 			return diags
@@ -283,6 +339,41 @@ func UpdateClusterConfigsWarehousesConnections(ctx context.Context, i int, conne
 			return diags
 		}
 	}
+	return nil
+}
+
+func UpdateClusterConfigsWarehousesConnectionsSettings(ctx context.Context, newSettings []clusters.ClusterConfigSetting, oldSettings basetypes.ListValue, path path.Path, state *tfsdk.State) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	oldElems := oldSettings.Elements()
+	oldSettingsV := make([]ConfigsWarehousesConnectionsSettingsValue, 0, len(oldElems))
+	if len(oldElems) > 0 {
+		d := oldSettings.ElementsAs(ctx, &oldSettingsV, false)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+	} else {
+		return nil
+	}
+
+	newAliases := make(map[string]clusters.ClusterConfigSetting, len(newSettings))
+	for _, newSetting := range newSettings {
+		newAliases[newSetting.Alias] = newSetting
+	}
+
+	for i, oldSetting := range oldSettingsV {
+		if _, exists := newAliases[oldSetting.Alias.ValueString()]; exists {
+			oldSettingsV[i].Value = types.StringValue(newAliases[oldSetting.Alias.ValueString()].Value)
+		}
+	}
+
+	d := state.SetAttribute(ctx, path, oldSettingsV)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+
 	return nil
 }
 
@@ -310,6 +401,7 @@ func UpdateClusterConfigsSettings(ctx context.Context, newSettings []clusters.Cl
 			updatedSettingsV = append(updatedSettingsV, ConfigsSettingsValue{
 				Alias: types.StringValue(newSetting.Alias),
 				Value: types.StringValue(newSetting.Value),
+				state: attr.ValueStateKnown,
 			})
 		}
 	}

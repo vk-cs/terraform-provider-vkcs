@@ -7,6 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 #### v0.13.1 (unreleased)
+- Support adding and removing connections for vkcs_dataplatform_cluster
 - Add backup_targets argument for vkcs_backup_plan resource
 - Add enable_private_dns argument and attribute to vkcs_networking_subnet resource and data source
 - Support external users import for vkcs_dataplatform_cluster
