@@ -48,7 +48,7 @@ type ClusterCreateConfigSetting struct {
 }
 
 type ClusterCreateConfigMaintenance struct {
-	Start    string                                   `json:"start" required:"true"`
+	Start    string                                   `json:"start,omitempty"`
 	Backup   *ClusterCreateConfigMaintenanceBackup    `json:"backup,omitempty"`
 	CronTabs []ClusterCreateConfigMaintenanceCronTabs `json:"crontabs,omitempty"`
 }
@@ -153,135 +153,168 @@ type ClusterDeleteUsers struct {
 	ClusterUsersIDs []string `q:"cluster_users_ids"`
 }
 
+type ClusterUpdateConfigsMaintenance struct {
+	Start    *string                                  `json:"start,omitempty"`
+	Backup   *ClusterCreateConfigMaintenanceBackup    `json:"backup,omitempty"`
+	Crontabs *ClusterUpdateConfigsMaintenanceCrontabs `json:"crontabs,omitempty"`
+}
+
+type ClusterUpdateConfigsMaintenanceCrontabs struct {
+	Create []ClusterUpdateConfigsMaintenanceCrontabsCreate `json:"create,omitempty"`
+	Update []ClusterUpdateConfigsMaintenanceCrontabsUpdate `json:"update,omitempty"`
+	Delete []ClusterUpdateConfigsMaintenanceCrontabsDelete `json:"delete,omitempty"`
+}
+
+type ClusterUpdateConfigsMaintenanceCrontabsCreate struct {
+	Name     string                       `json:"name"`
+	Start    string                       `json:"start"`
+	Settings []ClusterCreateConfigSetting `json:"settings,omitempty"`
+}
+
+type ClusterUpdateConfigsMaintenanceCrontabsUpdate struct {
+	ID       string                       `json:"id"`
+	Start    string                       `json:"start"`
+	Settings []ClusterCreateConfigSetting `json:"settings,omitempty"`
+}
+
+type ClusterUpdateConfigsMaintenanceCrontabsDelete struct {
+	ID string `json:"id"`
+}
+
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreate) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterUpdate) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreateConfig) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreateConfigSetting) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreateConfigMaintenance) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreateConfigMaintenanceBackup) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreateConfigMaintenanceBackupObj) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreateConfigMaintenanceCronTabs) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreateConfigUser) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreateConfigWarehouse) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreateConfigWarehouseConnection) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreateConfigWarehouseExtension) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreatePodGroup) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreatePodGroupResource) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterCreatePodGroupVolume) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterUpdateSettings) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterUpdateSetting) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterUpdateUsers) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterUpdateUser) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterUpdatePodGroups) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 // Map converts opts to a map (for a request body)
 func (opts *ClusterUpdatePodGroup) Map() (map[string]interface{}, error) {
-	body, err := gophercloud.BuildRequestBody(*opts, "")
+	body, err := gophercloud.BuildRequestBody(opts, "")
 	return body, err
 }
 
 func (opts *ClusterDeleteUsers) ToQuery() (string, error) {
 	q, err := gophercloud.BuildQueryString(opts)
 	return q.String(), err
+}
+
+// Map converts opts to a map (for a request body)
+func (opts *ClusterUpdateConfigsMaintenance) Map() (map[string]interface{}, error) {
+	return gophercloud.BuildRequestBody(opts, "")
 }
 
 // Create performs request to create database cluster
@@ -318,6 +351,21 @@ func Update(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r U
 		return
 	}
 	resp, err := client.Patch(clusterURL(client, id), &b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+func UpdateMaintenance(client *gophercloud.ServiceClient, id string, opts OptsBuilder) (r UpdateResult) {
+	common.SetHeaders(client)
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := client.Patch(clusterMaintenanceURL(client, id), &b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)

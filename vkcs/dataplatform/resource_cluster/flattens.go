@@ -15,7 +15,8 @@ import (
 
 func FlattenClusterConfigsSettings(ctx context.Context, o []clusters.ClusterConfigSetting) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	if o == nil {
+
+	if len(o) == 0 {
 		return types.ListNull(ConfigsSettingsValue{}.Type(ctx)), nil
 	}
 
@@ -49,7 +50,6 @@ func FlattenClusterConfigsMaintenance(ctx context.Context, o *clusters.ClusterCo
 	}
 
 	cronTabs, d := FlattenClusterConfigsMaintenanceCronTabs(ctx, o.CronTabs)
-
 	diags.Append(d...)
 	if diags.HasError() {
 		return types.ObjectUnknown(ConfigsMaintenanceValue{}.AttributeTypes(ctx)), diags
@@ -75,6 +75,10 @@ func FlattenClusterConfigsMaintenanceBackup(ctx context.Context, o *clusters.Clu
 	var diags diag.Diagnostics
 
 	if o == nil {
+		return types.ObjectNull(ConfigsMaintenanceBackupValue{}.AttributeTypes(ctx)), nil
+	}
+
+	if o.Differential == nil && o.Full == nil && o.Incremental == nil {
 		return types.ObjectNull(ConfigsMaintenanceBackupValue{}.AttributeTypes(ctx)), nil
 	}
 
@@ -157,6 +161,7 @@ func FlattenClusterConfigsMaintenanceCronTabs(ctx context.Context, o []clusters.
 		}
 
 		cronTabsV[i] = ConfigsMaintenanceCrontabsValue{
+			Id:       types.StringValue(s.ID),
 			Name:     types.StringValue(s.Name),
 			Required: types.BoolValue(s.Required),
 			Settings: settings,
@@ -164,8 +169,8 @@ func FlattenClusterConfigsMaintenanceCronTabs(ctx context.Context, o []clusters.
 			state:    attr.ValueStateKnown,
 		}
 	}
-	result, d := types.ListValue(ConfigsMaintenanceCrontabsValue{}.Type(ctx), cronTabsV)
 
+	result, d := types.ListValue(ConfigsMaintenanceCrontabsValue{}.Type(ctx), cronTabsV)
 	diags.Append(d...)
 	if diags.HasError() {
 		return types.ListUnknown(ConfigsMaintenanceCrontabsValue{}.Type(ctx)), diags

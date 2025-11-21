@@ -123,7 +123,7 @@ func UpdateClusterConfigsMaintenance(ctx context.Context, maintenance *clusters.
 }
 
 func MergeClusterConfigsMaintenanceCronTabs(newCrontabs []clusters.ClusterConfigMaintenanceCronTabs, oldCrontabs []clusters.ClusterCreateConfigMaintenanceCronTabs) []clusters.ClusterConfigMaintenanceCronTabs {
-	result := make([]clusters.ClusterConfigMaintenanceCronTabs, 0, len(newCrontabs))
+	var result []clusters.ClusterConfigMaintenanceCronTabs
 
 	oldCronTabsByName := make(map[string]clusters.ClusterCreateConfigMaintenanceCronTabs, len(oldCrontabs))
 	for _, old := range oldCrontabs {
@@ -144,12 +144,13 @@ func MergeClusterConfigsMaintenanceCronTabs(newCrontabs []clusters.ClusterConfig
 }
 
 func MergeClusterConfigsMaintenanceCronTabsSettings(newSettings []clusters.ClusterConfigSetting, oldSettings []clusters.ClusterCreateConfigSetting) []clusters.ClusterConfigSetting {
+	var filtered []clusters.ClusterConfigSetting
+
 	existing := make(map[string]struct{}, len(oldSettings))
 	for _, s := range oldSettings {
 		existing[s.Alias] = struct{}{}
 	}
 
-	filtered := make([]clusters.ClusterConfigSetting, 0, len(newSettings))
 	for _, s := range newSettings {
 		if _, ok := existing[s.Alias]; ok {
 			filtered = append(filtered, s)

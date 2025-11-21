@@ -178,6 +178,42 @@ func TestAccDataPlatformClusterIcebergScale_big(t *testing.T) {
 	})
 }
 
+func TestAccDataPlatformClusterIcebergUpdateMaintenance_big(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataPlatformClusterResourceBaseNetwork,
+				Check: func(state *terraform.State) error {
+					time.Sleep(30 * time.Second)
+					return nil
+				},
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIcebergUpdateMaintenance1, map[string]string{
+					"TestAccDataPlatformClusterResourceBaseNetwork": testAccDataPlatformClusterResourceBaseNetwork,
+				}),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.maintenance.start", "0 0 1 * *"),
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.maintenance.backup.full.start", "0 0 1 * *"),
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.maintenance.backup.full.keep_time", "10"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIcebergUpdateMaintenance2, map[string]string{
+					"TestAccDataPlatformClusterResourceBaseNetwork": testAccDataPlatformClusterResourceBaseNetwork,
+				}),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.maintenance.start", "0 0 2 * *"),
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.maintenance.backup.full.start", "0 0 2 * *"),
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.maintenance.backup.full.keep_time", "12"),
+				),
+			},
+		},
+	})
+}
+
 const testAccDataPlatformClusterResourceBaseNetwork = `
 resource "vkcs_networking_network" "db" {
   name        = "db-tf-example"
@@ -421,6 +457,144 @@ resource "vkcs_dataplatform_cluster" "basic" {
     {
       name = "bouncer"
       count = {{ .TestAccDataPlatformClusterResourceIcebergBouncerCount }} 
+      resource = {
+        cpu_request = "0.2"
+        ram_request = "1"
+      }
+    }
+  ]
+}
+`
+
+const testAccDataPlatformClusterResourceIcebergUpdateMaintenance1 = `
+{{ .TestAccDataPlatformClusterResourceBaseNetwork }}
+
+resource "vkcs_dataplatform_cluster" "basic" {
+  name        = "tf-basic-iceberg"
+  description = "tf-basic-iceberg-description"
+  network_id  = vkcs_networking_network.db.id
+  subnet_id   = vkcs_networking_subnet.db.id
+
+  product_name    = "iceberg-metastore"
+  product_version = "17.2.0"
+
+  availability_zone = "GZ1"
+  configs = {
+    maintenance = {
+      start = "0 0 1 * *"
+      backup = {
+        full = {
+          keep_time = 10
+          start     = "0 0 1 * *"
+        }
+      }
+    }
+    warehouses = [
+      {
+        name = "metastore",
+      }
+    ]
+    users = [
+      {
+        username = "vkdata"
+        password = "Test_p#ssword-12-3"
+        role     = "dbOwner"
+      }
+    ]
+  }
+  pod_groups = [
+    {
+      name  = "postgres"
+      count = 1
+      resource = {
+        cpu_request = "0.5"
+        ram_request = "1"
+      }
+      volumes = {
+        "data" = {
+          storage_class_name = "ceph-ssd"
+          storage            = "10"
+          count              = 1
+        }
+        "wal" = {
+          storage_class_name = "ceph-ssd"
+          storage            = "10"
+          count              = 1
+        }
+      }
+    },
+    {
+      name  = "bouncer"
+      count = 0
+      resource = {
+        cpu_request = "0.2"
+        ram_request = "1"
+      }
+    }
+  ]
+}
+`
+
+const testAccDataPlatformClusterResourceIcebergUpdateMaintenance2 = `
+{{ .TestAccDataPlatformClusterResourceBaseNetwork }}
+
+resource "vkcs_dataplatform_cluster" "basic" {
+  name        = "tf-basic-iceberg"
+  description = "tf-basic-iceberg-description"
+  network_id  = vkcs_networking_network.db.id
+  subnet_id   = vkcs_networking_subnet.db.id
+
+  product_name    = "iceberg-metastore"
+  product_version = "17.2.0"
+
+  availability_zone = "GZ1"
+  configs = {
+    maintenance = {
+      start = "0 0 2 * *"
+      backup = {
+        full = {
+          keep_time = 12
+          start     = "0 0 2 * *"
+        }
+      }
+    }
+    warehouses = [
+      {
+        name = "metastore",
+      }
+    ]
+    users = [
+      {
+        username = "vkdata"
+        password = "Test_p#ssword-12-3"
+        role     = "dbOwner"
+      }
+    ]
+  }
+  pod_groups = [
+    {
+      name  = "postgres"
+      count = 1
+      resource = {
+        cpu_request = "0.5"
+        ram_request = "1"
+      }
+      volumes = {
+        "data" = {
+          storage_class_name = "ceph-ssd"
+          storage            = "10"
+          count              = 1
+        }
+        "wal" = {
+          storage_class_name = "ceph-ssd"
+          storage            = "10"
+          count              = 1
+        }
+      }
+    },
+    {
+      name  = "bouncer"
+      count = 0
       resource = {
         cpu_request = "0.2"
         ram_request = "1"

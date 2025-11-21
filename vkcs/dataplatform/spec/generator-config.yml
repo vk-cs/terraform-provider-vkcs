@@ -49,53 +49,53 @@ resources:
           configs:
             description: Product configuration.
           configs.maintenance:
-            description: Maintenance settings. Changing this creates a new resource.
+            description: Maintenance settings.
           configs.maintenance.start:
-            description: Maintenance cron schedule. Changing this creates a new resource.
+            description: Maintenance cron schedule. Defined in UTC.
           configs.maintenance.backup:
-            description: Backup settings. Changing this creates a new resource.
+            description: Backup settings.
           configs.maintenance.backup.full:
-            description: Full backup settings. Changing this creates a new resource.
+            description: Full backup settings.
           configs.maintenance.backup.full.start:
-            description: Full backup schedule. Changing this creates a new resource.
+            description: Full backup schedule. Defined in UTC. _note_ `configs.maintenance.backup.full.start` must be equal to `configs.maintenance.start`.
           configs.maintenance.backup.full.keep_count:
-            description: Full backup keep count. Changing this creates a new resource.
+            description: Full backup keep count.
           configs.maintenance.backup.full.keep_time:
-            description: Full backup keep time. Changing this creates a new resource.
+            description: Full backup keep time.
           configs.maintenance.backup.full.enabled:
             description: Whether full backup is enabled.
           configs.maintenance.backup.incremental:
-            description: Incremental backup settings. Changing this creates a new resource.
+            description: Incremental backup settings.
           configs.maintenance.backup.incremental.start:
-            description: Incremental backup schedule. Changing this creates a new resource.
+            description: Incremental backup schedule. Defined in UTC.
           configs.maintenance.backup.incremental.keep_count:
-            description: Incremental backup keep count. Changing this creates a new resource.
+            description: Incremental backup keep count.
           configs.maintenance.backup.incremental.keep_time:
-            description: Incremental backup keep time. Changing this creates a new resource.
+            description: Incremental backup keep time.
           configs.maintenance.backup.incremental.enabled:
             description: Whether incremental backup is enabled.
           configs.maintenance.backup.differential:
-            description: Differential backup settings. Changing this creates a new resource.
+            description: Differential backup settings.
           configs.maintenance.backup.differential.start:
-            description: Differential backup schedule. Changing this creates a new resource.
+            description: Differential backup schedule. Defined in UTC.
           configs.maintenance.backup.differential.keep_count:
-            description: Differential backup keep count. Changing this creates a new resource.
+            description: Differential backup keep count.
           configs.maintenance.backup.differential.keep_time:
-            description: Differential backup keep time. Changing this creates a new resource.
+            description: Differential backup keep time.
           configs.maintenance.backup.differential.enabled:
             description: Whether differential backup is enabled.
           configs.maintenance.crontabs:
-            description: Cron tabs settings. Changing this creates a new resource.
+            description: Cron tabs settings.
           configs.maintenance.crontabs.name:
-            description: Cron tab name. Changing this creates a new resource.
+            description: Cron tab name.
           configs.maintenance.crontabs.start:
-            description: Cron tab schedule. Changing this creates a new resource.
+            description: Cron tab schedule. Defined in UTC.
           configs.maintenance.crontabs.settings:
-            description: Additional cron settings. Changing this creates a new resource.
+            description: Additional cron settings.
           configs.maintenance.crontabs.settings.alias:
-            description: Setting alias. Changing this creates a new resource.
+            description: Setting alias.
           configs.maintenance.crontabs.settings.value:
-            description: Setting value. Changing this creates a new resource.
+            description: Setting value.
           configs.maintenance.crontabs.required:
             description: Whether cron tab is required.
           configs.settings:
