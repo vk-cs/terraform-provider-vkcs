@@ -14,6 +14,7 @@ description: |-
 - Correctly mark some vkcs_kubernetes_node_group data source arguments as attributes
 - Add the ability to update configs.maintenance for vkcs_dataplatform_cluster resource
 - Wait for network ports to become active during vkcs_network_router_interface creation
+- Retry 409 error on vkcs_network_network creation
 
 #### v0.13.0 
 - Add vkcs_iam_service_user resource
