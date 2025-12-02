@@ -13,12 +13,16 @@ import (
 	inetworking "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	inetworks "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/networks"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/attributestags"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/portsecurity"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	iattributestags "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking/v2/attributestags"
 )
+
+const createNetworkRetryCount = 3
+const createNetworkRetryDelay = 1 * time.Second
 
 func ResourceNetworkingNetwork() *schema.Resource {
 	return &schema.Resource{
@@ -153,7 +157,12 @@ func resourceNetworkingNetworkCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	log.Printf("[DEBUG] vkcs_networking_network create options: %#v", finalCreateOpts)
-	n, err := inetworks.Create(networkingClient, finalCreateOpts).Extract()
+	var n *networks.Network
+	err = errutil.Retry(func() error {
+		var createErr error
+		n, createErr = inetworks.Create(networkingClient, finalCreateOpts).Extract()
+		return createErr
+	}, []int{409}, createNetworkRetryCount, createNetworkRetryDelay)
 	if err != nil {
 		return diag.Errorf("Error creating vkcs_networking_network: %s", err)
 	}
