@@ -35,6 +35,9 @@ resource "vkcs_db_instance" "db_instance" {
 
 resource "vkcs_db_instance" "db_replica" {
   name = "db-instance-replica"
+
+  availability_zone = "GZ1"
+
   datastore {
     type    = "mysql"
     version = "5.7"
