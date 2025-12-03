@@ -101,8 +101,8 @@ func resourceNetworkingRouterInterfaceCreate(ctx context.Context, d *schema.Reso
 	log.Printf("[DEBUG] Waiting for vkcs_networking_router_interface %s to become available", r.PortID)
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"BUILD", "PENDING_CREATE", "PENDING_UPDATE"},
-		Target:     []string{"ACTIVE", "DOWN"},
+		Pending:    []string{"BUILD", "PENDING_CREATE", "PENDING_UPDATE", "DOWN"},
+		Target:     []string{"ACTIVE"},
 		Refresh:    resourceNetworkingRouterInterfaceStateRefreshFunc(networkingClient, r.PortID),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      5 * time.Second,
