@@ -3,6 +3,7 @@ package errutil
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
 )
@@ -154,4 +155,28 @@ func ErrorWithRequestID(err error, requestID string) error {
 	}
 
 	return fmt.Errorf("%w\nRequest ID: %s", err, requestID)
+}
+
+func Retry(retryFunc func() error, errorCodes []int, retryCount int, retryDelay time.Duration) error {
+	var err error
+	for i := 0; i < retryCount; i++ {
+		err = retryFunc()
+		if err != nil {
+			needsRetry := false
+			for _, errorCode := range errorCodes {
+				if Is(err, errorCode) {
+					needsRetry = true
+					break
+				}
+			}
+			if needsRetry {
+				time.Sleep(retryDelay)
+			} else {
+				return err
+			}
+		} else {
+			return nil
+		}
+	}
+	return err
 }
