@@ -179,15 +179,15 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
 
     - `warehouses`  *list* &rarr;  Warehouses settings. Changing this creates a new resource.
-        - `connections`  *list* &rarr;  Warehouse connections. Changing this creates a new resource.
-            - `name` **required** *string* &rarr;  Connection name. Changing this creates a new resource.
+        - `connections`  *list* &rarr;  Warehouse connections.
+            - `name` **required** *string* &rarr;  Connection name.
 
-            - `plug` **required** *string* &rarr;  Connection plug. Changing this creates a new resource.
+            - `plug` **required** *string* &rarr;  Connection plug.
 
-            - `settings`  *list* &rarr;  Additional warehouse settings. Changing this creates a new resource.
-                - `alias` **required** *string* &rarr;  Setting alias. Changing this creates a new resource.
+            - `settings`  *list* &rarr;  Additional warehouse settings.
+                - `alias` **required** *string* &rarr;  Setting alias.
 
-                - `value` **required** *string* &rarr;  Setting value. Changing this creates a new resource.
+                - `value` **required** *string* &rarr;  Setting value.
 
 
             - `created_at` read-only *string* &rarr;  Connection creation timestamp.
