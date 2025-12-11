@@ -6322,8 +6322,8 @@
           "enable_private_dns": {
             "type": "TypeBool",
             "optional": true,
-            "default": true,
             "description": "Option to control private DNS in a subnet. Enabled by default.",
+            "computed": true,
             "force_new": true,
             "new_since": "v0.13.1"
           },
