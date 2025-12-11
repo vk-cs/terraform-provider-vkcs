@@ -1343,6 +1343,10 @@ func ServerStateRefreshFunc(client *gophercloud.ServiceClient, instanceID string
 			return nil, "", err
 		}
 
+		if s.Status == "ERROR" {
+			return s, s.Status, errors.New(s.Fault.Message)
+		}
+
 		return s, s.Status, nil
 	}
 }
