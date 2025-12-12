@@ -99,6 +99,80 @@ func ProductDataSourceSchema(ctx context.Context) schema.Schema {
 						Description:         "Product connections configuration info",
 						MarkdownDescription: "Product connections configuration info",
 					},
+					"crontabs": schema.ListNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"name": schema.StringAttribute{
+									Computed:            true,
+									Description:         "Crontab name",
+									MarkdownDescription: "Crontab name",
+								},
+								"required": schema.BoolAttribute{
+									Computed:            true,
+									Description:         "Crontab required",
+									MarkdownDescription: "Crontab required",
+								},
+								"settings": schema.ListNestedAttribute{
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"alias": schema.StringAttribute{
+												Computed:            true,
+												Description:         "Setting alias",
+												MarkdownDescription: "Setting alias",
+											},
+											"default_value": schema.StringAttribute{
+												Computed:            true,
+												Description:         "Setting default value",
+												MarkdownDescription: "Setting default value",
+											},
+											"is_require": schema.BoolAttribute{
+												Computed:            true,
+												Description:         "Is setting required",
+												MarkdownDescription: "Is setting required",
+											},
+											"is_sensitive": schema.BoolAttribute{
+												Computed:            true,
+												Description:         "Is setting sensitive",
+												MarkdownDescription: "Is setting sensitive",
+											},
+											"regexp": schema.StringAttribute{
+												Computed:            true,
+												Description:         "Setting validation regexp",
+												MarkdownDescription: "Setting validation regexp",
+											},
+											"string_variation": schema.ListAttribute{
+												ElementType:         types.StringType,
+												Computed:            true,
+												Description:         "Available setting values",
+												MarkdownDescription: "Available setting values",
+											},
+										},
+										CustomType: ConfigsCrontabsSettingsType{
+											ObjectType: types.ObjectType{
+												AttrTypes: ConfigsCrontabsSettingsValue{}.AttributeTypes(ctx),
+											},
+										},
+									},
+									Computed:            true,
+									Description:         "Crontabs settings",
+									MarkdownDescription: "Crontabs settings",
+								},
+								"start": schema.StringAttribute{
+									Computed:            true,
+									Description:         "Crontab start",
+									MarkdownDescription: "Crontab start",
+								},
+							},
+							CustomType: ConfigsCrontabsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: ConfigsCrontabsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Product crontabs",
+						MarkdownDescription: "Product crontabs",
+					},
 					"settings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -242,6 +316,24 @@ func (t ConfigsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`connections expected to be basetypes.ListValue, was: %T`, connectionsAttribute))
 	}
 
+	crontabsAttribute, ok := attributes["crontabs"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`crontabs is missing from object`)
+
+		return nil, diags
+	}
+
+	crontabsVal, ok := crontabsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`crontabs expected to be basetypes.ListValue, was: %T`, crontabsAttribute))
+	}
+
 	settingsAttribute, ok := attributes["settings"]
 
 	if !ok {
@@ -284,6 +376,7 @@ func (t ConfigsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 
 	return ConfigsValue{
 		Connections: connectionsVal,
+		Crontabs:    crontabsVal,
 		Settings:    settingsVal,
 		UserRoles:   userRolesVal,
 		state:       attr.ValueStateKnown,
@@ -371,6 +464,24 @@ func NewConfigsValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`connections expected to be basetypes.ListValue, was: %T`, connectionsAttribute))
 	}
 
+	crontabsAttribute, ok := attributes["crontabs"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`crontabs is missing from object`)
+
+		return NewConfigsValueUnknown(), diags
+	}
+
+	crontabsVal, ok := crontabsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`crontabs expected to be basetypes.ListValue, was: %T`, crontabsAttribute))
+	}
+
 	settingsAttribute, ok := attributes["settings"]
 
 	if !ok {
@@ -413,6 +524,7 @@ func NewConfigsValue(attributeTypes map[string]attr.Type, attributes map[string]
 
 	return ConfigsValue{
 		Connections: connectionsVal,
+		Crontabs:    crontabsVal,
 		Settings:    settingsVal,
 		UserRoles:   userRolesVal,
 		state:       attr.ValueStateKnown,
@@ -488,19 +600,23 @@ var _ basetypes.ObjectValuable = ConfigsValue{}
 
 type ConfigsValue struct {
 	Connections basetypes.ListValue `tfsdk:"connections"`
+	Crontabs    basetypes.ListValue `tfsdk:"crontabs"`
 	Settings    basetypes.ListValue `tfsdk:"settings"`
 	UserRoles   basetypes.ListValue `tfsdk:"user_roles"`
 	state       attr.ValueState
 }
 
 func (v ConfigsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 3)
+	attrTypes := make(map[string]tftypes.Type, 4)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["connections"] = basetypes.ListType{
 		ElemType: ConfigsConnectionsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+	attrTypes["crontabs"] = basetypes.ListType{
+		ElemType: ConfigsCrontabsValue{}.Type(ctx),
 	}.TerraformType(ctx)
 	attrTypes["settings"] = basetypes.ListType{
 		ElemType: ConfigsSettingsValue{}.Type(ctx),
@@ -513,7 +629,7 @@ func (v ConfigsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 3)
+		vals := make(map[string]tftypes.Value, 4)
 
 		val, err = v.Connections.ToTerraformValue(ctx)
 
@@ -522,6 +638,14 @@ func (v ConfigsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		}
 
 		vals["connections"] = val
+
+		val, err = v.Crontabs.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["crontabs"] = val
 
 		val, err = v.Settings.ToTerraformValue(ctx)
 
@@ -597,6 +721,35 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		)
 	}
 
+	crontabs := types.ListValueMust(
+		ConfigsCrontabsType{
+			basetypes.ObjectType{
+				AttrTypes: ConfigsCrontabsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.Crontabs.Elements(),
+	)
+
+	if v.Crontabs.IsNull() {
+		crontabs = types.ListNull(
+			ConfigsCrontabsType{
+				basetypes.ObjectType{
+					AttrTypes: ConfigsCrontabsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.Crontabs.IsUnknown() {
+		crontabs = types.ListUnknown(
+			ConfigsCrontabsType{
+				basetypes.ObjectType{
+					AttrTypes: ConfigsCrontabsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
 	settings := types.ListValueMust(
 		ConfigsSettingsType{
 			basetypes.ObjectType{
@@ -659,6 +812,9 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		"connections": basetypes.ListType{
 			ElemType: ConfigsConnectionsValue{}.Type(ctx),
 		},
+		"crontabs": basetypes.ListType{
+			ElemType: ConfigsCrontabsValue{}.Type(ctx),
+		},
 		"settings": basetypes.ListType{
 			ElemType: ConfigsSettingsValue{}.Type(ctx),
 		},
@@ -679,6 +835,7 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		attributeTypes,
 		map[string]attr.Value{
 			"connections": connections,
+			"crontabs":    crontabs,
 			"settings":    settings,
 			"user_roles":  userRoles,
 		})
@@ -705,6 +862,10 @@ func (v ConfigsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.Crontabs.Equal(other.Crontabs) {
+		return false
+	}
+
 	if !v.Settings.Equal(other.Settings) {
 		return false
 	}
@@ -728,6 +889,9 @@ func (v ConfigsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"connections": basetypes.ListType{
 			ElemType: ConfigsConnectionsValue{}.Type(ctx),
+		},
+		"crontabs": basetypes.ListType{
+			ElemType: ConfigsCrontabsValue{}.Type(ctx),
 		},
 		"settings": basetypes.ListType{
 			ElemType: ConfigsSettingsValue{}.Type(ctx),
@@ -1935,6 +2099,1160 @@ func (v ConfigsConnectionsSettingsValue) Type(ctx context.Context) attr.Type {
 }
 
 func (v ConfigsConnectionsSettingsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"alias":         basetypes.StringType{},
+		"default_value": basetypes.StringType{},
+		"is_require":    basetypes.BoolType{},
+		"is_sensitive":  basetypes.BoolType{},
+		"regexp":        basetypes.StringType{},
+		"string_variation": basetypes.ListType{
+			ElemType: types.StringType,
+		},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigsCrontabsType{}
+
+type ConfigsCrontabsType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigsCrontabsType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigsCrontabsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigsCrontabsType) String() string {
+	return "ConfigsCrontabsType"
+}
+
+func (t ConfigsCrontabsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	requiredAttribute, ok := attributes["required"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`required is missing from object`)
+
+		return nil, diags
+	}
+
+	requiredVal, ok := requiredAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`required expected to be basetypes.BoolValue, was: %T`, requiredAttribute))
+	}
+
+	settingsAttribute, ok := attributes["settings"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`settings is missing from object`)
+
+		return nil, diags
+	}
+
+	settingsVal, ok := settingsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`settings expected to be basetypes.ListValue, was: %T`, settingsAttribute))
+	}
+
+	startAttribute, ok := attributes["start"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`start is missing from object`)
+
+		return nil, diags
+	}
+
+	startVal, ok := startAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`start expected to be basetypes.StringValue, was: %T`, startAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigsCrontabsValue{
+		Name:     nameVal,
+		Required: requiredVal,
+		Settings: settingsVal,
+		Start:    startVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigsCrontabsValueNull() ConfigsCrontabsValue {
+	return ConfigsCrontabsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigsCrontabsValueUnknown() ConfigsCrontabsValue {
+	return ConfigsCrontabsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigsCrontabsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigsCrontabsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigsCrontabsValue Attribute Value",
+				"While creating a ConfigsCrontabsValue value, a missing attribute value was detected. "+
+					"A ConfigsCrontabsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigsCrontabsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigsCrontabsValue Attribute Type",
+				"While creating a ConfigsCrontabsValue value, an invalid attribute value was detected. "+
+					"A ConfigsCrontabsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigsCrontabsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigsCrontabsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigsCrontabsValue Attribute Value",
+				"While creating a ConfigsCrontabsValue value, an extra attribute value was detected. "+
+					"A ConfigsCrontabsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigsCrontabsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigsCrontabsValueUnknown(), diags
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewConfigsCrontabsValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	requiredAttribute, ok := attributes["required"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`required is missing from object`)
+
+		return NewConfigsCrontabsValueUnknown(), diags
+	}
+
+	requiredVal, ok := requiredAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`required expected to be basetypes.BoolValue, was: %T`, requiredAttribute))
+	}
+
+	settingsAttribute, ok := attributes["settings"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`settings is missing from object`)
+
+		return NewConfigsCrontabsValueUnknown(), diags
+	}
+
+	settingsVal, ok := settingsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`settings expected to be basetypes.ListValue, was: %T`, settingsAttribute))
+	}
+
+	startAttribute, ok := attributes["start"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`start is missing from object`)
+
+		return NewConfigsCrontabsValueUnknown(), diags
+	}
+
+	startVal, ok := startAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`start expected to be basetypes.StringValue, was: %T`, startAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigsCrontabsValueUnknown(), diags
+	}
+
+	return ConfigsCrontabsValue{
+		Name:     nameVal,
+		Required: requiredVal,
+		Settings: settingsVal,
+		Start:    startVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigsCrontabsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigsCrontabsValue {
+	object, diags := NewConfigsCrontabsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigsCrontabsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigsCrontabsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigsCrontabsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigsCrontabsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigsCrontabsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigsCrontabsValueMust(ConfigsCrontabsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigsCrontabsType) ValueType(ctx context.Context) attr.Value {
+	return ConfigsCrontabsValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigsCrontabsValue{}
+
+type ConfigsCrontabsValue struct {
+	Name     basetypes.StringValue `tfsdk:"name"`
+	Required basetypes.BoolValue   `tfsdk:"required"`
+	Settings basetypes.ListValue   `tfsdk:"settings"`
+	Start    basetypes.StringValue `tfsdk:"start"`
+	state    attr.ValueState
+}
+
+func (v ConfigsCrontabsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["required"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["settings"] = basetypes.ListType{
+		ElemType: ConfigsCrontabsSettingsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+	attrTypes["start"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		val, err = v.Required.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["required"] = val
+
+		val, err = v.Settings.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["settings"] = val
+
+		val, err = v.Start.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["start"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigsCrontabsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigsCrontabsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigsCrontabsValue) String() string {
+	return "ConfigsCrontabsValue"
+}
+
+func (v ConfigsCrontabsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	settings := types.ListValueMust(
+		ConfigsCrontabsSettingsType{
+			basetypes.ObjectType{
+				AttrTypes: ConfigsCrontabsSettingsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.Settings.Elements(),
+	)
+
+	if v.Settings.IsNull() {
+		settings = types.ListNull(
+			ConfigsCrontabsSettingsType{
+				basetypes.ObjectType{
+					AttrTypes: ConfigsCrontabsSettingsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.Settings.IsUnknown() {
+		settings = types.ListUnknown(
+			ConfigsCrontabsSettingsType{
+				basetypes.ObjectType{
+					AttrTypes: ConfigsCrontabsSettingsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"name":     basetypes.StringType{},
+		"required": basetypes.BoolType{},
+		"settings": basetypes.ListType{
+			ElemType: ConfigsCrontabsSettingsValue{}.Type(ctx),
+		},
+		"start": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"name":     v.Name,
+			"required": v.Required,
+			"settings": settings,
+			"start":    v.Start,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigsCrontabsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigsCrontabsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	if !v.Required.Equal(other.Required) {
+		return false
+	}
+
+	if !v.Settings.Equal(other.Settings) {
+		return false
+	}
+
+	if !v.Start.Equal(other.Start) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigsCrontabsValue) Type(ctx context.Context) attr.Type {
+	return ConfigsCrontabsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigsCrontabsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"name":     basetypes.StringType{},
+		"required": basetypes.BoolType{},
+		"settings": basetypes.ListType{
+			ElemType: ConfigsCrontabsSettingsValue{}.Type(ctx),
+		},
+		"start": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigsCrontabsSettingsType{}
+
+type ConfigsCrontabsSettingsType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigsCrontabsSettingsType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigsCrontabsSettingsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigsCrontabsSettingsType) String() string {
+	return "ConfigsCrontabsSettingsType"
+}
+
+func (t ConfigsCrontabsSettingsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	aliasAttribute, ok := attributes["alias"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`alias is missing from object`)
+
+		return nil, diags
+	}
+
+	aliasVal, ok := aliasAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`alias expected to be basetypes.StringValue, was: %T`, aliasAttribute))
+	}
+
+	defaultValueAttribute, ok := attributes["default_value"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_value is missing from object`)
+
+		return nil, diags
+	}
+
+	defaultValueVal, ok := defaultValueAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_value expected to be basetypes.StringValue, was: %T`, defaultValueAttribute))
+	}
+
+	isRequireAttribute, ok := attributes["is_require"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`is_require is missing from object`)
+
+		return nil, diags
+	}
+
+	isRequireVal, ok := isRequireAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`is_require expected to be basetypes.BoolValue, was: %T`, isRequireAttribute))
+	}
+
+	isSensitiveAttribute, ok := attributes["is_sensitive"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`is_sensitive is missing from object`)
+
+		return nil, diags
+	}
+
+	isSensitiveVal, ok := isSensitiveAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`is_sensitive expected to be basetypes.BoolValue, was: %T`, isSensitiveAttribute))
+	}
+
+	regexpAttribute, ok := attributes["regexp"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`regexp is missing from object`)
+
+		return nil, diags
+	}
+
+	regexpVal, ok := regexpAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`regexp expected to be basetypes.StringValue, was: %T`, regexpAttribute))
+	}
+
+	stringVariationAttribute, ok := attributes["string_variation"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`string_variation is missing from object`)
+
+		return nil, diags
+	}
+
+	stringVariationVal, ok := stringVariationAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`string_variation expected to be basetypes.ListValue, was: %T`, stringVariationAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigsCrontabsSettingsValue{
+		Alias:           aliasVal,
+		DefaultValue:    defaultValueVal,
+		IsRequire:       isRequireVal,
+		IsSensitive:     isSensitiveVal,
+		Regexp:          regexpVal,
+		StringVariation: stringVariationVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigsCrontabsSettingsValueNull() ConfigsCrontabsSettingsValue {
+	return ConfigsCrontabsSettingsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigsCrontabsSettingsValueUnknown() ConfigsCrontabsSettingsValue {
+	return ConfigsCrontabsSettingsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigsCrontabsSettingsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigsCrontabsSettingsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigsCrontabsSettingsValue Attribute Value",
+				"While creating a ConfigsCrontabsSettingsValue value, a missing attribute value was detected. "+
+					"A ConfigsCrontabsSettingsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigsCrontabsSettingsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigsCrontabsSettingsValue Attribute Type",
+				"While creating a ConfigsCrontabsSettingsValue value, an invalid attribute value was detected. "+
+					"A ConfigsCrontabsSettingsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigsCrontabsSettingsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigsCrontabsSettingsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigsCrontabsSettingsValue Attribute Value",
+				"While creating a ConfigsCrontabsSettingsValue value, an extra attribute value was detected. "+
+					"A ConfigsCrontabsSettingsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigsCrontabsSettingsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigsCrontabsSettingsValueUnknown(), diags
+	}
+
+	aliasAttribute, ok := attributes["alias"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`alias is missing from object`)
+
+		return NewConfigsCrontabsSettingsValueUnknown(), diags
+	}
+
+	aliasVal, ok := aliasAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`alias expected to be basetypes.StringValue, was: %T`, aliasAttribute))
+	}
+
+	defaultValueAttribute, ok := attributes["default_value"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_value is missing from object`)
+
+		return NewConfigsCrontabsSettingsValueUnknown(), diags
+	}
+
+	defaultValueVal, ok := defaultValueAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_value expected to be basetypes.StringValue, was: %T`, defaultValueAttribute))
+	}
+
+	isRequireAttribute, ok := attributes["is_require"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`is_require is missing from object`)
+
+		return NewConfigsCrontabsSettingsValueUnknown(), diags
+	}
+
+	isRequireVal, ok := isRequireAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`is_require expected to be basetypes.BoolValue, was: %T`, isRequireAttribute))
+	}
+
+	isSensitiveAttribute, ok := attributes["is_sensitive"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`is_sensitive is missing from object`)
+
+		return NewConfigsCrontabsSettingsValueUnknown(), diags
+	}
+
+	isSensitiveVal, ok := isSensitiveAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`is_sensitive expected to be basetypes.BoolValue, was: %T`, isSensitiveAttribute))
+	}
+
+	regexpAttribute, ok := attributes["regexp"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`regexp is missing from object`)
+
+		return NewConfigsCrontabsSettingsValueUnknown(), diags
+	}
+
+	regexpVal, ok := regexpAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`regexp expected to be basetypes.StringValue, was: %T`, regexpAttribute))
+	}
+
+	stringVariationAttribute, ok := attributes["string_variation"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`string_variation is missing from object`)
+
+		return NewConfigsCrontabsSettingsValueUnknown(), diags
+	}
+
+	stringVariationVal, ok := stringVariationAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`string_variation expected to be basetypes.ListValue, was: %T`, stringVariationAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigsCrontabsSettingsValueUnknown(), diags
+	}
+
+	return ConfigsCrontabsSettingsValue{
+		Alias:           aliasVal,
+		DefaultValue:    defaultValueVal,
+		IsRequire:       isRequireVal,
+		IsSensitive:     isSensitiveVal,
+		Regexp:          regexpVal,
+		StringVariation: stringVariationVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigsCrontabsSettingsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigsCrontabsSettingsValue {
+	object, diags := NewConfigsCrontabsSettingsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigsCrontabsSettingsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigsCrontabsSettingsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigsCrontabsSettingsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigsCrontabsSettingsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigsCrontabsSettingsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigsCrontabsSettingsValueMust(ConfigsCrontabsSettingsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigsCrontabsSettingsType) ValueType(ctx context.Context) attr.Value {
+	return ConfigsCrontabsSettingsValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigsCrontabsSettingsValue{}
+
+type ConfigsCrontabsSettingsValue struct {
+	Alias           basetypes.StringValue `tfsdk:"alias"`
+	DefaultValue    basetypes.StringValue `tfsdk:"default_value"`
+	IsRequire       basetypes.BoolValue   `tfsdk:"is_require"`
+	IsSensitive     basetypes.BoolValue   `tfsdk:"is_sensitive"`
+	Regexp          basetypes.StringValue `tfsdk:"regexp"`
+	StringVariation basetypes.ListValue   `tfsdk:"string_variation"`
+	state           attr.ValueState
+}
+
+func (v ConfigsCrontabsSettingsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 6)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["alias"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["default_value"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["is_require"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["is_sensitive"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["regexp"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["string_variation"] = basetypes.ListType{
+		ElemType: types.StringType,
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 6)
+
+		val, err = v.Alias.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["alias"] = val
+
+		val, err = v.DefaultValue.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["default_value"] = val
+
+		val, err = v.IsRequire.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["is_require"] = val
+
+		val, err = v.IsSensitive.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["is_sensitive"] = val
+
+		val, err = v.Regexp.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["regexp"] = val
+
+		val, err = v.StringVariation.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["string_variation"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigsCrontabsSettingsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigsCrontabsSettingsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigsCrontabsSettingsValue) String() string {
+	return "ConfigsCrontabsSettingsValue"
+}
+
+func (v ConfigsCrontabsSettingsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var stringVariationVal basetypes.ListValue
+	switch {
+	case v.StringVariation.IsUnknown():
+		stringVariationVal = types.ListUnknown(types.StringType)
+	case v.StringVariation.IsNull():
+		stringVariationVal = types.ListNull(types.StringType)
+	default:
+		var d diag.Diagnostics
+		stringVariationVal, d = types.ListValue(types.StringType, v.StringVariation.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"alias":         basetypes.StringType{},
+			"default_value": basetypes.StringType{},
+			"is_require":    basetypes.BoolType{},
+			"is_sensitive":  basetypes.BoolType{},
+			"regexp":        basetypes.StringType{},
+			"string_variation": basetypes.ListType{
+				ElemType: types.StringType,
+			},
+		}), diags
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"alias":         basetypes.StringType{},
+		"default_value": basetypes.StringType{},
+		"is_require":    basetypes.BoolType{},
+		"is_sensitive":  basetypes.BoolType{},
+		"regexp":        basetypes.StringType{},
+		"string_variation": basetypes.ListType{
+			ElemType: types.StringType,
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"alias":            v.Alias,
+			"default_value":    v.DefaultValue,
+			"is_require":       v.IsRequire,
+			"is_sensitive":     v.IsSensitive,
+			"regexp":           v.Regexp,
+			"string_variation": stringVariationVal,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigsCrontabsSettingsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigsCrontabsSettingsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Alias.Equal(other.Alias) {
+		return false
+	}
+
+	if !v.DefaultValue.Equal(other.DefaultValue) {
+		return false
+	}
+
+	if !v.IsRequire.Equal(other.IsRequire) {
+		return false
+	}
+
+	if !v.IsSensitive.Equal(other.IsSensitive) {
+		return false
+	}
+
+	if !v.Regexp.Equal(other.Regexp) {
+		return false
+	}
+
+	if !v.StringVariation.Equal(other.StringVariation) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigsCrontabsSettingsValue) Type(ctx context.Context) attr.Type {
+	return ConfigsCrontabsSettingsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigsCrontabsSettingsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"alias":         basetypes.StringType{},
 		"default_value": basetypes.StringType{},
