@@ -216,6 +216,94 @@
 										},
 										"description": "User roles list"
 									}
+								},
+								{
+									"name": "crontabs",
+									"list_nested": {
+										"computed_optional_required": "computed",
+										"nested_object": {
+											"attributes": [
+												{
+													"name": "name",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "Crontab name"
+													}
+												},
+												{
+													"name": "start",
+													"string": {
+														"computed_optional_required": "computed",
+														"description": "Crontab start"
+													}
+												},
+												{
+													"name": "required",
+													"bool": {
+														"computed_optional_required": "computed",
+														"description": "Crontab required"
+													}
+												},
+												{
+													"name": "settings",
+													"list_nested": {
+														"computed_optional_required": "computed",
+														"nested_object": {
+															"attributes": [
+																{
+																	"name": "alias",
+																	"string": {
+																		"computed_optional_required": "computed",
+																		"description": "Setting alias"
+																	}
+																},
+																{
+																	"name": "default_value",
+																	"string": {
+																		"computed_optional_required": "computed",
+																		"description": "Setting default value"
+																	}
+																},
+																{
+																	"name": "is_require",
+																	"bool": {
+																		"computed_optional_required": "computed",
+																		"description": "Is setting required"
+																	}
+																},
+																{
+																	"name": "is_sensitive",
+																	"bool": {
+																		"computed_optional_required": "computed",
+																		"description": "Is setting sensitive"
+																	}
+																},
+																{
+																	"name": "regexp",
+																	"string": {
+																		"computed_optional_required": "computed",
+																		"description": "Setting validation regexp"
+																	}
+																},
+																{
+																	"name": "string_variation",
+																	"list": {
+																		"computed_optional_required": "computed",
+																		"element_type": {
+																			"string": {}
+																		},
+																		"description": "Available setting values"
+																	}
+																}
+															]
+														},
+														"description": "Crontabs settings"
+													}
+												}
+											]
+										},
+										"description": "Product crontabs"
+									}
 								}
 							]
 						}
