@@ -18,6 +18,7 @@ type ProductConfig struct {
 	Settings    []ProductConfigSetting    `json:"settings"`
 	Connections []ProductConfigConnection `json:"connections"`
 	UserRoles   []ProductConfigUserRole   `json:"user_roles"`
+	Crontabs    []ProductConfigCrontabs   `json:"crontabs"`
 }
 
 type ProductConfigSetting struct {
@@ -48,6 +49,22 @@ type ProductConfigConnectionSetting struct {
 
 type ProductConfigUserRole struct {
 	Name string `json:"name"`
+}
+
+type ProductConfigCrontabs struct {
+	Name     string                          `json:"name"`
+	Start    string                          `json:"start"`
+	Required bool                            `json:"required"`
+	Settings []ProductConfigCrontabsSettings `json:"settings"`
+}
+
+type ProductConfigCrontabsSettings struct {
+	Alias           string   `json:"alias"`
+	DefaultValue    string   `json:"default_value"`
+	RegExp          string   `json:"regexp"`
+	StringVariation []string `json:"string_variation"`
+	IsRequired      bool     `json:"is_require"`
+	IsSensitive     bool     `json:"is_sensitive"`
 }
 
 type commonProductResult struct {
