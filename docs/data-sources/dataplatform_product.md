@@ -53,6 +53,28 @@ In addition to all arguments above, the following attributes are exported:
 
 
 
+    - `crontabs`  *list* &rarr;  Product crontabs
+        - `name` *string* &rarr;  Crontab name
+
+        - `required` *boolean* &rarr;  Crontab required
+
+        - `settings`  *list* &rarr;  Crontabs settings
+            - `alias` *string* &rarr;  Setting alias
+
+            - `default_value` *string* &rarr;  Setting default value
+
+            - `is_require` *boolean* &rarr;  Is setting required
+
+            - `is_sensitive` *boolean* &rarr;  Is setting sensitive
+
+            - `regexp` *string* &rarr;  Setting validation regexp
+
+            - `string_variation` *string* &rarr;  Available setting values
+
+
+        - `start` *string* &rarr;  Crontab start
+
+
     - `settings`  *list* &rarr;  Product settings
         - `alias` *string* &rarr;  Setting alias
 
