@@ -37,7 +37,9 @@ resource "vkcs_db_database" "postgres_db" {
 }
 
 resource "vkcs_db_user" "postgres_user" {
-  name     = "testuser"
+  name = "testuser"
+  # Example only. Do not use in production.
+  # Sensitive values must be provided securely and not stored in manifests.
   password = "Test_p#ssword-12-3"
 
   dbms_id = vkcs_db_instance.db_instance.id

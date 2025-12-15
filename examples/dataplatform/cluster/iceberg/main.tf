@@ -1,9 +1,3 @@
-resource "time_sleep" "wait_20_seconds" {
-  depends_on = [vkcs_networking_router_interface.db]
-
-  create_duration = "20s"
-}
-
 resource "vkcs_dataplatform_cluster" "basic_iceberg" {
   name        = "tf-basic-iceberg"
   description = "tf-basic-iceberg-description"
@@ -32,6 +26,8 @@ resource "vkcs_dataplatform_cluster" "basic_iceberg" {
     users = [
       {
         username = "vkdata"
+        # Example only. Do not use in production.
+        # Sensitive values must be provided securely and not stored in manifests.
         password = "Test_p#ssword-12-3"
         role     = "dbOwner"
       }
@@ -69,6 +65,5 @@ resource "vkcs_dataplatform_cluster" "basic_iceberg" {
     }
   ]
 
-  # need to wait for network access to appear after creation of router_interface
-  depends_on = [time_sleep.wait_20_seconds]
+  depends_on = [vkcs_networking_router_interface.db]
 }
