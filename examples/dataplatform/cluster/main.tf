@@ -86,4 +86,6 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
       }
     }
   ]
+
+  depends_on = [vkcs_networking_router_interface.db]
 }

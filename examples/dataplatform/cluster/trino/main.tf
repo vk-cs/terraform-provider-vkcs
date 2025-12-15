@@ -24,6 +24,8 @@ resource "vkcs_dataplatform_cluster" "basic_trino" {
     users = [
       {
         username = "vkdata"
+        # Example only. Do not use in production.
+        # Sensitive values must be provided securely and not stored in manifests.
         password = "Test_p#ssword-12-3"
       }
     ]
