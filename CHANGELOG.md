@@ -10,6 +10,7 @@ description: |-
 - Fix bug with missing error details when instance creation fails
 - Add crontabs to vkcs_dataplatform_product
 - Add disk scaling for vkcs_dataplatform_cluster
+- Add ignoring the order in instance_ids and backup_targets for vkcs_backup_plan
 
 #### v0.13.1
 - Support adding and removing connections for vkcs_dataplatform_cluster

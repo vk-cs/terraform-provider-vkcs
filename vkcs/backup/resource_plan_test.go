@@ -121,6 +121,51 @@ func TestAccBackupPlan_backup_target(t *testing.T) {
 	})
 }
 
+func TestAccBackupPlan_order_independent(t *testing.T) {
+	configInstanceIDs := acctest.AccTestRenderConfig(
+		testAccBackupPlanInstanceIDsOrder,
+		map[string]string{
+			"TestAccBackupPlanOrderIndependentBase": acctest.AccTestRenderConfig(testAccBackupPlanOrderIndependentBase),
+		},
+	)
+
+	configBackupTargets := acctest.AccTestRenderConfig(
+		testAccBackupPlanBackupTargetsOrder,
+		map[string]string{
+			"TestAccBackupPlanOrderIndependentBase": acctest.AccTestRenderConfig(testAccBackupPlanOrderIndependentBase),
+		},
+	)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: configInstanceIDs,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_backup_plan.basic", "instance_ids.#", "2"),
+				),
+			},
+			{Config: configInstanceIDs, PlanOnly: true, ExpectNonEmptyPlan: false},
+			{Config: configInstanceIDs, PlanOnly: true, ExpectNonEmptyPlan: false},
+			{Config: configInstanceIDs, PlanOnly: true, ExpectNonEmptyPlan: false},
+			{Config: configInstanceIDs, PlanOnly: true, ExpectNonEmptyPlan: false},
+			{Config: configInstanceIDs, PlanOnly: true, ExpectNonEmptyPlan: false},
+			{
+				Config: configBackupTargets,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_backup_plan.basic", "backup_targets.#", "2"),
+				),
+			},
+			{Config: configBackupTargets, PlanOnly: true, ExpectNonEmptyPlan: false},
+			{Config: configBackupTargets, PlanOnly: true, ExpectNonEmptyPlan: false},
+			{Config: configBackupTargets, PlanOnly: true, ExpectNonEmptyPlan: false},
+			{Config: configBackupTargets, PlanOnly: true, ExpectNonEmptyPlan: false},
+			{Config: configBackupTargets, PlanOnly: true, ExpectNonEmptyPlan: false},
+		},
+	})
+}
+
 const testAccBackupPlanBase = `
 {{.BaseNetwork}}
 {{.BaseImage}}
@@ -128,72 +173,75 @@ const testAccBackupPlanBase = `
 {{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "base_instance" {
-	depends_on = ["vkcs_networking_router_interface.base"]
-	name = "instance_1"
-	availability_zone = "{{.AvailabilityZone}}"
-	security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
-	metadata = {
-	  foo = "bar"
-	}
-	network {
-	  uuid = vkcs_networking_network.base.id
-	}
-	image_id = data.vkcs_images_image.base.id
-	flavor_id = data.vkcs_compute_flavor.base.id
+  depends_on          = ["vkcs_networking_router_interface.base"]
+  name                = "instance_1"
+  availability_zone   = "{{.AvailabilityZone}}"
+  security_group_ids  = [data.vkcs_networking_secgroup.default_secgroup.id]
+  metadata            = {
+    foo = "bar"
   }
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  image_id  = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
+}
 `
 
 const testAccBackupPlanRetentionFull = `
 {{ .TestAccBackupPlanBase }}
+
 resource "vkcs_backup_plan" "basic" {
-	name        = "tfacc-backup-plan"
-	provider_name = "cloud_servers"
-	schedule = {
-	  date = ["Tu", "We"]
-	  time = "11:12+03"
-	}
-	full_retention = {
-	  max_full_backup = 25
-	}
-	incremental_backup = false
-	instance_ids       = [vkcs_compute_instance.base_instance.id]
-  } 
+  name               = "tfacc-backup-plan"
+  provider_name      = "cloud_servers"
+  schedule           = {
+    date = ["Tu", "We"]
+    time = "11:12+03"
+  }
+  full_retention     = {
+    max_full_backup = 25
+  }
+  incremental_backup = false
+  instance_ids       = [vkcs_compute_instance.base_instance.id]
+}
 `
 
 const testAccBackupPlanRetentionFullUpdate = `
 {{ .TestAccBackupPlanBase }}
+
 resource "vkcs_backup_plan" "basic" {
-	name        = "tfacc-backup-plan"
-	provider_name = "cloud_servers"
-	schedule = {
-	  date = ["Tu", "We", "Fr"]
-	  time = "11:15+03"
-	}
-	full_retention = {
-	  max_full_backup = 30
-	}
-	incremental_backup = false
-	instance_ids       = [vkcs_compute_instance.base_instance.id]
-  } 
+  name               = "tfacc-backup-plan"
+  provider_name      = "cloud_servers"
+  schedule           = {
+    date = ["Tu", "We", "Fr"]
+    time = "11:15+03"
+  }
+  full_retention     = {
+    max_full_backup = 30
+  }
+  incremental_backup = false
+  instance_ids       = [vkcs_compute_instance.base_instance.id]
+}
 `
 
 const testAccBackupPlanRetentionGFS = `
 {{ .TestAccBackupPlanBase }}
+
 resource "vkcs_backup_plan" "basic" {
-	name        = "tfacc-backup-plan"
-	provider_name = "cloud_servers"
-	schedule = {
-	  date = ["Tu"]
-	  time = "16:20"
-	}
-	gfs_retention = {
-		gfs_weekly  = 10
-		gfs_monthly = 2
-		gfs_yearly = 1
-	}
-	incremental_backup = true
-	instance_ids       = [vkcs_compute_instance.base_instance.id]
-  } 
+  name               = "tfacc-backup-plan"
+  provider_name      = "cloud_servers"
+  schedule           = {
+    date = ["Tu"]
+    time = "16:20"
+  }
+  gfs_retention      = {
+    gfs_weekly  = 10
+    gfs_monthly = 2
+    gfs_yearly  = 1
+  }
+  incremental_backup = true
+  instance_ids       = [vkcs_compute_instance.base_instance.id]
+}
 `
 
 const testAccBackupPlanBackupTargetBase = `
@@ -204,8 +252,8 @@ const testAccBackupPlanBackupTargetBase = `
 
 resource "vkcs_blockstorage_volume" "bootable" {
   name              = "bootable-tf-example"
-  description = "test volume"
-  metadata = {
+  description       = "test volume"
+  metadata          = {
     foo = "bar"
   }
   size              = 10
@@ -215,9 +263,9 @@ resource "vkcs_blockstorage_volume" "bootable" {
 }
 
 resource "vkcs_blockstorage_volume" "data" {
-  name        = "data-tf-example"
-  description = "test volume"
-  metadata = {
+  name              = "data-tf-example"
+  description       = "test volume"
+  metadata          = {
     foo = "bar"
   }
   size              = 1
@@ -226,99 +274,172 @@ resource "vkcs_blockstorage_volume" "data" {
 }
 
 resource "vkcs_compute_instance" "base_instance" {
-	name = "instance_1"
-
-	availability_zone = "{{.AvailabilityZone}}"
-
-	flavor_id = data.vkcs_compute_flavor.base.id
-
-	metadata = {
-	  foo = "bar"
-	}
-
-	block_device {
-        boot_index       = 0
-        source_type      = "volume"
-        uuid             = vkcs_blockstorage_volume.bootable.id
-        destination_type = "volume"
-        delete_on_termination = true
-    }
-	
-	block_device {
-        boot_index       = -1
-        source_type      = "volume"
-        uuid             = vkcs_blockstorage_volume.data.id
-        destination_type = "volume"
-        delete_on_termination = true
-    }
-
-	network {
-	  uuid = vkcs_networking_network.base.id
-	}
-
-	security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
-	
-	depends_on = ["vkcs_networking_router_interface.base"]
+  name              = "instance_1"
+  availability_zone = "{{.AvailabilityZone}}"
+  flavor_id         = data.vkcs_compute_flavor.base.id
+  metadata          = {
+    foo = "bar"
   }
+
+  block_device {
+    boot_index            = 0
+    source_type           = "volume"
+    uuid                  = vkcs_blockstorage_volume.bootable.id
+    destination_type      = "volume"
+    delete_on_termination = true
+  }
+
+  block_device {
+    boot_index            = -1
+    source_type           = "volume"
+    uuid                  = vkcs_blockstorage_volume.data.id
+    destination_type      = "volume"
+    delete_on_termination = true
+  }
+
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+
+  depends_on = ["vkcs_networking_router_interface.base"]
+}
 `
 
 const testAccBackupPlanBackupTarget1 = `
 {{ .testAccBackupPlanBackupTargetBase }}
 
 resource "vkcs_backup_plan" "basic" {
-	name        = "tfacc-backup-plan"
-
-	provider_name = "cloud_servers"
-
-	schedule = {
-	  date = ["Tu"]
-	  time = "16:20"
-	}
-
-	full_retention = {
-        max_full_backup = 25
-    }
-
-	incremental_backup = true
-
-	backup_targets = [
-        {
-            instance_id = vkcs_compute_instance.base_instance.id
-            volume_ids = [
-                vkcs_blockstorage_volume.bootable.id,
-            ]
-        }
-	]
+  name               = "tfacc-backup-plan"
+  provider_name      = "cloud_servers"
+  schedule           = {
+    date = ["Tu"]
+    time = "16:20"
   }
+  full_retention     = {
+    max_full_backup = 25
+  }
+  incremental_backup = true
+  backup_targets     = [
+    {
+      instance_id = vkcs_compute_instance.base_instance.id
+      volume_ids  = [
+        vkcs_blockstorage_volume.bootable.id,
+      ]
+    }
+  ]
+}
 `
 
 const testAccBackupPlanBackupTarget2 = `
 {{ .testAccBackupPlanBackupTargetBase }}
 
 resource "vkcs_backup_plan" "basic" {
-	name        = "tfacc-backup-plan"
-
-	provider_name = "cloud_servers"
-
-	schedule = {
-	  date = ["Tu"]
-	  time = "16:20"
-	}
-
-	full_retention = {
-        max_full_backup = 25
+  name               = "tfacc-backup-plan"
+  provider_name      = "cloud_servers"
+  schedule           = {
+    date = ["Tu"]
+    time = "16:20"
+  }
+  full_retention     = {
+    max_full_backup = 25
+  }
+  incremental_backup = true
+  backup_targets     = [
+    {
+      instance_id = vkcs_compute_instance.base_instance.id
+      volume_ids  = [
+        vkcs_blockstorage_volume.bootable.id,
+        vkcs_blockstorage_volume.data.id,
+      ]
     }
+  ]
+}
+`
 
-	incremental_backup = true
+const testAccBackupPlanOrderIndependentBase = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseSecurityGroup}}
 
-	backup_targets = [
-        {
-            instance_id = vkcs_compute_instance.base_instance.id
-            volume_ids = [
-                vkcs_blockstorage_volume.bootable.id,
-				vkcs_blockstorage_volume.data.id,
-            ]
-        }
-	]
-  } 
+data "vkcs_compute_flavor" "small" {
+		name = "Basic-1-2-20"
+}
+
+resource "vkcs_compute_instance" "instance_1" {
+  depends_on          = ["vkcs_networking_router_interface.base"]
+  name                = "instance_1"
+  availability_zone   = "{{.AvailabilityZone}}"
+  security_group_ids  = [data.vkcs_networking_secgroup.default_secgroup.id]
+  metadata            = {
+    foo = "bar"
+  }
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  image_id  = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.small.id
+}
+
+resource "vkcs_compute_instance" "instance_2" {
+  depends_on          = ["vkcs_networking_router_interface.base"]
+  name                = "instance_2"
+  availability_zone   = "{{.AvailabilityZone}}"
+  security_group_ids  = [data.vkcs_networking_secgroup.default_secgroup.id]
+  metadata            = {
+    foo = "bar"
+  }
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  image_id  = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.small.id
+}
+`
+
+const testAccBackupPlanInstanceIDsOrder = `
+{{ .TestAccBackupPlanOrderIndependentBase }}
+
+resource "vkcs_backup_plan" "basic" {
+  name               = "tfacc-backup-plan"
+  provider_name      = "cloud_servers"
+  schedule           = {
+    date = ["Tu", "We", "Fr"]
+    time = "11:15+03"
+  }
+  full_retention     = {
+    max_full_backup = 30
+  }
+  incremental_backup = false
+  instance_ids       = [
+    vkcs_compute_instance.instance_1.id,
+    vkcs_compute_instance.instance_2.id,
+  ]
+}
+`
+
+const testAccBackupPlanBackupTargetsOrder = `
+{{ .TestAccBackupPlanOrderIndependentBase }}
+
+resource "vkcs_backup_plan" "basic" {
+  name               = "tfacc-backup-plan"
+  provider_name      = "cloud_servers"
+  schedule           = {
+    date = ["Tu", "We", "Fr"]
+    time = "11:15+03"
+  }
+  full_retention     = {
+    max_full_backup = 30
+  }
+  incremental_backup = false
+  backup_targets     = [
+    {
+      instance_id = vkcs_compute_instance.instance_1.id
+    },
+    {
+      instance_id = vkcs_compute_instance.instance_2.id
+    }
+  ]
+}
 `

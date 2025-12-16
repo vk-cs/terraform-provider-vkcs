@@ -38,9 +38,9 @@ type PlanDataSourceModel struct {
 	GFSRetention      *PlanResourceGFSRetentionModel  `tfsdk:"gfs_retention"`
 	IncrementalBackup types.Bool                      `tfsdk:"incremental_backup"`
 	ProviderID        types.String                    `tfsdk:"provider_id"`
-	InstanceIDs       []types.String                  `tfsdk:"instance_ids"`
+	InstanceIDs       types.Set                       `tfsdk:"instance_ids"`
 	Region            types.String                    `tfsdk:"region"`
-	BackupTargets     []PlanResourceBackupTargetModel `tfsdk:"backup_targets"`
+	BackupTargets     types.Set                       `tfsdk:"backup_targets"`
 }
 
 func (d *PlanDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -130,9 +130,9 @@ func (d *PlanDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				Description: "ID of backup provider",
 			},
 
-			"backup_targets": schema.ListNestedAttribute{
+			"backup_targets": schema.SetNestedAttribute{
 				Computed:    true,
-				Description: "List of backup targets specifying instance_id and volume_ids for each instance.",
+				Description: "Set of backup targets specifying instance_id and volume_ids for each instance.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"instance_id": schema.StringAttribute{
@@ -142,16 +142,16 @@ func (d *PlanDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 						"volume_ids": schema.SetAttribute{
 							ElementType: types.StringType,
 							Optional:    true,
-							Description: "List of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.",
+							Description: "Set of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.",
 						},
 					},
 				},
 			},
 
-			"instance_ids": schema.ListAttribute{
+			"instance_ids": schema.SetAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
-				Description: "List of ids of backed up instances",
+				Description: "Set of ids of backed up instances",
 			},
 
 			"region": schema.StringAttribute{
@@ -175,8 +175,8 @@ func (d *PlanDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	var data PlanDataSourceModel
 
 	diags := req.Config.Get(ctx, &data)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -245,6 +245,7 @@ func (d *PlanDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	data.ProviderID = types.StringValue(planResp.ProviderID)
 
 	backupTargets := make([]PlanResourceBackupTargetModel, len(planResp.Resources))
+
 	for i, respResource := range planResp.Resources {
 		var volumeIDs []types.String
 		if len(respResource.Resources) > 0 {
@@ -253,18 +254,37 @@ func (d *PlanDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 				volumeIDs[j] = types.StringValue(resource.ID)
 			}
 		}
+		volumeIDsSet, diags := types.SetValueFrom(ctx, types.StringType, volumeIDs)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
 		backupTargets[i] = PlanResourceBackupTargetModel{
 			InstanceID: types.StringValue(respResource.ID),
-			VolumeIDs:  volumeIDs,
+			VolumeIDs:  volumeIDsSet,
 		}
 	}
-	data.BackupTargets = backupTargets
+
+	backupTargetsSet, diags := types.SetValueFrom(ctx, PlanResourceBackupTargetModel{}.ObjectType(), backupTargets)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+	data.BackupTargets = backupTargetsSet
 
 	instanceIDs := make([]types.String, len(planResp.Resources))
 	for i, respResource := range planResp.Resources {
 		instanceIDs[i] = types.StringValue(respResource.ID)
 	}
-	data.InstanceIDs = instanceIDs
+
+	instanceIDsSet, diags := types.SetValueFrom(ctx, types.StringType, instanceIDs)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	data.InstanceIDs = instanceIDsSet
 
 	data.Region = types.StringValue(region)
 
