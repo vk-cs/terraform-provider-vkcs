@@ -175,7 +175,7 @@ resources:
           pod_groups.volumes.storageClassName:
             description: Storage class name. Changing this creates a new resource.
           pod_groups.volumes.storage:
-            description: Storage size. Changing this creates a new resource.
+            description: Storage size.
           pod_groups.id:
             description: Pod group ID.
           pod_groups.alias:

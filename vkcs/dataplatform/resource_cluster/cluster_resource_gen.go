@@ -644,11 +644,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 									},
 									"storage": schema.StringAttribute{
 										Required:            true,
-										Description:         "Storage size. Changing this creates a new resource.",
-										MarkdownDescription: "Storage size. Changing this creates a new resource.",
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.RequiresReplace(),
-										},
+										Description:         "Storage size.",
+										MarkdownDescription: "Storage size.",
 										Validators: []validator.String{
 											stringvalidator.RegexMatches(regexp.MustCompile("^(\\d+|(\\d+)G)$"), ""),
 										},

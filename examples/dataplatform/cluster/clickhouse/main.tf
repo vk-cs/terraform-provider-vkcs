@@ -55,7 +55,7 @@ resource "vkcs_dataplatform_cluster" "example" {
       volumes = {
         data = {
           storage_class_name = "ceph-ssd"
-          storage            = 5
+          storage            = "5"
           count              = 1
         }
       }
@@ -70,7 +70,7 @@ resource "vkcs_dataplatform_cluster" "example" {
       volumes = {
         data = {
           storage_class_name = "ceph-ssd"
-          storage            = 5
+          storage            = "5"
           count              = 1
         }
       }

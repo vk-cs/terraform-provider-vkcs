@@ -241,7 +241,7 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
     - `volumes`  *map* &rarr;  Volumes settings. Changing this creates a new resource.
         - `count` **required** *number* &rarr;  Volume count. Changing this creates a new resource.
 
-        - `storage` **required** *string* &rarr;  Storage size. Changing this creates a new resource.
+        - `storage` **required** *string* &rarr;  Storage size.
 
         - `storage_class_name` **required** *string* &rarr;  Storage class name. Changing this creates a new resource.
 

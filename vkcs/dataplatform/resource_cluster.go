@@ -267,7 +267,7 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 	}
 
-	if !plan.Configs.Warehouses.IsUnknown() && !plan.Configs.Users.IsNull() {
+	if !plan.Configs.Warehouses.IsUnknown() && !plan.Configs.Warehouses.IsNull() {
 		diags := clusterUpdateConfigsWarehouses(ctx, client, id, data.Configs.Warehouses, plan.Configs.Warehouses)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
@@ -607,45 +607,84 @@ func clusterUpdatePodGroups(ctx context.Context, client *gophercloud.ServiceClie
 	var diags diag.Diagnostics
 	var d diag.Diagnostics
 
-	dataPodGroups, d := resource_cluster.ReadClusterPodGroups(ctx, dataPodGroupsRaw)
-	if d.HasError() {
-		return d
-	}
-
 	planPodGroups, d := resource_cluster.ReadClusterPodGroups(ctx, planPodGroupsRaw)
-	if d.HasError() {
-		return d
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+	dataPodGroups, d := resource_cluster.ReadClusterPodGroups(ctx, dataPodGroupsRaw)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
 	}
 
-	podGroups := make(map[string]resource_cluster.PodGroupsValue)
+	podGroupsByName := make(map[string]resource_cluster.PodGroupsValue)
 	for _, dataPodGroup := range dataPodGroups {
-		podGroups[dataPodGroup.Name.ValueString()] = dataPodGroup
+		podGroupsByName[dataPodGroup.Name.ValueString()] = dataPodGroup
 	}
 
 	var podGroupsToUpdate []clusters.ClusterUpdatePodGroup
+
 	for _, planPodGroup := range planPodGroups {
-		oldCount := int(podGroups[planPodGroup.Name.ValueString()].Count.ValueInt64())
+		dataPodGroup := podGroupsByName[planPodGroup.Name.ValueString()]
+
+		planVolumes, d := resource_cluster.ReadClusterPodGroupVolumes(ctx, planPodGroup.Volumes)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+		dataVolumes, d := resource_cluster.ReadClusterPodGroupVolumes(ctx, dataPodGroup.Volumes)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+
+		oldCount := int(dataPodGroup.Count.ValueInt64())
 		newCount := int(planPodGroup.Count.ValueInt64())
 
-		if oldCount == newCount {
+		changed := oldCount != newCount
+
+		volumes := make(map[string]clusters.ClusterUpdatePodGroupVolume)
+		for volumeName, planVolume := range planVolumes {
+			dataVolume, exists := dataVolumes[volumeName]
+
+			if exists && planVolume.Storage.ValueString() != dataVolume.Storage.ValueString() {
+				changed = true
+			}
+
+			volumes[volumeName] = clusters.ClusterUpdatePodGroupVolume{
+				StorageClassName: planVolume.StorageClassName.ValueString(),
+				Storage:          planVolume.Storage.ValueString(),
+				Count:            int(planVolume.Count.ValueInt64()),
+			}
+		}
+
+		if !changed {
 			continue
 		}
 
-		podGroupID := podGroups[planPodGroup.Name.ValueString()].Id.ValueString()
+		podGroupID := dataPodGroup.Id.ValueString()
 
 		resource, d := resource_cluster.ReadClusterPodGroupResources(ctx, planPodGroup.Resource)
-		if d.HasError() {
-			return d
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
 		}
 
-		podGroupsToUpdate = append(podGroupsToUpdate, clusters.ClusterUpdatePodGroup{
+		podGroupToUpdate := clusters.ClusterUpdatePodGroup{
 			ID:    podGroupID,
 			Count: &newCount,
 			Resource: clusters.ClusterUpdatePodGroupResource{
 				CPURequest: resource.CpuRequest.ValueString(),
 				RAMRequest: resource.RamRequest.ValueString(),
 			},
-		})
+		}
+
+		if len(volumes) > 0 {
+			podGroupToUpdate.Volumes = volumes
+		}
+
+		podGroupsToUpdate = append(podGroupsToUpdate, podGroupToUpdate)
 	}
 
 	if len(podGroupsToUpdate) > 0 {
