@@ -153,6 +153,7 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		dc.NewConntrackHelperResource,
 		dc.NewIPPortForwardingResource,
 		iam.NewServiceUserResource,
+		iam.NewS3AccountResource,
 		kubernetes.NewAddonResource,
 		kubernetes.NewSecurityPolicyResource,
 		mlplatform.NewJupyterHubResource,

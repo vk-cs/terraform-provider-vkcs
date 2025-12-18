@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.14.0 (unreleased)
+- Add vkcs_iam_s3_account resource
+
 #### v0.13.2
 - Add details to the vkcs_compute_instance creation error
 - Add crontabs to vkcs_dataplatform_product
