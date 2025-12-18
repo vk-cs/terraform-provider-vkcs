@@ -236,6 +236,139 @@
 					}
 				]
 			}
+		},
+		{
+			"name": "s3_account",
+			"schema": {
+				"description": "Manages an IAM S3 account within VKCS.",
+				"attributes": [
+					{
+						"name": "description",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Description of the S3 account. Changing this creates a new resource.",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplaceIfConfigured()"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "Name of the S3 account. The name must be unique. The length must be between 3 and 32 characters. Changing this creates a new resource.",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplace()"
+									}
+								}
+							],
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthBetween(3, 32)"
+									}
+								},
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "regexp"
+											},
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^[0-9a-zA-Z_-]+$\"), \"\")"
+									}
+								}
+							]
+						}
+					},
+					{
+                        "name": "region",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "The region in which to obtain the IAM Service Users client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+                            "plan_modifiers": [
+                                {
+                                    "custom": {
+                                        "imports": [
+                                            {
+                                                "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                                            }
+                                        ],
+                                        "schema_definition": "stringplanmodifier.RequiresReplaceIfConfigured()"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+					{
+						"name": "account_id",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "ID of the S3 account in Hotbox S3 service."
+						}
+					},
+					{
+						"name": "account_name",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Name of the S3 account in Hotbox S3 service."
+						}
+					},
+					{
+						"name": "access_key",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Access key for the S3 account."
+						}
+					},
+					{
+						"name": "created_at",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "S3 account creation timestamp."
+						}
+					},
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "ID of the S3 account."
+						}
+					},
+					{
+						"name": "secret_key",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Secret key for the S3 account. _note_ This is a sensitive attribute.",
+							"sensitive": true
+						}
+					}
+				]
+			}
 		}
 	],
 	"version": "0.1"
