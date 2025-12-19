@@ -155,14 +155,21 @@ type ClusterUpdatePodGroups struct {
 }
 
 type ClusterUpdatePodGroup struct {
-	ID       string                        `json:"id" required:"true"`
-	Resource ClusterUpdatePodGroupResource `json:"resource,omitempty"`
-	Count    *int                          `json:"count" required:"true"`
+	ID       string                                 `json:"id" required:"true"`
+	Resource ClusterUpdatePodGroupResource          `json:"resource,omitempty"`
+	Count    *int                                   `json:"count" required:"true"`
+	Volumes  map[string]ClusterUpdatePodGroupVolume `json:"volumes,omitempty"`
 }
 
 type ClusterUpdatePodGroupResource struct {
 	CPURequest string `json:"cpu_request,omitempty"`
 	RAMRequest string `json:"ram_request,omitempty"`
+}
+
+type ClusterUpdatePodGroupVolume struct {
+	StorageClassName string `json:"storageClassName" required:"true"`
+	Storage          string `json:"storage" required:"true"`
+	Count            int    `json:"count" required:"true"`
 }
 
 type ClusterDeleteUsers struct {

@@ -104,9 +104,10 @@ func TestAccDataPlatformClusterIcebergAddAndDeleteUser_big(t *testing.T) {
 			},
 			{
 				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
-					"TestAccDataPlatformClusterResourceBaseNetwork":         testAccDataPlatformClusterResourceBaseNetwork,
-					"TestAccDataPlatformClusterResourceIcebergUsers":        oneUser,
-					"TestAccDataPlatformClusterResourceIcebergBouncerCount": "0",
+					"TestAccDataPlatformClusterResourceBaseNetwork":                       testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers":                      oneUser,
+					"TestAccDataPlatformClusterResourceIcebergBouncerCount":               "0",
+					"TestAccDataPlatformClusterResourceIcebergPostgresVolumesDataStorage": "10",
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "name", "tf-basic-iceberg"),
@@ -116,9 +117,10 @@ func TestAccDataPlatformClusterIcebergAddAndDeleteUser_big(t *testing.T) {
 			},
 			{
 				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
-					"TestAccDataPlatformClusterResourceBaseNetwork":         testAccDataPlatformClusterResourceBaseNetwork,
-					"TestAccDataPlatformClusterResourceIcebergUsers":        twoUsers,
-					"TestAccDataPlatformClusterResourceIcebergBouncerCount": "0",
+					"TestAccDataPlatformClusterResourceBaseNetwork":                       testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers":                      twoUsers,
+					"TestAccDataPlatformClusterResourceIcebergBouncerCount":               "0",
+					"TestAccDataPlatformClusterResourceIcebergPostgresVolumesDataStorage": "10",
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.users.#", "2"),
@@ -126,9 +128,10 @@ func TestAccDataPlatformClusterIcebergAddAndDeleteUser_big(t *testing.T) {
 			},
 			{
 				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
-					"TestAccDataPlatformClusterResourceBaseNetwork":         testAccDataPlatformClusterResourceBaseNetwork,
-					"TestAccDataPlatformClusterResourceIcebergUsers":        oneUser,
-					"TestAccDataPlatformClusterResourceIcebergBouncerCount": "0",
+					"TestAccDataPlatformClusterResourceBaseNetwork":                       testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers":                      oneUser,
+					"TestAccDataPlatformClusterResourceIcebergBouncerCount":               "0",
+					"TestAccDataPlatformClusterResourceIcebergPostgresVolumesDataStorage": "10",
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.users.#", "1"),
@@ -154,24 +157,28 @@ func TestAccDataPlatformClusterIcebergScale_big(t *testing.T) {
 			},
 			{
 				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
-					"TestAccDataPlatformClusterResourceBaseNetwork":         testAccDataPlatformClusterResourceBaseNetwork,
-					"TestAccDataPlatformClusterResourceIcebergUsers":        user,
-					"TestAccDataPlatformClusterResourceIcebergBouncerCount": "0",
+					"TestAccDataPlatformClusterResourceBaseNetwork":                       testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers":                      user,
+					"TestAccDataPlatformClusterResourceIcebergBouncerCount":               "0",
+					"TestAccDataPlatformClusterResourceIcebergPostgresVolumesDataStorage": "10",
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "name", "tf-basic-iceberg"),
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "description", "tf-basic-iceberg-description"),
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "pod_groups.0.volumes.data.storage", "10"),
 				),
 			},
 			{
 				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIceberg, map[string]string{
-					"TestAccDataPlatformClusterResourceBaseNetwork":         testAccDataPlatformClusterResourceBaseNetwork,
-					"TestAccDataPlatformClusterResourceIcebergUsers":        user,
-					"TestAccDataPlatformClusterResourceIcebergBouncerCount": "1",
+					"TestAccDataPlatformClusterResourceBaseNetwork":                       testAccDataPlatformClusterResourceBaseNetwork,
+					"TestAccDataPlatformClusterResourceIcebergUsers":                      user,
+					"TestAccDataPlatformClusterResourceIcebergBouncerCount":               "1",
+					"TestAccDataPlatformClusterResourceIcebergPostgresVolumesDataStorage": "15",
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "pod_groups.0.count", "1"),
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "pod_groups.1.count", "1"),
+					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "pod_groups.0.volumes.data.storage", "15"),
 				),
 			},
 		},
@@ -444,7 +451,7 @@ resource "vkcs_dataplatform_cluster" "basic" {
       volumes = {
         "data" = {
           storage_class_name = "ceph-ssd"
-          storage            = "10"
+          storage            = "{{ .TestAccDataPlatformClusterResourceIcebergPostgresVolumesDataStorage }}" 
           count              = 1
         }
         "wal" = {

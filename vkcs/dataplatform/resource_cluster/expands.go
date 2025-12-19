@@ -445,6 +445,20 @@ func ReadClusterPodGroupResources(ctx context.Context, o basetypes.ObjectValue) 
 	return &resource, nil
 }
 
+func ReadClusterPodGroupVolumes(ctx context.Context, o basetypes.MapValue) (map[string]PodGroupsVolumesValue, diag.Diagnostics) {
+	volumesV := make(map[string]PodGroupsVolumesValue)
+
+	if o.IsNull() || o.IsUnknown() {
+		return volumesV, nil
+	}
+
+	diags := o.ElementsAs(ctx, &volumesV, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+	return volumesV, nil
+}
+
 func BuildUpdateClusterConfigsMaintenance(ctx context.Context, stateMaintenance basetypes.ObjectValue, planMaintenance basetypes.ObjectValue) (*clusters.ClusterUpdateConfigsMaintenance, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
