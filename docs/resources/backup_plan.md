@@ -84,10 +84,10 @@ resource "vkcs_backup_plan" "backup_plan" {
     - `time` optional *string* &rarr;  Time of backup in format hh:mm (for UTC timezone) or hh:mm+tz (for other timezones, e.g. 10:00+03 for MSK, 10:00-04 for ET)
 
 
-- `backup_targets`  *list* &rarr;  List of backup targets specifying instance_id and volume_ids for each instance. Either backup_targets or instance_ids must be specified, but not both.<br>**New since v0.13.1**.
+- `backup_targets`  *set* &rarr;  Set of backup targets specifying instance_id and volume_ids for each instance. Either backup_targets or instance_ids must be specified, but not both.<br>**New since v0.13.1**.
     - `instance_id` **required** *string* &rarr;  ID of the instance for which specific volumes are backed up.
 
-    - `volume_ids` optional *set of* *string* &rarr;  List of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.
+    - `volume_ids` optional *set of* *string* &rarr;  Set of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.
 
 
 - `full_retention` optional &rarr;  Parameters for full retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full. Incompatible with gfs_retention
@@ -102,7 +102,7 @@ resource "vkcs_backup_plan" "backup_plan" {
     - `gfs_yearly` optional *number* &rarr;  Number of years to store backups
 
 
-- `instance_ids` optional *string* &rarr;  List of ids of instances to make backup for. Either backup_targets or instance_ids must be specified, but not both.
+- `instance_ids` optional *set of* *string* &rarr;  Set of ids of instances to make backup for. Either backup_targets or instance_ids must be specified, but not both.
 
 - `provider_id` optional *string* &rarr;  ID of backup provider
 

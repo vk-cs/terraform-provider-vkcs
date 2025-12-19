@@ -10,7 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -54,9 +57,9 @@ type PlanResourceModel struct {
 	IncrementalBackup types.Bool                      `tfsdk:"incremental_backup"`
 	ProviderID        types.String                    `tfsdk:"provider_id"`
 	ProviderName      types.String                    `tfsdk:"provider_name"`
-	InstanceIDs       []types.String                  `tfsdk:"instance_ids"`
+	InstanceIDs       types.Set                       `tfsdk:"instance_ids"`
 	Region            types.String                    `tfsdk:"region"`
-	BackupTargets     []PlanResourceBackupTargetModel `tfsdk:"backup_targets"`
+	BackupTargets     types.Set                       `tfsdk:"backup_targets"`
 }
 
 type PlanResourceScheduleModel struct {
@@ -76,8 +79,17 @@ type PlanResourceGFSRetentionModel struct {
 }
 
 type PlanResourceBackupTargetModel struct {
-	InstanceID types.String   `tfsdk:"instance_id"`
-	VolumeIDs  []types.String `tfsdk:"volume_ids"`
+	InstanceID types.String `tfsdk:"instance_id"`
+	VolumeIDs  types.Set    `tfsdk:"volume_ids"`
+}
+
+func (PlanResourceBackupTargetModel) ObjectType() types.ObjectType {
+	return types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"instance_id": types.StringType,
+			"volume_ids":  types.SetType{ElemType: types.StringType},
+		},
+	}
 }
 
 func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -210,7 +222,7 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				},
 			},
 
-			"backup_targets": schema.ListNestedAttribute{
+			"backup_targets": schema.SetNestedAttribute{
 				Optional: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -221,24 +233,24 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 						"volume_ids": schema.SetAttribute{
 							ElementType: types.StringType,
 							Optional:    true,
-							Description: "List of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.",
+							Description: "Set of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.",
 						},
 					},
 				},
-				Description: "List of backup targets specifying instance_id and volume_ids for each instance. Either backup_targets or instance_ids must be specified, but not both.",
-				Validators: []validator.List{
-					listvalidator.ConflictsWith(path.Expressions{
+				Description: "Set of backup targets specifying instance_id and volume_ids for each instance. Either backup_targets or instance_ids must be specified, but not both.",
+				Validators: []validator.Set{
+					setvalidator.ConflictsWith(path.Expressions{
 						path.MatchRoot("instance_ids"),
 					}...),
 				},
 			},
 
-			"instance_ids": schema.ListAttribute{
+			"instance_ids": schema.SetAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
-				Description: "List of ids of instances to make backup for. Either backup_targets or instance_ids must be specified, but not both.",
-				Validators: []validator.List{
-					listvalidator.ConflictsWith(path.Expressions{
+				Description: "Set of ids of instances to make backup for. Either backup_targets or instance_ids must be specified, but not both.",
+				Validators: []validator.Set{
+					setvalidator.ConflictsWith(path.Expressions{
 						path.MatchRoot("backup_targets"),
 					}...),
 				},
@@ -291,13 +303,26 @@ func (r *PlanResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	var backupTargets []PlanResourceBackupTargetModel
+	if !plan.BackupTargets.IsNull() && !plan.BackupTargets.IsUnknown() {
+		diags := plan.BackupTargets.ElementsAs(ctx, &backupTargets, false)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+	}
+
 	var instanceIds []types.String
-	if len(plan.BackupTargets) > 0 {
-		for _, target := range plan.BackupTargets {
+	if len(backupTargets) > 0 {
+		for _, target := range backupTargets {
 			instanceIds = append(instanceIds, target.InstanceID)
 		}
 	} else {
-		instanceIds = plan.InstanceIDs
+		diags := plan.InstanceIDs.ElementsAs(ctx, &instanceIds, false)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
 	}
 
 	resourcesInfo, err := getResourcesInfo(r.config, region, instanceIds, providerInfo.Name)
@@ -306,8 +331,12 @@ func (r *PlanResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	if providerInfo.Name == ProviderNameNova && len(plan.BackupTargets) > 0 {
-		resourcesInfo = enrichWithVolumes(resourcesInfo, plan.BackupTargets)
+	if providerInfo.Name == ProviderNameNova && len(backupTargets) > 0 {
+		resourcesInfo, diags = enrichWithVolumes(ctx, resourcesInfo, backupTargets)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
 	}
 
 	planCreateOpts := plans.CreateOpts{
@@ -429,28 +458,49 @@ func (r *PlanResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	plan.Name = types.StringValue(planResp.Name)
 
-	if len(plan.BackupTargets) > 0 {
+	if !plan.BackupTargets.IsNull() && !plan.BackupTargets.IsUnknown() {
 		resources := make([]PlanResourceBackupTargetModel, len(planResp.Resources))
 		for i, respResource := range planResp.Resources {
-			var volumeIDs []types.String
+			var volumeIDsSet types.Set
 			if len(respResource.Resources) > 0 {
-				volumeIDs = make([]types.String, len(respResource.Resources))
+				volumeIDs := make([]string, len(respResource.Resources))
 				for j, resource := range respResource.Resources {
-					volumeIDs[j] = types.StringValue(resource.ID)
+					volumeIDs[j] = resource.ID
 				}
+				var diags diag.Diagnostics
+				volumeIDsSet, diags = types.SetValueFrom(ctx, types.StringType, volumeIDs)
+				if diags.HasError() {
+					resp.Diagnostics.Append(diags...)
+					return
+				}
+			} else {
+				volumeIDsSet = types.SetNull(types.StringType)
 			}
+
 			resources[i] = PlanResourceBackupTargetModel{
 				InstanceID: types.StringValue(respResource.ID),
-				VolumeIDs:  volumeIDs,
+				VolumeIDs:  volumeIDsSet,
 			}
 		}
-		plan.BackupTargets = resources
+
+		backupTargetsSet, diags := types.SetValueFrom(ctx, PlanResourceBackupTargetModel{}.ObjectType(), resources)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+		plan.BackupTargets = backupTargetsSet
 	} else {
 		resources := make([]types.String, len(planResp.Resources))
 		for i, respResource := range planResp.Resources {
 			resources[i] = types.StringValue(respResource.ID)
 		}
-		plan.InstanceIDs = resources
+
+		instanceSet, diags := types.SetValueFrom(ctx, types.StringType, resources)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+		plan.InstanceIDs = instanceSet
 	}
 
 	plan.Region = types.StringValue(region)
@@ -534,13 +584,26 @@ func (r *PlanResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
+	var backupTargets []PlanResourceBackupTargetModel
+	if !plan.BackupTargets.IsNull() && !plan.BackupTargets.IsUnknown() {
+		diags := plan.BackupTargets.ElementsAs(ctx, &backupTargets, false)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+	}
+
 	var instanceIds []types.String
-	if len(plan.BackupTargets) > 0 {
-		for _, target := range plan.BackupTargets {
+	if len(backupTargets) > 0 {
+		for _, target := range backupTargets {
 			instanceIds = append(instanceIds, target.InstanceID)
 		}
 	} else {
-		instanceIds = plan.InstanceIDs
+		diags := plan.InstanceIDs.ElementsAs(ctx, &instanceIds, false)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
 	}
 
 	resourcesInfo, err := getResourcesInfo(r.config, region, instanceIds, providerInfo.Name)
@@ -549,8 +612,12 @@ func (r *PlanResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	if providerInfo.Name == ProviderNameNova && len(plan.BackupTargets) > 0 {
-		resourcesInfo = enrichWithVolumes(resourcesInfo, plan.BackupTargets)
+	if providerInfo.Name == ProviderNameNova && len(backupTargets) > 0 {
+		resourcesInfo, diags = enrichWithVolumes(ctx, resourcesInfo, backupTargets)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
 	}
 
 	planUpdateOpts := plans.UpdateOpts{

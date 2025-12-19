@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/plans"
@@ -168,18 +170,41 @@ func getTroveResourceInfo(config clients.Config, region string, instancesID []ty
 	return resourcesInfo, nil
 }
 
-func enrichWithVolumes(resources []*plans.BackupPlanResource, backupTargets []PlanResourceBackupTargetModel) []*plans.BackupPlanResource {
-	for i, backupTarget := range backupTargets {
-		for _, volume := range backupTarget.VolumeIDs {
-			volumeResourceInfo := plans.BackupPlanResource{
-				ID:   volume.ValueString(),
+func enrichWithVolumes(ctx context.Context, resources []*plans.BackupPlanResource, backupTargets []PlanResourceBackupTargetModel) ([]*plans.BackupPlanResource, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	resourceByID := make(map[string]*plans.BackupPlanResource, len(resources))
+	for _, r := range resources {
+		resourceByID[r.ID] = r
+	}
+
+	for _, backupTarget := range backupTargets {
+		if backupTarget.VolumeIDs.IsNull() || backupTarget.VolumeIDs.IsUnknown() {
+			continue
+		}
+
+		res, ok := resourceByID[backupTarget.InstanceID.ValueString()]
+		if !ok {
+			diags.AddError("Invalid backup_targets", fmt.Sprintf("Instance %s not found in plan resources", backupTarget.InstanceID.ValueString()))
+			return nil, diags
+		}
+
+		var volumeIDs []string
+		d := backupTarget.VolumeIDs.ElementsAs(ctx, &volumeIDs, false)
+		diags.Append(d...)
+		if d.HasError() {
+			return nil, diags
+		}
+
+		for _, volumeID := range volumeIDs {
+			res.Resources = append(res.Resources, &plans.BackupPlanResource{
+				ID:   volumeID,
 				Type: CinderVolume,
-			}
-			resources[i].Resources = append(resources[i].Resources, &volumeResourceInfo)
+			})
 		}
 	}
 
-	return resources
+	return resources, diags
 }
 
 func dayToNumber(day string) int {
