@@ -59,6 +59,70 @@
 					}
 				]
 			}
+		},
+		{
+			"name": "s3_account",
+			"schema": {
+				"description": "Use this data source to get information about an IAM S3 account.",
+				"attributes": [
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "ID of the S3 account. Conflicts with `name`."
+						}
+					},
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Name of the S3 account. Conflicts with `id`."
+						}
+					},
+					{
+                        "name": "region",
+                        "string": {
+                            "computed_optional_required": "computed_optional",
+                            "description": "The region in which to obtain the IAM Service Users client. If omitted, the `region` argument of the provider is used."
+                        }
+                    },
+					{
+						"name": "account_id",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "ID of the S3 account in Hotbox S3 service."
+						}
+					},
+					{
+						"name": "account_name",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Name of the S3 account in Hotbox S3 service."
+						}
+					},
+					{
+						"name": "access_key",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Access key for the S3 account."
+						}
+					},
+					{
+						"name": "created_at",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "S3 account creation timestamp."
+						}
+					},
+					{
+						"name": "description",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Description of the S3 account."
+						}
+					}
+				]
+			}
 		}
 	],
 	"provider": {

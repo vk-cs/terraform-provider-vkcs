@@ -1,11 +1,9 @@
 package serviceusers
 
 import (
-	"fmt"
-	"strconv"
-
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/pagination"
+	paginationutil "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/pagination"
 )
 
 // CreateResult is the result of a create request. Call its Extract method
@@ -46,49 +44,13 @@ func (r GetResult) Extract() (*ServiceUser, error) {
 	return &s, err
 }
 
+func NewServiceUserPage(r pagination.PageResult) ServiceUserPage {
+	return ServiceUserPage{OffsetPageBase: paginationutil.OffsetPageBase{PageResult: r, Label: "data"}}
+}
+
 // ServiceUserPage is Pager that is returned from a call to the List function.
 type ServiceUserPage struct {
-	pagination.PageResult
-}
-
-// NextPageURL generates the URL for the page of results after this one.
-func (r ServiceUserPage) NextPageURL() (string, error) {
-	serviceUsers, err := ExtractServiceUsers(r)
-	if err != nil {
-		return "", err
-	}
-	if len(serviceUsers) == 0 {
-		return "", nil
-	}
-
-	curURL := r.URL
-	q := curURL.Query()
-
-	var curOffset int
-	if o := q.Get("offset"); o != "" {
-		var err error
-		curOffset, err = strconv.Atoi(o)
-		if err != nil {
-			return "", fmt.Errorf("error parsing offset: %w", err)
-		}
-	}
-
-	offset := curOffset + len(serviceUsers)
-	q.Set("offset", strconv.Itoa(offset))
-	curURL.RawQuery = q.Encode()
-
-	return curURL.String(), nil
-}
-
-// IsEmpty returns true if a ServiceUserPage is empty.
-func (r ServiceUserPage) IsEmpty() (bool, error) {
-	serviceUsers, err := ExtractServiceUsers(r)
-	return len(serviceUsers) == 0, err
-}
-
-// GetBody returns the body of a ServiceUserPage.
-func (r ServiceUserPage) GetBody() interface{} {
-	return r.Body
+	paginationutil.OffsetPageBase
 }
 
 type DeleteResult struct {
