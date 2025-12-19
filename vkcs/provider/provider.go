@@ -118,6 +118,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		db.NewDatastoreParametersDataSource,
 		dc.NewAPIOptionsDataSource,
 		iam.NewServiceUserDataSource,
+		iam.NewS3AccountDataSource,
 		images.NewImagesDataSource,
 		keymanager.NewContainerDataSource,
 		keymanager.NewSecretDataSource,

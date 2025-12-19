@@ -81,7 +81,7 @@ func List(client *gophercloud.ServiceClient, opts ListOptsBuilder) (r pagination
 	}
 
 	return pagination.NewPager(client, url, func(r pagination.PageResult) pagination.Page {
-		return ServiceUserPage{PageResult: r}
+		return NewServiceUserPage(r)
 	})
 }
 
