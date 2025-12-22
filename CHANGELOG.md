@@ -6,8 +6,8 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.13.2 (unreleased)
-- Fix bug with missing error details when instance creation fails
+#### v0.13.2
+- Add details to the vkcs_compute_instance creation error
 - Add crontabs to vkcs_dataplatform_product
 - Add disk scaling for vkcs_dataplatform_cluster
 - Add ignoring the order in instance_ids and backup_targets for vkcs_backup_plan
