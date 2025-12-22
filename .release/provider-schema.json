@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.13.1",
+  "provider_version": "v0.13.2",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -49,9 +49,9 @@
       "vkcs_backup_plan": {
         "schema": {
           "backup_targets": {
-            "type": "TypeList",
+            "type": "TypeSet",
             "optional": true,
-            "description": "List of backup targets specifying instance_id and volume_ids for each instance. Either backup_targets or instance_ids must be specified, but not both.",
+            "description": "Set of backup targets specifying instance_id and volume_ids for each instance. Either backup_targets or instance_ids must be specified, but not both.",
             "elem": {
               "schema": {
                 "instance_id": {
@@ -62,7 +62,7 @@
                 "volume_ids": {
                   "type": "TypeSet",
                   "optional": true,
-                  "description": "List of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.",
+                  "description": "Set of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.",
                   "elem": {
                     "type": "TypeString"
                   }
@@ -90,9 +90,9 @@
             "description": "Whether incremental backups strategy should be used. If enabled, the schedule.date field must specify one day, on which full backup will be created. On other days, incremental backups will be created. _note_ This option may be enabled for only for 'cloud_servers' provider."
           },
           "instance_ids": {
-            "type": "TypeList",
+            "type": "TypeSet",
             "optional": true,
-            "description": "List of ids of instances to make backup for. Either backup_targets or instance_ids must be specified, but not both.",
+            "description": "Set of ids of instances to make backup for. Either backup_targets or instance_ids must be specified, but not both.",
             "elem": {
               "type": "TypeString"
             }
@@ -1142,7 +1142,7 @@
                       "storage": {
                         "type": "TypeString",
                         "required": true,
-                        "description": "Storage size. Changing this creates a new resource."
+                        "description": "Storage size."
                       },
                       "storage_class_name": {
                         "type": "TypeString",
@@ -7274,8 +7274,8 @@
       "vkcs_backup_plan": {
         "schema": {
           "backup_targets": {
-            "type": "TypeList",
-            "description": "List of backup targets specifying instance_id and volume_ids for each instance.",
+            "type": "TypeSet",
+            "description": "Set of backup targets specifying instance_id and volume_ids for each instance.",
             "computed": true,
             "elem": {
               "schema": {
@@ -7287,7 +7287,7 @@
                 "volume_ids": {
                   "type": "TypeSet",
                   "optional": true,
-                  "description": "List of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.",
+                  "description": "Set of volume IDs to back up for the instance. If no list is specified, backups will be created for all disks.",
                   "elem": {
                     "type": "TypeString"
                   }
@@ -7320,8 +7320,8 @@
             "description": "ID of the instance that should be included in backup plan"
           },
           "instance_ids": {
-            "type": "TypeList",
-            "description": "List of ids of backed up instances",
+            "type": "TypeSet",
+            "description": "Set of ids of backed up instances",
             "computed": true,
             "elem": {
               "type": "TypeString"
