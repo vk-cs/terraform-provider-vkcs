@@ -1,0 +1,23 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages an IAM S3 account resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+!> **Security Note:** `secret_key` is marked as sensitive, and, therefore, will not be shown in outputs by default, but you should consider protecting it as input variable and state value. To get more information on the topic, you can refer to the [official tutorial](https://developer.hashicorp.com/terraform/tutorials/configuration-language/sensitive-variables).
+
+## Example Usage
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+An IAM S3 account can be imported using the `id`, e.g.
+{{codefile "shell" "templates/iam/resources/vkcs_iam_s3_account/import.sh"}}

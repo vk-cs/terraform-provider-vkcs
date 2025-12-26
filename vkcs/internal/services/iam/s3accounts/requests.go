@@ -1,4 +1,4 @@
-package serviceusers
+package s3accounts
 
 import (
 	"github.com/gophercloud/gophercloud"
@@ -9,11 +9,10 @@ type CreateOptsBuilder interface {
 	Map() (map[string]any, error)
 }
 
-// CreateOpts specifies attributes used to create a service user.
+// CreateOpts specifies attributes used to create a S3 account.
 type CreateOpts struct {
-	Name        string   `json:"name" required:"true"`
-	RoleNames   []string `json:"role_names" required:"true"`
-	Description string   `json:"description,omitempty"`
+	Name        string `json:"name" required:"true"`
+	Description string `json:"description,omitempty"`
 }
 
 // Map builds a request body from a CreateOpts structure.
@@ -22,23 +21,23 @@ func (opts CreateOpts) Map() (map[string]any, error) {
 	return b, err
 }
 
-// Create implements a service user create request.
+// Create implements a S3 account create request.
 func Create(client *gophercloud.ServiceClient, opts CreateOptsBuilder) (r CreateResult) {
 	b, err := opts.Map()
 	if err != nil {
 		r.Err = err
 		return
 	}
-	resp, err := client.Post(serviceUsersURL(client), &b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(s3AccountsURL(client), &b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200, 201},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
-// Get returns information about a service user, given its ID.
+// Get returns information about a S3 account, given its ID.
 func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
-	resp, err := client.Get(serviceUserURL(client, id), &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Get(s3AccountURL(client, id), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
@@ -53,24 +52,24 @@ type ListOptsBuilder interface {
 	ToListQuery() (string, error)
 }
 
-// ListOpts specifies options for listing service users.
+// ListOpts specifies options for listing S3 accounts.
 type ListOpts struct {
-	Limit          int    `q:"limit"`
 	Offset         int    `q:"offset"`
+	Limit          int    `q:"limit"`
 	OrderBy        string `q:"order_by"`
 	OrderDirection string `q:"order_direction"`
 	Name           string `q:"name"`
 }
 
-// ToListQuery formats a listOpts structure into a query string.
+// ToListQuery formats a ListOpts structure into a query string.
 func (opts ListOpts) ToListQuery() (string, error) {
 	q, err := gophercloud.BuildQueryString(opts)
 	return q.String(), err
 }
 
-// List returns a paginated collection of service users.
+// List returns a paginated collection of S3 accounts.
 func List(client *gophercloud.ServiceClient, opts ListOptsBuilder) (r pagination.Pager) {
-	url := serviceUsersURL(client)
+	url := s3AccountsURL(client)
 	if opts != nil {
 		query, err := opts.ToListQuery()
 		if err != nil {
@@ -81,13 +80,13 @@ func List(client *gophercloud.ServiceClient, opts ListOptsBuilder) (r pagination
 	}
 
 	return pagination.NewPager(client, url, func(r pagination.PageResult) pagination.Page {
-		return NewServiceUserPage(r)
+		return NewS3AccountPage(r)
 	})
 }
 
-// Delete implements a service user delete request.
+// Delete implements a S3 account delete request.
 func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
-	resp, err := client.Delete(serviceUserURL(client, id), &gophercloud.RequestOpts{
+	resp, err := client.Delete(s3AccountURL(client, id), &gophercloud.RequestOpts{
 		OkCodes:      []int{200, 204},
 		JSONResponse: &r.Body,
 	})
