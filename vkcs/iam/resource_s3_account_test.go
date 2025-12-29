@@ -1,7 +1,6 @@
 package iam_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -72,7 +71,8 @@ func testAccCheckS3AccountExists(n string, s3Account *s3accounts.S3Account) reso
 			return fmt.Errorf("ID is not set")
 		}
 
-		config, err := clients.ConfigureFromEnv(context.Background())
+		opts := clients.ConfigOpts{}
+		config, err := opts.LoadAndValidate()
 		if err != nil {
 			return fmt.Errorf("Error authenticating clients from environment: %s", err)
 		}
