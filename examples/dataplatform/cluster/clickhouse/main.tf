@@ -25,13 +25,13 @@ resource "vkcs_dataplatform_cluster" "example" {
 
       backup = {
         full = {
-          keepCount = 10
-          start     = "0 22 * * *"
+          keep_count = 10
+          start      = "0 22 * * *"
         }
 
         incremental = {
-          keepCount = 1
-          start     = "0 22 * * *"
+          keep_count = 1
+          start      = "0 22 * * *"
         }
       }
     }
