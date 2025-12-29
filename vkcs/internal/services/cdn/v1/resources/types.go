@@ -55,6 +55,29 @@ func ResourceAllowedHttpMethodValues() []string {
 	}
 }
 
+// ResourceTlsVersion allowed TLS version
+type ResourceTlsVersion string
+
+const (
+	ResourceTlsVersionSSLv3   ResourceTlsVersion = "SSLv3"
+	ResourceTlsVersionTLSv1   ResourceTlsVersion = "TLSv1"
+	ResourceTlsVersionTLSv1_1 ResourceTlsVersion = "TLSv1.1"
+	ResourceTlsVersionTLSv1_2 ResourceTlsVersion = "TLSv1.2"
+	ResourceTlsVersionTLSv1_3 ResourceTlsVersion = "TLSv1.3"
+)
+
+// ResourceTlsVersionValues returns list of all possible values for
+// a ResourceTlsVersion enumeration.
+func ResourceTlsVersionValues() []string {
+	return []string{
+		string(ResourceTlsVersionSSLv3),
+		string(ResourceTlsVersionTLSv1),
+		string(ResourceTlsVersionTLSv1_1),
+		string(ResourceTlsVersionTLSv1_2),
+		string(ResourceTlsVersionTLSv1_3),
+	}
+}
+
 type ResourceACLPolicyType string
 
 const (
@@ -112,6 +135,11 @@ type ResourceOptionsAllowedHttpMethodsOption struct {
 	Value   []ResourceAllowedHttpMethod `json:"value"`
 }
 
+type ResourceOptionsTlsVersionsOption struct {
+	Enabled bool                 `json:"enabled"`
+	Value   []ResourceTlsVersion `json:"value"`
+}
+
 type ResourceOptionsEdgeCacheSettingsOption struct {
 	CustomValues *map[string]string `json:"custom_values,omitempty"`
 	Default      string             `json:"default,omitempty"`
@@ -161,6 +189,7 @@ type ResourceOptions struct {
 	Stale                *ResourceOptionsStringListOption         `json:"stale,omitempty"`
 	StaticHeaders        *ResourceOptionsStringMapOption          `json:"staticHeaders,omitempty"`
 	StaticRequestHeaders *ResourceOptionsStringMapOption          `json:"staticRequestHeaders,omitempty"`
+	TlsVersions          *ResourceOptionsTlsVersionsOption        `json:"tls_versions,omitempty"`
 	Websockets           *ResourceOptionsBoolOption               `json:"websockets,omitempty"`
 	SecureKey            *ResourceOptionSecureKeyOption           `json:"secure_key,omitempty"`
 }

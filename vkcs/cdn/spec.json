@@ -1335,6 +1335,63 @@
                                             }
                                         ]
                                     }
+                                },
+                                {
+                                    "name": "tls_versions",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Manage the state of the TLS versions option. The option specifies a list of allowed SSL/TLS protocol versions.",
+                                        "attributes": [
+                                            {
+                                                "name": "value",
+                                                "list": {
+                                                    "element_type": {
+                                                        "string": {}
+                                                    },
+                                                    "description": "List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`.",
+                                                    "computed_optional_required": "computed_optional",
+                                                    "validators": [
+                                                        {
+                                                            "custom": {
+                                                                "imports": [
+                                                                    {
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+                                                                    },
+                                                                    {
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+                                                                    },
+                                                                    {
+                                                                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/cdn/v1/resources"
+                                                                    }
+                                                                ],
+                                                                "schema_definition": "listvalidator.ValueStringsAre(stringvalidator.OneOf(resources.ResourceTlsVersionValues()...))"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls the option state."
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
                                 }
                             ]
                         }

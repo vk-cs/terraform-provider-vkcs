@@ -669,6 +669,38 @@ func ResourceResourceSchema(ctx context.Context) schema.Schema {
 							resource_planmodifiers.ResourceOption(),
 						},
 					},
+					"tls_versions": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"enabled": schema.BoolAttribute{
+								Optional:            true,
+								Computed:            true,
+								Description:         "Controls the option state.",
+								MarkdownDescription: "Controls the option state.",
+							},
+							"value": schema.ListAttribute{
+								ElementType:         types.StringType,
+								Optional:            true,
+								Computed:            true,
+								Description:         "List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`.",
+								MarkdownDescription: "List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`.",
+								Validators: []validator.List{
+									listvalidator.ValueStringsAre(stringvalidator.OneOf(resources.ResourceTlsVersionValues()...)),
+								},
+							},
+						},
+						CustomType: TlsVersionsType{
+							ObjectType: types.ObjectType{
+								AttrTypes: TlsVersionsValue{}.AttributeTypes(ctx),
+							},
+						},
+						Optional:            true,
+						Computed:            true,
+						Description:         "Manage the state of the TLS versions option. The option specifies a list of allowed SSL/TLS protocol versions.",
+						MarkdownDescription: "Manage the state of the TLS versions option. The option specifies a list of allowed SSL/TLS protocol versions.",
+						PlanModifiers: []planmodifier.Object{
+							resource_planmodifiers.ResourceOption(),
+						},
+					},
 				},
 				CustomType: OptionsType{
 					ObjectType: types.ObjectType{
@@ -1259,6 +1291,24 @@ func (t OptionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`static_request_headers expected to be basetypes.ObjectValue, was: %T`, staticRequestHeadersAttribute))
 	}
 
+	tlsVersionsAttribute, ok := attributes["tls_versions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tls_versions is missing from object`)
+
+		return nil, diags
+	}
+
+	tlsVersionsVal, ok := tlsVersionsAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tls_versions expected to be basetypes.ObjectValue, was: %T`, tlsVersionsAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -1287,6 +1337,7 @@ func (t OptionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		Stale:                staleVal,
 		StaticHeaders:        staticHeadersVal,
 		StaticRequestHeaders: staticRequestHeadersVal,
+		TlsVersions:          tlsVersionsVal,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
@@ -1768,6 +1819,24 @@ func NewOptionsValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`static_request_headers expected to be basetypes.ObjectValue, was: %T`, staticRequestHeadersAttribute))
 	}
 
+	tlsVersionsAttribute, ok := attributes["tls_versions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tls_versions is missing from object`)
+
+		return NewOptionsValueUnknown(), diags
+	}
+
+	tlsVersionsVal, ok := tlsVersionsAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tls_versions expected to be basetypes.ObjectValue, was: %T`, tlsVersionsAttribute))
+	}
+
 	if diags.HasError() {
 		return NewOptionsValueUnknown(), diags
 	}
@@ -1796,6 +1865,7 @@ func NewOptionsValue(attributeTypes map[string]attr.Type, attributes map[string]
 		Stale:                staleVal,
 		StaticHeaders:        staticHeadersVal,
 		StaticRequestHeaders: staticRequestHeadersVal,
+		TlsVersions:          tlsVersionsVal,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
@@ -1891,11 +1961,12 @@ type OptionsValue struct {
 	Stale                basetypes.ObjectValue `tfsdk:"stale"`
 	StaticHeaders        basetypes.ObjectValue `tfsdk:"static_headers"`
 	StaticRequestHeaders basetypes.ObjectValue `tfsdk:"static_request_headers"`
+	TlsVersions          basetypes.ObjectValue `tfsdk:"tls_versions"`
 	state                attr.ValueState
 }
 
 func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 23)
+	attrTypes := make(map[string]tftypes.Type, 24)
 
 	var val tftypes.Value
 	var err error
@@ -1957,12 +2028,15 @@ func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	attrTypes["static_request_headers"] = basetypes.ObjectType{
 		AttrTypes: StaticRequestHeadersValue{}.AttributeTypes(ctx),
 	}.TerraformType(ctx)
+	attrTypes["tls_versions"] = basetypes.ObjectType{
+		AttrTypes: TlsVersionsValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 23)
+		vals := make(map[string]tftypes.Value, 24)
 
 		val, err = v.AllowedHttpMethods.ToTerraformValue(ctx)
 
@@ -2147,6 +2221,14 @@ func (v OptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		}
 
 		vals["static_request_headers"] = val
+
+		val, err = v.TlsVersions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["tls_versions"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -2534,6 +2616,27 @@ func (v OptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		)
 	}
 
+	var tlsVersions basetypes.ObjectValue
+
+	if v.TlsVersions.IsNull() {
+		tlsVersions = types.ObjectNull(
+			TlsVersionsValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.TlsVersions.IsUnknown() {
+		tlsVersions = types.ObjectUnknown(
+			TlsVersionsValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.TlsVersions.IsNull() && !v.TlsVersions.IsUnknown() {
+		tlsVersions = types.ObjectValueMust(
+			TlsVersionsValue{}.AttributeTypes(ctx),
+			v.TlsVersions.Attributes(),
+		)
+	}
+
 	attributeTypes := map[string]attr.Type{
 		"allowed_http_methods": basetypes.ObjectType{
 			AttrTypes: AllowedHttpMethodsValue{}.AttributeTypes(ctx),
@@ -2592,6 +2695,9 @@ func (v OptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		"static_request_headers": basetypes.ObjectType{
 			AttrTypes: StaticRequestHeadersValue{}.AttributeTypes(ctx),
 		},
+		"tls_versions": basetypes.ObjectType{
+			AttrTypes: TlsVersionsValue{}.AttributeTypes(ctx),
+		},
 	}
 
 	if v.IsNull() {
@@ -2628,6 +2734,7 @@ func (v OptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"stale":                  stale,
 			"static_headers":         staticHeaders,
 			"static_request_headers": staticRequestHeaders,
+			"tls_versions":           tlsVersions,
 		})
 
 	return objVal, diags
@@ -2740,6 +2847,10 @@ func (v OptionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.TlsVersions.Equal(other.TlsVersions) {
+		return false
+	}
+
 	return true
 }
 
@@ -2809,6 +2920,9 @@ func (v OptionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		},
 		"static_request_headers": basetypes.ObjectType{
 			AttrTypes: StaticRequestHeadersValue{}.AttributeTypes(ctx),
+		},
+		"tls_versions": basetypes.ObjectType{
+			AttrTypes: TlsVersionsValue{}.AttributeTypes(ctx),
 		},
 	}
 }
@@ -9992,6 +10106,412 @@ func (v StaticRequestHeadersValue) AttributeTypes(ctx context.Context) map[strin
 	return map[string]attr.Type{
 		"enabled": basetypes.BoolType{},
 		"value": basetypes.MapType{
+			ElemType: types.StringType,
+		},
+	}
+}
+
+var _ basetypes.ObjectTypable = TlsVersionsType{}
+
+type TlsVersionsType struct {
+	basetypes.ObjectType
+}
+
+func (t TlsVersionsType) Equal(o attr.Type) bool {
+	other, ok := o.(TlsVersionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t TlsVersionsType) String() string {
+	return "TlsVersionsType"
+}
+
+func (t TlsVersionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributes := in.Attributes()
+
+	enabledAttribute, ok := attributes["enabled"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`enabled is missing from object`)
+
+		return nil, diags
+	}
+
+	enabledVal, ok := enabledAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`enabled expected to be basetypes.BoolValue, was: %T`, enabledAttribute))
+	}
+
+	valueAttribute, ok := attributes["value"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`value is missing from object`)
+
+		return nil, diags
+	}
+
+	valueVal, ok := valueAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`value expected to be basetypes.ListValue, was: %T`, valueAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return TlsVersionsValue{
+		Enabled: enabledVal,
+		Value:   valueVal,
+		state:   attr.ValueStateKnown,
+	}, diags
+}
+
+func NewTlsVersionsValueNull() TlsVersionsValue {
+	return TlsVersionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewTlsVersionsValueUnknown() TlsVersionsValue {
+	return TlsVersionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewTlsVersionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (TlsVersionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing TlsVersionsValue Attribute Value",
+				"While creating a TlsVersionsValue value, a missing attribute value was detected. "+
+					"A TlsVersionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("TlsVersionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid TlsVersionsValue Attribute Type",
+				"While creating a TlsVersionsValue value, an invalid attribute value was detected. "+
+					"A TlsVersionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("TlsVersionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("TlsVersionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra TlsVersionsValue Attribute Value",
+				"While creating a TlsVersionsValue value, an extra attribute value was detected. "+
+					"A TlsVersionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra TlsVersionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewTlsVersionsValueUnknown(), diags
+	}
+
+	enabledAttribute, ok := attributes["enabled"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`enabled is missing from object`)
+
+		return NewTlsVersionsValueUnknown(), diags
+	}
+
+	enabledVal, ok := enabledAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`enabled expected to be basetypes.BoolValue, was: %T`, enabledAttribute))
+	}
+
+	valueAttribute, ok := attributes["value"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`value is missing from object`)
+
+		return NewTlsVersionsValueUnknown(), diags
+	}
+
+	valueVal, ok := valueAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`value expected to be basetypes.ListValue, was: %T`, valueAttribute))
+	}
+
+	if diags.HasError() {
+		return NewTlsVersionsValueUnknown(), diags
+	}
+
+	return TlsVersionsValue{
+		Enabled: enabledVal,
+		Value:   valueVal,
+		state:   attr.ValueStateKnown,
+	}, diags
+}
+
+func NewTlsVersionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) TlsVersionsValue {
+	object, diags := NewTlsVersionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewTlsVersionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t TlsVersionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewTlsVersionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewTlsVersionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewTlsVersionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewTlsVersionsValueMust(TlsVersionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t TlsVersionsType) ValueType(ctx context.Context) attr.Value {
+	return TlsVersionsValue{}
+}
+
+var _ basetypes.ObjectValuable = TlsVersionsValue{}
+
+type TlsVersionsValue struct {
+	Enabled basetypes.BoolValue `tfsdk:"enabled"`
+	Value   basetypes.ListValue `tfsdk:"value"`
+	state   attr.ValueState
+}
+
+func (v TlsVersionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["enabled"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["value"] = basetypes.ListType{
+		ElemType: types.StringType,
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Enabled.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["enabled"] = val
+
+		val, err = v.Value.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["value"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v TlsVersionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v TlsVersionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v TlsVersionsValue) String() string {
+	return "TlsVersionsValue"
+}
+
+func (v TlsVersionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var valueVal basetypes.ListValue
+	switch {
+	case v.Value.IsUnknown():
+		valueVal = types.ListUnknown(types.StringType)
+	case v.Value.IsNull():
+		valueVal = types.ListNull(types.StringType)
+	default:
+		var d diag.Diagnostics
+		valueVal, d = types.ListValue(types.StringType, v.Value.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"enabled": basetypes.BoolType{},
+			"value": basetypes.ListType{
+				ElemType: types.StringType,
+			},
+		}), diags
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"enabled": basetypes.BoolType{},
+		"value": basetypes.ListType{
+			ElemType: types.StringType,
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"enabled": v.Enabled,
+			"value":   valueVal,
+		})
+
+	return objVal, diags
+}
+
+func (v TlsVersionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(TlsVersionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Enabled.Equal(other.Enabled) {
+		return false
+	}
+
+	if !v.Value.Equal(other.Value) {
+		return false
+	}
+
+	return true
+}
+
+func (v TlsVersionsValue) Type(ctx context.Context) attr.Type {
+	return TlsVersionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v TlsVersionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"enabled": basetypes.BoolType{},
+		"value": basetypes.ListType{
 			ElemType: types.StringType,
 		},
 	}

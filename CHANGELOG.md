@@ -10,6 +10,7 @@ description: |-
 - Add vkcs_iam_s3_account resource
 - Add vkcs_iam_s3_account data source
 - Add endpoint overrides and passthrough token authentication
+- Add tls_versions option to vkcs_cdn_resource
 
 #### v0.13.2
 - Add details to the vkcs_compute_instance creation error

@@ -415,6 +415,29 @@ func (v OptionsValue) ToResourceOptions(ctx context.Context) (*resources.Resourc
 		}
 	}
 
+	if o := v.TlsVersions; !o.IsUnknown() && !o.IsNull() {
+		tlsVersionsObjV, d := TlsVersionsType{}.ValueFromObject(ctx, o)
+		diags.Append(d...)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		tlsVersions := tlsVersionsObjV.(TlsVersionsValue)
+
+		value := make([]resources.ResourceTlsVersion, 0, len(tlsVersions.Value.Elements()))
+		if optV := tlsVersions.Value; !optV.IsUnknown() && !optV.IsNull() {
+			diags.Append(optV.ElementsAs(ctx, &value, true)...)
+			if diags.HasError() {
+				return nil, diags
+			}
+		}
+
+		result.TlsVersions = &resources.ResourceOptionsTlsVersionsOption{
+			Enabled: tlsVersions.Enabled.ValueBool(),
+			Value:   value,
+		}
+	}
+
 	return result, diags
 }
 
@@ -821,6 +844,31 @@ func (v OptionsValue) FromResourceOptions(ctx context.Context, opts *resources.R
 		}
 	}
 
+	var tlsVersions types.Object
+	if o := opts.TlsVersions; o != nil {
+		value, d := types.ListValueFrom(ctx, types.StringType, o.Value)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+
+		tlsVersions, d = TlsVersionsValue{
+			Value:   value,
+			Enabled: types.BoolValue(o.Enabled),
+			state:   attr.ValueStateKnown,
+		}.ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+	} else {
+		tlsVersions, d = NewTlsVersionsValueNull().ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+	}
+
 	return OptionsValue{
 		AllowedHttpMethods:   allowedHttpMethods,
 		BrotliCompression:    brotliCompression,
@@ -845,6 +893,7 @@ func (v OptionsValue) FromResourceOptions(ctx context.Context, opts *resources.R
 		StaticHeaders:        staticHeaders,
 		StaticRequestHeaders: staticRequestHeaders,
 		SecureKey:            secureKey,
+		TlsVersions:          tlsVersions,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
