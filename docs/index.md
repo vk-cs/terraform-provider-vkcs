@@ -47,15 +47,56 @@ provider "vkcs" {
 ```
 
 ## Argument Reference
+- `access_token` optional sensitive *string* &rarr;  A temporary token to use for authentication. You alternatively can use `OS_AUTH_TOKEN` environment variable. If both are specified, this attribute takes precedence. <br>**Note:** The token will not be renewed and will eventually expire, usually after 1 hour. If access is needed for longer than a token's lifetime, use credentials-based authentication.
+
 - `auth_url` optional *string* &rarr;  The Identity authentication URL.
 
 - `cloud_containers_api_version` optional *string* &rarr;  Cloud Containers API version to use. <br>**Note:** Only for custom VKCS deployments.
+
+- `endpoint_overrides` optional &rarr;  Custom endpoints for corresponding APIs. If not specified, endpoints provided by the catalog will be used.
+    - `backup` optional *string* &rarr;  Backup API custom endpoint.
+
+    - `block_storage` optional *string* &rarr;  Block Storage API custom endpoint.
+
+    - `cdn` optional *string* &rarr;  CDN API custom endpoint.
+
+    - `compute` optional *string* &rarr;  Compute API custom endpoint.
+
+    - `container_infra` optional *string* &rarr;  Cloud Containers API custom endpoint.
+
+    - `container_infra_addons` optional *string* &rarr;  Cloud Containers Addons API custom endpoint.
+
+    - `data_platform` optional *string* &rarr;  Data Platform API custom endpoint.
+
+    - `database` optional *string* &rarr;  Database API custom endpoint.
+
+    - `iam_service_users` optional *string* &rarr;  IAM Service Users API custom endpoint.
+
+    - `ics` optional *string* &rarr;  ICS API custom endpoint.
+
+    - `image` optional *string* &rarr;  Image API custom endpoint.
+
+    - `key_manager` optional *string* &rarr;  Key Manager API custom endpoint.
+
+    - `load_balancer` optional *string* &rarr;  Load Balancer API custom endpoint.
+
+    - `ml_platform` optional *string* &rarr;  ML Platform API custom endpoint.
+
+    - `networking` optional *string* &rarr;  Networking API custom endpoint.
+
+    - `public_dns` optional *string* &rarr;  Public DNS API custom endpoint.
+
+    - `shared_filesystem` optional *string* &rarr;  Shared Filesystem API custom endpoint.
+
+    - `templater` optional *string* &rarr;  Templater API custom endpoint.
 
 - `password` optional sensitive *string* &rarr;  Password to login with.
 
 - `project_id` optional *string* &rarr;  The ID of Project to login with.
 
 - `region` optional *string* &rarr;  A region to use.
+
+- `skip_client_auth` optional *boolean* &rarr;  Skip authentication on client initialization. Only applicablie if `access_token` is provided. <br>**Note:** If set to true, the endpoint catalog will not be used for discovery and all required endpoints must be provided via `endpoint_overrides`.
 
 - `user_domain_id` optional *string* &rarr;  The id of the domain where the user resides.
 
