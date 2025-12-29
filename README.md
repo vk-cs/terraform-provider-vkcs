@@ -39,7 +39,7 @@ terraform {
   required_providers {
     vkcs = {
       source  = "hub.mcs.mail.ru/repository/vkcs"
-      version = "~> 0.1.0"
+      version = "< 1.0.0"
     }
   }
 }
