@@ -4,8 +4,8 @@ resource "vkcs_dataplatform_cluster" "iceberg" {
   product_name    = "iceberg-metastore"
   product_version = "17.2.0"
 
-  network_id        = module.network.networks[0].id
-  subnet_id         = module.network.networks[0].subnets[0].id
+  network_id        = vkcs_networking_network.db.id
+  subnet_id         = vkcs_networking_subnet.db.id
   availability_zone = "GZ1"
 
   pod_groups = []
@@ -37,4 +37,5 @@ resource "vkcs_dataplatform_cluster" "iceberg" {
       }
     }
   }
+  depends_on = [vkcs_networking_router_interface.db]
 }

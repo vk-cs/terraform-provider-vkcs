@@ -4,8 +4,8 @@ resource "vkcs_dataplatform_cluster" "clickhouse" {
   product_name    = "clickhouse"
   product_version = "25.3.0"
 
-  network_id        = module.network.networks[0].id
-  subnet_id         = module.network.networks[0].subnets[0].id
+  network_id        = vkcs_networking_network.db.id
+  subnet_id         = vkcs_networking_subnet.db.id
   availability_zone = "GZ1"
   # Enable public access to simplify testing of the product.
   floating_ip_pool = "auto"
@@ -80,5 +80,5 @@ resource "vkcs_dataplatform_cluster" "clickhouse" {
   # If you create networking in the same bundle of resources with Data Platform resource
   # add dependency on corresponding vkcs_networking_router_interface resource.
   # However this is not required if you set up networking witth terraform-vkcs-network module.
-  # depends_on = [vkcs_networking_router_interface.db]
+  depends_on = [vkcs_networking_router_interface.db]
 }

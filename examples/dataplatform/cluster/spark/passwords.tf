@@ -4,5 +4,5 @@ resource "random_password" "spark" {
   min_upper        = 1
   min_numeric      = 1
   min_special      = 1
-  override_special = "!?%#/()-+*"
+  override_special = "!$&*()-+=.,"
 }

@@ -14,8 +14,8 @@ resource "vkcs_dataplatform_cluster" "trino" {
   product_name    = "trino"
   product_version = "0.468.1"
 
-  network_id        = module.network.networks[0].id
-  subnet_id         = module.network.networks[0].subnets[0].id
+  network_id        = vkcs_networking_network.db.id
+  subnet_id         = vkcs_networking_subnet.db.id
   availability_zone = "GZ1"
 
   # in order to create a trino in the same cluster as the iceberg
@@ -46,48 +46,46 @@ resource "vkcs_dataplatform_cluster" "trino" {
         password = random_password.trino_example.result
       }
     ]
-    warehouses = [
-      {
-        name = "example"
-        connections = [
-          {
-            name = "iceberg"
-            plug = "iceberg-metastore-int"
-            settings = [
-              {
-                alias = "hostname"
-                value = local.iceberg_host_port
-              },
-              {
-                alias = "username"
-                value = "trino"
-              },
-              {
-                alias = "password"
-                value = random_password.iceberg_trino.result
-              },
-              {
-                alias = "db_name"
-                value = "example"
-              },
-              {
-                alias = "s3_bucket"
-                value = "dataplatform-tf-example"
-              },
-              {
-                alias = "s3_folder"
-                # Just a unique folder to not mess up other examples
-                value = module.network.router_id
-              },
-              {
-                alias = "catalog"
-                value = "iceberg"
-              }
-            ]
-          }
-        ]
-      }
-    ]
+    warehouses = [{
+      name = "trino"
+      connections = [
+        {
+          name = "iceberg"
+          plug = "iceberg-metastore-int"
+          settings = [
+            {
+              alias = "hostname"
+              value = local.iceberg_host_port
+            },
+            {
+              alias = "username"
+              value = "trino"
+            },
+            {
+              alias = "password"
+              value = random_password.iceberg_trino.result
+            },
+            {
+              alias = "db_name"
+              value = "example"
+            },
+            {
+              alias = "s3_bucket"
+              # Data Platform Trino requires unique bucket for this type of connection
+              value = format("trino-tf-example-%s", vkcs_networking_router.router.id)
+            },
+            {
+              alias = "s3_folder"
+              value = "iceberg"
+            },
+            {
+              alias = "catalog"
+              value = "iceberg"
+            }
+          ]
+        }
+      ]
+    }]
     maintenance = {
       start = "0 22 * * *"
       crontabs = [
@@ -98,7 +96,7 @@ resource "vkcs_dataplatform_cluster" "trino" {
             {
               alias = "duration"
               # Overwrite default value
-              value = "600"
+              value = "7200"
             },
           ]
         }
@@ -109,5 +107,5 @@ resource "vkcs_dataplatform_cluster" "trino" {
   # If you create networking in the same bundle of resources with Data Platform resource
   # add dependency on corresponding vkcs_networking_router_interface resource.
   # However this is not required if you set up networking witth terraform-vkcs-network module.
-  # depends_on = [vkcs_networking_router_interface.db]
+  depends_on = [vkcs_networking_router_interface.db]
 }
