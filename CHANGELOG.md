@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.13.3 (unreleased)
+- Fix terraform version in the README.md
+
 #### v0.13.2
 - Add details to the vkcs_compute_instance creation error
 - Add crontabs to vkcs_dataplatform_product
