@@ -23,9 +23,10 @@ resource "vkcs_db_instance" "db_instance" {
   }
 
   network {
-    uuid = module.network.networks[0].id
+    uuid = vkcs_networking_network.db.id
   }
 
+  depends_on = [vkcs_networking_router_interface.db]
 }
 
 resource "vkcs_db_database" "postgres_db" {
