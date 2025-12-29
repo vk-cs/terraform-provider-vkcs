@@ -1,38 +1,13 @@
-resource "vkcs_dataplatform_cluster" "basic_iceberg" {
-  name        = "tf-basic-iceberg"
-  description = "tf-basic-iceberg-description"
-  network_id  = vkcs_networking_network.db.id
-  subnet_id   = vkcs_networking_subnet.db.id
-
+resource "vkcs_dataplatform_cluster" "iceberg" {
+  name            = "iceberg-tf-example"
+  description     = "Iceberg example instance."
   product_name    = "iceberg-metastore"
   product_version = "17.2.0"
 
+  network_id        = module.network.networks[0].id
+  subnet_id         = module.network.networks[0].subnets[0].id
   availability_zone = "GZ1"
-  configs = {
-    maintenance = {
-      start = "0 0 1 * *"
-      backup = {
-        full = {
-          keep_time = 10
-          start     = "0 0 1 * *"
-        }
-      }
-    }
-    warehouses = [
-      {
-        name = "metastore",
-      }
-    ]
-    users = [
-      {
-        username = "vkdata"
-        # Example only. Do not use in production.
-        # Sensitive values must be provided securely and not stored in manifests.
-        password = "Test_p#ssword-12-3"
-        role     = "dbOwner"
-      }
-    ]
-  }
+
   pod_groups = [
     {
       name  = "postgres"
@@ -55,15 +30,42 @@ resource "vkcs_dataplatform_cluster" "basic_iceberg" {
       }
     },
     {
-      name  = "bouncer"
+      name = "bouncer"
+      # bouncer could be enabled later
       count = 0
       # even though bouncer is disabled, we need to specify its resource request
       resource = {
         cpu_request = "0.2"
         ram_request = "1"
       }
-    }
+    },
   ]
+  configs = {
+    users = [
+      {
+        username = "owner"
+        password = random_password.iceberg_owner.result
+        role     = "dbOwner"
+      },
+    ]
+    warehouses = [
+      {
+        name = "example"
+      }
+    ]
+    maintenance = {
+      start = "0 0 1 * *"
+      backup = {
+        full = {
+          keep_time = 10
+          start     = "0 0 1 * *"
+        }
+      }
+    }
+  }
 
-  depends_on = [vkcs_networking_router_interface.db]
+  # If you create networking in the same bundle of resources with Data Platform resource
+  # add dependency on corresponding vkcs_networking_router_interface resource.
+  # However this is not required if you set up networking witth terraform-vkcs-network module.
+  # depends_on = [vkcs_networking_router_interface.db]
 }

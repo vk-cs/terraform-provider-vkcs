@@ -37,7 +37,7 @@ resources:
           name:
             description: Name of the cluster.
           product_name:
-            description: Name of the product.
+            description: Name of the product. Changing this creates a new resource.
           product_version:
             description: Version of the product. Changing this creates a new resource.
           product_type:
@@ -107,7 +107,7 @@ resources:
           configs.users:
             description: Users settings.
           configs.users.username:
-            description: Username
+            description: Username.
           configs.users.password:
             description: Password. Changing this creates a new resource.
           configs.users.role:
@@ -139,17 +139,17 @@ resources:
           floating_ip_pool:
             description: Floating IP pool ID. Use `auto` for autoselect. Changing this creates a new resource.
           info:
-            description: Application info
+            description: Application info.
           info.services:
-            description: Application services info
+            description: Application services info.
           info.services.connection_string:
-            description: Service connection string
+            description: Service connection string.
           info.services.description:
-            description: Service description
+            description: Service description.
           info.services.exposed:
-            description: Whether service is exposed
+            description: Whether service is exposed.
           info.services.type:
-            description: Service type
+            description: Service type.
           pod_groups:
             description: Cluster pod groups. Changing this creates a new resource.
           pod_groups.count:
