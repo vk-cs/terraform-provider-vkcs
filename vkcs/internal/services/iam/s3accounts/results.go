@@ -28,7 +28,7 @@ func ExtractS3Accounts(r pagination.Page) ([]S3Account, error) {
 
 // ExtractS3AccountsInto converts a page into a S3Account slice.
 func ExtractS3AccountsInto(r pagination.Page, v any) error {
-	return r.(S3AccountPage).Result.ExtractIntoSlicePtr(v, "data")
+	return r.(S3AccountPage).ExtractIntoSlicePtr(v, "data")
 }
 
 // GetResult is the result of a get request. Call its Extract method

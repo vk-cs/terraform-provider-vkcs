@@ -625,7 +625,9 @@ func resourceNetworkingPortCustomizeDiff(_ context.Context, diff *schema.Resourc
 		sgs := diff.Get("security_group_ids").(*schema.Set)
 		allsgs := diff.Get("all_security_group_ids").(*schema.Set)
 		if allsgs.Difference(sgs).Len() > 0 {
-			diff.SetNew("all_security_group_ids", sgs)
+			if err := diff.SetNew("all_security_group_ids", sgs); err != nil {
+				log.Printf("[DEBUG] failed to set diff for `all_security_group_ids`: %s", err)
+			}
 		}
 	}
 	return nil

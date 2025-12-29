@@ -462,7 +462,7 @@ func expandDateFilter(date string) *secrets.DateQuery {
 		filter = &secrets.DateQuery{Date: parsedTime}
 	}
 
-	if parsedTime == (time.Time{}) {
+	if parsedTime.IsZero() {
 		return nil
 	}
 

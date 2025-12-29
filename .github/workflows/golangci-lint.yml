@@ -18,7 +18,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.23
+          go-version: 1.25
       - name: Check go mod
         run: |
           go mod tidy
@@ -32,9 +32,9 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.23
+          go-version: 1.25
       - name: lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
           # skip cache because of flaky behaviors
@@ -50,7 +50,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.23 # test only release go version to speed up CI
+          go-version: 1.25 # test only release go version to speed up CI
       - name: Run tests
         run: make.exe test
   tests-on-macos:
@@ -61,7 +61,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.23 # test only release go version to speed up CI
+          go-version: 1.25 # test only release go version to speed up CI
       - name: Run tests
         run: make test
   tests-on-unix:
@@ -72,6 +72,6 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.23
+          go-version: 1.25
       - name: Run tests
         run: make test

@@ -1218,11 +1218,16 @@ func resourceComputeInstanceCustomizeDiff(ctx context.Context, diff *schema.Reso
 		}
 		bds[i] = bd
 	}
-	diff.SetNew("block_device", bds)
+
+	if err := diff.SetNew("block_device", bds); err != nil {
+		log.Printf("[DEBUG] failed to set diff for `block_device`: %s", err)
+	}
 
 	oldState, newState := diff.GetChange("power_state")
-	if !(oldState.(string) == "shelved_offloaded" && newState.(string) == "active" || diff.Get("power_state").(string) == "shelved_offloaded") {
-		diff.ForceNew("availability_zone")
+	if (oldState.(string) != "shelved_offloaded" || newState.(string) != "active") && diff.Get("power_state").(string) != "shelved_offloaded" {
+		if err := diff.ForceNew("availability_zone"); err != nil {
+			log.Printf("[DEBUG] failed to set force new for `availability_zone`: %s", err)
+		}
 	}
 
 	if diff.GetRawState().IsNull() {
@@ -1618,8 +1623,8 @@ func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
 
 		deleteOnTermination := vM["delete_on_termination"].(bool)
 		sourceType := vM["source_type"].(string)
-		switch {
-		case sourceType == "blank" || sourceType == "image" || sourceType == "snapshot":
+		switch sourceType {
+		case "blank", "image", "snapshot":
 			if !deleteOnTermination {
 				diags = append(diags, diag.Diagnostic{
 					Severity:      diag.Warning,
@@ -1627,7 +1632,7 @@ func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
 					AttributePath: getAttrPath(idx, "delete_on_termination"),
 				})
 			}
-		case sourceType == "volume":
+		case "volume":
 			if deleteOnTermination {
 				diags = append(diags, diag.Diagnostic{
 					Severity:      diag.Warning,

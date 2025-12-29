@@ -28,7 +28,7 @@ func ExtractServiceUsers(r pagination.Page) ([]ServiceUser, error) {
 
 // ExtractServiceUsersInto converts a page into a slice of ServiceUsers.
 func ExtractServiceUsersInto(r pagination.Page, v interface{}) error {
-	return r.(ServiceUserPage).Result.ExtractIntoSlicePtr(v, "data")
+	return r.(ServiceUserPage).ExtractIntoSlicePtr(v, "data")
 }
 
 // GetResult is the result of a get request. Call its Extract method

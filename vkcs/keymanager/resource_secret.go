@@ -355,7 +355,7 @@ func resourceKeyManagerSecretRead(ctx context.Context, d *schema.ResourceData, m
 	}
 	d.Set("all_metadata", metadataMap)
 
-	if secret.Expiration == (time.Time{}) {
+	if secret.Expiration.IsZero() {
 		d.Set("expiration", "")
 	} else {
 		d.Set("expiration", secret.Expiration.Format(time.RFC3339))

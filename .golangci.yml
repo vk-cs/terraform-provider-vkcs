@@ -1,34 +1,49 @@
-run:
-  deadline: 3m00s
- # modules-download-mode: vendor
-
-issues:
-  max-per-linter: 0
-  max-same-issues: 0
-  exclude-rules:
-    - linters:
-        - stylecheck
-      text: "ST1003:"
+version: "2"
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - errcheck
-    - gofmt
-    - gosimple
-    - goimports
+    - gocritic
+    - govet
     - ineffassign
     - misspell
     - staticcheck
     - unconvert
     - unused
-    - govet
-    - gocritic
-    - stylecheck
+  settings:
+    errcheck:
+      exclude-functions:
+        - "(*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceData).Set"
+    govet:
+      disable:
+        - copylocks
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - staticcheck
+        text: 'ST1003:'
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 
-linters-settings:
-  errcheck:
-    ignore: github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema:ForceNew|Set,fmt:.*,io:Close,github.com/vk-cs/terraform-provider-vkcs:Set
-  govet:
-    disable:
-      - copylocks
+issues:
+  max-same-issues: 0
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
