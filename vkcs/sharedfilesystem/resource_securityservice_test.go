@@ -53,7 +53,7 @@ func TestAccSFSSecurityService_basic(t *testing.T) {
 
 func testAccCheckSFSSecurityServiceDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
-	sfsClient, err := config.SharedfilesystemV2Client(acctest.OsRegionName)
+	sfsClient, err := config.SharedFilesystemV2Client(acctest.OsRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
@@ -84,7 +84,7 @@ func testAccCheckSFSSecurityServiceExists(n string, securityservice *securityser
 		}
 
 		config := acctest.AccTestProvider.Meta().(clients.Config)
-		sfsClient, err := config.SharedfilesystemV2Client(acctest.OsRegionName)
+		sfsClient, err := config.SharedFilesystemV2Client(acctest.OsRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 		}

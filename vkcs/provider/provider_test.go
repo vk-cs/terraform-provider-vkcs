@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/pathorcontents"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/provider"
 )
@@ -164,30 +165,45 @@ func TestAccProvider_InvalidConfig(t *testing.T) {
 	})
 }
 
-const testAccProviderSDKInvalidConfig = `
-provider "vkcs" {
-	alias = "invalid_config"
-	auth_url = "example.com"
+func TestAccProvider_accessToken(t *testing.T) {
+	var token string
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			acctest.AccTestPreCheck(t)
+			testAccGetAuthToken(t, &token)
+		},
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccProviderAccessToken, map[string]string{"AuthToken": token}),
+			},
+		},
+	})
 }
 
-resource "vkcs_blockstorage_volume" "volume" {
-	provider = vkcs.invalid_config
-	size = 8
-	volume_type = "ssd"
-	availability_zone = "GZ1"
+func TestAccProvider_endpointOverrides(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccProviderEndpointOverrides,
+				ExpectError: regexp.MustCompile("OpenStack connection error, retries exhausted"),
+			},
+		},
+	})
 }
-`
 
-const testAccProviderInvalidConfig = `
-provider "vkcs" {
-	alias = "invalid_config"
-	auth_url = "example.com"
-}
+func testAccGetAuthToken(t *testing.T, token *string) {
+	opts := clients.ConfigOpts{}
+	config, err := opts.LoadAndValidate()
+	if err != nil {
+		t.Fatalf("Error authenticating clients from environment: %s", err)
+	}
 
-resource "vkcs_dc_router" "volume" {
-	provider = vkcs.invalid_config
+	*token = config.GetToken()
 }
-`
 
 func envVarContents(varName string) (string, error) {
 	// TODO(irlndts): the function is deprecated, replace it.
@@ -219,3 +235,60 @@ func envVarFile(varName string) (string, error) {
 	}
 	return tmpFile.Name(), nil
 }
+
+const testAccProviderSDKInvalidConfig = `
+provider "vkcs" {
+	alias = "invalid_config"
+	auth_url = "example.com"
+}
+
+resource "vkcs_blockstorage_volume" "volume" {
+	provider = vkcs.invalid_config
+	size = 8
+	volume_type = "ssd"
+	availability_zone = "GZ1"
+}
+`
+
+const testAccProviderInvalidConfig = `
+provider "vkcs" {
+	alias = "invalid_config"
+	auth_url = "example.com"
+}
+
+resource "vkcs_dc_router" "volume" {
+	provider = vkcs.invalid_config
+}
+`
+
+const testAccProviderAccessToken = `
+provider "vkcs" {
+	alias        = "access_token"
+	access_token = "{{ .AuthToken }}"
+}
+
+resource "vkcs_dc_router" "router" {
+	provider = vkcs.access_token
+	count    = 0
+}
+
+data "vkcs_regions" "regions" {
+	provider = vkcs.access_token
+}
+`
+
+const testAccProviderEndpointOverrides = `
+provider "vkcs" {
+	alias        = "endpoint_overrides"
+	endpoint_overrides {
+		block_storage = "http://localhost:1234/volumes/"
+	}
+}
+
+resource "vkcs_blockstorage_volume" "volume" {
+	provider = vkcs.endpoint_overrides
+	size = 8
+	volume_type = "ssd"
+	availability_zone = "GZ1"
+}
+`

@@ -190,7 +190,7 @@ func (r *resourceResource) Create(ctx context.Context, req resource.CreateReques
 		createOpts.SSLData = sslOpts.Data
 	}
 
-	projectID := r.config.GetTenantID()
+	projectID := r.config.GetProjectID()
 
 	tflog.Trace(ctx, "Calling CDN API to create CDN resource", map[string]interface{}{"opts": fmt.Sprintf("%#v", createOpts)})
 
@@ -282,7 +282,7 @@ func (r *resourceResource) Read(ctx context.Context, req resource.ReadRequest, r
 
 	id := int(data.Id.ValueInt64())
 	ctx = tflog.SetField(ctx, "resource_id", id)
-	projectID := r.config.GetTenantID()
+	projectID := r.config.GetProjectID()
 
 	tflog.Trace(ctx, "Calling CDN API to retrieve CDN resource")
 
@@ -387,7 +387,7 @@ func (r *resourceResource) Update(ctx context.Context, req resource.UpdateReques
 		updateOpts.SSLData = sslOpts.Data
 	}
 
-	projectID := r.config.GetTenantID()
+	projectID := r.config.GetProjectID()
 
 	tflog.Trace(ctx, "Calling CDN API to update CDN resource", map[string]interface{}{"opts": fmt.Sprintf("%#v", updateOpts)})
 
@@ -478,7 +478,7 @@ func (r *resourceResource) Delete(ctx context.Context, req resource.DeleteReques
 
 	tflog.Trace(ctx, "Calling CDN API to delete CDN resource")
 
-	err = resources.Delete(client, r.config.GetTenantID(), int(id)).ExtractErr()
+	err = resources.Delete(client, r.config.GetProjectID(), int(id)).ExtractErr()
 	if errutil.IsNotFound(err) {
 		return
 	} else if err != nil {

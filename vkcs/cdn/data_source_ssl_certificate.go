@@ -63,7 +63,7 @@ func (d *sslCertificateDataSource) Read(ctx context.Context, req datasource.Read
 
 	tflog.Trace(ctx, "Calling CDN API to list SSL certificates")
 
-	sslCerts, err := ssldata.List(client, d.config.GetTenantID()).Extract()
+	sslCerts, err := ssldata.List(client, d.config.GetProjectID()).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error calling CDN API to list SSL certificates", err.Error())
 		return

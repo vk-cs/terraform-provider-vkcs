@@ -106,7 +106,7 @@ func DataSourceSharedFilesystemShare() *schema.Resource {
 
 func dataSourceSharedFilesystemShareRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	sfsClient, err := config.SharedfilesystemV2Client(util.GetRegion(d, config))
+	sfsClient, err := config.SharedFilesystemV2Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem sfsClient: %s", err)
 	}

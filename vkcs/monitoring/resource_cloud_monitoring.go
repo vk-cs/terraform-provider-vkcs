@@ -104,7 +104,7 @@ func (r *сloudMonitoringResource) Create(ctx context.Context, req resource.Crea
 		region = r.config.GetRegion()
 	}
 
-	projectID := r.config.GetTenantID()
+	projectID := r.config.GetProjectID()
 
 	icsClient, err := r.config.ICSV1Client(region)
 	if err != nil {
@@ -188,7 +188,7 @@ func (r *сloudMonitoringResource) Delete(ctx context.Context, req resource.Dele
 		region = r.config.GetRegion()
 	}
 
-	projectID := r.config.GetTenantID()
+	projectID := r.config.GetProjectID()
 
 	templaterClient, err := r.config.TemplaterV2Client(region, projectID)
 	if err != nil {

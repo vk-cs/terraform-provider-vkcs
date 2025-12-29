@@ -1,7 +1,6 @@
 package compute_test
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -879,7 +878,8 @@ func TestAccComputeInstance_AdminPasswordUpdate(t *testing.T) {
 }
 
 func testAccCheckComputeInstanceDestroy(s *terraform.State) error {
-	config, err := clients.ConfigureFromEnv(context.Background())
+	opts := clients.ConfigOpts{}
+	config, err := opts.LoadAndValidate()
 	if err != nil {
 		return fmt.Errorf("Error authenticating clients from environment: %s", err)
 	}
@@ -916,7 +916,8 @@ func testAccCheckComputeInstanceExists(resourceName string, instance *servers.Se
 			return fmt.Errorf("No ID is set")
 		}
 
-		config, err := clients.ConfigureFromEnv(context.Background())
+		opts := clients.ConfigOpts{}
+		config, err := opts.LoadAndValidate()
 		if err != nil {
 			return fmt.Errorf("Error authenticating clients from environment: %s", err)
 		}

@@ -78,7 +78,7 @@ func (r *originGroupResource) Create(ctx context.Context, req resource.CreateReq
 
 	tflog.Trace(ctx, "Calling CDN API to create origin group", map[string]interface{}{"opts": fmt.Sprintf("%#v", createOpts)})
 
-	originGroup, err := origingroups.Create(client, r.config.GetTenantID(), &createOpts).Extract()
+	originGroup, err := origingroups.Create(client, r.config.GetProjectID(), &createOpts).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error calling CDN API to create origin group", err.Error())
 		return
@@ -122,7 +122,7 @@ func (r *originGroupResource) Read(ctx context.Context, req resource.ReadRequest
 
 	tflog.Trace(ctx, "Calling CDN API to retrieve origin group")
 
-	originGroup, err := origingroups.Get(client, r.config.GetTenantID(), id).Extract()
+	originGroup, err := origingroups.Get(client, r.config.GetProjectID(), id).Extract()
 	if errutil.IsNotFound(err) {
 		resp.State.RemoveResource(ctx)
 		return
@@ -184,7 +184,7 @@ func (r *originGroupResource) Update(ctx context.Context, req resource.UpdateReq
 
 	tflog.Trace(ctx, "Calling CDN API to update origin group", map[string]interface{}{"opts": fmt.Sprintf("%#v", updateOpts)})
 
-	originGroup, err := origingroups.Update(client, r.config.GetTenantID(), id, &updateOpts).Extract()
+	originGroup, err := origingroups.Update(client, r.config.GetProjectID(), id, &updateOpts).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error calling CDN API to update origin group", err.Error())
 		return
@@ -224,7 +224,7 @@ func (r *originGroupResource) Delete(ctx context.Context, req resource.DeleteReq
 
 	tflog.Trace(ctx, "Calling CDN API to delete origin group")
 
-	err = origingroups.Delete(client, r.config.GetTenantID(), id).ExtractErr()
+	err = origingroups.Delete(client, r.config.GetProjectID(), id).ExtractErr()
 	if errutil.IsNotFound(err) {
 		return
 	} else if err != nil {

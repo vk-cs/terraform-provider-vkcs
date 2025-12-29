@@ -106,7 +106,7 @@ func ResourceSharedFilesystemSecurityService() *schema.Resource {
 
 func resourceSharedFilesystemSecurityServiceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	sfsClient, err := config.SharedfilesystemV2Client(util.GetRegion(d, config))
+	sfsClient, err := config.SharedFilesystemV2Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
@@ -137,7 +137,7 @@ func resourceSharedFilesystemSecurityServiceCreate(ctx context.Context, d *schem
 
 func resourceSharedFilesystemSecurityServiceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	sfsClient, err := config.SharedfilesystemV2Client(util.GetRegion(d, config))
+	sfsClient, err := config.SharedFilesystemV2Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
@@ -171,7 +171,7 @@ func resourceSharedFilesystemSecurityServiceRead(ctx context.Context, d *schema.
 
 func resourceSharedFilesystemSecurityServiceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	sfsClient, err := config.SharedfilesystemV2Client(util.GetRegion(d, config))
+	sfsClient, err := config.SharedFilesystemV2Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
@@ -230,7 +230,7 @@ func resourceSharedFilesystemSecurityServiceUpdate(ctx context.Context, d *schem
 
 func resourceSharedFilesystemSecurityServiceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	sfsClient, err := config.SharedfilesystemV2Client(util.GetRegion(d, config))
+	sfsClient, err := config.SharedFilesystemV2Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}

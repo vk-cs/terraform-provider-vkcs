@@ -64,7 +64,7 @@ func TestAccSFSShareAccess_basic(t *testing.T) {
 
 func testAccCheckSFSShareAccessDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
-	sfsClient, err := config.SharedfilesystemV2Client(acctest.OsRegionName)
+	sfsClient, err := config.SharedFilesystemV2Client(acctest.OsRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
@@ -107,7 +107,7 @@ func testAccCheckSFSShareAccessExists(n string, share *shares.AccessRight) resou
 		}
 
 		config := acctest.AccTestProvider.Meta().(clients.Config)
-		sfsClient, err := config.SharedfilesystemV2Client(acctest.OsRegionName)
+		sfsClient, err := config.SharedFilesystemV2Client(acctest.OsRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 		}

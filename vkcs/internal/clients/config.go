@@ -3,243 +3,180 @@ package clients
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/utils/openstack/clientconfig"
 	"github.com/gophercloud/utils/terraform/auth"
 	"github.com/gophercloud/utils/terraform/mutexkv"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/provider"
-	sdkdiag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	icapabilities "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/images/imagecapabilities"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/monitoring/templater"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/modutil"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/version"
 )
 
 const (
 	maxRetriesCount         = 3
 	requestsMaxRetriesCount = 3
 	requestsRetryDelay      = 1 * time.Second
-	computeAPIMicroVersion  = "2.42"
 )
 
-// Config is interface to work with configer calls
+var (
+	_ Config = (*config)(nil)
+)
+
 type Config interface {
-	LoadAndValidate() error
 	GetRegion() string
-	GetTenantID() string
-	ComputeV2Client(region string) (*gophercloud.ServiceClient, error)
-	ImageV2Client(region string) (*gophercloud.ServiceClient, error)
-	NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error)
-	PublicDNSV2Client(region string) (*gophercloud.ServiceClient, error)
-	BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error)
-	KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error)
-	ContainerInfraV1Client(region string) (*gophercloud.ServiceClient, error)
-	ContainerInfraAddonsV1Client(region string) (*gophercloud.ServiceClient, error)
-	IdentityV3Client(region string) (*gophercloud.ServiceClient, error)
-	DatabaseV1Client(region string) (*gophercloud.ServiceClient, error)
-	SharedfilesystemV2Client(region string) (*gophercloud.ServiceClient, error)
-	LoadBalancerV2Client(region string) (*gophercloud.ServiceClient, error)
+	GetProjectID() string
+	GetToken() string
+	GetMutex() *mutexkv.MutexKV
+
 	BackupV1Client(region string, tenantID string) (*gophercloud.ServiceClient, error)
-	MLPlatformV1Client(region string) (*gophercloud.ServiceClient, error)
-	ICSV1Client(region string) (*gophercloud.ServiceClient, error)
-	TemplaterV2Client(region string, projectID string) (*gophercloud.ServiceClient, error)
+	BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error)
 	CDNV1Client(region string) (*gophercloud.ServiceClient, error)
+	ComputeV2Client(region string) (*gophercloud.ServiceClient, error)
+	ContainerInfraAddonsV1Client(region string) (*gophercloud.ServiceClient, error)
+	ContainerInfraV1Client(region string) (*gophercloud.ServiceClient, error)
+	DatabaseV1Client(region string) (*gophercloud.ServiceClient, error)
 	DataPlatformClient(region string) (*gophercloud.ServiceClient, error)
 	IAMServiceUsersV1Client(region string) (*gophercloud.ServiceClient, error)
-	GetMutex() *mutexkv.MutexKV
+	ICSV1Client(region string) (*gophercloud.ServiceClient, error)
+	IdentityV3Client(region string) (*gophercloud.ServiceClient, error)
+	ImageV2Client(region string) (*gophercloud.ServiceClient, error)
+	KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error)
+	LoadBalancerV2Client(region string) (*gophercloud.ServiceClient, error)
+	MLPlatformV1Client(region string) (*gophercloud.ServiceClient, error)
+	NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error)
+	PublicDNSV2Client(region string) (*gophercloud.ServiceClient, error)
+	SharedFilesystemV2Client(region string) (*gophercloud.ServiceClient, error)
+	TemplaterV2Client(region string, projectID string) (*gophercloud.ServiceClient, error)
 }
 
-// configer uses openstackbase.Config as the base/foundation of this provider's
-type configer struct {
+type config struct {
 	auth.Config
-	ContainerInfraV1MicroVersion string
+
+	envPrefix                    string
+	containerInfraV1MicroVersion string
+	skipAuth                     bool
 }
 
-func getConfigParam(d *schema.ResourceData, key string, envKey string, defaultVal string) (param string) {
-	tfAttr := d.Get(key)
-	if tfAttr != nil {
-		param = tfAttr.(string)
-	}
-	if param == "" {
-		param = os.Getenv(envKey)
-	}
-	if param == "" {
-		param = defaultVal
-	}
-	return param
-}
-
-func ConfigureSdkProvider(d *schema.ResourceData, terraformVersion string) (Config, sdkdiag.Diagnostics) {
-	containerInfraV1MicroVersion := d.Get("cloud_containers_api_version").(string)
-	if containerInfraV1MicroVersion == "" {
-		containerInfraV1MicroVersion = CloudContainersAPIVersion
-	}
-
-	sdkVersion, _ := modutil.GetDependencyModuleVersion("github.com/hashicorp/terraform-plugin-sdk/v2")
-
-	config := &configer{
-		auth.Config{
-			Username:         getConfigParam(d, "username", "OS_USERNAME", ""),
-			Password:         getConfigParam(d, "password", "OS_PASSWORD", ""),
-			TenantID:         getConfigParam(d, "project_id", "OS_PROJECT_ID", ""),
-			Region:           getConfigParam(d, "region", "OS_REGION_NAME", DefaultRegionName),
-			IdentityEndpoint: getConfigParam(d, "auth_url", "OS_AUTH_URL", DefaultIdentityEndpoint),
-			UserDomainID:     getConfigParam(d, "user_domain_id", "OS_USER_DOMAIN_ID", ""),
-			UserDomainName:   getConfigParam(d, "user_domain_name", "OS_USER_DOMAIN_NAME", DefaultUserDomainName),
-			EndpointType:     os.Getenv("OS_INTERFACE"),
-			AllowReauth:      true,
-			MaxRetries:       maxRetriesCount,
-			TerraformVersion: terraformVersion,
-			SDKVersion:       sdkVersion,
-			MutexKV:          mutexkv.NewMutexKV(),
-		},
-		containerInfraV1MicroVersion,
-	}
-
-	if config.UserDomainID != "" {
-		config.UserDomainName = ""
-	}
-
-	if err := config.LoadAndValidate(); err != nil {
-		return nil, sdkdiag.FromErr(err)
-	}
-
-	config.OsClient.UserAgent.Prepend(fmt.Sprintf("VKCS Terraform Provider/%s", version.ProviderVersion))
-	config.OsClient.RetryFunc = retryFunc
-
-	return config, nil
-}
-
-var _ Config = &configer{}
-
-// GetRegion is implementation of GetRegion method
-func (c *configer) GetRegion() string {
+func (c *config) GetRegion() string {
 	return c.Region
 }
 
-func (c *configer) GetTenantID() string {
+func (c *config) GetProjectID() string {
 	return c.TenantID
 }
 
-func (c *configer) ComputeV2Client(region string) (*gophercloud.ServiceClient, error) {
-	computeClient, err := c.Config.ComputeV2Client(region)
-	if err != nil {
-		return nil, err
-	}
-
-	computeClient.Microversion = computeAPIMicroVersion
-
-	return computeClient, nil
+func (c *config) GetToken() string {
+	return c.OsClient.TokenID
 }
 
-func (c *configer) ImageV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.ImageV2Client(region)
+func (c *config) GetMutex() *mutexkv.MutexKV {
+	return c.MutexKV
 }
 
-func (c *configer) NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error) {
-	client, err := c.Config.NetworkingV2Client(region)
+func (c *config) BackupV1Client(region string, projectID string) (*gophercloud.ServiceClient, error) {
+	client, err := c.initClient(newBackupV1, region, "backup")
+	client.Endpoint = fmt.Sprintf("%s%s/", client.Endpoint, projectID)
+	return client, err
+}
+
+func (c *config) BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newBlockStorageV3, region, "block-storage")
+}
+
+func (c *config) CDNV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newCDNV1, region, "cdn")
+}
+
+func (c *config) ComputeV2Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newComputeV2, region, "compute")
+}
+
+func (c *config) ContainerInfraV1Client(region string) (*gophercloud.ServiceClient, error) {
+	client, err := c.initClient(newContainerInfraV1, region, "container-infra")
 	if err != nil {
 		return client, err
 	}
+
+	client.MoreHeaders = map[string]string{
+		"MCS-API-Version": fmt.Sprintf("container-infra %s", c.containerInfraV1MicroVersion),
+	}
+
+	return client, err
+}
+
+func (c *config) ContainerInfraAddonsV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newContainerInfraAddonsV1, region, "container-infra-addons")
+}
+
+func (c *config) DatabaseV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newDatabaseV1, region, "database")
+}
+
+func (c *config) DataPlatformClient(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newDataPlatform, region, "data-platform")
+}
+
+func (c *config) IAMServiceUsersV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newIAMServiceUsersV1, region, "iam-service-users")
+}
+
+func (c *config) ICSV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newICSV1, region, "ics")
+}
+
+func (c *config) IdentityV3Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newIdentityV3, region, "identity")
+}
+
+func (c *config) ImageV2Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newImageV2, region, "image")
+}
+
+func (c *config) KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newKeyManagerV1, region, "key-manager")
+}
+
+func (c *config) LoadBalancerV2Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newLoadBalancerV2, region, "load-balancer")
+}
+
+func (c *config) MLPlatformV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newMLPlatformV1, region, "mlplatform")
+}
+
+func (c *config) NetworkingV2Client(region string, sdn string) (*gophercloud.ServiceClient, error) {
+	client, err := c.initClient(newNetworkV2, region, "networking")
+	if err != nil {
+		return client, err
+	}
+
 	err = networking.SelectSDN(client, sdn)
 	if err != nil {
 		return nil, err
 	}
-	return client, nil
-}
-
-func (c *configer) PublicDNSV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.CommonServiceClientInit(newPublicDNSV2, region, "publicdns")
-}
-
-func (c *configer) BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.BlockStorageV3Client(region)
-}
-
-func (c *configer) KeyManagerV1Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.KeyManagerV1Client(region)
-}
-
-// DatabaseV1Client is implementation of DatabaseV1Client method
-func (c *configer) DatabaseV1Client(region string) (*gophercloud.ServiceClient, error) {
-	client, clientErr := c.Config.DatabaseV1Client(region)
-	return client, clientErr
-}
-
-// ContainerInfraV1Client is implementation of ContainerInfraV1Client method
-func (c *configer) ContainerInfraV1Client(region string) (*gophercloud.ServiceClient, error) {
-	client, err := c.Config.ContainerInfraV1Client(region)
-	if err != nil {
-		return client, err
-	}
-	client.MoreHeaders = map[string]string{
-		"MCS-API-Version": fmt.Sprintf("container-infra %s", c.ContainerInfraV1MicroVersion),
-	}
-	return client, err
-}
-
-// ContainerInfraV1Client is implementation of ContainerInfraV1Client method
-func (c *configer) ContainerInfraAddonsV1Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.CommonServiceClientInit(newContainerInfraAddonsV1, region, "magnum-addons")
-}
-
-// IdentityV3Client is implementation of ContainerInfraV1Client method
-func (c *configer) IdentityV3Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.IdentityV3Client(region)
-}
-
-func (c *configer) SharedfilesystemV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.SharedfilesystemV2Client(region)
-}
-
-func (c *configer) LoadBalancerV2Client(region string) (*gophercloud.ServiceClient, error) {
-	return c.Config.LoadBalancerV2Client(region)
-}
-
-func (c *configer) BackupV1Client(region string, tenantID string) (*gophercloud.ServiceClient, error) {
-	client, err := c.CommonServiceClientInit(newBackupV1, region, "data-protect")
-	client.Endpoint = fmt.Sprintf("%s%s/", client.Endpoint, tenantID)
-	return client, err
-}
-
-func (c *configer) MLPlatformV1Client(region string) (*gophercloud.ServiceClient, error) {
-	client, err := c.CommonServiceClientInit(newMLPlatformV1, region, "mlplatform")
-	return client, err
-}
-
-func (c *configer) ICSV1Client(region string) (*gophercloud.ServiceClient, error) {
-	client, err := c.CommonServiceClientInit(newICSV1, region, "ics")
-	if err != nil {
-		return client, err
-	}
-
-	if err = icapabilities.HealthCheck(client).ExtractErr(); err != nil {
-		if errutil.IsNotFound(err) {
-			return nil, NewErrEndpointNotFound("ics")
-		}
-
-		return nil, err
-	}
 
 	return client, nil
 }
 
-func (c *configer) TemplaterV2Client(region string, projectID string) (*gophercloud.ServiceClient, error) {
-	client, err := c.CommonServiceClientInit(newTemplaterV2, region, "templater")
+func (c *config) PublicDNSV2Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newPublicDNSV2, region, "public-dns")
+}
+
+func (c *config) SharedFilesystemV2Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newSharedFilesystemV2, region, "shared-filesystem")
+}
+
+func (c *config) TemplaterV2Client(region string, projectID string) (*gophercloud.ServiceClient, error) {
+	client, err := c.initClient(newTemplaterV2, region, "templater")
 	if err != nil {
 		return nil, err
 	}
 
 	if err = templater.ListUsers(client, projectID).ExtractErr(); err != nil {
 		if errutil.IsNotFound(err) {
-			return nil, NewErrEndpointNotFound("templater")
+			return nil, newErrEndpointNotFound("templater")
 		}
 
 		return nil, err
@@ -248,123 +185,56 @@ func (c *configer) TemplaterV2Client(region string, projectID string) (*gophercl
 	return client, nil
 }
 
-func (c *configer) CDNV1Client(region string) (*gophercloud.ServiceClient, error) {
-	client, err := c.CommonServiceClientInit(newCDNV1, region, "cdn")
-	return client, err
+type clientFactoryFn func(*gophercloud.ProviderClient, clientOpts) (*gophercloud.ServiceClient, error)
+
+func (c *config) initClient(newClient clientFactoryFn, region, service string) (*gophercloud.ServiceClient, error) {
+	endpointOverride := c.determineEndpoint(service)
+
+	if !c.skipAuth {
+		if err := c.Authenticate(); err != nil {
+			return nil, err
+		}
+	} else {
+		if endpointOverride == "" {
+			return nil, fmt.Errorf("endpoint override for `%s` is not provided", service)
+		}
+
+		c.OsClient.SetToken(c.Token)
+	}
+
+	opts := clientOpts{
+		EndpointOpts: gophercloud.EndpointOpts{
+			Region:       c.DetermineRegion(region),
+			Availability: clientconfig.GetEndpointType(c.EndpointType),
+		},
+		EndpointOverride: endpointOverride,
+	}
+
+	client, err := newClient(c.OsClient, opts)
+	if err != nil {
+		return client, err
+	}
+
+	return client, nil
 }
 
-func (c *configer) DataPlatformClient(region string) (*gophercloud.ServiceClient, error) {
-	client, err := c.CommonServiceClientInit(newDataPlatform, region, "dataplatform")
-	return client, err
-}
-
-func (c *configer) IAMServiceUsersV1Client(region string) (*gophercloud.ServiceClient, error) {
-	client, err := c.CommonServiceClientInit(newIAMServiceUsersV1, region, "iam")
-	return client, err
-}
-
-func (c *configer) GetMutex() *mutexkv.MutexKV {
-	return c.Config.MutexKV
-}
-
-func (c *configer) setDefaults() {
-	if c.TerraformVersion == "" {
-		// Terraform 0.12 introduced this field to the protocol
-		// We can therefore assume that if it's missing it's 0.10 or 0.11
-		c.TerraformVersion = "0.11+compatible"
-	}
-	if c.ContainerInfraV1MicroVersion == "" {
-		c.ContainerInfraV1MicroVersion = CloudContainersAPIVersion
-	}
-	if c.Region == "" {
-		c.Region = DefaultRegionName
-	}
-	if c.IdentityEndpoint == "" {
-		c.IdentityEndpoint = DefaultIdentityEndpoint
-	}
-	if c.UserDomainName == "" {
-		c.UserDomainName = DefaultUserDomainName
-	}
-	if c.UserDomainID != "" {
-		c.UserDomainName = ""
+func (c *config) determineEndpoint(service string) string {
+	if service == "identity" {
+		return c.IdentityEndpoint
 	}
 
-	c.AllowReauth = true
-	c.MaxRetries = maxRetriesCount
-	c.MutexKV = mutexkv.NewMutexKV()
-}
-
-func (c *configer) updateWithEnv() {
-	if c.Username == "" {
-		c.Username = os.Getenv("OS_USERNAME")
-	}
-	if c.Password == "" {
-		c.Password = os.Getenv("OS_PASSWORD")
-	}
-	if c.TenantID == "" {
-		c.TenantID = os.Getenv("OS_PROJECT_ID")
-	}
-	if c.Region == "" {
-		c.Region = os.Getenv("OS_REGION_NAME")
-	}
-	if c.IdentityEndpoint == "" {
-		c.IdentityEndpoint = os.Getenv("OS_AUTH_URL")
-	}
-	if c.UserDomainID == "" {
-		c.UserDomainID = os.Getenv("OS_USER_DOMAIN_ID")
-	}
-	if c.UserDomainName == "" {
-		c.UserDomainName = os.Getenv("OS_USER_DOMAIN_NAME")
-	}
-	if c.EndpointType == "" {
-		c.EndpointType = os.Getenv("OS_INTERFACE")
-	}
-}
-
-func ConfigureProvider(ctx context.Context, req provider.ConfigureRequest) (Config, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	config := configer{}
-
-	req.Config.GetAttribute(ctx, path.Root("auth_url"), &config.IdentityEndpoint)
-	req.Config.GetAttribute(ctx, path.Root("username"), &config.Username)
-	req.Config.GetAttribute(ctx, path.Root("password"), &config.Password)
-	req.Config.GetAttribute(ctx, path.Root("project_id"), &config.TenantID)
-	req.Config.GetAttribute(ctx, path.Root("user_domain_id"), &config.UserDomainID)
-	req.Config.GetAttribute(ctx, path.Root("user_domain_name"), &config.UserDomainName)
-	req.Config.GetAttribute(ctx, path.Root("region"), &config.Region)
-	req.Config.GetAttribute(ctx, path.Root("cloud_containers_api_version"), &config.ContainerInfraV1MicroVersion)
-	config.updateWithEnv()
-	config.TerraformVersion = req.TerraformVersion
-
-	config.setDefaults()
-
-	if err := config.LoadAndValidate(); err != nil {
-		diags.AddError("Config validation error", err.Error())
-		return nil, diags
+	if v, ok := c.EndpointOverrides[service]; ok {
+		return v.(string)
 	}
 
-	config.OsClient.UserAgent.Prepend(fmt.Sprintf("VKCS Terraform Provider/%s", version.ProviderVersion))
-	config.OsClient.RetryFunc = retryFunc
-
-	return &config, diags
-}
-
-func ConfigureFromEnv(ctx context.Context) (Config, error) {
-	config := &configer{}
-	config.updateWithEnv()
-	config.setDefaults()
-
-	if err := config.LoadAndValidate(); err != nil {
-		return nil, err
-	}
-
-	return config, nil
+	return getEnv(c.envPrefix, fmt.Sprintf("%s_ENDPOINT_OVERRIDE", service))
 }
 
 func retryFunc(context context.Context, method, url string, options *gophercloud.RequestOpts, err error, failCount uint) error {
 	if failCount >= requestsMaxRetriesCount {
 		return err
 	}
+
 	if errutil.Any(err, []int{500, 501, 502, 503, 504}) {
 		time.Sleep(requestsRetryDelay)
 		return nil

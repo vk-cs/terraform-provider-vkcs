@@ -108,7 +108,7 @@ func TestAccSFSShareNetwork_secservice(t *testing.T) {
 
 func testAccCheckSFSShareNetworkDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
-	sfsClient, err := config.SharedfilesystemV2Client(acctest.OsRegionName)
+	sfsClient, err := config.SharedFilesystemV2Client(acctest.OsRegionName)
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
@@ -139,7 +139,7 @@ func testAccCheckSFSShareNetworkExists(n string, sharenetwork *sharenetworks.Sha
 		}
 
 		config := acctest.AccTestProvider.Meta().(clients.Config)
-		sfsClient, err := config.SharedfilesystemV2Client(acctest.OsRegionName)
+		sfsClient, err := config.SharedFilesystemV2Client(acctest.OsRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 		}
@@ -171,7 +171,7 @@ func testAccCheckSFSShareNetworkSecSvcExists(n string) resource.TestCheckFunc {
 		}
 
 		config := acctest.AccTestProvider.Meta().(clients.Config)
-		sfsClient, err := config.SharedfilesystemV2Client(acctest.OsRegionName)
+		sfsClient, err := config.SharedFilesystemV2Client(acctest.OsRegionName)
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 		}

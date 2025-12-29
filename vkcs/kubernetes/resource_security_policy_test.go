@@ -1,7 +1,6 @@
 package kubernetes_test
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -46,7 +45,8 @@ func testAccCheckKubernetesSecurityPolicyExists(n string, policy *securitypolici
 			return fmt.Errorf("id is not set")
 		}
 
-		config, err := clients.ConfigureFromEnv(context.Background())
+		opts := clients.ConfigOpts{}
+		config, err := opts.LoadAndValidate()
 		if err != nil {
 			return fmt.Errorf("Error authenticating clients from environment: %s", err)
 		}

@@ -291,7 +291,7 @@ func (r *PlanResource) Create(ctx context.Context, req resource.CreateRequest, r
 		region = r.config.GetRegion()
 	}
 
-	backupClient, err := r.config.BackupV1Client(region, r.config.GetTenantID())
+	backupClient, err := r.config.BackupV1Client(region, r.config.GetProjectID())
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating VKCS backup client", err.Error())
 		return
@@ -421,7 +421,7 @@ func (r *PlanResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		region = r.config.GetRegion()
 	}
 
-	backupClient, err := r.config.BackupV1Client(region, r.config.GetTenantID())
+	backupClient, err := r.config.BackupV1Client(region, r.config.GetProjectID())
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating VKCS backup client", err.Error())
 		return
@@ -563,7 +563,7 @@ func (r *PlanResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		region = r.config.GetRegion()
 	}
 
-	backupClient, err := r.config.BackupV1Client(region, r.config.GetTenantID())
+	backupClient, err := r.config.BackupV1Client(region, r.config.GetProjectID())
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating VKCS backup client", err.Error())
 		return
@@ -694,7 +694,7 @@ func (r *PlanResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		region = r.config.GetRegion()
 	}
 
-	backupClient, err := r.config.BackupV1Client(region, r.config.GetTenantID())
+	backupClient, err := r.config.BackupV1Client(region, r.config.GetProjectID())
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating VKCS backup client", err.Error())
 		return

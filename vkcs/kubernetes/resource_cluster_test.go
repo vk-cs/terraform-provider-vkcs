@@ -1,7 +1,6 @@
 package kubernetes_test
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -139,7 +138,8 @@ func testAccCheckKubernetesClusterExists(n string, cluster *clusters.Cluster) re
 			return fmt.Errorf("id is not set")
 		}
 
-		config, err := clients.ConfigureFromEnv(context.Background())
+		opts := clients.ConfigOpts{}
+		config, err := opts.LoadAndValidate()
 		if err != nil {
 			return fmt.Errorf("Error authenticating clients from environment: %s", err)
 		}
