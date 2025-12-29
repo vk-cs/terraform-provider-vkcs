@@ -12,6 +12,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/firewall"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/images"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/modutil"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/keymanager"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/lb"
@@ -41,6 +42,12 @@ func SDKProviderBase() *sdkschema.Provider {
 				Type:        sdkschema.TypeString,
 				Optional:    true,
 				Description: "The Identity authentication URL.",
+			},
+			"access_token": {
+				Type:        sdkschema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "A temporary token to use for authentication. You alternatively can use `OS_AUTH_TOKEN` environment variable. If both are specified, this attribute takes precedence. _note_ The token will not be renewed and will eventually expire, usually after 1 hour. If access is needed for longer than a token's lifetime, use credentials-based authentication.",
 			},
 			"project_id": {
 				Type:        sdkschema.TypeString,
@@ -77,6 +84,112 @@ func SDKProviderBase() *sdkschema.Provider {
 				Type:        sdkschema.TypeString,
 				Optional:    true,
 				Description: "Cloud Containers API version to use. _note_ Only for custom VKCS deployments.",
+			},
+			"skip_client_auth": {
+				Type:         sdkschema.TypeBool,
+				Optional:     true,
+				Description:  "Skip authentication on client initialization. Only applicablie if `access_token` is provided. _note_ If set to true, the endpoint catalog will not be used for discovery and all required endpoints must be provided via `endpoint_overrides`.",
+				RequiredWith: []string{"access_token"},
+			},
+			"endpoint_overrides": {
+				Type:        sdkschema.TypeSet,
+				Optional:    true,
+				Description: "Custom endpoints for corresponding APIs. If not specified, endpoints provided by the catalog will be used.",
+				MaxItems:    1,
+				Elem: &sdkschema.Resource{
+					Schema: map[string]*sdkschema.Schema{
+						"backup": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Backup API custom endpoint.",
+						},
+						"block_storage": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Block Storage API custom endpoint.",
+						},
+						"cdn": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "CDN API custom endpoint.",
+						},
+						"compute": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Compute API custom endpoint.",
+						},
+						"container_infra": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Cloud Containers API custom endpoint.",
+						},
+						"container_infra_addons": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Cloud Containers Addons API custom endpoint.",
+						},
+						"database": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Database API custom endpoint.",
+						},
+						"data_platform": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Data Platform API custom endpoint.",
+						},
+						"iam_service_users": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "IAM Service Users API custom endpoint.",
+						},
+						"ics": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "ICS API custom endpoint.",
+						},
+						"image": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Image API custom endpoint.",
+						},
+						"key_manager": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Key Manager API custom endpoint.",
+						},
+						"load_balancer": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Load Balancer API custom endpoint.",
+						},
+						"ml_platform": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "ML Platform API custom endpoint.",
+						},
+						"networking": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Networking API custom endpoint.",
+						},
+						"public_dns": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Public DNS API custom endpoint.",
+						},
+						"shared_filesystem": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Shared Filesystem API custom endpoint.",
+						},
+						"templater": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Templater API custom endpoint.",
+						},
+					},
+				},
 			},
 		},
 
@@ -168,7 +281,60 @@ func SDKProviderBase() *sdkschema.Provider {
 			// We can therefore assume that if it's missing it's 0.10 or 0.11
 			terraformVersion = "0.11+compatible"
 		}
-		return clients.ConfigureSdkProvider(d, terraformVersion)
+
+		sdkVersion, _ := modutil.GetDependencyModuleVersion("github.com/hashicorp/terraform-plugin-sdk/v2")
+
+		var endpointOverrides map[string]any
+		if v, ok := d.Get("endpoint_overrides").(*sdkschema.Set); ok && v.Len() > 0 {
+			m, ok := v.List()[0].(map[string]any)
+			if !ok {
+				return nil, sdkdiag.Errorf("failed to read endpoint_overrides")
+			}
+
+			endpointOverrides = map[string]any{
+				"backup":                 m["backup"],
+				"block-storage":          m["block_storage"],
+				"cdn":                    m["cdn"],
+				"compute":                m["compute"],
+				"container-infra":        m["container_infra"],
+				"container-infra-addons": m["container_infra_addons"],
+				"database":               m["database"],
+				"data-platform":          m["data_platform"],
+				"iam-service-users":      m["iam_service_users"],
+				"ics":                    m["ics"],
+				"image":                  m["image"],
+				"key-manager":            m["key_manager"],
+				"load-balancer":          m["load_balancer"],
+				"mlplatform":             m["mlplatform"],
+				"networking":             m["networking"],
+				"public-dns":             m["public_dns"],
+				"shared-filesystem":      m["shared_filesystem"],
+				"templater":              m["templater"],
+			}
+		}
+
+		opts := clients.ConfigOpts{
+			IdentityEndpoint:             d.Get("auth_url").(string),
+			Token:                        d.Get("access_token").(string),
+			Username:                     d.Get("username").(string),
+			Password:                     d.Get("password").(string),
+			ProjectID:                    d.Get("project_id").(string),
+			Region:                       d.Get("region").(string),
+			UserDomainID:                 d.Get("user_domain_id").(string),
+			UserDomainName:               d.Get("user_domain_name").(string),
+			EndpointOverrides:            endpointOverrides,
+			TerraformVersion:             terraformVersion,
+			FrameworkVersion:             sdkVersion,
+			ContainerInfraV1MicroVersion: d.Get("cloud_containers_api_version").(string),
+			SkipAuth:                     d.Get("skip_client_auth").(bool),
+		}
+
+		config, err := opts.LoadAndValidate()
+		if err != nil {
+			return nil, sdkdiag.FromErr(err)
+		}
+
+		return config, nil
 	}
 
 	return provider

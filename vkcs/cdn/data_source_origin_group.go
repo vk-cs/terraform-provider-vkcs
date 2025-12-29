@@ -64,7 +64,7 @@ func (d *originGroupDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	tflog.Trace(ctx, "Calling CDN API to list origin groups")
 
-	originGroups, err := origingroups.List(client, d.config.GetTenantID()).Extract()
+	originGroups, err := origingroups.List(client, d.config.GetProjectID()).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error calling CDN API to list origin groups", err.Error())
 		return

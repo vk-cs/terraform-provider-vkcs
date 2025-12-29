@@ -1,7 +1,6 @@
 package iam_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -48,9 +47,10 @@ func testAccCheckServiceUserExists(n string, serviceUser *serviceusers.ServiceUs
 			return fmt.Errorf("ID is not set")
 		}
 
-		config, err := clients.ConfigureFromEnv(context.Background())
+		opts := clients.ConfigOpts{}
+		config, err := opts.LoadAndValidate()
 		if err != nil {
-			return fmt.Errorf("Error authenticating clients from environment: %s", err)
+			return err
 		}
 
 		client, err := config.IAMServiceUsersV1Client(config.GetRegion())

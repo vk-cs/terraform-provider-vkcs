@@ -142,7 +142,7 @@ func ResourceSharedFilesystemShare() *schema.Resource {
 
 func resourceSharedFilesystemShareCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	sfsClient, err := config.SharedfilesystemV2Client(util.GetRegion(d, config))
+	sfsClient, err := config.SharedFilesystemV2Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
@@ -201,7 +201,7 @@ func resourceSharedFilesystemShareCreate(ctx context.Context, d *schema.Resource
 
 func resourceSharedFilesystemShareRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	sfsClient, err := config.SharedfilesystemV2Client(util.GetRegion(d, config))
+	sfsClient, err := config.SharedFilesystemV2Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
@@ -240,7 +240,7 @@ func resourceSharedFilesystemShareRead(ctx context.Context, d *schema.ResourceDa
 
 func resourceSharedFilesystemShareUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	sfsClient, err := config.SharedfilesystemV2Client(util.GetRegion(d, config))
+	sfsClient, err := config.SharedFilesystemV2Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}
@@ -346,7 +346,7 @@ func resourceSharedFilesystemShareUpdate(ctx context.Context, d *schema.Resource
 
 func resourceSharedFilesystemShareDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
-	sfsClient, err := config.SharedfilesystemV2Client(util.GetRegion(d, config))
+	sfsClient, err := config.SharedFilesystemV2Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS sharedfilesystem client: %s", err)
 	}

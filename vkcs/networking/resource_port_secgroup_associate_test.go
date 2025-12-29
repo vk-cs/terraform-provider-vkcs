@@ -1,7 +1,6 @@
 package networking_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -133,7 +132,8 @@ func testAccCheckNetworkingPortSecGroupAssociateExists(n string, port *ports.Por
 			return fmt.Errorf("No ID is set")
 		}
 
-		config, err := clients.ConfigureFromEnv(context.Background())
+		opts := clients.ConfigOpts{}
+		config, err := opts.LoadAndValidate()
 		if err != nil {
 			return fmt.Errorf("Error authenticating clients from environment: %s", err)
 		}

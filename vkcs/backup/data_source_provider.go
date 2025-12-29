@@ -74,7 +74,7 @@ func (d *ProviderDataSource) Read(ctx context.Context, req datasource.ReadReques
 		region = d.config.GetRegion()
 	}
 
-	backupClient, err := d.config.BackupV1Client(region, d.config.GetTenantID())
+	backupClient, err := d.config.BackupV1Client(region, d.config.GetProjectID())
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating VKCS backup client", err.Error())
 		return

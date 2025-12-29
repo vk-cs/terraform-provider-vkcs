@@ -73,7 +73,7 @@ func (r *sslCertificateResource) Create(ctx context.Context, req resource.Create
 
 	tflog.Trace(ctx, "Calling CDN API to add SSL certificate", map[string]interface{}{"opts": fmt.Sprintf("%#v", &addOpts)})
 
-	sslCert, err := ssldata.Add(client, r.config.GetTenantID(), &addOpts).Extract()
+	sslCert, err := ssldata.Add(client, r.config.GetProjectID(), &addOpts).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error calling CDN API to add SSL certificate", err.Error())
 		return
@@ -117,7 +117,7 @@ func (r *sslCertificateResource) Read(ctx context.Context, req resource.ReadRequ
 
 	tflog.Trace(ctx, "Calling CDN API to list SSL certificates")
 
-	sslCerts, err := ssldata.List(client, r.config.GetTenantID()).Extract()
+	sslCerts, err := ssldata.List(client, r.config.GetProjectID()).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error calling CDN API to list SSL certificates", err.Error())
 		return
@@ -178,7 +178,7 @@ func (r *sslCertificateResource) Update(ctx context.Context, req resource.Update
 
 	tflog.Trace(ctx, "Calling CDN API to update SSL certificate", map[string]interface{}{"opts": fmt.Sprintf("%#v", &updateOpts)})
 
-	sslCert, err := ssldata.Update(client, r.config.GetTenantID(), id, &updateOpts).Extract()
+	sslCert, err := ssldata.Update(client, r.config.GetProjectID(), id, &updateOpts).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error calling CDN API to add SSL certificate", err.Error())
 		return
@@ -218,7 +218,7 @@ func (r *sslCertificateResource) Delete(ctx context.Context, req resource.Delete
 
 	tflog.Trace(ctx, "Calling CDN API to delete SSL certificate")
 
-	err = ssldata.Delete(client, r.config.GetTenantID(), id).ExtractErr()
+	err = ssldata.Delete(client, r.config.GetProjectID(), id).ExtractErr()
 	if errutil.IsNotFound(err) {
 		return
 	} else if err != nil {

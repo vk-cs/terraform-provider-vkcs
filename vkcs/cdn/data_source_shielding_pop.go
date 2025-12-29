@@ -62,7 +62,7 @@ func (d *shieldingPopDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	tflog.Trace(ctx, "Calling CDN API to list origin shielding POPs")
 
-	shieldingPops, err := shieldingpop.List(client, d.config.GetTenantID()).Extract()
+	shieldingPops, err := shieldingpop.List(client, d.config.GetProjectID()).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error calling CDN API to list origin shielding POP", err.Error())
 		return
