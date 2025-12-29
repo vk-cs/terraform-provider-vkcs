@@ -83,6 +83,10 @@ func TestAccCDNResourceResource_full(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.secure_key.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.secure_key.key", "mysupersecretkey"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.secure_key.type", "0"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.tls_versions.enabled", "true"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.tls_versions.value.#", "2"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.tls_versions.value.0", "TLSv1.1"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.tls_versions.value.1", "TLSv1.2"),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.full", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "origin_protocol", "MATCH"),
 					acctest.TestCheckResourceListAttr("vkcs_cdn_resource.full", "secondary_hostnames", []string{"cdn1.vk.com", "cdn2.vk.com"}),
@@ -149,6 +153,10 @@ func TestAccCDNResourceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.key", "mysupersecretkey"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.type", "0"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.enabled", "true"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.value.#", "2"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.value.0", "TLSv1.1"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.value.1", "TLSv1.2"),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.update", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "origin_protocol", "HTTP"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "shielding.enabled", "true"),
@@ -206,6 +214,10 @@ func TestAccCDNResourceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.enabled", "false"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.key", "mysimplekey"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.type", "2"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.enabled", "false"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.value.#", "2"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.value.0", "TLSv1.2"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.value.1", "TLSv1.3"),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.update", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "origin_protocol", "HTTPS"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "shielding.enabled", "false"),
@@ -390,6 +402,10 @@ resource "vkcs_cdn_resource" "full" {
       key	  = "mysupersecretkey"
       type	  = 0
 	}
+	tls_versions = {
+	  enabled = true
+	  value   = ["TLSv1.1", "TLSv1.2"]
+	}
   }
   origin_group        = vkcs_cdn_origin_group.base.id
   origin_protocol     = "MATCH"
@@ -477,6 +493,10 @@ resource "vkcs_cdn_resource" "update" {
       key	  = "mysupersecretkey"
       type	  = 0
 	}
+	tls_versions = {
+	  enabled = true
+	  value   = ["TLSv1.1", "TLSv1.2"]
+	}
   }
   origin_group    = vkcs_cdn_origin_group.base.id
   origin_protocol = "HTTP"
@@ -559,6 +579,10 @@ resource "vkcs_cdn_resource" "update" {
 	  enabled = false,
       key     = "mysimplekey"
       type    = 2
+	}
+	  tls_versions = {
+	  enabled = false
+	  value   = ["TLSv1.2", "TLSv1.3"]
 	}
   }
   origin_group    = vkcs_cdn_origin_group.base.id
