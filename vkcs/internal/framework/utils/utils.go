@@ -3,11 +3,12 @@ package utils
 import (
 	"strconv"
 
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"golang.org/x/net/context"
 )
 
 func IsKnown(v attr.Value) bool {
