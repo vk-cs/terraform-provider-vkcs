@@ -414,7 +414,9 @@ func resourcePublicDNSRecordCustomizeDiff(ctx context.Context, diff *schema.Reso
 		if diff.HasChange("ip") {
 			new := net.ParseIP(diff.Get("ip").(string))
 			if new != nil {
-				diff.SetNew("ip", new.String())
+				if err := diff.SetNew("ip", new.String()); err != nil {
+					log.Printf("[DEBUG] failed to set diff for `ip`: %s", err)
+				}
 			}
 		}
 	}
@@ -439,7 +441,9 @@ OuterLoop:
 	}
 
 	if recordType == recordTypeSRV {
-		diff.SetNew("full_name", extractPublicDNSRecordSRVFullName(diff))
+		if err := diff.SetNew("full_name", extractPublicDNSRecordSRVFullName(diff)); err != nil {
+			log.Printf("[DEBUG] failed to set diff for `full_name`: %s", err)
+		}
 	}
 
 	return nil
@@ -499,14 +503,17 @@ func publicDNSRecordResourceDataMap(d *schema.ResourceData) map[string]interface
 		"port":     d.Get("port"),
 		"ttl":      d.Get("ttl"),
 	}
+
 	if recordType == recordTypeSRV {
 		m["name"] = d.Get("full_name")
 	} else {
 		m["name"] = d.Get("name")
 	}
-	if recordType == recordTypeA {
+
+	switch recordType {
+	case recordTypeA:
 		m["ipv4"] = d.Get("ip")
-	} else if recordType == recordTypeAAAA {
+	case recordTypeAAAA:
 		m["ipv6"] = d.Get("ip")
 	}
 

@@ -10,5 +10,5 @@ func ExtractRouterInto(r routers.GetResult, v interface{}) error {
 }
 
 func ExtractRoutersInto(r pagination.Page, v interface{}) error {
-	return r.(routers.RouterPage).Result.ExtractIntoSlicePtr(v, "routers")
+	return r.(routers.RouterPage).ExtractIntoSlicePtr(v, "routers")
 }

@@ -1,8 +1,6 @@
 module github.com/vk-cs/terraform-provider-vkcs
 
-go 1.23.0
-
-toolchain go1.23.1
+go 1.25
 
 require (
 	github.com/gofrs/flock v0.12.1

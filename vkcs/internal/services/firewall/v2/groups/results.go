@@ -10,5 +10,5 @@ func ExtractSecurityGroupInto(r groups.GetResult, v interface{}) error {
 }
 
 func ExtractSecurityGroupsInto(r pagination.Page, v interface{}) error {
-	return r.(groups.SecGroupPage).Result.ExtractIntoSlicePtr(v, "security_groups")
+	return r.(groups.SecGroupPage).ExtractIntoSlicePtr(v, "security_groups")
 }

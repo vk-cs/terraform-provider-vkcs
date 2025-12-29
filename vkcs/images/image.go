@@ -277,7 +277,7 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 	}
 	defer file.Close()
 
-	httpClient := &client.ProviderClient.HTTPClient
+	httpClient := &client.HTTPClient
 	request, err := http.NewRequest("GET", furl, nil)
 	if err != nil {
 		delFile()

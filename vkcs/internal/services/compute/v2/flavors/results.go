@@ -10,5 +10,5 @@ type FlavorExtExtraSpecs struct {
 }
 
 func ExtractFlavorsInto(r pagination.Page, to interface{}) error {
-	return (r.(flavors.FlavorPage)).Result.ExtractIntoSlicePtr(to, "flavors")
+	return (r.(flavors.FlavorPage)).ExtractIntoSlicePtr(to, "flavors")
 }

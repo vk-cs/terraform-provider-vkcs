@@ -288,7 +288,7 @@ func expandDateFilter(date string) *images.ImageDateQuery {
 		filter = &images.ImageDateQuery{Date: parsedTime}
 	}
 
-	if parsedTime == (time.Time{}) {
+	if parsedTime.IsZero() {
 		return nil
 	}
 

@@ -279,7 +279,7 @@ func dataSourceComputeFlavorRead(ctx context.Context, d *schema.ResourceData, me
 				continue
 			case requiredFlavor.HasRxTxFactor && flavor.RxTxFactor != requiredFlavor.RxTxFactor:
 				continue
-			case requiredFlavor.HasExtraSpecs && flavor.FlavorExtExtraSpecs.ExtraSpecs == nil:
+			case requiredFlavor.HasExtraSpecs && flavor.ExtraSpecs == nil:
 				continue
 			}
 			if !requiredFlavor.HasExtraSpecs {

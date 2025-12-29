@@ -1,21 +1,31 @@
-TEST?=$$(go list ./... |grep -v 'vendor')
-GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
-PKG_NAME=vkcs
+TEST        ?= $$(go list ./... |grep -v 'vendor')
+GOFMT_FILES ?= $$(find . -name '*.go' |grep -v vendor)
+PKG_NAME     = vkcs
+GO          ?= go
+
+
 LOCALBIN ?= $(shell pwd)/bin
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
-TF_PLUGIN_GEN ?= $(LOCALBIN)/tfplugingen-framework
+
+GOLANGCI_LINT         ?= $(LOCALBIN)/golangci-lint
+GOLANGCI_LINT_VERSION ?= v2.7.2
+TF_PLUGIN_GEN         ?= $(LOCALBIN)/tfplugingen-framework
 TF_PLUGIN_GEN_VERSION ?= v0.4.1
 
 define go-install-tool
 @[ -f $(LOCALBIN)/$(1) ] || { \
 set -e ;\
 echo "Installing $(1)@$(3)" ;\
-GOBIN=$(LOCALBIN) go install $(2)@$(3) ;\
+GOBIN=$(LOCALBIN) $(GO) install $(2)@$(3) ;\
 }
 endef
 
 default: build
+
+golangci-lint: $(GOLANGCI_LINT)
+$(GOLANGCI_LINT): $(LOCALBIN)
+	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/v2/cmd/golangci-lint,$(GOLANGCI_LINT_VERSION))
 
 tfplugingen-framework: $(TF_PLUGIN_GEN)
 $(TF_PLUGIN_GEN): $(LOCALBIN)
@@ -100,9 +110,8 @@ test-compile:
 	fi
 	go test -c $(TEST) $(TESTARGS)
 
-lint:
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
-	golangci-lint run ./...
+lint: golangci-lint
+	$(GOLANGCI_LINT) run ./...
 
 update_release_schema:
 	go run helpers/schema-api/main.go -export .release/provider-schema.json
