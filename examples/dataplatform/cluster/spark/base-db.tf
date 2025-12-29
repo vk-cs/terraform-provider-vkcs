@@ -15,7 +15,7 @@ resource "vkcs_db_instance" "db_instance" {
   flavor_id           = data.vkcs_compute_flavor.db.id
   floating_ip_enabled = true
 
-  size        = 10
+  size        = 100
   volume_type = "ceph-ssd"
   disk_autoexpand {
     autoexpand    = true
@@ -23,24 +23,19 @@ resource "vkcs_db_instance" "db_instance" {
   }
 
   network {
-    uuid = vkcs_networking_network.db.id
+    uuid = module.network.networks[0].id
   }
 
-  depends_on = [
-    vkcs_networking_router_interface.db
-  ]
 }
 
 resource "vkcs_db_database" "postgres_db" {
-  name    = "testdb_1"
+  name    = "spark"
   dbms_id = vkcs_db_instance.db_instance.id
 }
 
 resource "vkcs_db_user" "postgres_user" {
-  name = "testuser"
-  # Example only. Do not use in production.
-  # Sensitive values must be provided securely and not stored in manifests.
-  password = "Test_p#ssword-12-3"
+  name     = "spark"
+  password = random_password.spark.result
 
   dbms_id = vkcs_db_instance.db_instance.id
 

@@ -1,0 +1,254 @@
+---
+layout: "vkcs"
+page_title: "Setting up Data Platform products"
+description: |-
+  Step-by-step instruction for setting up Data Platform products in VKCS.
+---
+
+# Setting up Data Platform products
+
+## Prerequisites
+
+Before diving into the guide, ensure you meet the following prerequisites:
+
+- **Configure Terraform and VKCS Provider** Make sure that you installed Terraform CLI and configured VKCS Provider. Follow [instructions](https://registry.terraform.io/providers/vk-cs/vkcs/latest/docs/guides/getting_started) if needed.
+- **Understand Terraform Basics** Familiarize yourself with Terraform concepts like resource lifecycles, dependencies, and state management. [Terraform documentation](https://developer.hashicorp.com/terraform/docs) will help you understand the basic principles and key points.
+- Make sure you have enough quotas to run examples of the guide.
+- Have a look at `vkcs_dataplatform_cluster` arguments.
+
+
+## Learn more about required products in VKCS
+
+Look for required products in Data Platform section of [documentation](https://cloud.vk.com/docs/en). Review the products documentation to figure out configuration possibilities for the products.
+
+Verify that necessary products are available in your project. Select Data Platform in Management Console and look for the neccesary products in a list of available products.
+
+
+## Discover names and versions of required products
+
+At the first you need to figure out the products' name and versions which are available in Terraform. Create `vkcs_dataplatform_products` data source and output for it which filters required products. In this guide we set up ClickHouse and Trino, so only this products are interesting.
+
+{{tffile "examples/dataplatform/products.tf"}}
+{{tffile "examples/dataplatform/output-products-guide.tf"}}
+
+Here is the output value:
+```
+guide_products = [
+  {
+    "product_name" = "trino"
+    "product_version" = "0.468.1"
+  },
+  {
+    "product_name" = "trino"
+    "product_version" = "0.468.0"
+  },
+  {
+    "product_name" = "clickhouse"
+    "product_version" = "25.3.0"
+  },
+  {
+    "product_name" = "clickhouse"
+    "product_version" = "24.3.0"
+  },
+]
+```
+Now you know technical names and versions of required projects to use them later.
+
+**Note:** There are a lot of other products in the data source but avoid use those of them which are not available in your project. Because of they will not be supported for you.
+
+
+## Discover data for pod_groups argument
+
+`pod_groups` argument of `vkcs_dataplatform_cluster` resources defines parameters of nodes the product consists of. These parameters have an impact on resource capacity of product instance to handle user requests and data.
+
+Lets discover what pod groups the products consist of. Create `vkcs_dataplatform_template` data source and output for names of pod groups. Here are examples for ClickHouse only but you could do the same for Trino by your own.
+
+{{tffile "examples/dataplatform/template-clickhouse.tf"}}
+{{tffile "examples/dataplatform/output-template-clickhouse-pod-groups.tf"}}
+
+Here is the output value:
+```
+clickhouse_pod_groups = tolist([
+  "clickhouseKeeper",
+  "clickhouse",
+])
+```
+
+Data Platform has default configuration for pod groups. So you do not have to configure all of them to set up a product. However you should at least check default configuration. Lets see configuration of main ClickHouse nodes.
+
+{{tffile "examples/dataplatform/output-template-clickhouse.tf"}}
+
+Here is the output value:
+```
+clickhouse_pod_group = {
+  "count" = 3
+  "name" = "clickhouse"
+  "resource" = {
+    "cpu_margin" = 1
+    "cpu_request" = "2.0"
+    "ram_margin" = 1
+    "ram_request" = "4.0"
+  }
+  "volumes" = tomap({
+    "data" = {
+      "count" = 1
+      "storage" = "10"
+      "storage_class_name" = "ceph-ssd"
+    }
+  })
+}
+```
+See also `pod_groups` argument structure and description in documentation of `vkcs_dataplatform_cluster` resource.
+
+**NOTE:** If you do not want to change default configuration of a pod group do not omit it but include in your manifest with default values. Otherwise you cannot scale the pod group later.
+
+Now your know how to discover pod groups of products, their available and default configurations.
+
+## Discover product configuration settings
+
+`configs.settings` argument of `vkcs_dataplatform_cluster` resource lets you configure product software itself witch is under the hood of Data Platform product (i.e. ClickHouse, Trino, etc).
+
+Lets see available settings and their default values. Create `vkcs_dataplatform_product` data source and outputs for default values of settings. Here are examples for ClickHouse only but you could do the same for Trino by your own.
+
+{{tffile "examples/dataplatform/product-clickhouse.tf"}}
+{{tffile "examples/dataplatform/output-product-clickhouse-settings-defaults.tf"}}
+
+Here is partial output value:
+```
+clickhouse_settings_all = {
+  "clickhouse.background_buffer_flush_schedule_pool_size" = "16"
+  "clickhouse.background_common_pool_size" = "8"
+  "clickhouse.background_distributed_schedule_pool_size" = "16"
+...
+}
+```
+
+For example lets dive to `clickhouse.background_common_pool_size` setting metadata. Create output for it.
+{{tffile "examples/dataplatform/output-product-clickhouse-settings-background-common-pool-size.tf"}}
+
+Here is the metadata for the setting:
+```
+clickhouse_settings_background_common_pool_size = {
+  "alias" = "clickhouse.background_common_pool_size"
+  "default_value" = "8"
+  "is_require" = false
+  "is_sensitive" = false
+  "regexp" = ""
+  "string_variation" = tolist([])
+}
+```
+The meaning of metadata attributes is pretty clear.
+
+Now you know how to discover configuration settings of products, their default values and values restrictions.
+
+
+## Discover product user roles
+
+In `configs.users` argument of `vkcs_dataplatform_cluster` resource you specify user accounts to work with the product. Some Data Platform products allow role assignment for the accounts.
+
+Lets explore available user roles. Create output of `vkcs_dataplatform_product` with role names. Here are examples for ClickHouse only but you could do the same for Trino by your own.
+
+{{tffile "examples/dataplatform/output-product-clickhouse-user-roles.tf"}}
+
+Here is the output value:
+```
+clickhouse_user_roles = tolist([
+  "dbOwner",
+  "readWrite",
+  "readOnly",
+  "secOps",
+])
+```
+
+Now you know how to discover available user roles of products.
+
+
+## Discover product connections
+
+Some Data Platform products can connect to other data sources. Connections are specified with `config.warehouses.connection` argument of `vkcs_dataplatform_cluster` resource. `plug` argument means target type of a connection.
+
+To discover available connection target types for the product create output of `vkcs_dataplatform_product` with connection `plug` value. Also take into account `is_required` attribute. Here are examples for Trino since in the guide we want to connect it to ClickHouse but you could do the same for ClickHouse by your own.
+
+{{tffile "examples/dataplatform/product-trino.tf"}}
+{{tffile "examples/dataplatform/output-product-trino-connections.tf"}}
+
+Here is the output value:
+```
+trino_connections = {
+  "clickhouse" = false
+  "greenplum" = false
+  "hive" = false
+  "hive-metastore-ext" = false
+  "hive-metastore-int" = false
+  "iceberg-metastore-ext" = false
+  "iceberg-metastore-int" = false
+  "mariadb" = false
+  "mysql" = false
+  "postgresql" = false
+  "redis" = false
+}
+```
+
+Lets dive into connection attributes.
+
+{{tffile "examples/dataplatform/output-product-trino-connections-clickhouse.tf"}}
+
+Here is partial output value with metadata of `username` connection attribute:
+```
+trino_connection_clickhouse = tolist([
+...
+  {
+    "alias" = "username"
+    "default_value" = ""
+    "is_require" = true
+    "is_sensitive" = false
+    "regexp" = "^[a-zA-Z_][a-zA-Z0-9_]{1,49}$"
+    "string_variation" = tolist([])
+  },
+...
+])
+```
+The meaning of metadata attributes is pretty clear.
+
+Now you know how to discover connection types of products, available connection attributes and thier values restrictions.
+
+
+## Discover crontabs for product maintenance
+
+Some Data Platform products have additional crontab settings besides maintenance period. See `config.maintenance.crontabs` argument of `vkcs_dataplatform_cluster` resource. Create output for them.
+
+{{tffile "examples/dataplatform/output-product-trino-crontabs.tf"}}
+
+Here is partial output value with metadata of the first setting:
+```
+trino_crontabs = tolist([
+  {
+    "name" = "maintenance"
+    "required" = true
+    "settings" = tolist([
+      {
+        "alias" = "duration"
+        "default_value" = "3600"
+        "is_require" = true
+        "is_sensitive" = false
+        "regexp" = ""
+        "string_variation" = tolist([])
+      },
+...
+    ])
+    "start" = "0 22 * * *"
+  },
+])
+```
+Here is some mess. `is_require` does not mean you must specify this setting. `default_value` will be used if you omit this setting.
+
+Now you know how to discover additional crontabs and their settings.
+
+
+## Create manifests
+
+Now you are ready to fill all needed arguments for resources of the guide.
+
+{{tffile "examples/dataplatform/main-clickhouse.tf"}}
+{{tffile "examples/dataplatform/locals.tf"}}
+{{tffile "examples/dataplatform/main-trino.tf"}}

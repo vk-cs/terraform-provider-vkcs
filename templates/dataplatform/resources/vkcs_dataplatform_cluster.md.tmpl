@@ -9,12 +9,17 @@ description: |-
 # {{.Name}}
 
 ~> **Note:** Dataplatform cluster resource is currently in beta status.
+
 {{ .Description }}
 
 ## Example Usage
 
-# Spark
-{{tffile .ExampleFile}}
+# ClickHouse
+{{tffile "examples/dataplatform/main-clickhouse.tf"}}
+
+See more examples on [GitHub](https://github.com/vk-cs/terraform-provider-vkcs/tree/master/examples/dataplatform/cluster).
+
+Refer to the `Setting up Data Platform products` guide for details of using the resource in combination with Data Platform datasources.
 
 {{ .SchemaMarkdown }}
 
