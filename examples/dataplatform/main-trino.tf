@@ -39,6 +39,10 @@ resource "vkcs_dataplatform_cluster" "trino" {
       }
     ]
     warehouses = [{
+      # For some Data Platform product value of the `name` argument has no sense
+      # but is fixed. So you must set exactly this value.
+      # Otherwise you get unpredictable behavior of interaction between
+      # Terraform, VKCS Terraform provider and Data Platform API.
       name = "trino"
       connections = [
         {

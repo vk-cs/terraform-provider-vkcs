@@ -11,102 +11,100 @@ description: |-
 ~> **Note:** Dataplatform cluster resource is currently in beta status.
 
 
+
 ## Example Usage
 
-# Spark
+# ClickHouse
 ```terraform
-resource "vkcs_dataplatform_cluster" "basic_spark" {
-  name            = "tf-basic-spark"
-  description     = "tf-basic-description"
-  network_id      = vkcs_networking_network.db.id
-  subnet_id       = vkcs_networking_subnet.db.id
-  product_name    = "spark"
-  product_version = "3.5.1"
+resource "vkcs_dataplatform_cluster" "clickhouse" {
+  name            = "clickhouse-tf-guide"
+  description     = "ClickHouse example instance from Data Platform guide."
+  product_name    = "clickhouse"
+  product_version = "25.3.0"
 
+  network_id        = vkcs_networking_network.db.id
+  subnet_id         = vkcs_networking_subnet.db.id
   availability_zone = "GZ1"
-  configs = {
-    settings = [
-      {
-        alias = "sparkproxy.spark_version"
-        value = "spark-py-3.5.1:v3.5.1.2"
-      }
-    ]
-    maintenance = {
-      start = "0 0 1 * *"
-    }
-    warehouses = [
-      {
-        name = "spark"
-        connections = [
-          {
-            name = "s3_int"
-            plug = "s3-int"
-            settings = [
-              {
-                alias = "s3_bucket"
-                value = local.s3_bucket
-              },
-              {
-                alias = "s3_folder"
-                value = "tfexample-folder"
-              }
-            ]
-          },
-          {
-            name = "postgres"
-            plug = "postgresql"
-            settings = [
-              {
-                alias = "db_name"
-                value = vkcs_db_database.postgres_db.name
-              },
-              {
-                alias = "hostname"
-                value = "${vkcs_db_instance.db_instance.ip[0]}:5432"
-              },
-              {
-                alias = "username"
-                value = vkcs_db_user.postgres_user.name
-              },
-              {
-                alias = "password"
-                value = vkcs_db_user.postgres_user.password
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
+  # Enable public access to simplify testing of the product.
+  floating_ip_pool = "auto"
+
   pod_groups = [
+    # Omit settings for clickhouseKeeper pod group to illustrate
+    # how Data Platform handle this with default settings.
+    # NOTE: If you omit settings for a pod group you cannot scale
+    # the pod group later.
+    # Increase ram_request and storage values for clickhouse pod group
+    # against default settings.
     {
-      name  = "sparkconnect"
-      count = 1
+      count = 3
+      name  = "clickhouse"
       resource = {
-        cpu_request = "10"
-        ram_request = "10"
-      }
-    },
-    {
-      name  = "sparkhistory"
-      count = 1
-      resource = {
-        cpu_request = "0.5"
-        ram_request = "1"
+        cpu_request = "2.0"
+        ram_request = "8.0"
       }
       volumes = {
-        "data" = {
+        data = {
           storage_class_name = "ceph-ssd"
-          storage            = "5"
+          storage            = "150"
           count              = 1
         }
       }
-    }
+    },
   ]
+  configs = {
+    settings = [
+      # Increase value of the setting against default one.
+      {
+        alias = "clickhouse.background_common_pool_size"
+        value = 10
+      },
+    ]
+    users = [
+      {
+        username = "owner"
+        password = random_password.clickhouse_owner.result
+        role     = "dbOwner"
+      },
+      {
+        username = "trino"
+        password = random_password.clickhouse_trino.result
+        role     = "readOnly"
+      },
+    ]
+    warehouses = [
+      # Define database name.
+      {
+        name = "clickhouse"
+      },
+    ]
+    maintenance = {
+      # Set start om maintenance the same as start of full backup.
+      # Otherwise you get unpredictable behavior of interaction between
+      # Terraform, VKCS Terraform provider and Data Platform API.
+      start = "0 1 * * 0"
+      backup = {
+        full = {
+          keep_count = 5
+          start      = "0 1 * * 0"
+        }
+        incremental = {
+          keep_count = 7
+          start      = "0 1 * * 1-6"
+        }
+      }
+    }
+  }
 
+  # If you create networking in the same bundle of resources with Data Platform resource
+  # add dependency on corresponding vkcs_networking_router_interface resource.
+  # However this is not required if you set up networking witth terraform-vkcs-network module.
   depends_on = [vkcs_networking_router_interface.db]
 }
 ```
+
+See more examples on [GitHub](https://github.com/vk-cs/terraform-provider-vkcs/tree/master/examples/dataplatform/cluster).
+
+Refer to the `Setting up Data Platform products` guide for details of using the resource in combination with Data Platform datasources.
 
 ## Argument Reference
 - `configs` ***required*** &rarr;  Product configuration.
@@ -207,7 +205,7 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 
 - `network_id` **required** *string* &rarr;  ID of the cluster network. Changing this creates a new resource.
 
-- `product_name` **required** *string* &rarr;  Name of the product.
+- `product_name` **required** *string* &rarr;  Name of the product. Changing this creates a new resource.
 
 - `product_version` **required** *string* &rarr;  Version of the product. Changing this creates a new resource.
 
@@ -222,7 +220,7 @@ resource "vkcs_dataplatform_cluster" "basic_spark" {
 - `multiaz` optional *boolean* &rarr;  Enables multi az support. Changing this creates a new resource.
 
 - `pod_groups`  *list* &rarr;  Cluster pod groups. Changing this creates a new resource.
-    - `name` **required** *string* &rarr;  Pod group name.
+    - `name` **required** *string* &rarr;  Pod group name. Changing this creates a new resource.
 
     - `count` optional *number* &rarr;  Pod count.
 
