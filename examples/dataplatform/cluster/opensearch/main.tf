@@ -51,8 +51,6 @@ resource "vkcs_dataplatform_cluster" "example" {
       resource = {
         cpu_request = 0.5
         ram_request = 1
-        cpu_limit = 0.5
-        ram_limit = 1
       }
     },
     {
@@ -61,8 +59,6 @@ resource "vkcs_dataplatform_cluster" "example" {
       resource = {
         cpu_request = 0.5
         ram_request = 1
-        cpu_limit = 0.5
-        ram_limit = 1
       }
     },
     {
@@ -71,13 +67,11 @@ resource "vkcs_dataplatform_cluster" "example" {
       resource = {
         cpu_request = 0.5
         ram_request = 2
-        cpu_limit = 0.5
-        ram_limit = 2
       }
       volumes = {
         data = {
           storage_class_name = "ceph-ssd"
-          storage            = "30"
+          storage            = "5"
           count              = 3
         }
       }
