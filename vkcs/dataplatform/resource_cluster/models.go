@@ -381,36 +381,31 @@ func UpdateClusterConfigsSettings(ctx context.Context, newSettings []clusters.Cl
 	var diags diag.Diagnostics
 
 	oldElems := oldSettings.Elements()
-	oldSettingsV := make([]ConfigsSettingsValue, 0, len(oldElems))
+	settingsV := make([]ConfigsSettingsValue, 0, len(oldElems))
 	if len(oldElems) > 0 {
-		d := oldSettings.ElementsAs(ctx, &oldSettingsV, false)
+		d := oldSettings.ElementsAs(ctx, &settingsV, false)
 		diags.Append(d...)
 		if diags.HasError() {
 			return diags
 		}
 	}
 
-	existingAliases := make(map[string]struct{}, len(oldSettingsV))
-	for _, old := range oldSettingsV {
-		existingAliases[old.Alias.ValueString()] = struct{}{}
+	existingAliases := make(map[string]int, len(settingsV))
+	for i, old := range settingsV {
+		existingAliases[old.Alias.ValueString()] = i
 	}
 
-	updatedSettingsV := make([]ConfigsSettingsValue, 0, len(newSettings))
 	for _, newSetting := range newSettings {
-		if _, exists := existingAliases[newSetting.Alias]; exists {
-			updatedSettingsV = append(updatedSettingsV, ConfigsSettingsValue{
-				Alias: types.StringValue(newSetting.Alias),
-				Value: types.StringValue(newSetting.Value),
-				state: attr.ValueStateKnown,
-			})
+		if i, exists := existingAliases[newSetting.Alias]; exists {
+			settingsV[i].Value = types.StringValue(newSetting.Value)
 		}
 	}
 
 	var value any
-	if len(updatedSettingsV) == 0 {
+	if len(settingsV) == 0 {
 		value = types.ListNull(ConfigsSettingsValue{}.Type(ctx))
 	} else {
-		value = updatedSettingsV
+		value = settingsV
 	}
 
 	d := state.SetAttribute(ctx, path, value)
