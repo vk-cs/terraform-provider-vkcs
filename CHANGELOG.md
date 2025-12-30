@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.14.0 (unreleased)
+#### v0.14.0
 - Add vkcs_iam_s3_account resource
 - Add vkcs_iam_s3_account data source
 - Add endpoint overrides and passthrough token authentication
