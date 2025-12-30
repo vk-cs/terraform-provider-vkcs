@@ -176,6 +176,12 @@ Specify HTTP-code you need and text or URL if you're going to set up redirection
         - `value` optional *map of* *string* &rarr;  A map of static headers in the format "header_name": "header_value".
 
 
+    - `tls_versions` optional &rarr;  Manage the state of the TLS versions option. The option specifies a list of allowed SSL/TLS protocol versions.
+        - `enabled` optional *boolean* &rarr;  Controls the option state.
+
+        - `value` optional *string* &rarr;  List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`.
+
+
 
 - `origin_protocol` optional *string* &rarr;  Protocol used by CDN servers to request content from an origin source. If protocol is not specified, HTTP is used to connect to an origin server.
 
