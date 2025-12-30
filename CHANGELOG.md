@@ -12,6 +12,7 @@ description: |-
 - Add endpoint overrides and passthrough token authentication
 - Add tls_versions option to vkcs_cdn_resource
 - Mark pod_groups.name and product_name arguments of resource vkcs_dataplatform_cluster, that changing them will recreate the cluster
+- Fix reading default settings for vkcs_dataplatform_cluster resource
 
 #### v0.13.2
 - Add details to the vkcs_compute_instance creation error
