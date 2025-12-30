@@ -568,7 +568,7 @@
 																								"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 																							}
 																						],
-																						"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(?#minute)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(?#hour)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(?#day_of_month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(?#month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(?#day_of_week)(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
+																						"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
 																					}
 																				}
 																			]
@@ -618,7 +618,7 @@
 																								"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 																							}
 																						],
-																						"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(?#minute)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(?#hour)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(?#day_of_month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(?#month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(?#day_of_week)(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
+																						"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
 																					}
 																				}
 																			]
@@ -668,7 +668,7 @@
 																								"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 																							}
 																						],
-																						"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(?#minute)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(?#hour)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(?#day_of_month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(?#month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(?#day_of_week)(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
+																						"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
 																					}
 																				}
 																			]
@@ -743,7 +743,7 @@
 																						"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 																					}
 																				],
-																				"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(?#minute)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(?#hour)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(?#day_of_month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(?#month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(?#day_of_week)(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
+																				"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
 																			}
 																		}
 																	]
@@ -783,14 +783,14 @@
 																		"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 																	}
 																],
-																"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(?#minute)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(?#hour)(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(?#day_of_month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(?#month)(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(?#day_of_week)(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
+																"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\\\s+(\\\\*|\\\\*/\\\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$\"), \"\")"
 															}
 														}
 													]
 												}
 											}
 										],
-										"description": "Maintenance settings. Changing this creates a new resource."
+										"description": "Maintenance settings."
 									}
 								},
 								{
@@ -1508,7 +1508,7 @@
 						"name": "product_name",
 						"string": {
 							"computed_optional_required": "required",
-							"description": "Name of the product.",
+							"description": "Name of the product. Changing this creates a new resource.",
 							"validators": [
 								{
 									"custom": {
@@ -1572,6 +1572,16 @@
 							"computed_optional_required": "computed_optional",
 							"description": "ID of the cluster stack. Changing this creates a new resource.",
 							"plan_modifiers": [
+																{
+									"custom": {
+									"imports": [
+										{
+										"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+										}
+									],
+									"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+									}
+								},
 								{
 									"custom": {
 										"imports": [
@@ -1671,6 +1681,25 @@
 						"string": {
 							"computed_optional_required": "computed",
 							"description": "Type of the product."
+						}
+					},
+					{
+						"name": "region",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplaceIfConfigured()"
+									}
+								}
+							]
 						}
 					}
 				]

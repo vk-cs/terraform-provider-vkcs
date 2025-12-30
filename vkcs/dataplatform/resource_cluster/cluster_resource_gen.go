@@ -111,7 +111,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 												Description:         "Full backup schedule. Defined in UTC. _note_ `configs.maintenance.backup.full.start` must be equal to `configs.maintenance.start`.",
 												MarkdownDescription: "Full backup schedule. Defined in UTC. _note_ `configs.maintenance.backup.full.start` must be equal to `configs.maintenance.start`.",
 												Validators: []validator.String{
-													stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), "")},
+													stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), ""),
+												},
 											},
 										},
 										CustomType: ConfigsMaintenanceBackupFullType{
@@ -144,7 +145,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 												Description:         "Incremental backup schedule. Defined in UTC.",
 												MarkdownDescription: "Incremental backup schedule. Defined in UTC.",
 												Validators: []validator.String{
-													stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), "")},
+													stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), ""),
+												},
 											},
 										},
 										CustomType: ConfigsMaintenanceBackupIncrementalType{
@@ -215,7 +217,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											Description:         "Cron tab schedule. Defined in UTC.",
 											MarkdownDescription: "Cron tab schedule. Defined in UTC.",
 											Validators: []validator.String{
-												stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), "")},
+												stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), ""),
+											},
 										},
 									},
 									CustomType: ConfigsMaintenanceCrontabsType{
@@ -235,7 +238,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								Description:         "Maintenance cron schedule. Defined in UTC.",
 								MarkdownDescription: "Maintenance cron schedule. Defined in UTC.",
 								Validators: []validator.String{
-									stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), "")},
+									stringvalidator.RegexMatches(regexp.MustCompile("^(\\*|\\*/\\d+|(?:0?[0-9]|[1-5][0-9])(?:-(?:0?[0-9]|[1-5][0-9])(?:/\\d+)?|(?:,(?:0?[0-9]|[1-5][0-9]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[0-9]|1[0-9]|2[0-3])(?:-(?:0?[0-9]|1[0-9]|2[0-3])(?:/\\d+)?|(?:,(?:0?[0-9]|1[0-9]|2[0-3]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|[12][0-9]|3[01])(?:-(?:0?[1-9]|[12][0-9]|3[01])(?:/\\d+)?|(?:,(?:0?[1-9]|[12][0-9]|3[01]))*)?)\\s+(\\*|\\*/\\d+|(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:-(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:/\\d+)?|(?:,(?:0?[1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))*)?)\\s+(\\*|\\*/\\d+|(?:[0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:-(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(?:/\\d+)?|(?:,(?:[0-7]|SUN|MON|TUE|WED|THU|FRI|SAT))*)?)$"), ""),
+								},
 							},
 						},
 						CustomType: ConfigsMaintenanceType{
@@ -581,8 +585,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"name": schema.StringAttribute{
 							Required:            true,
-							Description:         "Pod group name.",
-							MarkdownDescription: "Pod group name.",
+							Description:         "Pod group name. Changing this creates a new resource.",
+							MarkdownDescription: "Pod group name. Changing this creates a new resource.",
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.RequiresReplace(),
+							},
 						},
 						"resource": schema.SingleNestedAttribute{
 							Attributes: map[string]schema.Attribute{
@@ -687,8 +694,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"product_name": schema.StringAttribute{
 				Required:            true,
-				Description:         "Name of the product.",
-				MarkdownDescription: "Name of the product.",
+				Description:         "Name of the product. Changing this creates a new resource.",
+				MarkdownDescription: "Name of the product. Changing this creates a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(80),
 				},
@@ -709,6 +719,15 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.LengthAtMost(80),
 				},
 			},
+			"region": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+				MarkdownDescription: "The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
+			},
 			"stack_id": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -726,15 +745,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "ID of the cluster subnet. Changing this creates a new resource.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-				},
-			},
-			"region": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
-				MarkdownDescription: "The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
 		},
@@ -757,9 +767,9 @@ type ClusterModel struct {
 	ProductName       types.String `tfsdk:"product_name"`
 	ProductType       types.String `tfsdk:"product_type"`
 	ProductVersion    types.String `tfsdk:"product_version"`
+	Region            types.String `tfsdk:"region"`
 	StackId           types.String `tfsdk:"stack_id"`
 	SubnetId          types.String `tfsdk:"subnet_id"`
-	Region            types.String `tfsdk:"region"`
 }
 
 var _ basetypes.ObjectTypable = ConfigsType{}
