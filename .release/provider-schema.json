@@ -1,9 +1,14 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.13.2",
+  "provider_version": "v0.14.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
+      "access_token": {
+        "type": "TypeString",
+        "optional": true,
+        "description": "A temporary token to use for authentication. You alternatively can use `OS_AUTH_TOKEN` environment variable. If both are specified, this attribute takes precedence. _note_ The token will not be renewed and will eventually expire, usually after 1 hour. If access is needed for longer than a token's lifetime, use credentials-based authentication."
+      },
       "auth_url": {
         "type": "TypeString",
         "optional": true,
@@ -13,6 +18,106 @@
         "type": "TypeString",
         "optional": true,
         "description": "Cloud Containers API version to use. _note_ Only for custom VKCS deployments."
+      },
+      "endpoint_overrides": {
+        "type": "TypeSet",
+        "optional": true,
+        "description": "Custom endpoints for corresponding APIs. If not specified, endpoints provided by the catalog will be used.",
+        "elem": {
+          "schema": {
+            "backup": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Backup API custom endpoint."
+            },
+            "block_storage": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Block Storage API custom endpoint."
+            },
+            "cdn": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "CDN API custom endpoint."
+            },
+            "compute": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Compute API custom endpoint."
+            },
+            "container_infra": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Cloud Containers API custom endpoint."
+            },
+            "container_infra_addons": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Cloud Containers Addons API custom endpoint."
+            },
+            "data_platform": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Data Platform API custom endpoint."
+            },
+            "database": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Database API custom endpoint."
+            },
+            "iam_service_users": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "IAM Service Users API custom endpoint."
+            },
+            "ics": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "ICS API custom endpoint."
+            },
+            "image": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Image API custom endpoint."
+            },
+            "key_manager": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Key Manager API custom endpoint."
+            },
+            "load_balancer": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Load Balancer API custom endpoint."
+            },
+            "ml_platform": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "ML Platform API custom endpoint."
+            },
+            "networking": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Networking API custom endpoint."
+            },
+            "public_dns": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Public DNS API custom endpoint."
+            },
+            "shared_filesystem": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Shared Filesystem API custom endpoint."
+            },
+            "templater": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Templater API custom endpoint."
+            }
+          }
+        },
+        "max_items": 1
       },
       "password": {
         "type": "TypeString",
@@ -28,6 +133,11 @@
         "type": "TypeString",
         "optional": true,
         "description": "A region to use."
+      },
+      "skip_client_auth": {
+        "type": "TypeBool",
+        "optional": true,
+        "description": "Skip authentication on client initialization. Only applicablie if `access_token` is provided. _note_ If set to true, the endpoint catalog will not be used for discovery and all required endpoints must be provided via `endpoint_overrides`."
       },
       "user_domain_id": {
         "type": "TypeString",
@@ -1120,7 +1230,7 @@
                 "name": {
                   "type": "TypeString",
                   "required": true,
-                  "description": "Pod group name."
+                  "description": "Pod group name. Changing this creates a new resource."
                 },
                 "resource": {
                   "optional": true,
@@ -1158,7 +1268,7 @@
           "product_name": {
             "type": "TypeString",
             "required": true,
-            "description": "Name of the product."
+            "description": "Name of the product. Changing this creates a new resource."
           },
           "product_type": {
             "type": "TypeString",
@@ -3233,6 +3343,59 @@
         },
         "description": "Manages a direct connect VRRP interface resource._note_ This resource requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
+      },
+      "vkcs_iam_s3_account": {
+        "schema": {
+          "access_key": {
+            "type": "TypeString",
+            "description": "Access key for the S3 account.",
+            "computed": true
+          },
+          "account_id": {
+            "type": "TypeString",
+            "description": "ID of the S3 account in Hotbox S3 service.",
+            "computed": true
+          },
+          "account_name": {
+            "type": "TypeString",
+            "description": "Name of the S3 account in Hotbox S3 service.",
+            "computed": true
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "S3 account creation timestamp.",
+            "computed": true
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the S3 account. Changing this creates a new resource.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the S3 account.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Name of the S3 account. The name must be unique. The length must be between 3 and 32 characters. Changing this creates a new resource."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the IAM Service Users client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.",
+            "computed": true
+          },
+          "secret_key": {
+            "type": "TypeString",
+            "description": "Secret key for the S3 account. _note_ This is a sensitive attribute.",
+            "computed": true
+          }
+        },
+        "description": "Manages an IAM S3 account within VKCS.",
+        "new_since": "v0.14.0"
       },
       "vkcs_iam_service_user": {
         "schema": {
@@ -8836,6 +8999,55 @@
         },
         "description": "Use this data source to get direct connect api options._note_ This data source requires Sprut SDN to be enabled in your project.",
         "new_since": "v0.5.0"
+      },
+      "vkcs_iam_s3_account": {
+        "schema": {
+          "access_key": {
+            "type": "TypeString",
+            "description": "Access key for the S3 account.",
+            "computed": true
+          },
+          "account_id": {
+            "type": "TypeString",
+            "description": "ID of the S3 account in Hotbox S3 service.",
+            "computed": true
+          },
+          "account_name": {
+            "type": "TypeString",
+            "description": "Name of the S3 account in Hotbox S3 service.",
+            "computed": true
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "S3 account creation timestamp.",
+            "computed": true
+          },
+          "description": {
+            "type": "TypeString",
+            "description": "Description of the S3 account.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "ID of the S3 account. Conflicts with `name`.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Name of the S3 account. Conflicts with `id`.",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the IAM Service Users client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          }
+        },
+        "description": "Use this data source to get information about an IAM S3 account.",
+        "new_since": "v0.14.0"
       },
       "vkcs_iam_service_user": {
         "schema": {
