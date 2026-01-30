@@ -36,6 +36,7 @@ type Config interface {
 	ComputeV2Client(region string) (*gophercloud.ServiceClient, error)
 	ContainerInfraAddonsV1Client(region string) (*gophercloud.ServiceClient, error)
 	ContainerInfraV1Client(region string) (*gophercloud.ServiceClient, error)
+	ContainerInfraV2Client(region string) (*gophercloud.ServiceClient, error)
 	DatabaseV1Client(region string) (*gophercloud.ServiceClient, error)
 	DataPlatformClient(region string) (*gophercloud.ServiceClient, error)
 	IAMServiceUsersV1Client(region string) (*gophercloud.ServiceClient, error)
@@ -101,6 +102,15 @@ func (c *config) ContainerInfraV1Client(region string) (*gophercloud.ServiceClie
 
 	client.MoreHeaders = map[string]string{
 		"MCS-API-Version": fmt.Sprintf("container-infra %s", c.containerInfraV1MicroVersion),
+	}
+
+	return client, err
+}
+
+func (c *config) ContainerInfraV2Client(region string) (*gophercloud.ServiceClient, error) {
+	client, err := c.initClient(newContainerInfraV2, region, "managed-k8s")
+	if err != nil {
+		return client, err
 	}
 
 	return client, err

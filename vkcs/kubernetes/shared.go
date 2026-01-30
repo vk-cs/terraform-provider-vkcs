@@ -5,12 +5,49 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/mapstructure"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v1/clusters"
+	v1clusters "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v1/nodegroups"
+	v2clusters "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
+
+type Schema interface {
+	Get(key string) interface{}
+}
+
+// getAsStringSlice возвращает значение поля как []string, независимо от его типа ([]interface{} или *schema.Set)
+func getAsStringSlice(d Schema, key string) ([]string, error) {
+	value := d.Get(key)
+
+	switch v := value.(type) {
+	case []interface{}:
+		result := make([]string, len(v))
+		for i, item := range v {
+			if str, ok := item.(string); ok {
+				result[i] = str
+			} else {
+				return nil, fmt.Errorf("item at index %d in field %s is not a string", i, key)
+			}
+		}
+		return result, nil
+	case *schema.Set:
+		list := v.List()
+		result := make([]string, len(list))
+		for i, item := range list {
+			if str, ok := item.(string); ok {
+				result[i] = str
+			} else {
+				return nil, fmt.Errorf("item at index %d in field %s is not a string", i, key)
+			}
+		}
+		return result, nil
+	default:
+		return nil, fmt.Errorf("field %s has unsupported type %T", key, v)
+	}
+}
 
 func extractKubernetesGroupMap(nodeGroups []interface{}) ([]nodegroups.NodeGroup, error) {
 	filledNodeGroups := make([]nodegroups.NodeGroup, len(nodeGroups))
@@ -95,7 +132,7 @@ func flattenNodeGroupTaintsList(v []nodegroups.Taint) []map[string]interface{} {
 
 func kubernetesStateRefreshFunc(client *gophercloud.ServiceClient, clusterID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		c, err := clusters.Get(client, clusterID).Extract()
+		c, err := v1clusters.Get(client, clusterID).Extract()
 		if err != nil {
 			if errutil.IsNotFound(err) {
 				return c, string(clusterStatusNotFound), nil
@@ -107,6 +144,23 @@ func kubernetesStateRefreshFunc(client *gophercloud.ServiceClient, clusterID str
 			return c, c.NewStatus, err
 		}
 		return c, c.NewStatus, nil
+	}
+}
+
+func kubernetesStateRefreshFuncV2(client *gophercloud.ServiceClient, clusterID string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		c, err := v2clusters.Get(client, clusterID).Extract()
+		if err != nil {
+			if errutil.IsNotFound(err) {
+				return c, string(clusterStatusV2Deleted), nil
+			}
+			return nil, "", err
+		}
+		if c.Status == clusterStatusV2Failed {
+			err = fmt.Errorf("vkcs_kubernetes_cluster_v2 is in an error state")
+			return c, c.Status, err
+		}
+		return c, c.Status, nil
 	}
 }
 

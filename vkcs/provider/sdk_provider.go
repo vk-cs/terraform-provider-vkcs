@@ -123,6 +123,11 @@ func SDKProviderBase() *sdkschema.Provider {
 							Optional:    true,
 							Description: "Cloud Containers API custom endpoint.",
 						},
+						"container_infra_v2": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Cloud Containers V2 API custom endpoint.",
+						},
 						"container_infra_addons": {
 							Type:        sdkschema.TypeString,
 							Optional:    true,
@@ -268,6 +273,7 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_db_cluster_with_shards":             db.ResourceDatabaseClusterWithShards(),
 			"vkcs_db_config_group":                    db.ResourceDatabaseConfigGroup(),
 			"vkcs_kubernetes_cluster":                 kubernetes.ResourceKubernetesCluster(),
+			"vkcs_kubernetes_cluster_v2":              kubernetes.ResourceKubernetesClusterV2(),
 			"vkcs_kubernetes_node_group":              kubernetes.ResourceKubernetesNodeGroup(),
 			"vkcs_publicdns_zone":                     publicdns.ResourcePublicDNSZone(),
 			"vkcs_publicdns_record":                   publicdns.ResourcePublicDNSRecord(),
@@ -297,6 +303,7 @@ func SDKProviderBase() *sdkschema.Provider {
 				"cdn":                    m["cdn"],
 				"compute":                m["compute"],
 				"container-infra":        m["container_infra"],
+				"managed-k8s":            m["managed_k8s"],
 				"container-infra-addons": m["container_infra_addons"],
 				"database":               m["database"],
 				"data-platform":          m["data_platform"],
