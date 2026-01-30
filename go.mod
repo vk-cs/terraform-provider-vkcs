@@ -1,6 +1,6 @@
 module github.com/vk-cs/terraform-provider-vkcs
 
-go 1.25
+go 1.25.0
 
 require (
 	github.com/gofrs/flock v0.12.1
@@ -20,6 +20,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/segmentio/ksuid v1.0.4
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
 )

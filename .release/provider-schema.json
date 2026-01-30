@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.14.1",
+  "provider_version": "v0.15.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -89,6 +89,11 @@
               "type": "TypeString",
               "optional": true,
               "description": "Load Balancer API custom endpoint."
+            },
+            "managed_k8s": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Cloud Containers V2 API custom endpoint."
             },
             "ml_platform": {
               "type": "TypeString",
@@ -4200,6 +4205,223 @@
         },
         "description": "Provides a kubernetes cluster resource. This can be used to create, modify and delete kubernetes clusters."
       },
+      "vkcs_kubernetes_cluster_v2": {
+        "schema": {
+          "api_address": {
+            "type": "TypeString",
+            "description": "The URL of the Kubernetes API server.",
+            "computed": true
+          },
+          "api_lb_fip": {
+            "type": "TypeString",
+            "description": "The floating IP of the API load balancer (present if `public_ip` = `true`).",
+            "computed": true
+          },
+          "api_lb_vip": {
+            "type": "TypeString",
+            "description": "The internal VIP of the API load balancer.",
+            "computed": true
+          },
+          "availability_zones": {
+            "type": "TypeSet",
+            "required": true,
+            "description": "A set of availability zones for the cluster's masters. For a `standard` cluster, provide 1, 3, or 5 zones. For a `regional` cluster, provide 3 or 5 zones. **Forces replacement** on change.",
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "cluster_type": {
+            "type": "TypeString",
+            "required": true,
+            "description": " Either `standard` (single AZ) or `regional` (three AZs). **Forces replacement** on change."
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "The timestamp when the cluster was created (ISO 8601 format).",
+            "computed": true
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "A human-readable description of the cluster. **Forces replacement** on change. The maximum length is 256 characters.",
+            "computed": true
+          },
+          "external_network_id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The ID of the external network for internet access. If omitted, the system selects one automatically. **Forces replacement** on change.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "The unique identifier of the cluster.",
+            "computed": true
+          },
+          "insecure_registries": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "A set of registry addresses (e.g., `myregistry.com`) that can be accessed without TLS verification. **Forces replacement** on change.",
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "k8s_config": {
+            "type": "TypeString",
+            "description": "The kubeconfig file contents. **Sensitive** — store securely.",
+            "computed": true
+          },
+          "labels": {
+            "type": "TypeMap",
+            "optional": true,
+            "description": "A map of Kubernetes labels to apply to the cluster. Keys and values must conform to Kubernetes label syntax. **Forces replacement** on change.",
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "loadbalancer_allowed_cidrs": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "A set of CIDR blocks permitted to access the API load balancer. If empty, all IPs are allowed. **Forces replacement** on change.",
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "loadbalancer_subnet_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the subnet where LoadBalancer services will be allocated IPs. **Forces replacement** on change."
+          },
+          "master_count": {
+            "type": "TypeInt",
+            "required": true,
+            "description": "The number of master nodes. Must be an odd number to maintain etcd quorum (1, 3, or 5). **Forces replacement** on change."
+          },
+          "master_disks": {
+            "type": "TypeSet",
+            "description": "Information about the master node disks. Each disk includes `type` and `size`.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "size": {
+                  "type": "TypeInt",
+                  "description": "The size of the disk in GB.",
+                  "computed": true
+                },
+                "type": {
+                  "type": "TypeString",
+                  "description": "The storage volume type provisioned for this master disk component.",
+                  "computed": true
+                }
+              }
+            }
+          },
+          "master_flavor": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The flavor ID for master nodes. Changing this triggers a rolling upgrade of the control plane."
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "A unique cluster name. Must be 3-25 lowercase alphanumeric characters or hyphens, start/end with alphanumeric, and contain no consecutive hyphens. Forces replacement on change."
+          },
+          "network_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the VPC network where the cluster will be deployed. The network must use the `sprut` SDN. **Forces replacement** on change."
+          },
+          "network_plugin": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The CNI plugin to use. Currently only `calico` is supported. **Forces replacement** on change."
+          },
+          "node_groups": {
+            "type": "TypeSet",
+            "description": "A list of node groups associated with the cluster. Each object contains `id`, `name`, `flavor`, `node_count`, and `availability_zone`.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "availability_zone": {
+                  "type": "TypeString",
+                  "description": "The AZ where the node group resides.",
+                  "computed": true
+                },
+                "flavor": {
+                  "type": "TypeString",
+                  "description": "The flavor ID used for the worker nodes.",
+                  "computed": true
+                },
+                "id": {
+                  "type": "TypeString",
+                  "description": "The ID of the node group.",
+                  "computed": true
+                },
+                "name": {
+                  "type": "TypeString",
+                  "description": "The name of the node group.",
+                  "computed": true
+                },
+                "node_count": {
+                  "type": "TypeInt",
+                  "description": "The current number of nodes in the group.",
+                  "computed": true
+                }
+              }
+            }
+          },
+          "pods_ipv4_cidr": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The IPv4 CIDR block for the pod network. Must be a valid private CIDR (e.g., `10.100.0.0/16`). **Forces replacement** on change."
+          },
+          "project_id": {
+            "type": "TypeString",
+            "description": "The project ID that owns the cluster.",
+            "computed": true
+          },
+          "public_ip": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "If `true`, a floating IP is assigned to the API endpoint. `Forces replacement` on change. Default is `false`.",
+            "computed": true,
+            "new_since": "v0.15.0"
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to create the cluster. If omitted, the provider's `region` is used. **Forces replacement** on change.",
+            "computed": true
+          },
+          "status": {
+            "type": "TypeString",
+            "description": "The current cluster status (e.g., `RUNNING`, `RECONCILING`).",
+            "computed": true
+          },
+          "subnet_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the subnet for cluster nodes. **Forces replacement** on change."
+          },
+          "timeouts": {
+            "optional": true,
+            "description": "Timeouts configuration for create, update and delete operations.",
+            "computed": true,
+            "new_since": "v0.15.0"
+          },
+          "uuid": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The cluster UUID. Can be specified; if not, it is generated automatically. **Changing this forces a new cluster.**",
+            "computed": true
+          },
+          "version": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The Kubernetes version to deploy. Only upgrades to a higher version are allowed."
+          }
+        },
+        "new_since": "v0.15.0"
+      },
       "vkcs_kubernetes_node_group": {
         "schema": {
           "autoscaling_enabled": {
@@ -4339,6 +4561,134 @@
           "update": 60
         },
         "description": "Provides a cluster node group resource. This can be used to create, modify and delete cluster's node group."
+      },
+      "vkcs_kubernetes_node_group_v2": {
+        "schema": {
+          "auto_scale_max_size": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "The maximum number of nodes the autoscaler may scale out to. Must be greater than or equal to 0 and also greater than or equal to `auto_scale_min_size`. Required if scale_type is `auto_scale`.",
+            "computed": true
+          },
+          "auto_scale_min_size": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "The minimum number of nodes the autoscaler may scale down to. Must be greater than or equal to 0. Required if `scale_type` is `auto_scale`.",
+            "computed": true
+          },
+          "auto_scale_node_count": {
+            "type": "TypeInt",
+            "description": "During the cluster lifecycle, it indicates the current number of nodes in the node group if `scale_type` is `auto_scale`.",
+            "computed": true
+          },
+          "availability_zone": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The availability zone where the nodes will be placed. **Forces replacement** on change."
+          },
+          "cluster_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the parent cluster. **Forces replacement** on change."
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "The timestamp when the node group was created (ISO 8601 format).",
+            "computed": true
+          },
+          "disk_size": {
+            "type": "TypeInt",
+            "required": true,
+            "description": "The size of the root volume in GB. Minimum is 1 GB. **Forces replacement** on change."
+          },
+          "disk_type": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The type of root volume (e.g., `ceph-ssd`). Use `vkcs_kubernetes_volume_types_v2` to list available types. **Forces replacement** on change."
+          },
+          "fixed_scale_node_count": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "The desired number of nodes. Minimum value is 0. Required if `scale_type` is `fixed_scale`.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "The unique identifier of the node group.",
+            "computed": true
+          },
+          "labels": {
+            "type": "TypeMap",
+            "optional": true,
+            "description": "Kubernetes labels to apply to nodes in this group. Keys/values must be valid Kubernetes label strings.",
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "A unique name for the node group within the cluster. Must be 3-25 characters, lowercase alphanumeric and hyphens only. **Forces replacement** on change."
+          },
+          "node_flavor": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The flavor ID for each node. Changing this triggers a rolling upgrade of the nodes."
+          },
+          "parallel_upgrade_chunk": {
+            "type": "TypeInt",
+            "required": true,
+            "description": "The maximum percentage of nodes (1-100) that can be upgraded simultaneously during a rolling upgrade."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region where the node group will be created. Defaults to provider's `region`. **Forces replacement** on change.",
+            "computed": true
+          },
+          "scale_type": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Type of scaling for the node group. Must be either `fixed_scale` or `auto_scale`. If `scale_type` is `auto_scale`, the condition `auto_scale_min_size` \u003c= `auto_scale_max_size` must be met."
+          },
+          "taints": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "Taints to apply to nodes. Each taint must have `key`, `value`, and `effect` (one of `NoSchedule`, `PreferNoSchedule`, `NoExecute`).",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "effect": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "The effect of the taint. Must be one of: `NoSchedule`, `PreferNoSchedule`, `NoExecute`."
+                },
+                "key": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "The taint key. Must be a valid Kubernetes label key."
+                },
+                "value": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "The taint value. Must be a valid Kubernetes label value."
+                }
+              }
+            }
+          },
+          "timeouts": {
+            "optional": true,
+            "description": "Timeouts configuration for create, update and delete operations.",
+            "computed": true,
+            "new_since": "v0.15.0"
+          },
+          "uuid": {
+            "type": "TypeString",
+            "description": "The node group's UUID. It is generated automatically.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.15.0"
       },
       "vkcs_kubernetes_security_policy": {
         "schema": {
@@ -9921,6 +10271,213 @@
         },
         "description": "Use this data source to get the ID of an available VKCS kubernetes cluster."
       },
+      "vkcs_kubernetes_cluster_v2": {
+        "schema": {
+          "api_address": {
+            "type": "TypeString",
+            "description": "The full URL of the Kubernetes API server (e.g., `https://api.example.com:6443`).",
+            "computed": true
+          },
+          "api_lb_fip": {
+            "type": "TypeString",
+            "description": "The floating IP address of the API load balancer (present only when `public_ip` is `true`).",
+            "computed": true
+          },
+          "api_lb_vip": {
+            "type": "TypeString",
+            "description": "The internal virtual IP address of the API load balancer.",
+            "computed": true
+          },
+          "availability_zones": {
+            "type": "TypeSet",
+            "description": "The availability zones in which the master nodes reside.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "cluster_type": {
+            "type": "TypeString",
+            "description": "The cluster type: `standard` (single AZ) or `regional` (three AZs).",
+            "computed": true
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "The timestamp when the cluster was created (ISO 8601 format).",
+            "computed": true
+          },
+          "description": {
+            "type": "TypeString",
+            "description": "A user-provided description of the cluster.",
+            "computed": true
+          },
+          "external_network_id": {
+            "type": "TypeString",
+            "description": "The ID of the external network providing internet access to the cluster.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The cluster's ID. Used to fetch a specific cluster."
+          },
+          "insecure_registries": {
+            "type": "TypeSet",
+            "description": "A list of container registry addresses that can be accessed without certificate validation.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "k8s_config": {
+            "type": "TypeString",
+            "description": "The raw kubeconfig file contents used to authenticate to the Kubernetes API.",
+            "computed": true
+          },
+          "labels": {
+            "type": "TypeMap",
+            "description": "Kubernetes labels applied to the entire cluster.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "loadbalancer_allowed_cidrs": {
+            "type": "TypeSet",
+            "description": "CIDR blocks permitted to access the cluster's API load balancer.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "loadbalancer_subnet_id": {
+            "type": "TypeString",
+            "description": "The ID of the subnet where LoadBalancer type services are provisioned.",
+            "computed": true
+          },
+          "master_count": {
+            "type": "TypeInt",
+            "description": "The number of master nodes (1, 3, or 5) ensuring etcd quorum.",
+            "computed": true
+          },
+          "master_disks": {
+            "type": "TypeSet",
+            "description": "Information about the disks attached to master nodes (root, etcd, etcd-events). Each object contains `type` (disk type) and `size` (GB).",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "size": {
+                  "type": "TypeInt",
+                  "description": "The allocated size of the disk in gigabytes (GB).",
+                  "computed": true
+                },
+                "type": {
+                  "type": "TypeString",
+                  "description": "The storage volume type used for this disk (e.g., `ceph-ssd`, `ceph-hdd`). Corresponds to the available volume types in the region.",
+                  "computed": true
+                }
+              }
+            }
+          },
+          "master_flavor": {
+            "type": "TypeString",
+            "description": "The flavor ID (VM type) used for master nodes.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "description": "The user-assigned name of the cluster.",
+            "computed": true
+          },
+          "network_id": {
+            "type": "TypeString",
+            "description": "The ID of the VPC network where the cluster is deployed.",
+            "computed": true
+          },
+          "network_plugin": {
+            "type": "TypeString",
+            "description": "The CNI network plugin in use (always `calico`).",
+            "computed": true
+          },
+          "node_groups": {
+            "type": "TypeSet",
+            "description": "A list of node groups associated with the cluster. Each object includes `id`, `name`, `flavor`, `node_count`, and `availability_zone`.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "availability_zone": {
+                  "type": "TypeString",
+                  "description": "The availability zone where the nodes of this group are deployed.",
+                  "computed": true
+                },
+                "flavor": {
+                  "type": "TypeString",
+                  "description": "The flavor ID (VM type) used for each worker node in this group.",
+                  "computed": true
+                },
+                "id": {
+                  "type": "TypeString",
+                  "description": "The unique identifier of the node group.",
+                  "computed": true
+                },
+                "name": {
+                  "type": "TypeString",
+                  "description": "The user-assigned name of the node group.",
+                  "computed": true
+                },
+                "node_count": {
+                  "type": "TypeInt",
+                  "description": "The current number of worker nodes in the group. This value reflects the actual node count, accounting for both manual scaling and autoscaling actions.",
+                  "computed": true
+                }
+              }
+            }
+          },
+          "pods_ipv4_cidr": {
+            "type": "TypeString",
+            "description": "The IPv4 CIDR block allocated for pod networking.",
+            "computed": true
+          },
+          "project_id": {
+            "type": "TypeString",
+            "description": "The VK Cloud project ID owning the cluster.",
+            "computed": true
+          },
+          "public_ip": {
+            "type": "TypeBool",
+            "description": "Indicates whether a floating IP is assigned to the cluster's API endpoint.",
+            "computed": true,
+            "new_since": "v0.15.0"
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which the cluster resides. If omitted, the provider's configured `region` is used.",
+            "computed": true
+          },
+          "status": {
+            "type": "TypeString",
+            "description": "The current operational status of the cluster (e.g., `RUNNING`, `RECONCILING`).",
+            "computed": true
+          },
+          "subnet_id": {
+            "type": "TypeString",
+            "description": "The ID of the subnet used by the cluster's nodes.",
+            "computed": true
+          },
+          "uuid": {
+            "type": "TypeString",
+            "description": "The cluster's UUID.",
+            "computed": true
+          },
+          "version": {
+            "type": "TypeString",
+            "description": "The installed Kubernetes version (e.g., `v1.34.2`).",
+            "computed": true
+          }
+        },
+        "new_since": "v0.15.0"
+      },
       "vkcs_kubernetes_clustertemplate": {
         "schema": {
           "apiserver_port": {
@@ -10259,6 +10816,124 @@
         },
         "description": "Use this data source to get information on VKCS Kubernetes cluster's node group."
       },
+      "vkcs_kubernetes_node_group_v2": {
+        "schema": {
+          "auto_scale_max_size": {
+            "type": "TypeInt",
+            "description": "The maximum allowed node count for `auto_scale`.",
+            "computed": true
+          },
+          "auto_scale_min_size": {
+            "type": "TypeInt",
+            "description": "The minimum allowed node count for `auto_scale`.",
+            "computed": true
+          },
+          "auto_scale_node_count": {
+            "type": "TypeInt",
+            "description": "The current number of nodes when `scale_type` is `auto_scale`.",
+            "computed": true
+          },
+          "availability_zone": {
+            "type": "TypeString",
+            "description": "The availability zone where the nodes are located.",
+            "computed": true
+          },
+          "cluster_id": {
+            "type": "TypeString",
+            "description": "The ID of the parent Kubernetes cluster.",
+            "computed": true
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "The creation timestamp of the node group (ISO 8601 format).",
+            "computed": true
+          },
+          "disk_size": {
+            "type": "TypeInt",
+            "description": "The size of the root volume in GB.",
+            "computed": true
+          },
+          "disk_type": {
+            "type": "TypeString",
+            "description": "The type of root volume attached to each node (e.g., `ceph-ssd`).",
+            "computed": true
+          },
+          "fixed_scale_node_count": {
+            "type": "TypeInt",
+            "description": "The desired number of nodes when `scale_type` is `fixed_scale`.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the node group to retrieve."
+          },
+          "labels": {
+            "type": "TypeMap",
+            "description": "Kubernetes labels applied to the nodes in this group.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "name": {
+            "type": "TypeString",
+            "description": "The user-assigned name of the node group.",
+            "computed": true
+          },
+          "node_flavor": {
+            "type": "TypeString",
+            "description": "The flavor ID (VM type) of each node in the group.",
+            "computed": true
+          },
+          "parallel_upgrade_chunk": {
+            "type": "TypeInt",
+            "description": "The maximum percentage of nodes that can be upgraded simultaneously (1-100).",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region where the node group resides. Defaults to the provider's `region`.",
+            "computed": true
+          },
+          "scale_type": {
+            "type": "TypeString",
+            "description": "The scaling strategy: `fixed_scale` (static node count) or `auto_scale` (dynamic based on load).",
+            "computed": true
+          },
+          "taints": {
+            "type": "TypeSet",
+            "description": "Taints applied to the nodes. Each taint contains `key`, `value`, and `effect` (e.g., `NoSchedule`).",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "effect": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "The effect of the taint. Allowed values are: `NoSchedule`, `PreferNoSchedule`, `NoExecute`."
+                },
+                "key": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "The taint key. Must conform to Kubernetes label key syntax (e.g., `node.kubernetes.io/unreachable`)."
+                },
+                "value": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "The taint value. Must conform to Kubernetes label value syntax (e.g., `production`)."
+                }
+              }
+            }
+          },
+          "uuid": {
+            "type": "TypeString",
+            "description": "The node group's UUID",
+            "computed": true
+          }
+        },
+        "new_since": "v0.15.0"
+      },
       "vkcs_kubernetes_security_policy_template": {
         "schema": {
           "created_at": {
@@ -10366,6 +11041,68 @@
         },
         "description": "Provides a kubernetes security policy templates datasource. This can be used to get information about all available VKCS kubernetes security policy templates.",
         "new_since": "v0.7.0"
+      },
+      "vkcs_kubernetes_versions_v2": {
+        "schema": {
+          "id": {
+            "type": "TypeString",
+            "description": "A synthetic identifier set to \"kubernetes_versions\". This data source does not have a natural ID.",
+            "computed": true
+          },
+          "k8s_versions": {
+            "type": "TypeSet",
+            "description": "A set of available Kubernetes version strings (e.g., [\"v1.33.3\", \"v1.34.2\"]).",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region for which to retrieve available versions. Defaults to provider's `region`.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.15.0"
+      },
+      "vkcs_kubernetes_volume_types_v2": {
+        "schema": {
+          "id": {
+            "type": "TypeString",
+            "description": "A synthetic identifier set to \"volume_types\". This data source does not have a natural ID.",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region for which to retrieve volume types. Defaults to provider's `region`.",
+            "computed": true
+          },
+          "volume_types": {
+            "type": "TypeSet",
+            "description": "A set of available volume types with their supported availability zones.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "name": {
+                  "type": "TypeString",
+                  "description": "The name of the volume type (e.g., \"ceph-hdd\", \"high-iops\").",
+                  "computed": true
+                },
+                "zones": {
+                  "type": "TypeSet",
+                  "description": "A set of availability zones where this volume type is available (e.g., [\"PA2\", \"MS1\", \"ME1\"]).",
+                  "computed": true,
+                  "elem": {
+                    "type": "TypeString"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "new_since": "v0.15.0"
       },
       "vkcs_lb_loadbalancer": {
         "schema": {

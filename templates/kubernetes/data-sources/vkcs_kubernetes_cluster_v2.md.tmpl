@@ -1,0 +1,16 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Retrieves information about an existing next-generation Kubernetes cluster.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile "examples/kubernetes/cluster_v2/standard/main-datasource.tf"}}
+
+{{ .SchemaMarkdown }}
