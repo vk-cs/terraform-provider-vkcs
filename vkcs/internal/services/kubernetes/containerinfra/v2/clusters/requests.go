@@ -215,10 +215,28 @@ func GetListK8SVersion(c *gophercloud.ServiceClient) GetListK8SVersionResult {
 	return res
 }
 
-// Get available volume types for worker node root volume
-func GetVolumeTypes(c *gophercloud.ServiceClient) GetVolumeTypesResult {
-	var res GetVolumeTypesResult
-	_, res.Err = c.Get(volumeTypesURL(c), &res.Body, &gophercloud.RequestOpts{
+// Get available sec policy templates
+func GetListSecPolicyTemplates(c *gophercloud.ServiceClient) GetListSecPolicyTemplatesResult {
+	var res GetListSecPolicyTemplatesResult
+	_, res.Err = c.Get(secPolicyTemplatesURL(c), &res.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	return res
+}
+
+// Get a specific sec policy template by ID
+func GetSecPolicyTemplateByID(c *gophercloud.ServiceClient, securityPolicyID string) GetSecPolicyTemplateResult {
+	var res GetSecPolicyTemplateResult
+	_, res.Err = c.Get(secPolicyTemplateByIDURL(c, securityPolicyID), &res.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	return res
+}
+
+// Get a specific sec policy template by name and version
+func GetSecPolicyTemplateByNameAndVersion(c *gophercloud.ServiceClient, spName, spVersion string) GetSecPolicyTemplateResult {
+	var res GetSecPolicyTemplateResult
+	_, res.Err = c.Get(secPolicyTemplateByNameAndVersionURL(c, spName, spVersion), &res.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	return res

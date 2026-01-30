@@ -8,6 +8,9 @@ description: |-
 
 # vkcs_kubernetes_security_policy_template
 
+> **Warning**  
+> This data source is intended for first-generation VKCS Kubernetes clusters and should not be used for new deployments. Use the `v2` version instead.
+
 Provides a kubernetes security policy template datasource. This can be used to get information about an VKCS kubernetes security policy template.
 
 **New since v0.7.0**.

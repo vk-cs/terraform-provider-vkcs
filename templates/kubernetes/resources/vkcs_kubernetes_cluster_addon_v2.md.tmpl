@@ -1,0 +1,23 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Provides a Kubernetes cluster addon resource. This can be used to create, modify, and delete Kubernetes cluster addon.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+Cluster addons can be imported using the `id`, e.g.
+
+{{codefile "shell" "templates/kubernetes/resources/vkcs_kubernetes_cluster_addon_v2/import.sh"}}
+4

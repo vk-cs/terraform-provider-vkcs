@@ -60,9 +60,10 @@ func KubernetesClusterV2DataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The ID of the external network providing internet access to the cluster.",
 			},
 			"id": schema.StringAttribute{
-				Required:            true,
-				Description:         "The cluster's ID. Used to fetch a specific cluster.",
-				MarkdownDescription: "The cluster's ID. Used to fetch a specific cluster.",
+				Optional:            true,
+				Computed:            true,
+				Description:         "The cluster's ID.",
+				MarkdownDescription: "The cluster's ID.",
 			},
 			"insecure_registries": schema.SetAttribute{
 				ElementType:         types.StringType,
@@ -127,6 +128,7 @@ func KubernetesClusterV2DataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The flavor ID (VM type) used for master nodes.",
 			},
 			"name": schema.StringAttribute{
+				Optional:            true,
 				Computed:            true,
 				Description:         "The user-assigned name of the cluster.",
 				MarkdownDescription: "The user-assigned name of the cluster.",
@@ -212,6 +214,7 @@ func KubernetesClusterV2DataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The ID of the subnet used by the cluster's nodes.",
 			},
 			"uuid": schema.StringAttribute{
+				Optional:            true,
 				Computed:            true,
 				Description:         "The cluster's UUID.",
 				MarkdownDescription: "The cluster's UUID.",
@@ -222,6 +225,7 @@ func KubernetesClusterV2DataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The installed Kubernetes version (e.g., `v1.34.2`).",
 			},
 		},
+		Description: "Use this data source to retrieve information about VKCS Kubernetes cluster.",
 	}
 }
 

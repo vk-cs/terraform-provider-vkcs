@@ -36,24 +36,24 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"api_address": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The URL of the Kubernetes API server.",
-				MarkdownDescription: "The URL of the Kubernetes API server.",
+				Description:         "The Kubernetes API server URL.",
+				MarkdownDescription: "The Kubernetes API server URL.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"api_lb_fip": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The floating IP of the API load balancer (present if `public_ip` = `true`).",
-				MarkdownDescription: "The floating IP of the API load balancer (present if `public_ip` = `true`).",
+				Description:         "The floating IP of the API load balancer, present only if `public_ip` is `true`.",
+				MarkdownDescription: "The floating IP of the API load balancer, present only if `public_ip` is `true`.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"api_lb_vip": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The internal VIP of the API load balancer.",
-				MarkdownDescription: "The internal VIP of the API load balancer.",
+				Description:         "The internal virtual IP (VIP) of the API load balancer.",
+				MarkdownDescription: "The internal virtual IP (VIP) of the API load balancer.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -61,8 +61,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			"availability_zones": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Required:            true,
-				Description:         "A set of availability zones for the cluster's masters. For a `standard` cluster, provide 1, 3, or 5 zones. For a `regional` cluster, provide 3 or 5 zones. **Forces replacement** on change.",
-				MarkdownDescription: "A set of availability zones for the cluster's masters. For a `standard` cluster, provide 1, 3, or 5 zones. For a `regional` cluster, provide 3 or 5 zones. **Forces replacement** on change.",
+				Description:         "A set of availability zones for the cluster masters. A `standard` cluster must specify one zone, while a `regional` cluster must specify three zones. **Forces replacement** on change.",
+				MarkdownDescription: "A set of availability zones for the cluster masters. A `standard` cluster must specify one zone, while a `regional` cluster must specify three zones. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.RequiresReplace(),
 				},
@@ -73,8 +73,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"cluster_type": schema.StringAttribute{
 				Required:            true,
-				Description:         " Either `standard` (single AZ) or `regional` (three AZs). **Forces replacement** on change.",
-				MarkdownDescription: " Either `standard` (single AZ) or `regional` (three AZs). **Forces replacement** on change.",
+				Description:         "Either `standard` or `regional`. A `standard` cluster uses a single availability zone, while a `regional` cluster uses three availability zones. **Forces replacement** on change.",
+				MarkdownDescription: "Either `standard` or `regional`. A `standard` cluster uses a single availability zone, while a `regional` cluster uses three availability zones. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -84,8 +84,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"created_at": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The timestamp when the cluster was created (ISO 8601 format).",
-				MarkdownDescription: "The timestamp when the cluster was created (ISO 8601 format).",
+				Description:         "The time when the cluster was created.",
+				MarkdownDescription: "The time when the cluster was created.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -93,8 +93,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			"description": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "A human-readable description of the cluster. **Forces replacement** on change. The maximum length is 256 characters.",
-				MarkdownDescription: "A human-readable description of the cluster. **Forces replacement** on change. The maximum length is 256 characters.",
+				Description:         "A human-readable description of the cluster. The maximum length is 256 characters. **Forces replacement** on change.",
+				MarkdownDescription: "A human-readable description of the cluster. The maximum length is 256 characters. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
@@ -107,8 +107,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			"external_network_id": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The ID of the external network for internet access. If omitted, the system selects one automatically. **Forces replacement** on change.",
-				MarkdownDescription: "The ID of the external network for internet access. If omitted, the system selects one automatically. **Forces replacement** on change.",
+				Description:         "The ID of the external network used for internet access. If omitted, one is selected automatically. **Forces replacement** on change.",
+				MarkdownDescription: "The ID of the external network used for internet access. If omitted, one is selected automatically. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
@@ -128,8 +128,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			"insecure_registries": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
-				Description:         "A set of registry addresses (e.g., `myregistry.com`) that can be accessed without TLS verification. **Forces replacement** on change.",
-				MarkdownDescription: "A set of registry addresses (e.g., `myregistry.com`) that can be accessed without TLS verification. **Forces replacement** on change.",
+				Description:         "A set of container registry hosts (e.g., `myregistry.com`) that can be accessed without TLS verification. **Forces replacement** on change.",
+				MarkdownDescription: "A set of container registry hosts (e.g., `myregistry.com`) that can be accessed without TLS verification. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.RequiresReplace(),
 				},
@@ -139,8 +139,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"k8s_config": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The kubeconfig file contents. **Sensitive** — store securely.",
-				MarkdownDescription: "The kubeconfig file contents. **Sensitive** — store securely.",
+				Description:         "The contents of the kubeconfig file. **Sensitive** — store securely.",
+				MarkdownDescription: "The contents of the kubeconfig file. **Sensitive** — store securely.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -148,8 +148,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			"labels": schema.MapAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
-				Description:         "A map of Kubernetes labels to apply to the cluster. Keys and values must conform to Kubernetes label syntax. **Forces replacement** on change.",
-				MarkdownDescription: "A map of Kubernetes labels to apply to the cluster. Keys and values must conform to Kubernetes label syntax. **Forces replacement** on change.",
+				Description:         "A map of Kubernetes labels applied to the cluster. Keys and values must conform to Kubernetes label syntax. **Forces replacement** on change.",
+				MarkdownDescription: "A map of Kubernetes labels applied to the cluster. Keys and values must conform to Kubernetes label syntax. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.Map{
 					mapplanmodifier.RequiresReplace(),
 				},
@@ -160,8 +160,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			"loadbalancer_allowed_cidrs": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
-				Description:         "A set of CIDR blocks permitted to access the API load balancer. If empty, all IPs are allowed. **Forces replacement** on change.",
-				MarkdownDescription: "A set of CIDR blocks permitted to access the API load balancer. If empty, all IPs are allowed. **Forces replacement** on change.",
+				Description:         "A set of CIDR blocks allowed to access the API load balancer. If empty, access is allowed from all IP addresses. **Forces replacement** on change.",
+				MarkdownDescription: "A set of CIDR blocks allowed to access the API load balancer. If empty, access is allowed from all IP addresses. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.RequiresReplace(),
 				},
@@ -171,8 +171,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"loadbalancer_subnet_id": schema.StringAttribute{
 				Required:            true,
-				Description:         "The ID of the subnet where LoadBalancer services will be allocated IPs. **Forces replacement** on change.",
-				MarkdownDescription: "The ID of the subnet where LoadBalancer services will be allocated IPs. **Forces replacement** on change.",
+				Description:         "The ID of the subnet used for allocating IP addresses for LoadBalancer services. **Forces replacement** on change.",
+				MarkdownDescription: "The ID of the subnet used for allocating IP addresses for LoadBalancer services. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -182,8 +182,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"master_count": schema.Int64Attribute{
 				Required:            true,
-				Description:         "The number of master nodes. Must be an odd number to maintain etcd quorum (1, 3, or 5). **Forces replacement** on change.",
-				MarkdownDescription: "The number of master nodes. Must be an odd number to maintain etcd quorum (1, 3, or 5). **Forces replacement** on change.",
+				Description:         "The number of master nodes. Must be an odd number (1, 3, or 5) to maintain etcd quorum. **Forces replacement** on change.",
+				MarkdownDescription: "The number of master nodes. Must be an odd number (1, 3, or 5) to maintain etcd quorum. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
@@ -196,13 +196,13 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 					Attributes: map[string]schema.Attribute{
 						"size": schema.Int64Attribute{
 							Computed:            true,
-							Description:         "The size of the disk in GB.",
-							MarkdownDescription: "The size of the disk in GB.",
+							Description:         "The size of the disk in gigabytes (GB).",
+							MarkdownDescription: "The size of the disk in gigabytes (GB).",
 						},
 						"type": schema.StringAttribute{
 							Computed:            true,
-							Description:         "The storage volume type provisioned for this master disk component.",
-							MarkdownDescription: "The storage volume type provisioned for this master disk component.",
+							Description:         "The storage volume type for this master disk.",
+							MarkdownDescription: "The storage volume type for this master disk.",
 						},
 					},
 					CustomType: MasterDisksType{
@@ -212,24 +212,24 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Information about the master node disks. Each disk includes `type` and `size`.",
-				MarkdownDescription: "Information about the master node disks. Each disk includes `type` and `size`.",
+				Description:         "Information about the master node disks.",
+				MarkdownDescription: "Information about the master node disks.",
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"master_flavor": schema.StringAttribute{
 				Required:            true,
-				Description:         "The flavor ID for master nodes. Changing this triggers a rolling upgrade of the control plane.",
-				MarkdownDescription: "The flavor ID for master nodes. Changing this triggers a rolling upgrade of the control plane.",
+				Description:         "The flavor ID used for master nodes. Changing this triggers a rolling upgrade of the control plane.",
+				MarkdownDescription: "The flavor ID used for master nodes. Changing this triggers a rolling upgrade of the control plane.",
 				Validators: []validator.String{
 					validators.UUIDValidator{},
 				},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "A unique cluster name. Must be 3-25 lowercase alphanumeric characters or hyphens, start/end with alphanumeric, and contain no consecutive hyphens. Forces replacement on change.",
-				MarkdownDescription: "A unique cluster name. Must be 3-25 lowercase alphanumeric characters or hyphens, start/end with alphanumeric, and contain no consecutive hyphens. Forces replacement on change.",
+				Description:         "A unique cluster name. Must be 3-25 lowercase alphanumeric characters or hyphens, start and end with an alphanumeric character, and must not contain consecutive hyphens. **Forces replacement** on change.",
+				MarkdownDescription: "A unique cluster name. Must be 3-25 lowercase alphanumeric characters or hyphens, start and end with an alphanumeric character, and must not contain consecutive hyphens. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -239,8 +239,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"network_id": schema.StringAttribute{
 				Required:            true,
-				Description:         "The ID of the VPC network where the cluster will be deployed. The network must use the `sprut` SDN. **Forces replacement** on change.",
-				MarkdownDescription: "The ID of the VPC network where the cluster will be deployed. The network must use the `sprut` SDN. **Forces replacement** on change.",
+				Description:         "The ID of the network in which the cluster will be deployed. The network must use the `sprut` SDN. **Forces replacement** on change.",
+				MarkdownDescription: "The ID of the network in which the cluster will be deployed. The network must use the `sprut` SDN. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -250,8 +250,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"network_plugin": schema.StringAttribute{
 				Required:            true,
-				Description:         "The CNI plugin to use. Currently only `calico` is supported. **Forces replacement** on change.",
-				MarkdownDescription: "The CNI plugin to use. Currently only `calico` is supported. **Forces replacement** on change.",
+				Description:         "The CNI plugin to use. Currently, only `calico` is supported. **Forces replacement** on change.",
+				MarkdownDescription: "The CNI plugin to use. Currently, only `calico` is supported. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -264,13 +264,13 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 					Attributes: map[string]schema.Attribute{
 						"availability_zone": schema.StringAttribute{
 							Computed:            true,
-							Description:         "The AZ where the node group resides.",
-							MarkdownDescription: "The AZ where the node group resides.",
+							Description:         "The availability zone where the node group is located.",
+							MarkdownDescription: "The availability zone where the node group is located.",
 						},
 						"flavor": schema.StringAttribute{
 							Computed:            true,
-							Description:         "The flavor ID used for the worker nodes.",
-							MarkdownDescription: "The flavor ID used for the worker nodes.",
+							Description:         "The flavor ID used for worker nodes.",
+							MarkdownDescription: "The flavor ID used for worker nodes.",
 						},
 						"id": schema.StringAttribute{
 							Computed:            true,
@@ -284,8 +284,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"node_count": schema.Int64Attribute{
 							Computed:            true,
-							Description:         "The current number of nodes in the group.",
-							MarkdownDescription: "The current number of nodes in the group.",
+							Description:         "The current number of nodes in the node group.",
+							MarkdownDescription: "The current number of nodes in the node group.",
 						},
 					},
 					CustomType: NodeGroupsType{
@@ -295,16 +295,16 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "A list of node groups associated with the cluster. Each object contains `id`, `name`, `flavor`, `node_count`, and `availability_zone`.",
-				MarkdownDescription: "A list of node groups associated with the cluster. Each object contains `id`, `name`, `flavor`, `node_count`, and `availability_zone`.",
+				Description:         "A list of node groups associated with the cluster.",
+				MarkdownDescription: "A list of node groups associated with the cluster.",
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"pods_ipv4_cidr": schema.StringAttribute{
 				Required:            true,
-				Description:         "The IPv4 CIDR block for the pod network. Must be a valid private CIDR (e.g., `10.100.0.0/16`). **Forces replacement** on change.",
-				MarkdownDescription: "The IPv4 CIDR block for the pod network. Must be a valid private CIDR (e.g., `10.100.0.0/16`). **Forces replacement** on change.",
+				Description:         "The IPv4 CIDR block used for the pod network. Must be a valid private CIDR (e.g., `10.100.0.0/16`). **Forces replacement** on change.",
+				MarkdownDescription: "The IPv4 CIDR block used for the pod network. Must be a valid private CIDR (e.g., `10.100.0.0/16`). **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -314,8 +314,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"project_id": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The project ID that owns the cluster.",
-				MarkdownDescription: "The project ID that owns the cluster.",
+				Description:         "The ID of the project that owns the cluster.",
+				MarkdownDescription: "The ID of the project that owns the cluster.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -323,8 +323,8 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			"public_ip": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "If `true`, a floating IP is assigned to the API endpoint. `Forces replacement` on change. Default is `false`.",
-				MarkdownDescription: "If `true`, a floating IP is assigned to the API endpoint. `Forces replacement` on change. Default is `false`.",
+				Description:         "If `true`, assigns a floating IP to the API endpoint. When enabled, `external_network_id` must be specified. **Forces replacement** on change. Default is `false`.",
+				MarkdownDescription: "If `true`, assigns a floating IP to the API endpoint. When enabled, `external_network_id` must be specified. **Forces replacement** on change. Default is `false`.",
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 					boolplanmodifier.RequiresReplace(),
@@ -343,16 +343,16 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"status": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The current cluster status (e.g., `RUNNING`, `RECONCILING`).",
-				MarkdownDescription: "The current cluster status (e.g., `RUNNING`, `RECONCILING`).",
+				Description:         "The current status of the cluster (e.g., `RUNNING`, `RECONCILING`).",
+				MarkdownDescription: "The current status of the cluster (e.g., `RUNNING`, `RECONCILING`).",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"subnet_id": schema.StringAttribute{
 				Required:            true,
-				Description:         "The ID of the subnet for cluster nodes. **Forces replacement** on change.",
-				MarkdownDescription: "The ID of the subnet for cluster nodes. **Forces replacement** on change.",
+				Description:         "The ID of the subnet in which the cluster worker nodes will be deployed. **Forces replacement** on change.",
+				MarkdownDescription: "The ID of the subnet in which the cluster worker nodes will be deployed. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -389,14 +389,14 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 				},
 				CustomType:          timeouts.Type{ObjectType: types.ObjectType{AttrTypes: map[string]attr.Type{"create": types.StringType, "update": types.StringType, "delete": types.StringType}}},
 				Optional:            true,
-				Description:         "Timeouts configuration for create, update and delete operations.",
-				MarkdownDescription: "Timeouts configuration for create, update and delete operations.",
+				Description:         "Timeout configuration for create, update and delete operations.",
+				MarkdownDescription: "Timeout configuration for create, update and delete operations.",
 			},
 			"uuid": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The cluster UUID. Can be specified; if not, it is generated automatically. **Changing this forces a new cluster.**",
-				MarkdownDescription: "The cluster UUID. Can be specified; if not, it is generated automatically. **Changing this forces a new cluster.**",
+				Description:         "The UUID of the cluster. If omitted, it is generated automatically. **Forces replacement** on change.",
+				MarkdownDescription: "The UUID of the cluster. If omitted, it is generated automatically. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
@@ -417,6 +417,7 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 		},
+		Description: "Provides a Kubernetes cluster resource. This can be used to create, modify and delete Kubernetes clusters.",
 	}
 }
 

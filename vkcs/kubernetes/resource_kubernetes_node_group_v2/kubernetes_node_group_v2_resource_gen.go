@@ -43,8 +43,8 @@ func KubernetesNodeGroupV2ResourceSchema(ctx context.Context) schema.Schema {
 			"auto_scale_min_size": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The minimum number of nodes the autoscaler may scale down to. Must be greater than or equal to 0. Required if `scale_type` is `auto_scale`.",
-				MarkdownDescription: "The minimum number of nodes the autoscaler may scale down to. Must be greater than or equal to 0. Required if `scale_type` is `auto_scale`.",
+				Description:         "The minimum number of nodes the autoscaler can scale down to. Must be at least 0. Required when `scale_type` is `auto_scale`.",
+				MarkdownDescription: "The minimum number of nodes the autoscaler can scale down to. Must be at least 0. Required when `scale_type` is `auto_scale`.",
 				PlanModifiers: []planmodifier.Int64{
 					plan_modifiers.NullIfFixedScaleType(),
 				},
@@ -54,13 +54,10 @@ func KubernetesNodeGroupV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"auto_scale_node_count": schema.Int64Attribute{
 				Computed:            true,
-				Description:         "During the cluster lifecycle, it indicates the current number of nodes in the node group if `scale_type` is `auto_scale`.",
-				MarkdownDescription: "During the cluster lifecycle, it indicates the current number of nodes in the node group if `scale_type` is `auto_scale`.",
+				Description:         "The current number of nodes in the node group. Only applicable when `scale_type` is `auto_scale`. This value is computed by the provider and cannot be set by the user.",
+				MarkdownDescription: "The current number of nodes in the node group. Only applicable when `scale_type` is `auto_scale`. This value is computed by the provider and cannot be set by the user.",
 				PlanModifiers: []planmodifier.Int64{
 					plan_modifiers.NullIfFixedScaleType(),
-				},
-				Validators: []validator.Int64{
-					int64validator.AtLeast(0),
 				},
 			},
 			"availability_zone": schema.StringAttribute{
@@ -87,16 +84,16 @@ func KubernetesNodeGroupV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"created_at": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The timestamp when the node group was created (ISO 8601 format).",
-				MarkdownDescription: "The timestamp when the node group was created (ISO 8601 format).",
+				Description:         "The timestamp when the node group was created, in ISO 8601 format.",
+				MarkdownDescription: "The timestamp when the node group was created, in ISO 8601 format.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"disk_size": schema.Int64Attribute{
 				Required:            true,
-				Description:         "The size of the root volume in GB. Minimum is 1 GB. **Forces replacement** on change.",
-				MarkdownDescription: "The size of the root volume in GB. Minimum is 1 GB. **Forces replacement** on change.",
+				Description:         "The size of the root volume, in gigabytes (GB). Must be at least 1. **Forces replacement** on change.",
+				MarkdownDescription: "The size of the root volume, in gigabytes (GB). Must be at least 1. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
@@ -106,8 +103,8 @@ func KubernetesNodeGroupV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"disk_type": schema.StringAttribute{
 				Required:            true,
-				Description:         "The type of root volume (e.g., `ceph-ssd`). Use `vkcs_kubernetes_volume_types_v2` to list available types. **Forces replacement** on change.",
-				MarkdownDescription: "The type of root volume (e.g., `ceph-ssd`). Use `vkcs_kubernetes_volume_types_v2` to list available types. **Forces replacement** on change.",
+				Description:         "The root volume type. For example: `ceph-ssd`. Use the `vkcs_kubernetes_volume_types_v2` data source to list available types for the selected availability zone. **Forces replacement** on change.",
+				MarkdownDescription: "The root volume type. For example: `ceph-ssd`. Use the `vkcs_kubernetes_volume_types_v2` data source to list available types for the selected availability zone. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -115,8 +112,8 @@ func KubernetesNodeGroupV2ResourceSchema(ctx context.Context) schema.Schema {
 			"fixed_scale_node_count": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The desired number of nodes. Minimum value is 0. Required if `scale_type` is `fixed_scale`.",
-				MarkdownDescription: "The desired number of nodes. Minimum value is 0. Required if `scale_type` is `fixed_scale`.",
+				Description:         "The desired number of nodes. Minimum value is 0. This argument is required when `scale_type` is `fixed_scale`.",
+				MarkdownDescription: "The desired number of nodes. Minimum value is 0. This argument is required when `scale_type` is `fixed_scale`.",
 				PlanModifiers: []planmodifier.Int64{
 					plan_modifiers.NullIfAutoScaleType(),
 				},
@@ -135,8 +132,8 @@ func KubernetesNodeGroupV2ResourceSchema(ctx context.Context) schema.Schema {
 			"labels": schema.MapAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
-				Description:         "Kubernetes labels to apply to nodes in this group. Keys/values must be valid Kubernetes label strings.",
-				MarkdownDescription: "Kubernetes labels to apply to nodes in this group. Keys/values must be valid Kubernetes label strings.",
+				Description:         "Kubernetes labels to apply to the nodes in this node group. Both keys and values must conform to Kubernetes label syntax.",
+				MarkdownDescription: "Kubernetes labels to apply to the nodes in this node group. Both keys and values must conform to Kubernetes label syntax.",
 				Validators: []validator.Map{
 					schema_validators.KubernetesNodeLabelsValidator{},
 				},
@@ -154,8 +151,8 @@ func KubernetesNodeGroupV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"node_flavor": schema.StringAttribute{
 				Required:            true,
-				Description:         "The flavor ID for each node. Changing this triggers a rolling upgrade of the nodes.",
-				MarkdownDescription: "The flavor ID for each node. Changing this triggers a rolling upgrade of the nodes.",
+				Description:         "The flavor ID used for worker nodes. Changing this triggers a rolling upgrade of the nodes.",
+				MarkdownDescription: "The flavor ID used for worker nodes. Changing this triggers a rolling upgrade of the nodes.",
 				Validators: []validator.String{
 					validators.UUIDValidator{},
 				},
@@ -171,8 +168,8 @@ func KubernetesNodeGroupV2ResourceSchema(ctx context.Context) schema.Schema {
 			"region": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The region where the node group will be created. Defaults to provider's `region`. **Forces replacement** on change.",
-				MarkdownDescription: "The region where the node group will be created. Defaults to provider's `region`. **Forces replacement** on change.",
+				Description:         "The region where the node group will be created. If omitted, the provider's `region` is used. **Forces replacement** on change.",
+				MarkdownDescription: "The region where the node group will be created. If omitted, the provider's `region` is used. **Forces replacement** on change.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
@@ -196,13 +193,13 @@ func KubernetesNodeGroupV2ResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"key": schema.StringAttribute{
 							Required:            true,
-							Description:         "The taint key. Must be a valid Kubernetes label key.",
-							MarkdownDescription: "The taint key. Must be a valid Kubernetes label key.",
+							Description:         "The key of the taint. Must conform to Kubernetes label key syntax.",
+							MarkdownDescription: "The key of the taint. Must conform to Kubernetes label key syntax.",
 						},
 						"value": schema.StringAttribute{
 							Required:            true,
-							Description:         "The taint value. Must be a valid Kubernetes label value.",
-							MarkdownDescription: "The taint value. Must be a valid Kubernetes label value.",
+							Description:         "The value of the taint. Must conform to Kubernetes label value syntax.",
+							MarkdownDescription: "The value of the taint. Must conform to Kubernetes label value syntax.",
 						},
 					},
 					CustomType: TaintsType{
@@ -212,8 +209,8 @@ func KubernetesNodeGroupV2ResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Description:         "Taints to apply to nodes. Each taint must have `key`, `value`, and `effect` (one of `NoSchedule`, `PreferNoSchedule`, `NoExecute`).",
-				MarkdownDescription: "Taints to apply to nodes. Each taint must have `key`, `value`, and `effect` (one of `NoSchedule`, `PreferNoSchedule`, `NoExecute`).",
+				Description:         "Kubernetes taints to apply to the nodes in this node group. Each taint must specify `key`, `value`, and `effect` — where `effect` is one of: `NoSchedule`, `PreferNoSchedule`, `NoExecute`.",
+				MarkdownDescription: "Kubernetes taints to apply to the nodes in this node group. Each taint must specify `key`, `value`, and `effect` — where `effect` is one of: `NoSchedule`, `PreferNoSchedule`, `NoExecute`.",
 				Validators: []validator.Set{
 					schema_validators.KubernetesNodeTaintsValidator{},
 				},
@@ -247,18 +244,19 @@ func KubernetesNodeGroupV2ResourceSchema(ctx context.Context) schema.Schema {
 				},
 				CustomType:          timeouts.Type{ObjectType: types.ObjectType{AttrTypes: map[string]attr.Type{"create": types.StringType, "update": types.StringType, "delete": types.StringType}}},
 				Optional:            true,
-				Description:         "Timeouts configuration for create, update and delete operations.",
-				MarkdownDescription: "Timeouts configuration for create, update and delete operations.",
+				Description:         "Timeout configuration for create, update and delete operations.",
+				MarkdownDescription: "Timeout configuration for create, update and delete operations.",
 			},
 			"uuid": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The node group's UUID. It is generated automatically.",
-				MarkdownDescription: "The node group's UUID. It is generated automatically.",
+				Description:         "The UUID of the node group. It is generated automatically.",
+				MarkdownDescription: "The UUID of the node group. It is generated automatically.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 		},
+		Description: "Provides a Kubernetes cluster node group resource. This can be used to create, modify, and delete Kubernetes cluster node group.",
 	}
 }
 

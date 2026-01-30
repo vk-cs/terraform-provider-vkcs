@@ -337,3 +337,7 @@ func PointerOf[T any](v T) *T {
 func IsNullOrUnknown(attr SchemaAttribute) bool {
 	return attr.IsNull() || attr.IsUnknown()
 }
+
+func IsKnownValue(attr SchemaAttribute) bool {
+	return !IsNullOrUnknown(attr)
+}

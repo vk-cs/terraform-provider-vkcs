@@ -1,0 +1,1 @@
+terraform import vkcs_kubernetes_security_policy_v2.sp 3DGdkgFCVhIRjYUgHCKQfU4bO6J
