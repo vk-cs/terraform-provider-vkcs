@@ -1,0 +1,1801 @@
+{
+  "provider": {
+    "name": "vkcs"
+  },
+  "datasources": [
+    {
+      "name": "kubernetes_cluster_v2",
+      "description": "Use this data source to get informationa about a VKCS Kubernetes cluster (V2 API).",
+      "schema": {
+        "attributes": [
+          {
+            "name": "region",
+            "string": {
+              "computed_optional_required": "computed_optional",
+              "description": "The region in which to obtain the Container Infra client. If omitted, the `region` argument of the provider is used."
+            }
+          },
+          {
+            "name": "id",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "The ID of the cluster."
+            }
+          },
+          {
+            "name": "uuid",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "UUID of the cluster."
+            }
+          },
+          {
+            "name": "version",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "Kubernetes version of the cluster."
+            }
+          },
+          {
+            "name": "enable_public_ip",
+            "bool": {
+              "computed_optional_required": "computed",
+              "description": "Enable public IP for the cluster."
+            }
+          },
+          {
+            "name": "name",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The name of the cluster."
+            }
+          },
+          {
+            "name": "description",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "Description of the cluster."
+            }
+          },
+          {
+            "name": "network_id",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "ID of the cluster's network."
+            }
+          },
+          {
+            "name": "subnet_id",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "ID of the cluster's subnet."
+            }
+          },
+          {
+            "name": "availability_zones",
+            "set": {
+              "computed_optional_required": "computed",
+              "element_type": {
+                "string": {}
+              },
+              "description": "Availability zones of the cluster."
+            }
+          },
+          {
+            "name": "cluster_type",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "Type of the kubernetes cluster."
+            }
+          },
+          {
+            "name": "external_network_id",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "ID of external network."
+            }
+          },
+          {
+            "name": "insecure_registries",
+            "set": {
+              "computed_optional_required": "computed",
+              "element_type": {
+                "string": {}
+              },
+              "description": "Addresses of registries from which you can download images without checking certificates."
+            }
+          },
+          {
+            "name": "network_plugin",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "Network plugin."
+            }
+          },
+          {
+            "name": "pods_ipv4_cidr",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "IPv4 CIDR for pods network."
+            }
+          },
+          {
+            "name": "labels",
+            "map": {
+              "computed_optional_required": "computed",
+              "element_type": {
+                "string": {}
+              },
+              "description": "Key-value pairs of labels for the cluster."
+            }
+          },
+          {
+            "name": "loadbalancer_subnet_id",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The UUID of the load balancer's subnet."
+            }
+          },
+          {
+            "name": "loadbalancer_allowed_cidrs",
+            "set": {
+              "computed_optional_required": "computed",
+              "element_type": {
+                "string": {}
+              },
+              "description": "List of CIDR blocks allowed to access the load balancer."
+            }
+          },
+          {
+            "name": "master_count",
+            "int64": {
+              "computed_optional_required": "computed",
+              "description": "Number of master nodes."
+            }
+          },
+          {
+            "name": "master_flavor",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "Flavor UUID for master nodes."
+            }
+          },
+          {
+            "name": "master_disks",
+            "set_nested": {
+              "computed_optional_required": "computed",
+              "description": "List of master disks.",
+              "nested_object": {
+                "attributes": [
+                  {
+                    "name": "type",
+                    "string": {
+                      "computed_optional_required": "computed",
+                      "description": "Type of master disk."
+                    }
+                  },
+                  {
+                    "name": "size",
+                    "string": {
+                      "computed_optional_required": "computed",
+                      "description": "Size of master disk."
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "k8s_config",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "Contents of the kubeconfig file."
+            }
+          },
+          {
+            "name": "created_at",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The time at which cluster was created."
+            }
+          },
+          {
+            "name": "status",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "Cluster current status."
+            }
+          },
+          {
+            "name": "project_id",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "User project ID."
+            }
+          },
+          {
+            "name": "api_lb_fip",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "API LoadBalancer FIP (Floating IP)."
+            }
+          },
+          {
+            "name": "api_lb_vip",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "API LoadBalancer VIP (Virtual IP)."
+            }
+          },
+          {
+            "name": "api_address",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "URL address of cluster kubeapi-server."
+            }
+          },
+          {
+            "name": "node_groups",
+            "set_nested": {
+              "computed_optional_required": "computed",
+              "description": "The list of cluster node groups.",
+              "nested_object": {
+                "attributes": [
+                  {
+                    "name": "id",
+                    "string": {
+                      "computed_optional_required": "computed",
+                      "description": "ID of cluster node group."
+                    }
+                  },
+                  {
+                    "name": "name",
+                    "string": {
+                      "computed_optional_required": "computed",
+                      "description": "Name of cluster node group."
+                    }
+                  },
+                  {
+                    "name": "flavor",
+                    "string": {
+                      "computed_optional_required": "computed",
+                      "description": "Flavor of nodes in node group."
+                    }
+                  },
+                  {
+                    "name": "node_count",
+                    "int64": {
+                      "computed_optional_required": "computed",
+                      "description": "Number of nodes in node group."
+                    }
+                  },
+                  {
+                    "name": "availability_zone",
+                    "string": {
+                      "computed_optional_required": "computed",
+                      "description": "Availability zone of node group"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "kubernetes_node_group_v2",
+      "description": "Use this data source to get information about a VKCS Kubernetes cluster's node group (V2 API).",
+      "schema": {
+        "attributes": [
+          {
+            "name": "region",
+            "string": {
+              "computed_optional_required": "computed_optional",
+              "description": "Region to use for the node group. Default is a region configured for provider."
+            }
+          },
+          {
+            "name": "id",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "The ID of the node group."
+            }
+          },
+          {
+            "name": "cluster_id",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The ID of the cluster."
+            }
+          },
+          {
+            "name": "uuid",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The UUID of the node group."
+            }
+          },
+          {
+            "name": "name",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The name of node group."
+            }
+          },
+          {
+            "name": "node_flavor",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "Flavor ID of the nodes from node group."
+            }
+          },
+          {
+            "name": "availability_zone",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The availability zone of the node group."
+            }
+          },
+          {
+            "name": "scale_type",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "Type of scaling for the node group."
+            }
+          },
+          {
+            "name": "fixed_scale_node_count",
+            "int64": {
+              "computed_optional_required": "computed",
+              "description": "The node count of the node group, if scale_type is 'fixed_scale'."
+            }
+          },
+          {
+            "name": "auto_scale_node_count",
+            "int64": {
+              "computed_optional_required": "computed",
+              "description": "The node count of the node group, if scale_type is 'auto_scale'."
+            }
+          },
+          {
+            "name": "auto_scale_min_size",
+            "int64": {
+              "computed_optional_required": "computed",
+              "description": "The minimum allowed nodes for this node group."
+            }
+          },
+          {
+            "name": "auto_scale_max_size",
+            "int64": {
+              "computed_optional_required": "computed",
+              "description": "The maximum allowed nodes for this node group."
+            }
+          },
+          {
+            "name": "labels",
+            "map": {
+              "computed_optional_required": "computed",
+              "element_type": {
+                "string": {}
+              },
+              "description": "The list of key-value pairs representing additional properties of the node group."
+            }
+          },
+          {
+            "name": "taints",
+            "set_nested": {
+              "computed_optional_required": "computed",
+              "description": "The list of objects representing node group taints.",
+              "nested_object": {
+                "attributes": [
+                  {
+                    "name": "key",
+                    "string": {
+                      "computed_optional_required": "required",
+                      "description": "Key of the taint."
+                    }
+                  },
+                  {
+                    "name": "value",
+                    "string": {
+                      "computed_optional_required": "required",
+                      "description": "Value of the taint."
+                    }
+                  },
+                  {
+                    "name": "effect",
+                    "string": {
+                      "computed_optional_required": "required",
+                      "description": "Effect of the taint."
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "parallel_upgrade_chunk",
+            "int64": {
+              "computed_optional_required": "computed",
+              "description": "The maximum percent of nodes that can be unavailable during an upgrade."
+            }
+          },
+          {
+            "name": "disk_type",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The volume type to load nodes from."
+            }
+          },
+          {
+            "name": "disk_size",
+            "int64": {
+              "computed_optional_required": "computed",
+              "description": "The size in GB for volume to load nodes from."
+            }
+          },
+          {
+            "name": "created_at",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The time at which node group was created."
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "kubernetes_cluster_v2",
+      "description": "Provides a kubernetes cluster resource v2. This can be used to create, modify and delete kubernetes clusters v2.",
+      "schema": {
+        "attributes": [
+          {
+            "name": "id",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The ID of the cluster.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "uuid",
+            "string": {
+              "computed_optional_required": "computed_optional",
+              "description": "UUID of the cluster. If not provided, will be generated automatically.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.UUIDValidator{}"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                },
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "version",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "Kubernetes version of the cluster. Changing this upgrades a cluster.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.KubernetesVersionValidator{}"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "enable_public_ip",
+            "bool": {
+              "computed_optional_required": "computed_optional",
+              "description": "Enable public IP for the cluster. If true, a floating IP will be assigned to the cluster. Default false.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "boolplanmodifier.UseStateForUnknown()"
+                  }
+                },
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "boolplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+
+          {
+            "name": "name",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "The name of the cluster. Should match the pattern `^[a-zA-Z][a-zA-Z0-9_.-]*$`.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.ClusterNameValidator{}"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "description",
+            "string": {
+              "computed_optional_required": "computed_optional",
+              "description": "Description of the cluster.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "network_id",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "ID of the cluster's network. Cluster can be created only in network with SDN=sprut.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.UUIDValidator{}"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "subnet_id",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "ID of the cluster's subnet.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.UUIDValidator{}"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "availability_zones",
+            "set": {
+              "computed_optional_required": "required",
+              "description": "Availability zones of the cluster. Use 1 zone for standard cluster, 3 zones for regional cluster.",
+              "element_type": {
+                "string": {}
+              },
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "setplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "cluster_type",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "Type of the kubernetes cluster. Must be either 'standard' or 'regional'.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+                      }
+                    ],
+                    "schema_definition": "stringvalidator.OneOf(\"standard\", \"regional\")"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "external_network_id",
+            "string": {
+              "computed_optional_required": "computed_optional",
+              "description": "ID of external network.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.UUIDValidator{}"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                },
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "insecure_registries",
+            "set": {
+              "computed_optional_required": "computed_optional",
+              "description": "Addresses of registries from which you can download images without checking certificates.",
+              "element_type": {
+                "string": {}
+              },
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+                      },
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "setvalidator.ValueStringsAre(validators.InsecureRegistriesValidator{})"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "setplanmodifier.UseStateForUnknown()"
+                  }
+                },
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "setplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "network_plugin",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "Network plugin. Must be 'calico'.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+                      }
+                    ],
+                    "schema_definition": "stringvalidator.OneOf(\"calico\")"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "pods_ipv4_cidr",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "IPv4 CIDR for pods network.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.CIDRValidator{}"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "labels",
+            "map": {
+              "computed_optional_required": "computed_optional",
+              "description": "Key-value pairs of labels for the cluster.",
+              "element_type": {
+                "string": {}
+              },
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.KubernetesLabelsValidator{}"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "mapplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "loadbalancer_subnet_id",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "The UUID of the load balancer's subnet.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.UUIDValidator{}"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "loadbalancer_allowed_cidrs",
+            "set": {
+              "computed_optional_required": "computed_optional",
+              "description": "List of CIDR blocks allowed to access the load balancer.",
+              "element_type": {
+                "string": {}
+              },
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "setplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ],
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+                      },
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "setvalidator.ValueStringsAre(validators.CIDRValidator{})"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "master_count",
+            "int64": {
+              "computed_optional_required": "required",
+              "description": "Number of master nodes. Use 1 for standard cluster, 3 or 5 for regional cluster. Changing this creates a new cluster.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+                      }
+                    ],
+                    "schema_definition": "int64validator.AtLeast(1)"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+                      }
+                    ],
+                    "schema_definition": "int64planmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "master_flavor",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "Flavor UUID for master nodes. Changing this scales master nodes to the target flavor.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.UUIDValidator{}"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "master_disks",
+            "set_nested": {
+              "computed_optional_required": "computed",
+              "description": "List of master disks.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "setplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ],
+              "nested_object": {
+                "attributes": [
+                  {
+                    "name": "type",
+                    "string": {
+                      "computed_optional_required": "computed",
+                      "description": "Type of master disk."
+                    }
+                  },
+                  {
+                    "name": "size",
+                    "string": {
+                      "computed_optional_required": "computed",
+                      "description": "Size of master disk."
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "k8s_config",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "Contents of the kubeconfig file. Use it to authenticate to Kubernetes cluster.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "created_at",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The time at which cluster was created.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "Cluster current status.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "project_id",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "User project ID.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "api_lb_fip",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "API LoadBalancer FIP (Floating IP). IP address field.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "api_lb_vip",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "API LoadBalancer VIP (Virtual IP). IP address field.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "api_address",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "URL address of cluster kubeapi-server.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "node_groups",
+            "set_nested": {
+              "computed_optional_required": "computed",
+              "description": "The list of cluster node groups.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "setplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ],
+              "nested_object": {
+                "attributes": [
+                  {
+                    "name": "id",
+                    "string": {
+                      "computed_optional_required": "computed",
+                      "description": "ID of cluster node group."
+                    }
+                  },
+                  {
+                    "name": "name",
+                    "string": {
+                      "computed_optional_required": "computed",
+                      "description": "Name of cluster node group."
+                    }
+                  },
+                  {
+                    "name": "flavor",
+                    "string": {
+                      "computed_optional_required": "computed",
+                      "description": "Flavor of nodes in node group."
+                    }
+                  },
+                  {
+                    "name": "node_count",
+                    "int64": {
+                      "computed_optional_required": "computed",
+                      "description": "Number of nodes in node group."
+                    }
+                  },
+                  {
+                    "name": "availability_zone",
+                    "string": {
+                      "computed_optional_required": "computed",
+                      "description": "Availability zone of node group"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "region",
+            "string": {
+              "computed_optional_required": "computed_optional",
+              "description": "Region to use for the cluster. Default is a region configured for provider.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                },
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "kubernetes_node_group_v2",
+      "schema": {
+        "description": "Provides a cluster node group resource for V2 API. This can be used to create, modify and delete cluster's node group.",
+        "attributes": [
+          {
+            "name": "id",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The ID of the node group.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "cluster_id",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "The ID of the target cluster. Changing this will force to create a new node group.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.KSUIDValidator{}"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "uuid",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The UUID of the node group. Generated automatically after node group creation.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "name",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "The name of node group to create. Changing this will force to create a new node group.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.NodeGroupNameValidator{}"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "node_flavor",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "Flavor ID of the nodes from node group.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.UUIDValidator{}"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "availability_zone",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "The availability zone of the node group.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "scale_type",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "Type of scaling for the node group. Must be either 'fixed_scale' or 'auto_scale'. If scale_type is 'auto_scale', then the condition 'auto_scale_min_size <= auto_scale_node_count <= auto_scale_max_size' must be met.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+                      }
+                    ],
+                    "schema_definition": "stringvalidator.OneOf(\"fixed_scale\", \"auto_scale\")"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "fixed_scale_node_count",
+            "int64": {
+              "computed_optional_required": "computed_optional",
+              "description": "The desired node count of the node group. Required if scale_type is 'fixed_scale'.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+                      }
+                    ],
+                    "schema_definition": "int64validator.AtLeast(0)"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+                      }
+                    ],
+                    "schema_definition": "int64planmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "auto_scale_node_count",
+            "int64": {
+              "computed_optional_required": "computed_optional",
+              "description": "When creating a cluster, this parameter allows to specify the desired initial number of nodes in the node group. During the cluster lifecycle, indicates the current number of nodes in the node group. Required if scale_type is 'auto_scale'.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+                      }
+                    ],
+                    "schema_definition": "int64validator.AtLeast(0)"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+                      }
+                    ],
+                    "schema_definition": "int64planmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "auto_scale_min_size",
+            "int64": {
+              "computed_optional_required": "computed_optional",
+              "description": "The minimum allowed nodes for this node group. Required if scale_type is 'auto_scale'.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+                      }
+                    ],
+                    "schema_definition": "int64validator.AtLeast(0)"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+                      }
+                    ],
+                    "schema_definition": "int64planmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "auto_scale_max_size",
+            "int64": {
+              "computed_optional_required": "computed_optional",
+              "description": "The maximum allowed nodes for this node group. Required if scale_type is 'auto_scale'.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+                      }
+                    ],
+                    "schema_definition": "int64validator.AtLeast(0)"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+                      }
+                    ],
+                    "schema_definition": "int64planmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "labels",
+            "map": {
+              "computed_optional_required": "computed_optional",
+              "description": "The list of key-value pairs representing additional properties of the node group.",
+              "element_type": {
+                "string": {}
+              },
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                      }
+                    ],
+                    "schema_definition": "validators.KubernetesLabelsValidator{}"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "mapplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "taints",
+            "set_nested": {
+              "computed_optional_required": "computed_optional",
+              "description": "The list of objects representing node group taints. Each object should have following attributes: key, value, effect.",
+              "nested_object": {
+                "attributes": [
+                  {
+                    "name": "key",
+                    "string": {
+                      "computed_optional_required": "required",
+                      "description": "Key of the taint.",
+                      "validators": [
+                        {
+                          "custom": {
+                            "imports": [
+                              {
+                                "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                              }
+                            ],
+                            "schema_definition": "validators.KubernetesTaintKeyValidator{}"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "value",
+                    "string": {
+                      "computed_optional_required": "required",
+                      "description": "Value of the taint.",
+                      "validators": [
+                        {
+                          "custom": {
+                            "imports": [
+                              {
+                                "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/v2/validators"
+                              }
+                            ],
+                            "schema_definition": "validators.KubernetesTaintValueValidator{}"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "effect",
+                    "string": {
+                      "computed_optional_required": "required",
+                      "description": "Effect of the taint. Must be one of: 'NoSchedule', 'PreferNoSchedule', 'NoExecute'.",
+                      "validators": [
+                        {
+                          "custom": {
+                            "imports": [
+                              {
+                                "path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+                              }
+                            ],
+                            "schema_definition": "stringvalidator.OneOf(\"NoSchedule\", \"PreferNoSchedule\", \"NoExecute\")"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "setplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "parallel_upgrade_chunk",
+            "int64": {
+              "computed_optional_required": "required",
+              "description": "The maximum percent of nodes that can be unavailable during an upgrade.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+                      }
+                    ],
+                    "schema_definition": "int64validator.Between(1, 100)"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "disk_type",
+            "string": {
+              "computed_optional_required": "required",
+              "description": "The root volume type to load nodes from.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "disk_size",
+            "int64": {
+              "computed_optional_required": "required",
+              "description": "The size in GB for volume to load nodes from.",
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+                      }
+                    ],
+                    "schema_definition": "int64validator.AtLeast(1)"
+                  }
+                }
+              ],
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+                      }
+                    ],
+                    "schema_definition": "int64planmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "region",
+            "string": {
+              "computed_optional_required": "computed_optional",
+              "description": "Region to use for the node group. Default is a region configured for provider.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                },
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "created_at",
+            "string": {
+              "computed_optional_required": "computed",
+              "description": "The time at which node group was created.",
+              "plan_modifiers": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+                      }
+                    ],
+                    "schema_definition": "stringplanmodifier.UseStateForUnknown()"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "version": "0.1"
+}

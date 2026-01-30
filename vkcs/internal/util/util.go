@@ -87,6 +87,11 @@ func CheckDeleted(d *schema.ResourceData, err error, msg string) error {
 	return fmt.Errorf("%s %s: %s", msg, d.Id(), err)
 }
 
+// CheckDeletedStatus checks the error to see if it's a 404 (Not Found) and, if so, returns true
+func CheckDeletedStatus(err error) bool {
+	return errutil.IsNotFound(err)
+}
+
 // checkDeletedResource checks the error to see if it's a 404 (Not Found) and, if so,
 // sets the resource ID to the empty string instead of throwing an error.
 func CheckDeletedResource(ctx context.Context, r *resource.ReadResponse, err error) error {

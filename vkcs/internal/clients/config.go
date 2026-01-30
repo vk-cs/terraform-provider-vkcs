@@ -36,6 +36,7 @@ type Config interface {
 	ComputeV2Client(region string) (*gophercloud.ServiceClient, error)
 	ContainerInfraAddonsV1Client(region string) (*gophercloud.ServiceClient, error)
 	ContainerInfraV1Client(region string) (*gophercloud.ServiceClient, error)
+	ContainerInfraV2Client(region string) (*gophercloud.ServiceClient, error)
 	DatabaseV1Client(region string) (*gophercloud.ServiceClient, error)
 	DataPlatformClient(region string) (*gophercloud.ServiceClient, error)
 	IAMServiceUsersV1Client(region string) (*gophercloud.ServiceClient, error)
@@ -104,6 +105,10 @@ func (c *config) ContainerInfraV1Client(region string) (*gophercloud.ServiceClie
 	}
 
 	return client, err
+}
+
+func (c *config) ContainerInfraV2Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newContainerInfraV2, region, "managed-k8s")
 }
 
 func (c *config) ContainerInfraAddonsV1Client(region string) (*gophercloud.ServiceClient, error) {

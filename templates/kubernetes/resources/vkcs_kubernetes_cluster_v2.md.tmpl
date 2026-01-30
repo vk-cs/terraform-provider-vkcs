@@ -1,0 +1,25 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a kubernetes cluster v2.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Standard Kubernetes cluster
+{{tffile "examples/kubernetes/cluster_v2/standard/main.tf"}}
+
+## Regional Kubernetes cluster
+{{tffile "examples/kubernetes/cluster_v2/regional/main.tf"}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+Clusters can be imported using the `id`, e.g.
+
+{{codefile "shell" "templates/kubernetes/resources/vkcs_kubernetes_cluster_v2/import.sh"}}

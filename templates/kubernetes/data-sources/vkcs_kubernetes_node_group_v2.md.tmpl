@@ -1,0 +1,15 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Get information on clusters node group v2.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile "examples/kubernetes/node_group_v2/datasource.tf"}}
+{{ .SchemaMarkdown }}

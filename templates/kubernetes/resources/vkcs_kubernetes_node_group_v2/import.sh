@@ -1,0 +1,1 @@
+terraform import vkcs_kubernetes_node_group_v2.worker 39WHkEHwtXy1YWqka4D5xuBJxw4
