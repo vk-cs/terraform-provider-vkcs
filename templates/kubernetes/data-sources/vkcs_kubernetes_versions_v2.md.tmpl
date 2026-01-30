@@ -1,0 +1,16 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Returns a list of Kubernetes versions available for provisioning next-generation clusters.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile "examples/kubernetes/versions_v2/main.tf"}}
+
+{{ .SchemaMarkdown }}

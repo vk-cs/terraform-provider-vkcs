@@ -80,6 +80,8 @@ provider "vkcs" {
 
     - `load_balancer` optional *string* &rarr;  Load Balancer API custom endpoint.
 
+    - `managed_k8s` optional *string* &rarr;  Cloud Containers V2 API custom endpoint.
+
     - `ml_platform` optional *string* &rarr;  ML Platform API custom endpoint.
 
     - `networking` optional *string* &rarr;  Networking API custom endpoint.
