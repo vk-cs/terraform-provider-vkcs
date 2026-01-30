@@ -1,0 +1,16 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Retrieves information about a specific node group within a next-generation Kubernetes cluster.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile "examples/kubernetes/node_group_v2/main-datasource.tf"}}
+
+{{ .SchemaMarkdown }}

@@ -6,8 +6,9 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/mitchellh/mapstructure"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v1/clusters"
+	clustersv1 "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v1/nodegroups"
+	clustersv2 "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
@@ -95,7 +96,7 @@ func flattenNodeGroupTaintsList(v []nodegroups.Taint) []map[string]interface{} {
 
 func kubernetesStateRefreshFunc(client *gophercloud.ServiceClient, clusterID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		c, err := clusters.Get(client, clusterID).Extract()
+		c, err := clustersv1.Get(client, clusterID).Extract()
 		if err != nil {
 			if errutil.IsNotFound(err) {
 				return c, string(clusterStatusNotFound), nil
@@ -107,6 +108,19 @@ func kubernetesStateRefreshFunc(client *gophercloud.ServiceClient, clusterID str
 			return c, c.NewStatus, err
 		}
 		return c, c.NewStatus, nil
+	}
+}
+
+func kubernetesStateRefreshFuncV2(client *gophercloud.ServiceClient, clusterID string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		cluster, err := clustersv2.Get(client, clusterID).Extract()
+		if err != nil {
+			if errutil.IsNotFound(err) {
+				return cluster, clusterStatusV2Deleted, nil
+			}
+			return nil, "", err
+		}
+		return cluster, cluster.Status, nil
 	}
 }
 
