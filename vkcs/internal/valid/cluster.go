@@ -7,8 +7,7 @@ import (
 )
 
 var (
-	ErrInvalidClusterName      = errors.New("invalid cluster name")
-	ErrInvalidAvailabilityZone = errors.New("invalid availability zone")
+	ErrInvalidClusterName = errors.New("invalid cluster name")
 )
 
 // ClusterName validates name of cluster.

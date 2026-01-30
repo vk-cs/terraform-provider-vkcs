@@ -19,6 +19,11 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
+type SchemaAttribute interface {
+	IsNull() bool
+	IsUnknown() bool
+}
+
 var DecoderConfig = &mapstructure.DecoderConfig{
 	TagName: "json",
 }
@@ -35,7 +40,7 @@ func MapStructureDecoder(strct interface{}, v *map[string]interface{}, config *m
 // NOTE: This function does not implement mapping nested structures
 func StructToMap(s interface{}) (map[string]interface{}, error) {
 	v := reflect.ValueOf(s)
-	if v.Kind() == reflect.Ptr {
+	if v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
 
@@ -327,4 +332,8 @@ func ErrorWithRequestID(err error, requestID string) error {
 
 func PointerOf[T any](v T) *T {
 	return &v
+}
+
+func IsNullOrUnknown(attr SchemaAttribute) bool {
+	return attr.IsNull() || attr.IsUnknown()
 }
