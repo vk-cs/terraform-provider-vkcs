@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.15.2
+- Add resource vkcs_kubernetes_node_group_v2
+
 #### v0.15.1
 - Add datasource vkcs_kubernetes_cluster_v2
 

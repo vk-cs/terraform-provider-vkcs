@@ -276,6 +276,7 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_kubernetes_cluster":                 kubernetes.ResourceKubernetesCluster(),
 			"vkcs_kubernetes_cluster_v2":              kubernetes.ResourceKubernetesClusterV2(),
 			"vkcs_kubernetes_node_group":              kubernetes.ResourceKubernetesNodeGroup(),
+			"vkcs_kubernetes_node_group_v2":           kubernetes.ResourceKubernetesNodeGroupV2(),
 			"vkcs_publicdns_zone":                     publicdns.ResourcePublicDNSZone(),
 			"vkcs_publicdns_record":                   publicdns.ResourcePublicDNSRecord(),
 		},

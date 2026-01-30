@@ -40,6 +40,21 @@ func isClusterNameV2(val any, key string) (warns []string, errs []error) {
 	return
 }
 
+// isNodeGroupNameV2 validates node group name according to DNS subdomain rules
+func isNodeGroupNameV2(val any, key string) (warns []string, errs []error) {
+	v, ok := val.(string)
+	if !ok {
+		errs = append(errs, fmt.Errorf("expected string for %q, got %T", key, val))
+		return
+	}
+
+	if err := valid.NodeGroupNameV2(v); err != nil {
+		errs = append(errs, err)
+	}
+
+	return
+}
+
 // validateInsecureRegistryURLV2 validates insecure registry URL format
 func validateInsecureRegistryURLV2(i interface{}, path cty.Path) diag.Diagnostics {
 	var diags diag.Diagnostics

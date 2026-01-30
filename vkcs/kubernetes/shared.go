@@ -8,14 +8,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/mapstructure"
 	v1clusters "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v1/clusters"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v1/nodegroups"
+	v1nodegroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v1/nodegroups"
 	v2clusters "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/clusters"
+	v2nodegroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/nodegroups"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 type Schema interface {
 	Get(key string) interface{}
+}
+
+// getAsTaintsSlice возвращает значение поля как []nodegroups.Taint, независимо от его типа ([]interface{} или *schema.Set)
+func getAsTaintsSlice(d Schema, key string) ([]v2nodegroups.Taint, error) {
+	value := d.Get(key)
+
+	switch v := value.(type) {
+	case []interface{}:
+		return extractNodeGroupTaintsListV2(v)
+	case *schema.Set:
+		list := v.List()
+		return extractNodeGroupTaintsListV2(list)
+	default:
+		return nil, fmt.Errorf("field %s has unsupported type %T", key, v)
+	}
 }
 
 // getAsStringSlice возвращает значение поля как []string, независимо от его типа ([]interface{} или *schema.Set)
@@ -49,8 +65,8 @@ func getAsStringSlice(d Schema, key string) ([]string, error) {
 	}
 }
 
-func extractKubernetesGroupMap(nodeGroups []interface{}) ([]nodegroups.NodeGroup, error) {
-	filledNodeGroups := make([]nodegroups.NodeGroup, len(nodeGroups))
+func extractKubernetesGroupMap(nodeGroups []interface{}) ([]v1nodegroups.NodeGroup, error) {
+	filledNodeGroups := make([]v1nodegroups.NodeGroup, len(nodeGroups))
 	for i, ng := range nodeGroups {
 		g := ng.(map[string]interface{})
 		for k, v := range g {
@@ -58,7 +74,7 @@ func extractKubernetesGroupMap(nodeGroups []interface{}) ([]nodegroups.NodeGroup
 				delete(g, k)
 			}
 		}
-		var nodeGroup nodegroups.NodeGroup
+		var nodeGroup v1nodegroups.NodeGroup
 		err := util.MapStructureDecoder(&nodeGroup, &g, util.DecoderConfig)
 		if err != nil {
 			return nil, err
@@ -80,10 +96,10 @@ func extractKubernetesLabelsMap(v map[string]interface{}) (map[string]string, er
 	return m, nil
 }
 
-func extractNodeGroupLabelsList(v []interface{}) ([]nodegroups.Label, error) {
-	labels := make([]nodegroups.Label, len(v))
+func extractNodeGroupLabelsList(v []interface{}) ([]v1nodegroups.Label, error) {
+	labels := make([]v1nodegroups.Label, len(v))
 	for i, label := range v {
-		var L nodegroups.Label
+		var L v1nodegroups.Label
 		err := mapstructure.Decode(label.(map[string]interface{}), &L)
 		if err != nil {
 			return nil, err
@@ -93,15 +109,15 @@ func extractNodeGroupLabelsList(v []interface{}) ([]nodegroups.Label, error) {
 	return labels, nil
 }
 
-func extractNodeGroupTaintsList(rawTaints []any) ([]nodegroups.Taint, error) {
-	taints := make([]nodegroups.Taint, len(rawTaints))
+func extractNodeGroupTaintsListV1(rawTaints []any) ([]v1nodegroups.Taint, error) {
+	taints := make([]v1nodegroups.Taint, len(rawTaints))
 	for i, rawTaint := range rawTaints {
 		taint, ok := rawTaint.(map[string]any)
 		if !ok {
 			return nil, fmt.Errorf("empty node group taint with index: %d", i)
 		}
 
-		var resTaint nodegroups.Taint
+		var resTaint v1nodegroups.Taint
 		if err := mapstructure.Decode(taint, &resTaint); err != nil {
 			return nil, fmt.Errorf("failed to read node group taint with index %d: %s", i, err)
 		}
@@ -112,7 +128,26 @@ func extractNodeGroupTaintsList(rawTaints []any) ([]nodegroups.Taint, error) {
 	return taints, nil
 }
 
-func flattenNodeGroupLabelsList(v []nodegroups.Label) []map[string]interface{} {
+func extractNodeGroupTaintsListV2(rawTaints []any) ([]v2nodegroups.Taint, error) {
+	taints := make([]v2nodegroups.Taint, len(rawTaints))
+	for i, rawTaint := range rawTaints {
+		taint, ok := rawTaint.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("empty node group taint with index: %d", i)
+		}
+
+		var resTaint v2nodegroups.Taint
+		if err := mapstructure.Decode(taint, &resTaint); err != nil {
+			return nil, fmt.Errorf("failed to read node group taint with index %d: %s", i, err)
+		}
+
+		taints[i] = resTaint
+	}
+
+	return taints, nil
+}
+
+func flattenNodeGroupLabelsList(v []v1nodegroups.Label) []map[string]interface{} {
 	labels := make([]map[string]interface{}, len(v))
 	for i, label := range v {
 		m := map[string]interface{}{"key": label.Key, "value": label.Value}
@@ -121,7 +156,7 @@ func flattenNodeGroupLabelsList(v []nodegroups.Label) []map[string]interface{} {
 	return labels
 }
 
-func flattenNodeGroupTaintsList(v []nodegroups.Taint) []map[string]interface{} {
+func flattenNodeGroupTaintsList(v []v1nodegroups.Taint) []map[string]interface{} {
 	taints := make([]map[string]interface{}, len(v))
 	for i, taint := range v {
 		m := map[string]interface{}{"key": taint.Key, "value": taint.Value, "effect": taint.Effect}
@@ -166,7 +201,7 @@ func kubernetesStateRefreshFuncV2(client *gophercloud.ServiceClient, clusterID s
 
 func kubernetesNodeGroupStateRefreshFunc(client *gophercloud.ServiceClient, nodeGroupID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		c, err := nodegroups.Get(client, nodeGroupID).Extract()
+		c, err := v1nodegroups.Get(client, nodeGroupID).Extract()
 		if err != nil {
 			if errutil.IsNotFound(err) {
 				return c, string(nodeGroupStatusNotFound), nil

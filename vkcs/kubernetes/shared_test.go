@@ -122,7 +122,7 @@ func TestExtractNodeGroupTaintsList(t *testing.T) {
 		},
 	}
 
-	actualTaints, err := extractNodeGroupTaintsList(taints)
+	actualTaints, err := extractNodeGroupTaintsListV1(taints)
 	assert.Nil(t, err)
 	sort.Slice(actualTaints, func(i, j int) bool {
 		return actualTaints[i].Key < actualTaints[j].Key
@@ -140,7 +140,7 @@ func TestExtractNodeGroupTaintsListError(t *testing.T) {
 		},
 	}
 
-	actualTaints, err := extractNodeGroupTaintsList(taints)
+	actualTaints, err := extractNodeGroupTaintsListV1(taints)
 	assert.Empty(t, actualTaints)
 	assert.EqualError(t, err, "empty node group taint with index: 0")
 }

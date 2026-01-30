@@ -24,10 +24,12 @@ const (
 )
 
 const (
-	createUpdateDelayV2        = 5
-	createUpdatePollIntervalV2 = 30
-	deleteDelayV2              = 5
-	deletePollIntervalV2       = 30
+	createClusterDelayV2        = 5
+	createClusterPollIntervalV2 = 30
+	updateClusterDelayV2        = 3
+	updateClusterPollIntervalV2 = 20
+	deleteClusterDelayV2        = 2
+	deleteClusterPollIntervalV2 = 20
 )
 
 // cluster statuses from new API
@@ -516,8 +518,8 @@ func resourceKubernetesClusterV2Create(ctx context.Context, d *schema.ResourceDa
 		Target:       []string{clusterStatusV2Running},
 		Refresh:      kubernetesStateRefreshFuncV2(containerInfraClientV2, clusterID),
 		Timeout:      d.Timeout(schema.TimeoutCreate),
-		Delay:        createUpdateDelayV2 * time.Minute,
-		PollInterval: createUpdatePollIntervalV2 * time.Second,
+		Delay:        createClusterDelayV2 * time.Minute,
+		PollInterval: createClusterPollIntervalV2 * time.Second,
 	}
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
@@ -693,8 +695,8 @@ func resourceKubernetesClusterV2Update(ctx context.Context, d *schema.ResourceDa
 		Target:       []string{clusterStatusV2Running},
 		Refresh:      kubernetesStateRefreshFuncV2(containerInfraClientV2, d.Id()),
 		Timeout:      d.Timeout(schema.TimeoutUpdate),
-		Delay:        createUpdateDelayV2 * time.Minute,
-		PollInterval: createUpdatePollIntervalV2 * time.Second,
+		Delay:        updateClusterDelayV2 * time.Minute,
+		PollInterval: updateClusterPollIntervalV2 * time.Second,
 	}
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
@@ -727,8 +729,8 @@ func resourceKubernetesClusterV2Delete(ctx context.Context, d *schema.ResourceDa
 		Target:       []string{clusterStatusV2Deleted},
 		Refresh:      kubernetesStateRefreshFuncV2(containerInfraClientV2, d.Id()),
 		Timeout:      d.Timeout(schema.TimeoutDelete),
-		Delay:        deleteDelayV2 * time.Second,
-		PollInterval: deletePollIntervalV2 * time.Second,
+		Delay:        deleteClusterDelayV2 * time.Second,
+		PollInterval: deleteClusterPollIntervalV2 * time.Second,
 	}
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {

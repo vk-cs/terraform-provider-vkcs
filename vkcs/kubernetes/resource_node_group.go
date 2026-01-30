@@ -222,7 +222,7 @@ func resourceKubernetesNodeGroupCreate(ctx context.Context, d *schema.ResourceDa
 
 	if tnt, tntOk := d.GetOk("taints"); tntOk {
 		rawTaints := tnt.([]interface{})
-		taints, err := extractNodeGroupTaintsList(rawTaints)
+		taints, err := extractNodeGroupTaintsListV1(rawTaints)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -303,7 +303,7 @@ func resourceKubernetesNodeGroupRead(ctx context.Context, d *schema.ResourceData
 
 	// Get and check taints list.
 	rawTaints := d.Get("taints").([]interface{})
-	taints, err := extractNodeGroupTaintsList(rawTaints)
+	taints, err := extractNodeGroupTaintsListV1(rawTaints)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -454,7 +454,7 @@ func resourceKubernetesNodeGroupUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if d.HasChange("taints") {
 		rawTaints := d.Get("taints").([]interface{})
-		taints, err := extractNodeGroupTaintsList(rawTaints)
+		taints, err := extractNodeGroupTaintsListV1(rawTaints)
 		if err != nil {
 			return diag.FromErr(err)
 		}
