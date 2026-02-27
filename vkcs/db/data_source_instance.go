@@ -17,14 +17,14 @@ import (
 func volInstHash(v interface{}) int {
 	var buf bytes.Buffer
 	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%d-", m["size"].(int)))
+	fmt.Fprintf(&buf, "%d-", m["size"].(int))
 	switch used := m["used"].(type) {
 	case float32:
-		buf.WriteString(fmt.Sprintf("%.2f-", used))
+		fmt.Fprintf(&buf, "%.2f-", used)
 	default:
-		buf.WriteString(fmt.Sprintf("%.2f-", used))
+		fmt.Fprintf(&buf, "%.2f-", used)
 	}
-	buf.WriteString(fmt.Sprintf("%s-", m["volume_id"].(string)))
+	fmt.Fprintf(&buf, "%s-", m["volume_id"].(string))
 	// TODO(irlndts): the function is deprecated, replace it.
 	// nolint:staticcheck
 	return hashcode.String(buf.String())

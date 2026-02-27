@@ -49,16 +49,16 @@ type InstanceShortRespOpts struct {
 type Volume struct {
 	Size       *int     `json:"size" required:"true"`
 	Used       *float32 `json:"used,omitempty"`
-	VolumeID   string   `json:"volume_id,,omitempty"`
-	VolumeType string   `json:"type,,omitempty" required:"true"`
+	VolumeID   string   `json:"volume_id,omitempty"`
+	VolumeType string   `json:"type,omitempty" required:"true"`
 }
 
 // walVolume represents database instance wal volume
 type WalVolume struct {
 	Size        *int     `json:"size" required:"true"`
 	Used        *float32 `json:"used,omitempty"`
-	VolumeID    string   `json:"volume_id,,omitempty"`
-	VolumeType  string   `json:"type,,omitempty" required:"true"`
+	VolumeID    string   `json:"volume_id,omitempty"`
+	VolumeType  string   `json:"type,omitempty" required:"true"`
 	AutoExpand  int      `json:"autoresize_enabled,omitempty"`
 	MaxDiskSize int      `json:"autoresize_max_size,omitempty"`
 }
