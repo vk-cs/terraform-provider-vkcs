@@ -181,7 +181,7 @@ func expandNetworkingPortFixedIP(d *schema.ResourceData) interface{} {
 func resourceNetworkingPortAllowedAddressPairsHash(v interface{}) int {
 	var buf bytes.Buffer
 	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-%s", m["ip_address"].(string), m["mac_address"].(string)))
+	fmt.Fprintf(&buf, "%s-%s", m["ip_address"].(string), m["mac_address"].(string))
 
 	return hashcode.String(buf.String())
 }

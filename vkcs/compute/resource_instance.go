@@ -1564,7 +1564,7 @@ func resourceComputeSchedulerHintsHash(v interface{}) int {
 	}
 
 	if m["group"] != nil {
-		buf.WriteString(fmt.Sprintf("%s-", m["group"].(string)))
+		fmt.Fprintf(&buf, "%s-", m["group"].(string))
 	}
 
 	return hashcode.String(buf.String())
@@ -1657,7 +1657,7 @@ func checkBlockDeviceConfig(d *schema.ResourceData) diag.Diagnostics {
 func resourceComputeInstancePersonalityHash(v interface{}) int {
 	var buf bytes.Buffer
 	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["file"].(string)))
+	fmt.Fprintf(&buf, "%s-", m["file"].(string))
 
 	return hashcode.String(buf.String())
 }
