@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.14.1 (unreleased)
+#### v0.14.1
 -  Changed defaultIdentityEndpoint env
 
 #### v0.14.0

@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.14.0",
+  "provider_version": "v0.14.1",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
