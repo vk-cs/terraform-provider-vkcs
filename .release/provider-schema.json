@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.14.1",
+  "provider_version": "v0.15.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -89,6 +89,11 @@
               "type": "TypeString",
               "optional": true,
               "description": "Load Balancer API custom endpoint."
+            },
+            "managed_k8s": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "Cloud Containers V2 API custom endpoint."
             },
             "ml_platform": {
               "type": "TypeString",
@@ -4200,6 +4205,219 @@
         },
         "description": "Provides a kubernetes cluster resource. This can be used to create, modify and delete kubernetes clusters."
       },
+      "vkcs_kubernetes_cluster_v2": {
+        "schema": {
+          "api_address": {
+            "type": "TypeString",
+            "description": "URL address of cluster kubeapi-server.",
+            "computed": true
+          },
+          "api_lb_fip": {
+            "type": "TypeString",
+            "description": "API LoadBalancer FIP (Floating IP). IP address field.",
+            "computed": true
+          },
+          "api_lb_vip": {
+            "type": "TypeString",
+            "description": "API LoadBalancer VIP (Virtual IP). IP address field.",
+            "computed": true
+          },
+          "availability_zones": {
+            "type": "TypeSet",
+            "required": true,
+            "description": "Availability zones of the cluster. Use 1 zone for standard cluster, 3 zones for regional cluster.",
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "cluster_type": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Type of the kubernetes cluster. Must be either 'standard' or 'regional'."
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "The time at which cluster was created.",
+            "computed": true
+          },
+          "description": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Description of the cluster.",
+            "computed": true
+          },
+          "enable_public_ip": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Enable public IP for the cluster. If true, a floating IP will be assigned to the cluster. Default false.",
+            "computed": true
+          },
+          "external_network_id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "ID of external network.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "The ID of the cluster.",
+            "computed": true
+          },
+          "insecure_registries": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "Addresses of registries from which you can download images without checking certificates.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "k8s_config": {
+            "type": "TypeString",
+            "description": "Contents of the kubeconfig file. Use it to authenticate to Kubernetes cluster.",
+            "computed": true
+          },
+          "labels": {
+            "type": "TypeMap",
+            "optional": true,
+            "description": "Key-value pairs of labels for the cluster.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "loadbalancer_allowed_cidrs": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "List of CIDR blocks allowed to access the load balancer.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "loadbalancer_subnet_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The UUID of the load balancer's subnet."
+          },
+          "master_count": {
+            "type": "TypeInt",
+            "required": true,
+            "description": "Number of master nodes. Use 1 for standard cluster, 3 or 5 for regional cluster. Changing this creates a new cluster."
+          },
+          "master_disks": {
+            "type": "TypeSet",
+            "description": "List of master disks.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "size": {
+                  "type": "TypeString",
+                  "description": "Size of master disk.",
+                  "computed": true
+                },
+                "type": {
+                  "type": "TypeString",
+                  "description": "Type of master disk.",
+                  "computed": true
+                }
+              }
+            }
+          },
+          "master_flavor": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Flavor UUID for master nodes. Changing this scales master nodes to the target flavor."
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The name of the cluster. Should match the pattern `^[a-zA-Z][a-zA-Z0-9_.-]*$`."
+          },
+          "network_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "ID of the cluster's network. Cluster can be created only in network with SDN=sprut."
+          },
+          "network_plugin": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Network plugin. Must be 'calico'."
+          },
+          "node_groups": {
+            "type": "TypeSet",
+            "description": "The list of cluster node groups.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "availability_zone": {
+                  "type": "TypeString",
+                  "description": "Availability zone of node group",
+                  "computed": true
+                },
+                "flavor": {
+                  "type": "TypeString",
+                  "description": "Flavor of nodes in node group.",
+                  "computed": true
+                },
+                "id": {
+                  "type": "TypeString",
+                  "description": "ID of cluster node group.",
+                  "computed": true
+                },
+                "name": {
+                  "type": "TypeString",
+                  "description": "Name of cluster node group.",
+                  "computed": true
+                },
+                "node_count": {
+                  "type": "TypeInt",
+                  "description": "Number of nodes in node group.",
+                  "computed": true
+                }
+              }
+            }
+          },
+          "pods_ipv4_cidr": {
+            "type": "TypeString",
+            "required": true,
+            "description": "IPv4 CIDR for pods network."
+          },
+          "project_id": {
+            "type": "TypeString",
+            "description": "User project ID.",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Region to use for the cluster. Default is a region configured for provider.",
+            "computed": true
+          },
+          "status": {
+            "type": "TypeString",
+            "description": "Cluster current status.",
+            "computed": true
+          },
+          "subnet_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "ID of the cluster's subnet."
+          },
+          "uuid": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "UUID of the cluster. If not provided, will be generated automatically.",
+            "computed": true
+          },
+          "version": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Kubernetes version of the cluster. Changing this upgrades a cluster."
+          }
+        },
+        "new_since": "v0.15.0"
+      },
       "vkcs_kubernetes_node_group": {
         "schema": {
           "autoscaling_enabled": {
@@ -4339,6 +4557,131 @@
           "update": 60
         },
         "description": "Provides a cluster node group resource. This can be used to create, modify and delete cluster's node group."
+      },
+      "vkcs_kubernetes_node_group_v2": {
+        "schema": {
+          "auto_scale_max_size": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "The maximum allowed nodes for this node group. Required if scale_type is 'auto_scale'.",
+            "computed": true
+          },
+          "auto_scale_min_size": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "The minimum allowed nodes for this node group. Required if scale_type is 'auto_scale'.",
+            "computed": true
+          },
+          "auto_scale_node_count": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "When creating a cluster, this parameter allows to specify the desired initial number of nodes in the node group. During the cluster lifecycle, indicates the current number of nodes in the node group. Required if scale_type is 'auto_scale'.",
+            "computed": true
+          },
+          "availability_zone": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The availability zone of the node group."
+          },
+          "cluster_id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the target cluster. Changing this will force to create a new node group."
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "The time at which node group was created.",
+            "computed": true
+          },
+          "disk_size": {
+            "type": "TypeInt",
+            "required": true,
+            "description": "The size in GB for volume to load nodes from."
+          },
+          "disk_type": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The root volume type to load nodes from."
+          },
+          "fixed_scale_node_count": {
+            "type": "TypeInt",
+            "optional": true,
+            "description": "The desired node count of the node group. Required if scale_type is 'fixed_scale'.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "The ID of the node group.",
+            "computed": true
+          },
+          "labels": {
+            "type": "TypeMap",
+            "optional": true,
+            "description": "The list of key-value pairs representing additional properties of the node group.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The name of node group to create. Changing this will force to create a new node group."
+          },
+          "node_flavor": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Flavor ID of the nodes from node group."
+          },
+          "parallel_upgrade_chunk": {
+            "type": "TypeInt",
+            "required": true,
+            "description": "The maximum percent of nodes that can be unavailable during an upgrade."
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Region to use for the node group. Default is a region configured for provider.",
+            "computed": true
+          },
+          "scale_type": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Type of scaling for the node group. Must be either 'fixed_scale' or 'auto_scale'. If scale_type is 'auto_scale', then the condition 'auto_scale_min_size \u003c= auto_scale_node_count \u003c= auto_scale_max_size' must be met."
+          },
+          "taints": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "The list of objects representing node group taints. Each object should have following attributes: key, value, effect.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "effect": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Effect of the taint. Must be one of: 'NoSchedule', 'PreferNoSchedule', 'NoExecute'."
+                },
+                "key": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Key of the taint."
+                },
+                "value": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Value of the taint."
+                }
+              }
+            }
+          },
+          "uuid": {
+            "type": "TypeString",
+            "description": "The UUID of the node group. Generated automatically after node group creation.",
+            "computed": true
+          }
+        },
+        "description": "Provides a cluster node group resource for V2 API. This can be used to create, modify and delete cluster's node group.",
+        "new_since": "v0.15.0"
       },
       "vkcs_kubernetes_security_policy": {
         "schema": {
@@ -9921,6 +10264,212 @@
         },
         "description": "Use this data source to get the ID of an available VKCS kubernetes cluster."
       },
+      "vkcs_kubernetes_cluster_v2": {
+        "schema": {
+          "api_address": {
+            "type": "TypeString",
+            "description": "URL address of cluster kubeapi-server.",
+            "computed": true
+          },
+          "api_lb_fip": {
+            "type": "TypeString",
+            "description": "API LoadBalancer FIP (Floating IP).",
+            "computed": true
+          },
+          "api_lb_vip": {
+            "type": "TypeString",
+            "description": "API LoadBalancer VIP (Virtual IP).",
+            "computed": true
+          },
+          "availability_zones": {
+            "type": "TypeSet",
+            "description": "Availability zones of the cluster.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "cluster_type": {
+            "type": "TypeString",
+            "description": "Type of the kubernetes cluster.",
+            "computed": true
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "The time at which cluster was created.",
+            "computed": true
+          },
+          "description": {
+            "type": "TypeString",
+            "description": "Description of the cluster.",
+            "computed": true
+          },
+          "enable_public_ip": {
+            "type": "TypeBool",
+            "description": "Enable public IP for the cluster.",
+            "computed": true
+          },
+          "external_network_id": {
+            "type": "TypeString",
+            "description": "ID of external network.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the cluster."
+          },
+          "insecure_registries": {
+            "type": "TypeSet",
+            "description": "Addresses of registries from which you can download images without checking certificates.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "k8s_config": {
+            "type": "TypeString",
+            "description": "Contents of the kubeconfig file.",
+            "computed": true
+          },
+          "labels": {
+            "type": "TypeMap",
+            "description": "Key-value pairs of labels for the cluster.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "loadbalancer_allowed_cidrs": {
+            "type": "TypeSet",
+            "description": "List of CIDR blocks allowed to access the load balancer.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "loadbalancer_subnet_id": {
+            "type": "TypeString",
+            "description": "The UUID of the load balancer's subnet.",
+            "computed": true
+          },
+          "master_count": {
+            "type": "TypeInt",
+            "description": "Number of master nodes.",
+            "computed": true
+          },
+          "master_disks": {
+            "type": "TypeSet",
+            "description": "List of master disks.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "size": {
+                  "type": "TypeString",
+                  "description": "Size of master disk.",
+                  "computed": true
+                },
+                "type": {
+                  "type": "TypeString",
+                  "description": "Type of master disk.",
+                  "computed": true
+                }
+              }
+            }
+          },
+          "master_flavor": {
+            "type": "TypeString",
+            "description": "Flavor UUID for master nodes.",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "description": "The name of the cluster.",
+            "computed": true
+          },
+          "network_id": {
+            "type": "TypeString",
+            "description": "ID of the cluster's network.",
+            "computed": true
+          },
+          "network_plugin": {
+            "type": "TypeString",
+            "description": "Network plugin.",
+            "computed": true
+          },
+          "node_groups": {
+            "type": "TypeSet",
+            "description": "The list of cluster node groups.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "availability_zone": {
+                  "type": "TypeString",
+                  "description": "Availability zone of node group",
+                  "computed": true
+                },
+                "flavor": {
+                  "type": "TypeString",
+                  "description": "Flavor of nodes in node group.",
+                  "computed": true
+                },
+                "id": {
+                  "type": "TypeString",
+                  "description": "ID of cluster node group.",
+                  "computed": true
+                },
+                "name": {
+                  "type": "TypeString",
+                  "description": "Name of cluster node group.",
+                  "computed": true
+                },
+                "node_count": {
+                  "type": "TypeInt",
+                  "description": "Number of nodes in node group.",
+                  "computed": true
+                }
+              }
+            }
+          },
+          "pods_ipv4_cidr": {
+            "type": "TypeString",
+            "description": "IPv4 CIDR for pods network.",
+            "computed": true
+          },
+          "project_id": {
+            "type": "TypeString",
+            "description": "User project ID.",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the Container Infra client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          },
+          "status": {
+            "type": "TypeString",
+            "description": "Cluster current status.",
+            "computed": true
+          },
+          "subnet_id": {
+            "type": "TypeString",
+            "description": "ID of the cluster's subnet.",
+            "computed": true
+          },
+          "uuid": {
+            "type": "TypeString",
+            "description": "UUID of the cluster.",
+            "computed": true
+          },
+          "version": {
+            "type": "TypeString",
+            "description": "Kubernetes version of the cluster.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.15.0"
+      },
       "vkcs_kubernetes_clustertemplate": {
         "schema": {
           "apiserver_port": {
@@ -10258,6 +10807,124 @@
           }
         },
         "description": "Use this data source to get information on VKCS Kubernetes cluster's node group."
+      },
+      "vkcs_kubernetes_node_group_v2": {
+        "schema": {
+          "auto_scale_max_size": {
+            "type": "TypeInt",
+            "description": "The maximum allowed nodes for this node group.",
+            "computed": true
+          },
+          "auto_scale_min_size": {
+            "type": "TypeInt",
+            "description": "The minimum allowed nodes for this node group.",
+            "computed": true
+          },
+          "auto_scale_node_count": {
+            "type": "TypeInt",
+            "description": "The node count of the node group, if scale_type is 'auto_scale'.",
+            "computed": true
+          },
+          "availability_zone": {
+            "type": "TypeString",
+            "description": "The availability zone of the node group.",
+            "computed": true
+          },
+          "cluster_id": {
+            "type": "TypeString",
+            "description": "The ID of the cluster.",
+            "computed": true
+          },
+          "created_at": {
+            "type": "TypeString",
+            "description": "The time at which node group was created.",
+            "computed": true
+          },
+          "disk_size": {
+            "type": "TypeInt",
+            "description": "The size in GB for volume to load nodes from.",
+            "computed": true
+          },
+          "disk_type": {
+            "type": "TypeString",
+            "description": "The volume type to load nodes from.",
+            "computed": true
+          },
+          "fixed_scale_node_count": {
+            "type": "TypeInt",
+            "description": "The node count of the node group, if scale_type is 'fixed_scale'.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The ID of the node group."
+          },
+          "labels": {
+            "type": "TypeMap",
+            "description": "The list of key-value pairs representing additional properties of the node group.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "name": {
+            "type": "TypeString",
+            "description": "The name of node group.",
+            "computed": true
+          },
+          "node_flavor": {
+            "type": "TypeString",
+            "description": "Flavor ID of the nodes from node group.",
+            "computed": true
+          },
+          "parallel_upgrade_chunk": {
+            "type": "TypeInt",
+            "description": "The maximum percent of nodes that can be unavailable during an upgrade.",
+            "computed": true
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Region to use for the node group. Default is a region configured for provider.",
+            "computed": true
+          },
+          "scale_type": {
+            "type": "TypeString",
+            "description": "Type of scaling for the node group.",
+            "computed": true
+          },
+          "taints": {
+            "type": "TypeSet",
+            "description": "The list of objects representing node group taints.",
+            "computed": true,
+            "elem": {
+              "schema": {
+                "effect": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Effect of the taint."
+                },
+                "key": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Key of the taint."
+                },
+                "value": {
+                  "type": "TypeString",
+                  "required": true,
+                  "description": "Value of the taint."
+                }
+              }
+            }
+          },
+          "uuid": {
+            "type": "TypeString",
+            "description": "The UUID of the node group.",
+            "computed": true
+          }
+        },
+        "new_since": "v0.15.0"
       },
       "vkcs_kubernetes_security_policy_template": {
         "schema": {

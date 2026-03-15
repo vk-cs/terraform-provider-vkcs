@@ -1,0 +1,21 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages clusters node group v2.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile .ExampleFile}}
+{{ .SchemaMarkdown }}
+
+## Import
+
+Node groups can be imported using the `id`, e.g.
+
+{{codefile "shell" "templates/kubernetes/resources/vkcs_kubernetes_node_group_v2/import.sh"}}
