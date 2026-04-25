@@ -31,6 +31,7 @@ type Config interface {
 	GetMutex() *mutexkv.MutexKV
 
 	BackupV1Client(region string, tenantID string) (*gophercloud.ServiceClient, error)
+	BareMetalV1Client(region string) (*gophercloud.ServiceClient, error)
 	BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error)
 	CDNV1Client(region string) (*gophercloud.ServiceClient, error)
 	ComputeV2Client(region string) (*gophercloud.ServiceClient, error)
@@ -79,6 +80,10 @@ func (c *config) BackupV1Client(region string, projectID string) (*gophercloud.S
 	client, err := c.initClient(newBackupV1, region, "backup")
 	client.Endpoint = fmt.Sprintf("%s%s/", client.Endpoint, projectID)
 	return client, err
+}
+
+func (c *config) BareMetalV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newBareMetalV1, region, "baremetal")
 }
 
 func (c *config) BlockStorageV3Client(region string) (*gophercloud.ServiceClient, error) {

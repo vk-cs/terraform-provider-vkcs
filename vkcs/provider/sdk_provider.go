@@ -103,6 +103,11 @@ func SDKProviderBase() *sdkschema.Provider {
 							Optional:    true,
 							Description: "Backup API custom endpoint.",
 						},
+						"baremetal": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "Bare Metal API custom endpoint.",
+						},
 						"block_storage": {
 							Type:        sdkschema.TypeString,
 							Optional:    true,
@@ -293,6 +298,7 @@ func SDKProviderBase() *sdkschema.Provider {
 
 			endpointOverrides = map[string]any{
 				"backup":                 m["backup"],
+				"baremetal":              m["baremetal"],
 				"block-storage":          m["block_storage"],
 				"cdn":                    m["cdn"],
 				"compute":                m["compute"],

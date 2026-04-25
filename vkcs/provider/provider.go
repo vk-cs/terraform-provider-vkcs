@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/backup"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/baremetal"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/dataplatform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/db"
@@ -61,6 +62,7 @@ type vkcsProviderModel struct {
 
 type vkcsProviderEndpointOverridesModel struct {
 	Backup               types.String `tfsdk:"backup"`
+	BareMetal            types.String `tfsdk:"baremetal"`
 	BlockStorage         types.String `tfsdk:"block_storage"`
 	CDN                  types.String `tfsdk:"cdn"`
 	Compute              types.String `tfsdk:"compute"`
@@ -146,6 +148,10 @@ func (p *vkcsProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp 
 						"backup": schema.StringAttribute{
 							Optional:    true,
 							Description: "Backup API custom endpoint.",
+						},
+						"baremetal": schema.StringAttribute{
+							Optional:    true,
+							Description: "Bare Metal API custom endpoint.",
 						},
 						"block_storage": schema.StringAttribute{
 							Optional:    true,
@@ -247,6 +253,7 @@ func (p *vkcsProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 
 		endpointOverrides = map[string]any{
 			"backup":                 eo.Backup.ValueString(),
+			"baremetal":              eo.BareMetal.ValueString(),
 			"block-storage":          eo.BlockStorage.ValueString(),
 			"cdn":                    eo.CDN.ValueString(),
 			"compute":                eo.Compute.ValueString(),
@@ -300,6 +307,11 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		backup.NewPlanDataSource,
 		backup.NewProviderDataSource,
 		backup.NewProvidersDataSource,
+		baremetal.NewFlavorDataSource,
+		baremetal.NewFlavorsDataSource,
+		baremetal.NewOSDataSource,
+		baremetal.NewOSesDataSource,
+		baremetal.NewServerDataSource,
 		cdn.NewOriginGroupDataSource,
 		cdn.NewShieldingPopDataSource,
 		cdn.NewShieldingPopsDataSource,
@@ -334,6 +346,7 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		backup.NewPlanResource,
+		baremetal.NewServerResource,
 		cdn.NewOriginGroupResource,
 		cdn.NewResourceResource,
 		cdn.NewSslCertificateResource,
