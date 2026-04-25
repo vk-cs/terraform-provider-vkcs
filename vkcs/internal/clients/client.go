@@ -34,6 +34,10 @@ func newBackupV1(client *gophercloud.ProviderClient, opts clientOpts) (*gophercl
 	return initClientOptsNew(client, opts, "data-protect")
 }
 
+func newBareMetalV1(client *gophercloud.ProviderClient, opts clientOpts) (*gophercloud.ServiceClient, error) {
+	return initClientOptsNew(client, opts, "baremetal")
+}
+
 func newBlockStorageV3(client *gophercloud.ProviderClient, opts clientOpts) (*gophercloud.ServiceClient, error) {
 	return initClientOptsNew(client, opts, "volumev3")
 }
