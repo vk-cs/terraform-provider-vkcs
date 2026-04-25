@@ -56,6 +56,8 @@ provider "vkcs" {
 - `endpoint_overrides` optional &rarr;  Custom endpoints for corresponding APIs. If not specified, endpoints provided by the catalog will be used.
     - `backup` optional *string* &rarr;  Backup API custom endpoint.
 
+    - `baremetal` optional *string* &rarr;  Bare Metal API custom endpoint.
+
     - `block_storage` optional *string* &rarr;  Block Storage API custom endpoint.
 
     - `cdn` optional *string* &rarr;  CDN API custom endpoint.
