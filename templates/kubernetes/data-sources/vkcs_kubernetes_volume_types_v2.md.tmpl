@@ -1,0 +1,16 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Returns a list of root volume types available for node group disks.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+{{tffile "examples/kubernetes/volume_types_v2/main.tf"}}
+
+{{ .SchemaMarkdown }}

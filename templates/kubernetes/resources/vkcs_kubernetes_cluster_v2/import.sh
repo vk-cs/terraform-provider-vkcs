@@ -1,0 +1,1 @@
+terraform import vkcs_kubernetes_cluster_v2.k8s_cluster 39UdIv4W0EegBs2EYVeGdas38do

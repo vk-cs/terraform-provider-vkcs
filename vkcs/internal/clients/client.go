@@ -57,6 +57,10 @@ func newContainerInfraV1(client *gophercloud.ProviderClient, opts clientOpts) (*
 	return initClientOptsNew(client, opts, "container-infra")
 }
 
+func newManagedK8S(client *gophercloud.ProviderClient, opts clientOpts) (*gophercloud.ServiceClient, error) {
+	return initClientOptsNew(client, opts, "managed-k8s")
+}
+
 func newContainerInfraAddonsV1(client *gophercloud.ProviderClient, opts clientOpts) (*gophercloud.ServiceClient, error) {
 	sc, err := initClientOptsNew(client, opts, "manage-cluster-addons")
 	sc.ResourceBase = sc.Endpoint + "v1/"

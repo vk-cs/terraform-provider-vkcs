@@ -65,6 +65,7 @@ type vkcsProviderEndpointOverridesModel struct {
 	CDN                  types.String `tfsdk:"cdn"`
 	Compute              types.String `tfsdk:"compute"`
 	ContainerInfra       types.String `tfsdk:"container_infra"`
+	ManagedK8S           types.String `tfsdk:"managed_k8s"`
 	ContainerInfraAddons types.String `tfsdk:"container_infra_addons"`
 	Database             types.String `tfsdk:"database"`
 	DataPlatform         types.String `tfsdk:"data_platform"`
@@ -163,6 +164,10 @@ func (p *vkcsProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp 
 							Optional:    true,
 							Description: "Cloud Containers API custom endpoint.",
 						},
+						"managed_k8s": schema.StringAttribute{
+							Optional:    true,
+							Description: "Cloud Containers V2 API custom endpoint.",
+						},
 						"container_infra_addons": schema.StringAttribute{
 							Optional:    true,
 							Description: "Cloud Containers Addons API custom endpoint.",
@@ -251,6 +256,7 @@ func (p *vkcsProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 			"cdn":                    eo.CDN.ValueString(),
 			"compute":                eo.Compute.ValueString(),
 			"container-infra":        eo.ContainerInfra.ValueString(),
+			"managed-k8s":            eo.ManagedK8S.ValueString(),
 			"container-infra-addons": eo.ContainerInfraAddons.ValueString(),
 			"database":               eo.Database.ValueString(),
 			"data-platform":          eo.DataPlatform.ValueString(),
@@ -325,6 +331,10 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		kubernetes.NewNodeGroupDataSource,
 		kubernetes.NewSecurityPolicyTemplatesDataSource,
 		kubernetes.NewSecurityPolicyTemplateDataSource,
+		kubernetes.NewKubernetesClusterV2DataSource,
+		kubernetes.NewKubernetesNodeGroupV2DataSource,
+		kubernetes.NewKubernetesVolumeTypesV2DataSource,
+		kubernetes.NewKubernetesClusterVersionV2DataSource,
 		networking.NewPortDataSource,
 		networking.NewSubnetDataSource,
 	}
@@ -354,6 +364,8 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		iam.NewS3AccountResource,
 		kubernetes.NewAddonResource,
 		kubernetes.NewSecurityPolicyResource,
+		kubernetes.NewKubernetesClusterV2Resource,
+		kubernetes.NewKubernetesNodeGroupV2Resource,
 		mlplatform.NewJupyterHubResource,
 		mlplatform.NewMLFlowResource,
 		mlplatform.NewMLFlowDeployResource,
