@@ -143,9 +143,18 @@ func Create(c *gophercloud.ServiceClient, opts *CreateOpts) CreateResult {
 }
 
 // Get retrieves a specific cluster based on its unique ID
-func Get(c *gophercloud.ServiceClient, clusterID string) GetResult {
+func GetByID(c *gophercloud.ServiceClient, clusterID string) GetResult {
 	var res GetResult
 	_, res.Err = c.Get(resourceURL(c, clusterID), &res.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	return res
+}
+
+// Get retrieves a specific cluster based on its unique name in user project
+func GetByName(c *gophercloud.ServiceClient, clusterName string) GetResult {
+	var res GetResult
+	_, res.Err = c.Get(getByNameURL(c, clusterName), &res.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	return res
@@ -210,15 +219,6 @@ func GetKubeconfig(c *gophercloud.ServiceClient, clusterID string) (string, erro
 func GetListK8SVersion(c *gophercloud.ServiceClient) GetListK8SVersionResult {
 	var res GetListK8SVersionResult
 	_, res.Err = c.Get(listKubeVersionURL(c), &res.Body, &gophercloud.RequestOpts{
-		OkCodes: []int{200},
-	})
-	return res
-}
-
-// Get available volume types for worker node root volume
-func GetVolumeTypes(c *gophercloud.ServiceClient) GetVolumeTypesResult {
-	var res GetVolumeTypesResult
-	_, res.Err = c.Get(volumeTypesURL(c), &res.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	return res

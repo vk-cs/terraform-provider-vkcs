@@ -113,7 +113,7 @@ func kubernetesStateRefreshFunc(client *gophercloud.ServiceClient, clusterID str
 
 func kubernetesStateRefreshFuncV2(client *gophercloud.ServiceClient, clusterID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		cluster, err := clustersv2.Get(client, clusterID).Extract()
+		cluster, err := clustersv2.GetByID(client, clusterID).Extract()
 		if err != nil {
 			if errutil.IsNotFound(err) {
 				return cluster, clusterStatusV2Deleted, nil

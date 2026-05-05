@@ -226,7 +226,7 @@ func testAccCheckKubernetesClusterV2Exists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("error creating Kubernetes API client: %s", err)
 		}
 
-		found, err := clusters.Get(client, rs.Primary.ID).Extract()
+		found, err := clusters.GetByID(client, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

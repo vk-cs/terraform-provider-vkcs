@@ -210,12 +210,12 @@ func testAccCheckKubernetesNodeGroupV2Exists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("error creating Kubernetes API client: %s", err)
 		}
 
-		found, err := nodegroups.Get(client, rs.Primary.ID).Extract()
+		found, err := nodegroups.GetByID(client, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
 
-		if found == nil {
+		if found.ID == "" {
 			return errors.New("Kubernetes node group not found")
 		}
 

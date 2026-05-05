@@ -60,9 +60,10 @@ func KubernetesClusterV2DataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The ID of the external network providing internet access to the cluster.",
 			},
 			"id": schema.StringAttribute{
-				Required:            true,
-				Description:         "The cluster's ID. Used to fetch a specific cluster.",
-				MarkdownDescription: "The cluster's ID. Used to fetch a specific cluster.",
+				Optional:            true,
+				Computed:            true,
+				Description:         "The cluster's ID. Used to fetch a specific cluster. Only one of `name` or `id` must be specified.",
+				MarkdownDescription: "The cluster's ID. Used to fetch a specific cluster. Only one of `name` or `id` must be specified.",
 			},
 			"insecure_registries": schema.SetAttribute{
 				ElementType:         types.StringType,
@@ -127,9 +128,10 @@ func KubernetesClusterV2DataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The flavor ID (VM type) used for master nodes.",
 			},
 			"name": schema.StringAttribute{
+				Optional:            true,
 				Computed:            true,
-				Description:         "The user-assigned name of the cluster.",
-				MarkdownDescription: "The user-assigned name of the cluster.",
+				Description:         "The cluster's name. Used to fetch a specific cluster. Only one of `name` or `id` must be specified.",
+				MarkdownDescription: "The cluster's name. Used to fetch a specific cluster. Only one of `name` or `id` must be specified.",
 			},
 			"network_id": schema.StringAttribute{
 				Computed:            true,

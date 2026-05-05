@@ -39,6 +39,7 @@ func KubernetesNodeGroupV2DataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The availability zone where the nodes are located.",
 			},
 			"cluster_id": schema.StringAttribute{
+				Optional:            true,
 				Computed:            true,
 				Description:         "The ID of the parent Kubernetes cluster.",
 				MarkdownDescription: "The ID of the parent Kubernetes cluster.",
@@ -64,7 +65,8 @@ func KubernetesNodeGroupV2DataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The desired number of nodes when `scale_type` is `fixed_scale`.",
 			},
 			"id": schema.StringAttribute{
-				Required:            true,
+				Optional:            true,
+				Computed:            true,
 				Description:         "The ID of the node group to retrieve.",
 				MarkdownDescription: "The ID of the node group to retrieve.",
 			},
@@ -75,6 +77,7 @@ func KubernetesNodeGroupV2DataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Kubernetes labels applied to the nodes in this group.",
 			},
 			"name": schema.StringAttribute{
+				Optional:            true,
 				Computed:            true,
 				Description:         "The user-assigned name of the node group.",
 				MarkdownDescription: "The user-assigned name of the node group.",

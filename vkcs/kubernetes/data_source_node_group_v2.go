@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/nodegroups"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	dskubengv2 "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/datasource_kubernetes_node_group_v2"
 )
 
@@ -38,6 +39,56 @@ func (d *kubernetesNodeGroupV2DataSource) Configure(ctx context.Context, req dat
 	d.config = req.ProviderData.(clients.Config)
 }
 
+func (d *kubernetesNodeGroupV2DataSource) ValidateConfig(ctx context.Context, req datasource.ValidateConfigRequest, resp *datasource.ValidateConfigResponse) {
+	var data dskubengv2.KubernetesNodeGroupV2Model
+
+	diags := req.Config.Get(ctx, &data)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	idSet := !data.Id.IsNull()
+	nameSet := !data.Name.IsNull()
+	clusterIDSet := !data.ClusterId.IsNull()
+
+	if idSet && (nameSet || clusterIDSet) {
+		resp.Diagnostics.AddError(
+			"Invalid configuration",
+			"Specify either 'id' OR ('name' and 'cluster_id'), not both.",
+		)
+		return
+	}
+
+	if !idSet && !(nameSet && clusterIDSet) {
+		resp.Diagnostics.AddError(
+			"Invalid configuration",
+			"You must specify either 'id' OR both 'name' and 'cluster_id'.",
+		)
+	}
+
+	if !util.IsNullOrUnknown(data.Id) && data.Id.ValueString() == "" {
+		resp.Diagnostics.AddError(
+			"Invalid configuration",
+			"Attribute 'id' must be not empty.",
+		)
+	}
+
+	if !util.IsNullOrUnknown(data.Name) && data.Name.ValueString() == "" {
+		resp.Diagnostics.AddError(
+			"Invalid configuration",
+			"Attribute 'name' must be not empty.",
+		)
+	}
+
+	if !util.IsNullOrUnknown(data.ClusterId) && data.ClusterId.ValueString() == "" {
+		resp.Diagnostics.AddError(
+			"Invalid configuration",
+			"Attribute 'cluster_id' must be not empty.",
+		)
+	}
+}
+
 func (d *kubernetesNodeGroupV2DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data dskubengv2.KubernetesNodeGroupV2Model
 
@@ -61,14 +112,24 @@ func (d *kubernetesNodeGroupV2DataSource) Read(ctx context.Context, req datasour
 		return
 	}
 
-	// API call
-	nodeGroup, err := nodegroups.Get(client, data.Id.ValueString()).Extract()
-	if err != nil {
-		resp.Diagnostics.AddError("Error calling Managed K8S API to get node group", err.Error())
-		return
+	var nodeGroup nodegroups.NodeGroup
+	if !util.IsNullOrUnknown(data.Id) {
+		// Lookup by ID
+		nodeGroup, err = nodegroups.GetByID(client, data.Id.ValueString()).Extract()
+		if err != nil {
+			resp.Diagnostics.AddError("Error calling Managed K8S API to get node group by ID", err.Error())
+			return
+		}
+	} else if !util.IsNullOrUnknown(data.Name) && !util.IsNullOrUnknown(data.ClusterId) {
+		// Lookup by name + cluster ID
+		nodeGroup, err = nodegroups.GetByName(client, data.Name.ValueString(), data.ClusterId.ValueString()).Extract()
+		if err != nil {
+			resp.Diagnostics.AddError("Error calling Managed K8S API to get node group by name", err.Error())
+			return
+		}
 	}
 
-	resp.Diagnostics.Append(data.UpdateFromNodeGroup(ctx, nodeGroup)...)
+	resp.Diagnostics.Append(data.UpdateFromNodeGroup(ctx, &nodeGroup)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

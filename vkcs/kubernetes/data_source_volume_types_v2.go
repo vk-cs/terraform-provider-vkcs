@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/nodegroups"
 	dskubevolumetypesv2 "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/datasource_kubernetes_volume_types_v2"
 )
 
@@ -61,7 +61,7 @@ func (d *kubernetesVolumeTypesV2DataSource) Read(ctx context.Context, req dataso
 	}
 
 	// API call
-	volumeTypes, err := clusters.GetVolumeTypes(client).Extract()
+	volumeTypes, err := nodegroups.GetVolumeTypes(client).Extract()
 	if err != nil {
 		resp.Diagnostics.AddError("Error calling Managed K8S API to get root volume types", err.Error())
 		return

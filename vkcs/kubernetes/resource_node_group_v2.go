@@ -226,16 +226,16 @@ func (r *kubernetesNodeGroupV2Resource) Read(ctx context.Context, req resource.R
 }
 
 func (r *kubernetesNodeGroupV2Resource) readNodeGroup(client *gophercloud.ServiceClient, nodeGroupID string) (nodeGroup *nodegroups.NodeGroup, diags diag.Diagnostics) {
-	apiNodeGroup, err := nodegroups.Get(client, nodeGroupID).Extract()
+	apiNodeGroup, err := nodegroups.GetByID(client, nodeGroupID).Extract()
 	if err != nil {
 		if errutil.IsNotFound(err) {
 			return nil, diags
 		}
-		diags.AddError("Error reading Kubernetes node group V2", err.Error())
+		diags.AddError("Error reading Kubernetes node group", err.Error())
 		return
 	}
 
-	nodeGroup = apiNodeGroup
+	nodeGroup = &apiNodeGroup
 	return
 }
 
@@ -473,7 +473,7 @@ func (r *kubernetesNodeGroupV2Resource) getStateConfForNodeGroupDelete(deleteNgT
 			string(nodeGroupStatusNotFound),
 		},
 		Refresh: func() (interface{}, string, error) {
-			nodeGroup, err := nodegroups.Get(client, nodeGroupID).Extract()
+			nodeGroup, err := nodegroups.GetByID(client, nodeGroupID).Extract()
 			if err != nil {
 				if errutil.IsNotFound(err) {
 					return nodeGroup, string(nodeGroupStatusNotFound), nil

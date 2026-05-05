@@ -28,11 +28,24 @@ type (
 		ID string `json:"node_group_id"`
 	}
 
+	ListVolumeTypes struct {
+		StorageClasses []StorageClass `json:"storage_classes"`
+	}
+
+	StorageClass struct {
+		Name  string   `json:"name"`
+		Zones []string `json:"zones"`
+	}
+
 	CreateResult struct {
 		gophercloud.Result
 	}
 
 	GetResult struct {
+		gophercloud.Result
+	}
+
+	GetVolumeTypesResult struct {
 		gophercloud.Result
 	}
 )
@@ -49,12 +62,18 @@ func (r CreateResult) Extract() (string, error) {
 }
 
 // Extract is a function that accepts a result and extracts a node group.
-func (r GetResult) Extract() (*NodeGroup, error) {
+func (r GetResult) Extract() (NodeGroup, error) {
 	if r.Err != nil {
-		return nil, r.Err
+		return NodeGroup{}, r.Err
 	}
 
 	var ng NodeGroupDetail
 	err := r.ExtractInto(&ng)
-	return &ng.NgSpec, err
+	return ng.NgSpec, err
+}
+
+func (r GetVolumeTypesResult) Extract() (ListVolumeTypes, error) {
+	var azs ListVolumeTypes
+	err := r.ExtractInto(&azs)
+	return azs, err
 }

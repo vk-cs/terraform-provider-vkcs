@@ -229,7 +229,7 @@ func (r *kubernetesClusterV2Resource) Create(ctx context.Context, req resource.C
 	// Make API call
 	clusterID, err := clusters.Create(client, createOpts).Extract()
 	if err != nil {
-		resp.Diagnostics.AddError("Error creating Kubernetes cluster V2", err.Error())
+		resp.Diagnostics.AddError("Error creating Kubernetes cluster", err.Error())
 		return
 	}
 
@@ -247,7 +247,7 @@ func (r *kubernetesClusterV2Resource) Create(ctx context.Context, req resource.C
 	stateConf := r.getStateConfForClusterCreate(createTimeout, client, clusterID)
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Error waiting for Kubernetes cluster V2 to become active", err.Error())
+		resp.Diagnostics.AddError("Error waiting for Kubernetes cluster to become active", err.Error())
 		return
 	}
 
@@ -334,12 +334,12 @@ func (r *kubernetesClusterV2Resource) Read(ctx context.Context, req resource.Rea
 
 func (r *kubernetesClusterV2Resource) readCluster(client *gophercloud.ServiceClient, clusterID string) (cluster *clusters.Cluster, clusterKubeconfig *string, diags diag.Diagnostics) {
 	// Get cluster data
-	cluster, err := clusters.Get(client, clusterID).Extract()
+	cluster, err := clusters.GetByID(client, clusterID).Extract()
 	if err != nil {
 		if errutil.IsNotFound(err) {
 			return nil, nil, diags
 		}
-		diags.AddError("Error reading Kubernetes cluster V2", err.Error())
+		diags.AddError("Error reading Kubernetes cluster", err.Error())
 		return
 	}
 
@@ -431,7 +431,7 @@ func (r *kubernetesClusterV2Resource) Update(ctx context.Context, req resource.U
 	stateConf := r.getStateConfForClusterUpdate(updateTimeout, client, clusterID)
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Error waiting for Kubernetes cluster V2 update to complete", err.Error())
+		resp.Diagnostics.AddError("Error waiting for Kubernetes cluster update to complete", err.Error())
 		return
 	}
 
@@ -499,7 +499,7 @@ func (r *kubernetesClusterV2Resource) Delete(ctx context.Context, req resource.D
 		if errutil.IsNotFound(err) {
 			return
 		}
-		resp.Diagnostics.AddError("Error deleting Kubernetes cluster V2", err.Error())
+		resp.Diagnostics.AddError("Error deleting Kubernetes cluster", err.Error())
 		return
 	}
 
@@ -514,7 +514,7 @@ func (r *kubernetesClusterV2Resource) Delete(ctx context.Context, req resource.D
 	stateConf := r.getStateConfForClusterDelete(deleteTimeout, client, data.Id.ValueString())
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Error waiting for Kubernetes cluster V2 deletion to complete", err.Error())
+		resp.Diagnostics.AddError("Error waiting for Kubernetes cluster deletion to complete", err.Error())
 		return
 	}
 }

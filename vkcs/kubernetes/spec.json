@@ -18,8 +18,15 @@
           {
             "name": "id",
             "string": {
-              "computed_optional_required": "required",
-              "description": "The cluster's ID. Used to fetch a specific cluster."
+              "computed_optional_required": "computed_optional",
+              "description": "The cluster's ID. Used to fetch a specific cluster. Only one of `name` or `id` must be specified."
+            }
+          },
+          {
+            "name": "name",
+            "string": {
+              "computed_optional_required": "computed_optional",
+              "description": "The cluster's name. Used to fetch a specific cluster. Only one of `name` or `id` must be specified."
             }
           },
           {
@@ -41,13 +48,6 @@
             "bool": {
               "computed_optional_required": "computed",
               "description": "Indicates whether a floating IP is assigned to the cluster's API endpoint."
-            }
-          },
-          {
-            "name": "name",
-            "string": {
-              "computed_optional_required": "computed",
-              "description": "The user-assigned name of the cluster."
             }
           },
           {
@@ -298,14 +298,21 @@
           {
             "name": "id",
             "string": {
-              "computed_optional_required": "required",
+              "computed_optional_required": "computed_optional",
               "description": "The ID of the node group to retrieve."
+            }
+          },
+          {
+            "name": "name",
+            "string": {
+              "computed_optional_required": "computed_optional",
+              "description": "The user-assigned name of the node group."
             }
           },
           {
             "name": "cluster_id",
             "string": {
-              "computed_optional_required": "computed",
+              "computed_optional_required": "computed_optional",
               "description": "The ID of the parent Kubernetes cluster."
             }
           },
@@ -314,13 +321,6 @@
             "string": {
               "computed_optional_required": "computed",
               "description": "The node group's UUID"
-            }
-          },
-          {
-            "name": "name",
-            "string": {
-              "computed_optional_required": "computed",
-              "description": "The user-assigned name of the node group."
             }
           },
           {

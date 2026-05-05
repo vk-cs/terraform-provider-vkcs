@@ -9,11 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	dskubeclusterv2 "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/datasource_kubernetes_cluster_v2"
 )
 
 var (
-	_ datasource.DataSource = (*kubernetesClusterV2DataSource)(nil)
+	_ datasource.DataSource                   = (*kubernetesClusterV2DataSource)(nil)
+	_ datasource.DataSourceWithValidateConfig = (*kubernetesClusterV2DataSource)(nil)
 )
 
 func NewKubernetesClusterV2DataSource() datasource.DataSource {
@@ -37,6 +39,48 @@ func (d *kubernetesClusterV2DataSource) Configure(ctx context.Context, req datas
 		return
 	}
 	d.config = req.ProviderData.(clients.Config)
+}
+
+func (d *kubernetesClusterV2DataSource) ValidateConfig(ctx context.Context, req datasource.ValidateConfigRequest, resp *datasource.ValidateConfigResponse) {
+	var data dskubeclusterv2.KubernetesClusterV2Model
+
+	diags := req.Config.Get(ctx, &data)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	idSet := !data.Id.IsNull()
+	nameSet := !data.Name.IsNull()
+
+	if idSet && nameSet {
+		resp.Diagnostics.AddError(
+			"Invalid configuration",
+			"Specify either 'id' OR 'name', not both",
+		)
+		return
+	}
+
+	if !idSet && !nameSet {
+		resp.Diagnostics.AddError(
+			"Invalid configuration",
+			"You must specify either 'id' OR 'name'",
+		)
+	}
+
+	if !util.IsNullOrUnknown(data.Id) && data.Id.ValueString() == "" {
+		resp.Diagnostics.AddError(
+			"Invalid configuration",
+			"Attribute 'id' must be not empty.",
+		)
+	}
+
+	if !util.IsNullOrUnknown(data.Name) && data.Name.ValueString() == "" {
+		resp.Diagnostics.AddError(
+			"Invalid configuration",
+			"Attribute 'name' must be not empty.",
+		)
+	}
 }
 
 func (d *kubernetesClusterV2DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -63,7 +107,7 @@ func (d *kubernetesClusterV2DataSource) Read(ctx context.Context, req datasource
 	}
 
 	// Read the cluster from Managed K8S API to populate fields
-	apiCluster, kubeconfig, diags := d.readCluster(client, data.Id.ValueString())
+	apiCluster, kubeconfig, diags := d.readCluster(client, &data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -77,16 +121,27 @@ func (d *kubernetesClusterV2DataSource) Read(ctx context.Context, req datasource
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *kubernetesClusterV2DataSource) readCluster(client *gophercloud.ServiceClient, clusterID string) (cluster *clusters.Cluster, clusterKubeconfig *string, diags diag.Diagnostics) {
-	// Get cluster data
-	cluster, err := clusters.Get(client, clusterID).Extract()
-	if err != nil {
-		diags.AddError("Error reading Kubernetes cluster V2", err.Error())
-		return
+func (r *kubernetesClusterV2DataSource) readCluster(client *gophercloud.ServiceClient, data *dskubeclusterv2.KubernetesClusterV2Model) (cluster *clusters.Cluster, clusterKubeconfig *string, diags diag.Diagnostics) {
+	// Fetch cluster by ID or by name
+	var err error
+	if !util.IsNullOrUnknown(data.Id) {
+		// Lookup by ID
+		cluster, err = clusters.GetByID(client, data.Id.ValueString()).Extract()
+		if err != nil {
+			diags.AddError("Error calling Managed K8S API to get cluster by ID", err.Error())
+			return
+		}
+	} else if !util.IsNullOrUnknown(data.Name) {
+		// Lookup by name
+		cluster, err = clusters.GetByName(client, data.Name.ValueString()).Extract()
+		if err != nil {
+			diags.AddError("Error calling Managed K8S API to get cluster by name", err.Error())
+			return
+		}
 	}
 
 	// Get cluster kubeconfig
-	kubeconfig, err := clusters.GetKubeconfig(client, clusterID)
+	kubeconfig, err := clusters.GetKubeconfig(client, cluster.ID)
 	if err != nil {
 		diags.AddError("Error retrieving cluster kubeconfig", err.Error())
 		return

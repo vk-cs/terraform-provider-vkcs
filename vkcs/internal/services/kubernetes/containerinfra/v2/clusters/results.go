@@ -157,15 +157,6 @@ type (
 		Versions []K8SVersion `json:"k8s_versions"`
 	}
 
-	ListVolumeTypes struct {
-		StorageClasses []StorageClass `json:"storage_classes"`
-	}
-
-	StorageClass struct {
-		Name  string   `json:"name"`
-		Zones []string `json:"zones"`
-	}
-
 	K8SVersion struct {
 		Version string `json:"version"`
 	}
@@ -183,10 +174,6 @@ type (
 	}
 
 	GetListK8SVersionResult struct {
-		gophercloud.Result
-	}
-
-	GetVolumeTypesResult struct {
 		gophercloud.Result
 	}
 )
@@ -223,12 +210,6 @@ func (r GetListK8SVersionResult) Extract() (ListK8SVersion, error) {
 	var k8sListVersions ListK8SVersion
 	err := r.ExtractInto(&k8sListVersions)
 	return k8sListVersions, err
-}
-
-func (r GetVolumeTypesResult) Extract() (ListVolumeTypes, error) {
-	var azs ListVolumeTypes
-	err := r.ExtractInto(&azs)
-	return azs, err
 }
 
 // Less reports whether d is less than other.
