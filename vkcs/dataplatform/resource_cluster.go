@@ -31,6 +31,10 @@ const (
 	clusterDeleteDelay      = 5 * time.Second
 	clusterDeleteMinTimeout = 5 * time.Second
 	clusterDeleteTimeout    = 60 * time.Minute
+
+	// SPRUT is the only network type supported by Data Platform.
+	// Cloud requires the sdn field in the request; it is not exposed in HCL.
+	dataplatformSDN = "SPRUT"
 )
 
 type clusterStatus string
@@ -124,6 +128,7 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 		PodGroups:         podGroupOpts,
 		StackID:           data.StackId.ValueString(),
 		FloatingIPPool:    data.FloatingIpPool.ValueString(),
+		SDN:               dataplatformSDN,
 	}
 
 	tflog.Trace(ctx, "Calling Data Platform API to create cluster", map[string]interface{}{"opts": fmt.Sprintf("%#v", createOpts)})

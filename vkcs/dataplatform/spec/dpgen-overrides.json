@@ -1,0 +1,10 @@
+{
+  "_doc": "Manual override names applied by the scripts/dpgen wrapper after autogeneration. Each rule renames the identifier only in FIELD contexts (field declaration, selector v.X, struct-literal X:, String() return) - TYPE contexts (type X struct, func (t X), X{} constructor) remain untouched.",
+  "field_renames": [
+    {
+      "_doc": "Attribute info.services.type. Generator emits `InfoServicesType` both as the list-element type wrapper and as the field name; HEAD style renames the field to ServiceType while keeping the type as InfoServicesType.",
+      "from": "InfoServicesType",
+      "to": "ServiceType"
+    }
+  ]
+}

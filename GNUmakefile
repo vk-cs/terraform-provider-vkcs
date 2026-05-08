@@ -34,6 +34,17 @@ $(TF_PLUGIN_GEN): $(LOCALBIN)
 generate: tfplugingen-framework
 	PATH="$(LOCALBIN):$$PATH" go generate ./...
 
+# Regenerates vkcs/dataplatform/resource_cluster/cluster_resource_gen.go via the
+# scripts/dpgen wrapper, which works around an upstream bug with nested-type name
+# collisions (https://github.com/hashicorp/terraform-plugin-codegen-framework/issues/20).
+# Targeted manual FIELD renames (not type renames) live in spec/dpgen-overrides.json.
+generate-dataplatform: tfplugingen-framework
+	$(GO) run ./scripts/dpgen \
+		-spec vkcs/dataplatform/spec/spec.json \
+		-overrides vkcs/dataplatform/spec/dpgen-overrides.json \
+		-out vkcs/dataplatform/resource_cluster/cluster_resource_gen.go \
+		-generator $(TF_PLUGIN_GEN)
+
 build: fmtcheck generate
 	go install
 
@@ -95,6 +106,8 @@ vet:
 
 fmt:
 	gofmt -w $(GOFMT_FILES)
+	golines -w --max-len=120 ./vkcs/dataplatform/...
+	golangci-lint run --fix --no-config --enable-only wsl_v5 ./vkcs/dataplatform/...
 
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
@@ -126,4 +139,4 @@ check_examples:
 	tflint --chdir=examples --recursive -f compact --config="$(CURDIR)/.tflint.hcl"
 	terraform fmt --check --recursive examples
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test lint update_release_schema generate tfplugingen-framework
+.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test lint update_release_schema generate generate-dataplatform tfplugingen-framework

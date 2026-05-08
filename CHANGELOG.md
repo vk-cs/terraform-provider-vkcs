@@ -6,6 +6,16 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.16.0 (unreleased)
+- Mark configs.users.role as required for vkcs_dataplatform_cluster
+- Mark configs.users and configs.warehouses as required for vkcs_dataplatform_cluster, with plan-time validation of at least one user and exactly one warehouse
+- Restrict floating_ip_pool of vkcs_dataplatform_cluster to "auto" or omitted; reject any other value at plan time
+- Fix: Always include configs.users[].settings and configs.warehouses[].extensions in vkcs_dataplatform_cluster create requests, even when empty
+- Fix: Always include pod_groups[].volumes in vkcs_dataplatform_cluster create requests, even when empty
+- Fix: Send required sdn field with hardcoded value "SPRUT" in vkcs_dataplatform_cluster create requests
+- Fix: Automatically propagate configs.users[].username into configs.warehouses[].users to grant database access via Atom's explicit user list
+- Add make generate-dataplatform target that regenerates cluster_resource_gen.go via a wrapper around tfplugingen-framework, working around upstream nested-type name collisions
+
 #### v0.15.0
 - Add resource vkcs_kubernetes_cluster_v2
 - Add resource vkcs_kubernetes_node_group_v2
