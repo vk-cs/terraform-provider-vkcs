@@ -137,7 +137,7 @@ resources:
           description:
             description: Cluster description.
           floating_ip_pool:
-            description: Floating IP pool ID. Use `auto` for autoselect. Changing this creates a new resource.
+            description: Floating IP pool ID. Only `auto` is allowed; omit to skip floating IP. Changing this creates a new resource.
           info:
             description: Application info.
           info.services:
@@ -153,7 +153,7 @@ resources:
           pod_groups:
             description: Cluster pod groups. Changing this creates a new resource.
           pod_groups.count:
-            description: Pod count. Changing this creates a new resource.
+            description: Pod count.
           pod_groups.floating_ip_pool:
             description: Floating IP pool ID. Changing this creates a new resource.
           pod_groups.resource:
@@ -172,7 +172,7 @@ resources:
             description: Volume type. Changing this creates a new resource.
           pod_groups.volumes.count:
             description: Volume count. Changing this creates a new resource.
-          pod_groups.volumes.storageClassName:
+          pod_groups.volumes.storage_class_name:
             description: Storage class name. Changing this creates a new resource.
           pod_groups.volumes.storage:
             description: Storage size.
@@ -181,7 +181,7 @@ resources:
           pod_groups.alias:
             description: Pod group alias.
           pod_groups.name:
-            description: Pod group name.
+            description: Pod group name. Changing this creates a new resource.
           subnet_id:
             description: ID of the cluster subnet. Changing this creates a new resource.
           stack_id:
@@ -192,6 +192,8 @@ resources:
             description: Enables multi az support. Changing this creates a new resource.
           created_at:
             description: Cluster creation timestamp.
+          region:
+            description: The region in which to obtain the Data platform client. If omitted, the `region` argument of the provider is used. Changing this creates a new resource.
 data_sources:
   products:
     read:

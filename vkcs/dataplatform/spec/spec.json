@@ -918,7 +918,7 @@
 													"name": "username",
 													"string": {
 														"computed_optional_required": "required",
-														"description": "Username",
+														"description": "Username.",
 														"validators": [
 															{
 																"custom": {
@@ -1679,37 +1679,37 @@
 													"name": "connection_string",
 													"string": {
 														"computed_optional_required": "computed",
-														"description": "Service connection string"
+														"description": "Service connection string."
 													}
 												},
 												{
 													"name": "description",
 													"string": {
 														"computed_optional_required": "computed",
-														"description": "Service description"
+														"description": "Service description."
 													}
 												},
 												{
 													"name": "exposed",
 													"bool": {
 														"computed_optional_required": "computed",
-														"description": "Whether service is exposed"
+														"description": "Whether service is exposed."
 													}
 												},
 												{
 													"name": "type",
 													"string": {
 														"computed_optional_required": "computed",
-														"description": "Service type"
+														"description": "Service type."
 													}
 												}
 											]
 										},
-										"description": "Application services info"
+										"description": "Application services info."
 									}
 								}
 							],
-							"description": "Application info"
+							"description": "Application info."
 						}
 					},
 					{
