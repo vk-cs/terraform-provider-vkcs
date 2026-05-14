@@ -885,7 +885,7 @@
 												{
 													"name": "role",
 													"string": {
-														"computed_optional_required": "required",
+														"computed_optional_required": "optional",
 														"description": "User role. Changing this creates a new resource.",
 														"validators": [
 															{

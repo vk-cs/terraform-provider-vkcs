@@ -78,7 +78,6 @@ resource "vkcs_dataplatform_cluster" "spark" {
       {
         username = "vkdata"
         password = random_password.spark.result
-        role     = "owner"
       },
     ]
     warehouses = [{

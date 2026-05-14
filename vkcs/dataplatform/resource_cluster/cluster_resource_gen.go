@@ -299,7 +299,7 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"role": schema.StringAttribute{
-									Required:            true,
+									Optional:            true,
 									Description:         "User role. Changing this creates a new resource.",
 									MarkdownDescription: "User role. Changing this creates a new resource.",
 									PlanModifiers: []planmodifier.String{
@@ -311,8 +311,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"username": schema.StringAttribute{
 									Required:            true,
-									Description:         "Username",
-									MarkdownDescription: "Username",
+									Description:         "Username.",
+									MarkdownDescription: "Username.",
 									Validators: []validator.String{
 										stringvalidator.LengthAtMost(128),
 									},
@@ -486,23 +486,23 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 							Attributes: map[string]schema.Attribute{
 								"connection_string": schema.StringAttribute{
 									Computed:            true,
-									Description:         "Service connection string",
-									MarkdownDescription: "Service connection string",
+									Description:         "Service connection string.",
+									MarkdownDescription: "Service connection string.",
 								},
 								"description": schema.StringAttribute{
 									Computed:            true,
-									Description:         "Service description",
-									MarkdownDescription: "Service description",
+									Description:         "Service description.",
+									MarkdownDescription: "Service description.",
 								},
 								"exposed": schema.BoolAttribute{
 									Computed:            true,
-									Description:         "Whether service is exposed",
-									MarkdownDescription: "Whether service is exposed",
+									Description:         "Whether service is exposed.",
+									MarkdownDescription: "Whether service is exposed.",
 								},
 								"type": schema.StringAttribute{
 									Computed:            true,
-									Description:         "Service type",
-									MarkdownDescription: "Service type",
+									Description:         "Service type.",
+									MarkdownDescription: "Service type.",
 								},
 							},
 							CustomType: InfoServicesType{
@@ -512,8 +512,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Computed:            true,
-						Description:         "Application services info",
-						MarkdownDescription: "Application services info",
+						Description:         "Application services info.",
+						MarkdownDescription: "Application services info.",
 					},
 				},
 				CustomType: InfoType{
@@ -522,8 +522,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Application info",
-				MarkdownDescription: "Application info",
+				Description:         "Application info.",
+				MarkdownDescription: "Application info.",
 			},
 			"multiaz": schema.BoolAttribute{
 				Optional:            true,

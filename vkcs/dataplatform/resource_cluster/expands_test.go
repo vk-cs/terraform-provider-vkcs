@@ -219,16 +219,21 @@ func TestExpandClusterConfigsUsers_ConnectionStoreSerializesCreateFalse(t *testi
 	assert.Equal(t, false, createVal, "connection_store.create must serialize as literal false (not omitted)")
 }
 
-func TestExpandClusterConfigsUsers_RoleRequired(t *testing.T) {
-	// gophercloud BuildRequestBody must return an error when a required field is empty.
+func TestExpandClusterConfigsUsers_RoleOptional(t *testing.T) {
+	// Some products (trino, spark) forbid role; provider sends an empty role and lets the API decide.
 	user := clusters.ClusterCreateConfigUser{
 		Username: "u",
 		Password: "p",
 		Role:     "",
 	}
 
-	_, err := user.Map()
-	require.Error(t, err, "empty role must break BuildRequestBody")
+	body, err := user.Map()
+	require.NoError(t, err, "empty role must be accepted by BuildRequestBody")
+
+	raw, err := json.Marshal(body)
+	require.NoError(t, err)
+	assert.NotContains(t, string(raw), `"role"`,
+		"users[].role must be omitted from JSON when empty; got: %s", string(raw))
 }
 
 func TestExpandClusterConfigsUsers_SettingsAlwaysEmptyArrayInJSON(t *testing.T) {

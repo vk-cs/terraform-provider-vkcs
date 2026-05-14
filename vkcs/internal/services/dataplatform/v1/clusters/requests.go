@@ -75,7 +75,7 @@ type ClusterCreateConfigMaintenanceCronTabs struct {
 type ClusterCreateConfigUser struct {
 	Username        string                                  `json:"username" required:"true"`
 	Password        string                                  `json:"password" required:"true"`
-	Role            string                                  `json:"role" required:"true"`
+	Role            string                                  `json:"role,omitempty"`
 	Settings        []ClusterCreateConfigSetting            `json:"settings"`
 	ConnectionStore *ClusterCreateConfigUserConnectionStore `json:"connection_store,omitempty"`
 }

@@ -44,7 +44,6 @@ resource "vkcs_dataplatform_cluster" "trino" {
       {
         username = "vkdata"
         password = random_password.trino_example.result
-        role     = "dbOwner"
       }
     ]
     warehouses = [{

@@ -330,7 +330,6 @@ resource "vkcs_dataplatform_cluster" "basic" {
       {
         username = "vkdata"
         password = "Test_p#ssword-12-3"
-        role     = "owner"
       }
     ]
     maintenance = {
