@@ -106,7 +106,7 @@ vet:
 
 fmt:
 	gofmt -w $(GOFMT_FILES)
-	golines -w --max-len=120 ./vkcs/dataplatform/...
+	golines -w --max-len=120 ./vkcs/dataplatform
 	golangci-lint run --fix --no-config --enable-only wsl_v5 ./vkcs/dataplatform/...
 
 fmtcheck:
@@ -126,6 +126,13 @@ test-compile:
 lint: golangci-lint
 	$(GOLANGCI_LINT) run ./...
 
+shellcheck-lint:
+	@command -v shellcheck >/dev/null 2>&1 || { \
+		echo "shellcheck not found. Install: 'brew install shellcheck' or 'apt-get install shellcheck'." >&2; \
+		exit 1; \
+	}
+	shellcheck scripts/*.sh
+
 update_release_schema:
 	go run helpers/schema-api/main.go -export .release/provider-schema.json
 
@@ -139,4 +146,16 @@ check_examples:
 	tflint --chdir=examples --recursive -f compact --config="$(CURDIR)/.tflint.hcl"
 	terraform fmt --check --recursive examples
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test lint update_release_schema generate generate-dataplatform tfplugingen-framework
+# Smoke: build provider, terraform validate examples/**/main.tf via dev_override — no cloud calls
+#   make validate-examples ARGS="examples/dataplatform"
+validate-examples:
+	bash scripts/validate-examples.sh $(ARGS)
+
+# Drops a gitignored `_ide_versions.tf` into every examples/**/ directory for IDE
+#   make prepare-examples-ide                                   # all examples
+#   make prepare-examples-ide ARGS="examples/dataplatform"      # one dir
+#   make prepare-examples-ide ARGS=--clean                      # remove all generated files
+prepare-examples-ide:
+	bash scripts/prepare-examples-ide.sh $(ARGS)
+
+.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test lint shellcheck-lint update_release_schema generate generate-dataplatform validate-examples prepare-examples-ide tfplugingen-framework

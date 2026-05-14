@@ -74,6 +74,13 @@ resource "vkcs_dataplatform_cluster" "spark" {
         value = "spark-py-3.5.1:v3.5.1.2"
       }
     ]
+    users = [
+      {
+        username = "vkdata"
+        password = random_password.spark.result
+        role     = "owner"
+      },
+    ]
     warehouses = [{
       name = "spark"
       connections = [

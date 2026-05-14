@@ -326,6 +326,13 @@ resource "vkcs_dataplatform_cluster" "basic" {
         value = "{{ .SparkVersion }}"
       }
     ]
+    users = [
+      {
+        username = "vkdata"
+        password = "Test_p#ssword-12-3"
+        role     = "owner"
+      }
+    ]
     maintenance = {
       start = "0 0 1 * *"
     }

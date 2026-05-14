@@ -3,6 +3,7 @@
 REPO_DIR="$(cd "$(dirname "$0")"/.. && pwd)"
 cd "${REPO_DIR}"
 
+# shellcheck disable=SC2034 # documented constant, not consumed inside this script
 DEFAULT_BRANCH="master"
 
 if [[ "$(uname)" == "Darwin" ]]; then
