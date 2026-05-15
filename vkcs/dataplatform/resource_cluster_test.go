@@ -329,7 +329,7 @@ resource "vkcs_dataplatform_cluster" "basic" {
     users = [
       {
         username = "vkdata"
-        password = "Test_p#ssword-12-3"
+        password = "Test_p#ssword-12"
       }
     ]
     maintenance = {
