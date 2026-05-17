@@ -175,8 +175,11 @@ func UpdateClusterConfigsUsers(ctx context.Context, users []clusters.ClusterConf
 	for _, u := range users {
 		updated := false
 
-		// role is a required attribute and cannot be null in state.
-		roleValue := types.StringValue(u.Role)
+		// role is Optional: some products (trino, spark) don't use it
+		roleValue := types.StringNull()
+		if u.Role != "" {
+			roleValue = types.StringValue(u.Role)
+		}
 
 		for i, user := range usersV {
 			if user.Username.ValueString() == u.Username {
