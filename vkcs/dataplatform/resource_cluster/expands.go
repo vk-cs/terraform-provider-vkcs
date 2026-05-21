@@ -45,6 +45,16 @@ func ExpandClusterConfigs(ctx context.Context, v ConfigsValue) (*clusters.Cluste
 		result.Warehouses = warehouses
 	}
 
+	// The current implementation supports only one warehouse.
+	// without an explicit user list, database access is not granted.
+	if len(result.Users) > 0 && len(result.Warehouses) == 1 {
+		usernames := make([]string, len(result.Users))
+		for i, u := range result.Users {
+			usernames[i] = u.Username
+		}
+		result.Warehouses[0].Users = usernames
+	}
+
 	return result, nil
 }
 
@@ -241,10 +251,17 @@ func ExpandClusterConfigsUsers(ctx context.Context, o basetypes.ListValue) ([]cl
 
 	result := make([]clusters.ClusterCreateConfigUser, len(usersV))
 	for i, u := range usersV {
+		// connection_store.create=false is required by Atom so that warehouse access is
+		// granted via the explicit warehouses.users list, not via the connection store.
+		// settings is an empty (not nil) slice so it appears in payload as `[]`, not `null`.
 		result[i] = clusters.ClusterCreateConfigUser{
 			Username: u.Username.ValueString(),
 			Password: u.Password.ValueString(),
 			Role:     u.Role.ValueString(),
+			Settings: []clusters.ClusterCreateConfigSetting{},
+			ConnectionStore: &clusters.ClusterCreateConfigUserConnectionStore{
+				Create: false,
+			},
 		}
 	}
 	return result, nil
@@ -267,8 +284,10 @@ func ExpandClusterConfigsWarehouses(ctx context.Context, o basetypes.ListValue) 
 
 	result := make([]clusters.ClusterCreateConfigWarehouse, len(warehousesV))
 	for i, v := range warehousesV {
+		// extensions is an empty (not nil) slice so it appears in payload as `[]`, not `null`.
 		result[i] = clusters.ClusterCreateConfigWarehouse{
-			Name: v.Name.ValueString(),
+			Name:       v.Name.ValueString(),
+			Extensions: []clusters.ClusterCreateConfigWarehouseExtension{},
 		}
 
 		if o := v.Connections; !o.IsUnknown() && !o.IsNull() {
@@ -372,9 +391,11 @@ func ExpandClusterPodGroups(ctx context.Context, template *templates.ClusterTemp
 		}
 
 		count := int(v.Count.ValueInt64())
+		// volumes defaults to a non-nil empty map so it appears in payload as `{}`, not `null`.
 		result[i] = clusters.ClusterCreatePodGroup{
 			Count:              &count,
 			PodGroupTemplateID: podGroupTemplateID,
+			Volumes:            map[string]clusters.ClusterCreatePodGroupVolume{},
 		}
 
 		if o := v.Resource; !o.IsUnknown() && !o.IsNull() {

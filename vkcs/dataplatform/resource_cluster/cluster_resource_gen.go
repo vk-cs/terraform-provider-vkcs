@@ -5,10 +5,8 @@ package resource_cluster
 import (
 	"context"
 	"fmt"
-	"regexp"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -23,6 +21,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	cluster_planmodifiers "github.com/vk-cs/terraform-provider-vkcs/vkcs/dataplatform/resource_cluster/planmodifiers"
+	"regexp"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -173,19 +173,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 							"crontabs": schema.ListNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
-										"id": schema.StringAttribute{
-											Computed: true,
-										},
-										"name": schema.StringAttribute{
-											Required:            true,
-											Description:         "Cron tab name.",
-											MarkdownDescription: "Cron tab name.",
-										},
-										"required": schema.BoolAttribute{
-											Computed:            true,
-											Description:         "Whether cron tab is required.",
-											MarkdownDescription: "Whether cron tab is required.",
-										},
 										"settings": schema.ListNestedAttribute{
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
@@ -210,6 +197,19 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 											Computed:            true,
 											Description:         "Additional cron settings.",
 											MarkdownDescription: "Additional cron settings.",
+										},
+										"id": schema.StringAttribute{
+											Computed: true,
+										},
+										"name": schema.StringAttribute{
+											Required:            true,
+											Description:         "Cron tab name.",
+											MarkdownDescription: "Cron tab name.",
+										},
+										"required": schema.BoolAttribute{
+											Computed:            true,
+											Description:         "Whether cron tab is required.",
+											MarkdownDescription: "Whether cron tab is required.",
 										},
 										"start": schema.StringAttribute{
 											Optional:            true,
@@ -300,7 +300,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"role": schema.StringAttribute{
 									Optional:            true,
-									Computed:            true,
 									Description:         "User role. Changing this creates a new resource.",
 									MarkdownDescription: "User role. Changing this creates a new resource.",
 									PlanModifiers: []planmodifier.String{
@@ -312,8 +311,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"username": schema.StringAttribute{
 									Required:            true,
-									Description:         "Username",
-									MarkdownDescription: "Username",
+									Description:         "Username.",
+									MarkdownDescription: "Username.",
 									Validators: []validator.String{
 										stringvalidator.LengthAtMost(128),
 									},
@@ -325,10 +324,12 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
-						Computed:            true,
+						Required:            true,
 						Description:         "Users settings.",
 						MarkdownDescription: "Users settings.",
+						Validators: []validator.List{
+							listvalidator.SizeAtLeast(1),
+						},
 					},
 					"warehouses": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -336,32 +337,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								"connections": schema.ListNestedAttribute{
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
-											"created_at": schema.StringAttribute{
-												Computed:            true,
-												Description:         "Connection creation timestamp.",
-												MarkdownDescription: "Connection creation timestamp.",
-											},
-											"id": schema.StringAttribute{
-												Computed:            true,
-												Description:         "Connection ID.",
-												MarkdownDescription: "Connection ID.",
-											},
-											"name": schema.StringAttribute{
-												Required:            true,
-												Description:         "Connection name.",
-												MarkdownDescription: "Connection name.",
-												Validators: []validator.String{
-													stringvalidator.LengthAtMost(255),
-												},
-											},
-											"plug": schema.StringAttribute{
-												Required:            true,
-												Description:         "Connection plug.",
-												MarkdownDescription: "Connection plug.",
-												Validators: []validator.String{
-													stringvalidator.LengthAtMost(255),
-												},
-											},
 											"settings": schema.ListNestedAttribute{
 												NestedObject: schema.NestedAttributeObject{
 													Attributes: map[string]schema.Attribute{
@@ -391,6 +366,32 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 												Required:            true,
 												Description:         "Additional warehouse settings.",
 												MarkdownDescription: "Additional warehouse settings.",
+											},
+											"created_at": schema.StringAttribute{
+												Computed:            true,
+												Description:         "Connection creation timestamp.",
+												MarkdownDescription: "Connection creation timestamp.",
+											},
+											"id": schema.StringAttribute{
+												Computed:            true,
+												Description:         "Connection ID.",
+												MarkdownDescription: "Connection ID.",
+											},
+											"name": schema.StringAttribute{
+												Required:            true,
+												Description:         "Connection name.",
+												MarkdownDescription: "Connection name.",
+												Validators: []validator.String{
+													stringvalidator.LengthAtMost(255),
+												},
+											},
+											"plug": schema.StringAttribute{
+												Required:            true,
+												Description:         "Connection plug.",
+												MarkdownDescription: "Connection plug.",
+												Validators: []validator.String{
+													stringvalidator.LengthAtMost(255),
+												},
 											},
 										},
 										CustomType: ConfigsWarehousesConnectionsType{
@@ -429,10 +430,12 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
-						Computed:            true,
+						Required:            true,
 						Description:         "Warehouses settings. Changing this creates a new resource.",
 						MarkdownDescription: "Warehouses settings. Changing this creates a new resource.",
+						Validators: []validator.List{
+							listvalidator.SizeBetween(1, 1),
+						},
 					},
 				},
 				CustomType: ConfigsType{
@@ -462,10 +465,13 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 			"floating_ip_pool": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Floating IP pool ID. Use `auto` for autoselect. Changing this creates a new resource.",
-				MarkdownDescription: "Floating IP pool ID. Use `auto` for autoselect. Changing this creates a new resource.",
+				Description:         "Floating IP pool ID. Only `auto` is allowed; omit to skip floating IP. Changing this creates a new resource.",
+				MarkdownDescription: "Floating IP pool ID. Only `auto` is allowed; omit to skip floating IP. Changing this creates a new resource.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf("auto"),
 				},
 			},
 			"id": schema.StringAttribute{
@@ -480,23 +486,23 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 							Attributes: map[string]schema.Attribute{
 								"connection_string": schema.StringAttribute{
 									Computed:            true,
-									Description:         "Service connection string",
-									MarkdownDescription: "Service connection string",
+									Description:         "Service connection string.",
+									MarkdownDescription: "Service connection string.",
 								},
 								"description": schema.StringAttribute{
 									Computed:            true,
-									Description:         "Service description",
-									MarkdownDescription: "Service description",
+									Description:         "Service description.",
+									MarkdownDescription: "Service description.",
 								},
 								"exposed": schema.BoolAttribute{
 									Computed:            true,
-									Description:         "Whether service is exposed",
-									MarkdownDescription: "Whether service is exposed",
+									Description:         "Whether service is exposed.",
+									MarkdownDescription: "Whether service is exposed.",
 								},
 								"type": schema.StringAttribute{
 									Computed:            true,
-									Description:         "Service type",
-									MarkdownDescription: "Service type",
+									Description:         "Service type.",
+									MarkdownDescription: "Service type.",
 								},
 							},
 							CustomType: InfoServicesType{
@@ -506,8 +512,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Computed:            true,
-						Description:         "Application services info",
-						MarkdownDescription: "Application services info",
+						Description:         "Application services info.",
+						MarkdownDescription: "Application services info.",
 					},
 				},
 				CustomType: InfoType{
@@ -516,8 +522,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Application info",
-				MarkdownDescription: "Application info",
+				Description:         "Application info.",
+				MarkdownDescription: "Application info.",
 			},
 			"multiaz": schema.BoolAttribute{
 				Optional:            true,
@@ -797,76 +803,76 @@ func (t ConfigsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 
 	attributes := in.Attributes()
 
-	maintenanceAttribute, ok := attributes["maintenance"]
+	configsMaintenanceAttribute, ok := attributes["maintenance"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`maintenance is missing from object`)
+			`configs_maintenance is missing from object`)
 
 		return nil, diags
 	}
 
-	maintenanceVal, ok := maintenanceAttribute.(basetypes.ObjectValue)
+	configsMaintenanceVal, ok := configsMaintenanceAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`maintenance expected to be basetypes.ObjectValue, was: %T`, maintenanceAttribute))
+			fmt.Sprintf(`configs_maintenance expected to be basetypes.ObjectValue, was: %T`, configsMaintenanceAttribute))
 	}
 
-	settingsAttribute, ok := attributes["settings"]
+	configsSettingsAttribute, ok := attributes["settings"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`settings is missing from object`)
+			`configs_settings is missing from object`)
 
 		return nil, diags
 	}
 
-	settingsVal, ok := settingsAttribute.(basetypes.ListValue)
+	configsSettingsVal, ok := configsSettingsAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`settings expected to be basetypes.ListValue, was: %T`, settingsAttribute))
+			fmt.Sprintf(`configs_settings expected to be basetypes.ListValue, was: %T`, configsSettingsAttribute))
 	}
 
-	usersAttribute, ok := attributes["users"]
+	configsUsersAttribute, ok := attributes["users"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`users is missing from object`)
+			`configs_users is missing from object`)
 
 		return nil, diags
 	}
 
-	usersVal, ok := usersAttribute.(basetypes.ListValue)
+	configsUsersVal, ok := configsUsersAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`users expected to be basetypes.ListValue, was: %T`, usersAttribute))
+			fmt.Sprintf(`configs_users expected to be basetypes.ListValue, was: %T`, configsUsersAttribute))
 	}
 
-	warehousesAttribute, ok := attributes["warehouses"]
+	configsWarehousesAttribute, ok := attributes["warehouses"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`warehouses is missing from object`)
+			`configs_warehouses is missing from object`)
 
 		return nil, diags
 	}
 
-	warehousesVal, ok := warehousesAttribute.(basetypes.ListValue)
+	configsWarehousesVal, ok := configsWarehousesAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`warehouses expected to be basetypes.ListValue, was: %T`, warehousesAttribute))
+			fmt.Sprintf(`configs_warehouses expected to be basetypes.ListValue, was: %T`, configsWarehousesAttribute))
 	}
 
 	if diags.HasError() {
@@ -874,10 +880,10 @@ func (t ConfigsType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	}
 
 	return ConfigsValue{
-		Maintenance: maintenanceVal,
-		Settings:    settingsVal,
-		Users:       usersVal,
-		Warehouses:  warehousesVal,
+		Maintenance: configsMaintenanceVal,
+		Settings:    configsSettingsVal,
+		Users:       configsUsersVal,
+		Warehouses:  configsWarehousesVal,
 		state:       attr.ValueStateKnown,
 	}, diags
 }
@@ -945,76 +951,76 @@ func NewConfigsValue(attributeTypes map[string]attr.Type, attributes map[string]
 		return NewConfigsValueUnknown(), diags
 	}
 
-	maintenanceAttribute, ok := attributes["maintenance"]
+	configsMaintenanceAttribute, ok := attributes["maintenance"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`maintenance is missing from object`)
+			`configs_maintenance is missing from object`)
 
 		return NewConfigsValueUnknown(), diags
 	}
 
-	maintenanceVal, ok := maintenanceAttribute.(basetypes.ObjectValue)
+	configsMaintenanceVal, ok := configsMaintenanceAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`maintenance expected to be basetypes.ObjectValue, was: %T`, maintenanceAttribute))
+			fmt.Sprintf(`configs_maintenance expected to be basetypes.ObjectValue, was: %T`, configsMaintenanceAttribute))
 	}
 
-	settingsAttribute, ok := attributes["settings"]
+	configsSettingsAttribute, ok := attributes["settings"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`settings is missing from object`)
+			`configs_settings is missing from object`)
 
 		return NewConfigsValueUnknown(), diags
 	}
 
-	settingsVal, ok := settingsAttribute.(basetypes.ListValue)
+	configsSettingsVal, ok := configsSettingsAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`settings expected to be basetypes.ListValue, was: %T`, settingsAttribute))
+			fmt.Sprintf(`configs_settings expected to be basetypes.ListValue, was: %T`, configsSettingsAttribute))
 	}
 
-	usersAttribute, ok := attributes["users"]
+	configsUsersAttribute, ok := attributes["users"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`users is missing from object`)
+			`configs_users is missing from object`)
 
 		return NewConfigsValueUnknown(), diags
 	}
 
-	usersVal, ok := usersAttribute.(basetypes.ListValue)
+	configsUsersVal, ok := configsUsersAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`users expected to be basetypes.ListValue, was: %T`, usersAttribute))
+			fmt.Sprintf(`configs_users expected to be basetypes.ListValue, was: %T`, configsUsersAttribute))
 	}
 
-	warehousesAttribute, ok := attributes["warehouses"]
+	configsWarehousesAttribute, ok := attributes["warehouses"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`warehouses is missing from object`)
+			`configs_warehouses is missing from object`)
 
 		return NewConfigsValueUnknown(), diags
 	}
 
-	warehousesVal, ok := warehousesAttribute.(basetypes.ListValue)
+	configsWarehousesVal, ok := configsWarehousesAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`warehouses expected to be basetypes.ListValue, was: %T`, warehousesAttribute))
+			fmt.Sprintf(`configs_warehouses expected to be basetypes.ListValue, was: %T`, configsWarehousesAttribute))
 	}
 
 	if diags.HasError() {
@@ -1022,10 +1028,10 @@ func NewConfigsValue(attributeTypes map[string]attr.Type, attributes map[string]
 	}
 
 	return ConfigsValue{
-		Maintenance: maintenanceVal,
-		Settings:    settingsVal,
-		Users:       usersVal,
-		Warehouses:  warehousesVal,
+		Maintenance: configsMaintenanceVal,
+		Settings:    configsSettingsVal,
+		Users:       configsUsersVal,
+		Warehouses:  configsWarehousesVal,
 		state:       attr.ValueStateKnown,
 	}, diags
 }
@@ -1191,28 +1197,28 @@ func (v ConfigsValue) String() string {
 func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var maintenance basetypes.ObjectValue
+	var configsMaintenance basetypes.ObjectValue
 
 	if v.Maintenance.IsNull() {
-		maintenance = types.ObjectNull(
+		configsMaintenance = types.ObjectNull(
 			ConfigsMaintenanceValue{}.AttributeTypes(ctx),
 		)
 	}
 
 	if v.Maintenance.IsUnknown() {
-		maintenance = types.ObjectUnknown(
+		configsMaintenance = types.ObjectUnknown(
 			ConfigsMaintenanceValue{}.AttributeTypes(ctx),
 		)
 	}
 
 	if !v.Maintenance.IsNull() && !v.Maintenance.IsUnknown() {
-		maintenance = types.ObjectValueMust(
+		configsMaintenance = types.ObjectValueMust(
 			ConfigsMaintenanceValue{}.AttributeTypes(ctx),
 			v.Maintenance.Attributes(),
 		)
 	}
 
-	settings := types.ListValueMust(
+	configsSettings := types.ListValueMust(
 		ConfigsSettingsType{
 			basetypes.ObjectType{
 				AttrTypes: ConfigsSettingsValue{}.AttributeTypes(ctx),
@@ -1222,7 +1228,7 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	)
 
 	if v.Settings.IsNull() {
-		settings = types.ListNull(
+		configsSettings = types.ListNull(
 			ConfigsSettingsType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsSettingsValue{}.AttributeTypes(ctx),
@@ -1232,7 +1238,7 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	}
 
 	if v.Settings.IsUnknown() {
-		settings = types.ListUnknown(
+		configsSettings = types.ListUnknown(
 			ConfigsSettingsType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsSettingsValue{}.AttributeTypes(ctx),
@@ -1241,7 +1247,7 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		)
 	}
 
-	users := types.ListValueMust(
+	configsUsers := types.ListValueMust(
 		ConfigsUsersType{
 			basetypes.ObjectType{
 				AttrTypes: ConfigsUsersValue{}.AttributeTypes(ctx),
@@ -1251,7 +1257,7 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	)
 
 	if v.Users.IsNull() {
-		users = types.ListNull(
+		configsUsers = types.ListNull(
 			ConfigsUsersType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsUsersValue{}.AttributeTypes(ctx),
@@ -1261,7 +1267,7 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	}
 
 	if v.Users.IsUnknown() {
-		users = types.ListUnknown(
+		configsUsers = types.ListUnknown(
 			ConfigsUsersType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsUsersValue{}.AttributeTypes(ctx),
@@ -1270,7 +1276,7 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		)
 	}
 
-	warehouses := types.ListValueMust(
+	configsWarehouses := types.ListValueMust(
 		ConfigsWarehousesType{
 			basetypes.ObjectType{
 				AttrTypes: ConfigsWarehousesValue{}.AttributeTypes(ctx),
@@ -1280,7 +1286,7 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	)
 
 	if v.Warehouses.IsNull() {
-		warehouses = types.ListNull(
+		configsWarehouses = types.ListNull(
 			ConfigsWarehousesType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsWarehousesValue{}.AttributeTypes(ctx),
@@ -1290,7 +1296,7 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	}
 
 	if v.Warehouses.IsUnknown() {
-		warehouses = types.ListUnknown(
+		configsWarehouses = types.ListUnknown(
 			ConfigsWarehousesType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsWarehousesValue{}.AttributeTypes(ctx),
@@ -1325,10 +1331,10 @@ func (v ConfigsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"maintenance": maintenance,
-			"settings":    settings,
-			"users":       users,
-			"warehouses":  warehouses,
+			"maintenance": configsMaintenance,
+			"settings":    configsSettings,
+			"users":       configsUsers,
+			"warehouses":  configsWarehouses,
 		})
 
 	return objVal, diags
@@ -1418,40 +1424,40 @@ func (t ConfigsMaintenanceType) ValueFromObject(ctx context.Context, in basetype
 
 	attributes := in.Attributes()
 
-	backupAttribute, ok := attributes["backup"]
+	configsMaintenanceBackupAttribute, ok := attributes["backup"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`backup is missing from object`)
+			`configs_maintenance_backup is missing from object`)
 
 		return nil, diags
 	}
 
-	backupVal, ok := backupAttribute.(basetypes.ObjectValue)
+	configsMaintenanceBackupVal, ok := configsMaintenanceBackupAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`backup expected to be basetypes.ObjectValue, was: %T`, backupAttribute))
+			fmt.Sprintf(`configs_maintenance_backup expected to be basetypes.ObjectValue, was: %T`, configsMaintenanceBackupAttribute))
 	}
 
-	crontabsAttribute, ok := attributes["crontabs"]
+	configsMaintenanceCrontabsAttribute, ok := attributes["crontabs"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`crontabs is missing from object`)
+			`configs_maintenance_crontabs is missing from object`)
 
 		return nil, diags
 	}
 
-	crontabsVal, ok := crontabsAttribute.(basetypes.ListValue)
+	configsMaintenanceCrontabsVal, ok := configsMaintenanceCrontabsAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`crontabs expected to be basetypes.ListValue, was: %T`, crontabsAttribute))
+			fmt.Sprintf(`configs_maintenance_crontabs expected to be basetypes.ListValue, was: %T`, configsMaintenanceCrontabsAttribute))
 	}
 
 	startAttribute, ok := attributes["start"]
@@ -1477,8 +1483,8 @@ func (t ConfigsMaintenanceType) ValueFromObject(ctx context.Context, in basetype
 	}
 
 	return ConfigsMaintenanceValue{
-		Backup:   backupVal,
-		Crontabs: crontabsVal,
+		Backup:   configsMaintenanceBackupVal,
+		Crontabs: configsMaintenanceCrontabsVal,
 		Start:    startVal,
 		state:    attr.ValueStateKnown,
 	}, diags
@@ -1547,40 +1553,40 @@ func NewConfigsMaintenanceValue(attributeTypes map[string]attr.Type, attributes 
 		return NewConfigsMaintenanceValueUnknown(), diags
 	}
 
-	backupAttribute, ok := attributes["backup"]
+	configsMaintenanceBackupAttribute, ok := attributes["backup"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`backup is missing from object`)
+			`configs_maintenance_backup is missing from object`)
 
 		return NewConfigsMaintenanceValueUnknown(), diags
 	}
 
-	backupVal, ok := backupAttribute.(basetypes.ObjectValue)
+	configsMaintenanceBackupVal, ok := configsMaintenanceBackupAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`backup expected to be basetypes.ObjectValue, was: %T`, backupAttribute))
+			fmt.Sprintf(`configs_maintenance_backup expected to be basetypes.ObjectValue, was: %T`, configsMaintenanceBackupAttribute))
 	}
 
-	crontabsAttribute, ok := attributes["crontabs"]
+	configsMaintenanceCrontabsAttribute, ok := attributes["crontabs"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`crontabs is missing from object`)
+			`configs_maintenance_crontabs is missing from object`)
 
 		return NewConfigsMaintenanceValueUnknown(), diags
 	}
 
-	crontabsVal, ok := crontabsAttribute.(basetypes.ListValue)
+	configsMaintenanceCrontabsVal, ok := configsMaintenanceCrontabsAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`crontabs expected to be basetypes.ListValue, was: %T`, crontabsAttribute))
+			fmt.Sprintf(`configs_maintenance_crontabs expected to be basetypes.ListValue, was: %T`, configsMaintenanceCrontabsAttribute))
 	}
 
 	startAttribute, ok := attributes["start"]
@@ -1606,8 +1612,8 @@ func NewConfigsMaintenanceValue(attributeTypes map[string]attr.Type, attributes 
 	}
 
 	return ConfigsMaintenanceValue{
-		Backup:   backupVal,
-		Crontabs: crontabsVal,
+		Backup:   configsMaintenanceBackupVal,
+		Crontabs: configsMaintenanceCrontabsVal,
 		Start:    startVal,
 		state:    attr.ValueStateKnown,
 	}, diags
@@ -1760,28 +1766,28 @@ func (v ConfigsMaintenanceValue) String() string {
 func (v ConfigsMaintenanceValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var backup basetypes.ObjectValue
+	var configsMaintenanceBackup basetypes.ObjectValue
 
 	if v.Backup.IsNull() {
-		backup = types.ObjectNull(
+		configsMaintenanceBackup = types.ObjectNull(
 			ConfigsMaintenanceBackupValue{}.AttributeTypes(ctx),
 		)
 	}
 
 	if v.Backup.IsUnknown() {
-		backup = types.ObjectUnknown(
+		configsMaintenanceBackup = types.ObjectUnknown(
 			ConfigsMaintenanceBackupValue{}.AttributeTypes(ctx),
 		)
 	}
 
 	if !v.Backup.IsNull() && !v.Backup.IsUnknown() {
-		backup = types.ObjectValueMust(
+		configsMaintenanceBackup = types.ObjectValueMust(
 			ConfigsMaintenanceBackupValue{}.AttributeTypes(ctx),
 			v.Backup.Attributes(),
 		)
 	}
 
-	crontabs := types.ListValueMust(
+	configsMaintenanceCrontabs := types.ListValueMust(
 		ConfigsMaintenanceCrontabsType{
 			basetypes.ObjectType{
 				AttrTypes: ConfigsMaintenanceCrontabsValue{}.AttributeTypes(ctx),
@@ -1791,7 +1797,7 @@ func (v ConfigsMaintenanceValue) ToObjectValue(ctx context.Context) (basetypes.O
 	)
 
 	if v.Crontabs.IsNull() {
-		crontabs = types.ListNull(
+		configsMaintenanceCrontabs = types.ListNull(
 			ConfigsMaintenanceCrontabsType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsMaintenanceCrontabsValue{}.AttributeTypes(ctx),
@@ -1801,7 +1807,7 @@ func (v ConfigsMaintenanceValue) ToObjectValue(ctx context.Context) (basetypes.O
 	}
 
 	if v.Crontabs.IsUnknown() {
-		crontabs = types.ListUnknown(
+		configsMaintenanceCrontabs = types.ListUnknown(
 			ConfigsMaintenanceCrontabsType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsMaintenanceCrontabsValue{}.AttributeTypes(ctx),
@@ -1831,8 +1837,8 @@ func (v ConfigsMaintenanceValue) ToObjectValue(ctx context.Context) (basetypes.O
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"backup":   backup,
-			"crontabs": crontabs,
+			"backup":   configsMaintenanceBackup,
+			"crontabs": configsMaintenanceCrontabs,
 			"start":    v.Start,
 		})
 
@@ -1914,58 +1920,58 @@ func (t ConfigsMaintenanceBackupType) ValueFromObject(ctx context.Context, in ba
 
 	attributes := in.Attributes()
 
-	differentialAttribute, ok := attributes["differential"]
+	configsMaintenanceBackupDifferentialAttribute, ok := attributes["differential"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`differential is missing from object`)
+			`configs_maintenance_backup_differential is missing from object`)
 
 		return nil, diags
 	}
 
-	differentialVal, ok := differentialAttribute.(basetypes.ObjectValue)
+	configsMaintenanceBackupDifferentialVal, ok := configsMaintenanceBackupDifferentialAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`differential expected to be basetypes.ObjectValue, was: %T`, differentialAttribute))
+			fmt.Sprintf(`configs_maintenance_backup_differential expected to be basetypes.ObjectValue, was: %T`, configsMaintenanceBackupDifferentialAttribute))
 	}
 
-	fullAttribute, ok := attributes["full"]
+	configsMaintenanceBackupFullAttribute, ok := attributes["full"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`full is missing from object`)
+			`configs_maintenance_backup_full is missing from object`)
 
 		return nil, diags
 	}
 
-	fullVal, ok := fullAttribute.(basetypes.ObjectValue)
+	configsMaintenanceBackupFullVal, ok := configsMaintenanceBackupFullAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`full expected to be basetypes.ObjectValue, was: %T`, fullAttribute))
+			fmt.Sprintf(`configs_maintenance_backup_full expected to be basetypes.ObjectValue, was: %T`, configsMaintenanceBackupFullAttribute))
 	}
 
-	incrementalAttribute, ok := attributes["incremental"]
+	configsMaintenanceBackupIncrementalAttribute, ok := attributes["incremental"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`incremental is missing from object`)
+			`configs_maintenance_backup_incremental is missing from object`)
 
 		return nil, diags
 	}
 
-	incrementalVal, ok := incrementalAttribute.(basetypes.ObjectValue)
+	configsMaintenanceBackupIncrementalVal, ok := configsMaintenanceBackupIncrementalAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`incremental expected to be basetypes.ObjectValue, was: %T`, incrementalAttribute))
+			fmt.Sprintf(`configs_maintenance_backup_incremental expected to be basetypes.ObjectValue, was: %T`, configsMaintenanceBackupIncrementalAttribute))
 	}
 
 	if diags.HasError() {
@@ -1973,9 +1979,9 @@ func (t ConfigsMaintenanceBackupType) ValueFromObject(ctx context.Context, in ba
 	}
 
 	return ConfigsMaintenanceBackupValue{
-		Differential: differentialVal,
-		Full:         fullVal,
-		Incremental:  incrementalVal,
+		Differential: configsMaintenanceBackupDifferentialVal,
+		Full:         configsMaintenanceBackupFullVal,
+		Incremental:  configsMaintenanceBackupIncrementalVal,
 		state:        attr.ValueStateKnown,
 	}, diags
 }
@@ -2043,58 +2049,58 @@ func NewConfigsMaintenanceBackupValue(attributeTypes map[string]attr.Type, attri
 		return NewConfigsMaintenanceBackupValueUnknown(), diags
 	}
 
-	differentialAttribute, ok := attributes["differential"]
+	configsMaintenanceBackupDifferentialAttribute, ok := attributes["differential"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`differential is missing from object`)
+			`configs_maintenance_backup_differential is missing from object`)
 
 		return NewConfigsMaintenanceBackupValueUnknown(), diags
 	}
 
-	differentialVal, ok := differentialAttribute.(basetypes.ObjectValue)
+	configsMaintenanceBackupDifferentialVal, ok := configsMaintenanceBackupDifferentialAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`differential expected to be basetypes.ObjectValue, was: %T`, differentialAttribute))
+			fmt.Sprintf(`configs_maintenance_backup_differential expected to be basetypes.ObjectValue, was: %T`, configsMaintenanceBackupDifferentialAttribute))
 	}
 
-	fullAttribute, ok := attributes["full"]
+	configsMaintenanceBackupFullAttribute, ok := attributes["full"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`full is missing from object`)
+			`configs_maintenance_backup_full is missing from object`)
 
 		return NewConfigsMaintenanceBackupValueUnknown(), diags
 	}
 
-	fullVal, ok := fullAttribute.(basetypes.ObjectValue)
+	configsMaintenanceBackupFullVal, ok := configsMaintenanceBackupFullAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`full expected to be basetypes.ObjectValue, was: %T`, fullAttribute))
+			fmt.Sprintf(`configs_maintenance_backup_full expected to be basetypes.ObjectValue, was: %T`, configsMaintenanceBackupFullAttribute))
 	}
 
-	incrementalAttribute, ok := attributes["incremental"]
+	configsMaintenanceBackupIncrementalAttribute, ok := attributes["incremental"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`incremental is missing from object`)
+			`configs_maintenance_backup_incremental is missing from object`)
 
 		return NewConfigsMaintenanceBackupValueUnknown(), diags
 	}
 
-	incrementalVal, ok := incrementalAttribute.(basetypes.ObjectValue)
+	configsMaintenanceBackupIncrementalVal, ok := configsMaintenanceBackupIncrementalAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`incremental expected to be basetypes.ObjectValue, was: %T`, incrementalAttribute))
+			fmt.Sprintf(`configs_maintenance_backup_incremental expected to be basetypes.ObjectValue, was: %T`, configsMaintenanceBackupIncrementalAttribute))
 	}
 
 	if diags.HasError() {
@@ -2102,9 +2108,9 @@ func NewConfigsMaintenanceBackupValue(attributeTypes map[string]attr.Type, attri
 	}
 
 	return ConfigsMaintenanceBackupValue{
-		Differential: differentialVal,
-		Full:         fullVal,
-		Incremental:  incrementalVal,
+		Differential: configsMaintenanceBackupDifferentialVal,
+		Full:         configsMaintenanceBackupFullVal,
+		Incremental:  configsMaintenanceBackupIncrementalVal,
 		state:        attr.ValueStateKnown,
 	}, diags
 }
@@ -2258,64 +2264,64 @@ func (v ConfigsMaintenanceBackupValue) String() string {
 func (v ConfigsMaintenanceBackupValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var differential basetypes.ObjectValue
+	var configsMaintenanceBackupDifferential basetypes.ObjectValue
 
 	if v.Differential.IsNull() {
-		differential = types.ObjectNull(
+		configsMaintenanceBackupDifferential = types.ObjectNull(
 			ConfigsMaintenanceBackupDifferentialValue{}.AttributeTypes(ctx),
 		)
 	}
 
 	if v.Differential.IsUnknown() {
-		differential = types.ObjectUnknown(
+		configsMaintenanceBackupDifferential = types.ObjectUnknown(
 			ConfigsMaintenanceBackupDifferentialValue{}.AttributeTypes(ctx),
 		)
 	}
 
 	if !v.Differential.IsNull() && !v.Differential.IsUnknown() {
-		differential = types.ObjectValueMust(
+		configsMaintenanceBackupDifferential = types.ObjectValueMust(
 			ConfigsMaintenanceBackupDifferentialValue{}.AttributeTypes(ctx),
 			v.Differential.Attributes(),
 		)
 	}
 
-	var full basetypes.ObjectValue
+	var configsMaintenanceBackupFull basetypes.ObjectValue
 
 	if v.Full.IsNull() {
-		full = types.ObjectNull(
+		configsMaintenanceBackupFull = types.ObjectNull(
 			ConfigsMaintenanceBackupFullValue{}.AttributeTypes(ctx),
 		)
 	}
 
 	if v.Full.IsUnknown() {
-		full = types.ObjectUnknown(
+		configsMaintenanceBackupFull = types.ObjectUnknown(
 			ConfigsMaintenanceBackupFullValue{}.AttributeTypes(ctx),
 		)
 	}
 
 	if !v.Full.IsNull() && !v.Full.IsUnknown() {
-		full = types.ObjectValueMust(
+		configsMaintenanceBackupFull = types.ObjectValueMust(
 			ConfigsMaintenanceBackupFullValue{}.AttributeTypes(ctx),
 			v.Full.Attributes(),
 		)
 	}
 
-	var incremental basetypes.ObjectValue
+	var configsMaintenanceBackupIncremental basetypes.ObjectValue
 
 	if v.Incremental.IsNull() {
-		incremental = types.ObjectNull(
+		configsMaintenanceBackupIncremental = types.ObjectNull(
 			ConfigsMaintenanceBackupIncrementalValue{}.AttributeTypes(ctx),
 		)
 	}
 
 	if v.Incremental.IsUnknown() {
-		incremental = types.ObjectUnknown(
+		configsMaintenanceBackupIncremental = types.ObjectUnknown(
 			ConfigsMaintenanceBackupIncrementalValue{}.AttributeTypes(ctx),
 		)
 	}
 
 	if !v.Incremental.IsNull() && !v.Incremental.IsUnknown() {
-		incremental = types.ObjectValueMust(
+		configsMaintenanceBackupIncremental = types.ObjectValueMust(
 			ConfigsMaintenanceBackupIncrementalValue{}.AttributeTypes(ctx),
 			v.Incremental.Attributes(),
 		)
@@ -2344,9 +2350,9 @@ func (v ConfigsMaintenanceBackupValue) ToObjectValue(ctx context.Context) (baset
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"differential": differential,
-			"full":         full,
-			"incremental":  incremental,
+			"differential": configsMaintenanceBackupDifferential,
+			"full":         configsMaintenanceBackupFull,
+			"incremental":  configsMaintenanceBackupIncremental,
 		})
 
 	return objVal, diags
@@ -3896,6 +3902,24 @@ func (t ConfigsMaintenanceCrontabsType) ValueFromObject(ctx context.Context, in 
 
 	attributes := in.Attributes()
 
+	configsMaintenanceCrontabsSettingsAttribute, ok := attributes["settings"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`configs_maintenance_crontabs_settings is missing from object`)
+
+		return nil, diags
+	}
+
+	configsMaintenanceCrontabsSettingsVal, ok := configsMaintenanceCrontabsSettingsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`configs_maintenance_crontabs_settings expected to be basetypes.ListValue, was: %T`, configsMaintenanceCrontabsSettingsAttribute))
+	}
+
 	idAttribute, ok := attributes["id"]
 
 	if !ok {
@@ -3950,24 +3974,6 @@ func (t ConfigsMaintenanceCrontabsType) ValueFromObject(ctx context.Context, in 
 			fmt.Sprintf(`required expected to be basetypes.BoolValue, was: %T`, requiredAttribute))
 	}
 
-	settingsAttribute, ok := attributes["settings"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`settings is missing from object`)
-
-		return nil, diags
-	}
-
-	settingsVal, ok := settingsAttribute.(basetypes.ListValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`settings expected to be basetypes.ListValue, was: %T`, settingsAttribute))
-	}
-
 	startAttribute, ok := attributes["start"]
 
 	if !ok {
@@ -3991,10 +3997,10 @@ func (t ConfigsMaintenanceCrontabsType) ValueFromObject(ctx context.Context, in 
 	}
 
 	return ConfigsMaintenanceCrontabsValue{
+		Settings: configsMaintenanceCrontabsSettingsVal,
 		Id:       idVal,
 		Name:     nameVal,
 		Required: requiredVal,
-		Settings: settingsVal,
 		Start:    startVal,
 		state:    attr.ValueStateKnown,
 	}, diags
@@ -4063,6 +4069,24 @@ func NewConfigsMaintenanceCrontabsValue(attributeTypes map[string]attr.Type, att
 		return NewConfigsMaintenanceCrontabsValueUnknown(), diags
 	}
 
+	configsMaintenanceCrontabsSettingsAttribute, ok := attributes["settings"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`configs_maintenance_crontabs_settings is missing from object`)
+
+		return NewConfigsMaintenanceCrontabsValueUnknown(), diags
+	}
+
+	configsMaintenanceCrontabsSettingsVal, ok := configsMaintenanceCrontabsSettingsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`configs_maintenance_crontabs_settings expected to be basetypes.ListValue, was: %T`, configsMaintenanceCrontabsSettingsAttribute))
+	}
+
 	idAttribute, ok := attributes["id"]
 
 	if !ok {
@@ -4117,24 +4141,6 @@ func NewConfigsMaintenanceCrontabsValue(attributeTypes map[string]attr.Type, att
 			fmt.Sprintf(`required expected to be basetypes.BoolValue, was: %T`, requiredAttribute))
 	}
 
-	settingsAttribute, ok := attributes["settings"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`settings is missing from object`)
-
-		return NewConfigsMaintenanceCrontabsValueUnknown(), diags
-	}
-
-	settingsVal, ok := settingsAttribute.(basetypes.ListValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`settings expected to be basetypes.ListValue, was: %T`, settingsAttribute))
-	}
-
 	startAttribute, ok := attributes["start"]
 
 	if !ok {
@@ -4158,10 +4164,10 @@ func NewConfigsMaintenanceCrontabsValue(attributeTypes map[string]attr.Type, att
 	}
 
 	return ConfigsMaintenanceCrontabsValue{
+		Settings: configsMaintenanceCrontabsSettingsVal,
 		Id:       idVal,
 		Name:     nameVal,
 		Required: requiredVal,
-		Settings: settingsVal,
 		Start:    startVal,
 		state:    attr.ValueStateKnown,
 	}, diags
@@ -4235,10 +4241,10 @@ func (t ConfigsMaintenanceCrontabsType) ValueType(ctx context.Context) attr.Valu
 var _ basetypes.ObjectValuable = ConfigsMaintenanceCrontabsValue{}
 
 type ConfigsMaintenanceCrontabsValue struct {
+	Settings basetypes.ListValue   `tfsdk:"settings"`
 	Id       basetypes.StringValue `tfsdk:"id"`
 	Name     basetypes.StringValue `tfsdk:"name"`
 	Required basetypes.BoolValue   `tfsdk:"required"`
-	Settings basetypes.ListValue   `tfsdk:"settings"`
 	Start    basetypes.StringValue `tfsdk:"start"`
 	state    attr.ValueState
 }
@@ -4249,12 +4255,12 @@ func (v ConfigsMaintenanceCrontabsValue) ToTerraformValue(ctx context.Context) (
 	var val tftypes.Value
 	var err error
 
-	attrTypes["id"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["required"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["settings"] = basetypes.ListType{
 		ElemType: ConfigsMaintenanceCrontabsSettingsValue{}.Type(ctx),
 	}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["required"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["start"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
@@ -4262,6 +4268,14 @@ func (v ConfigsMaintenanceCrontabsValue) ToTerraformValue(ctx context.Context) (
 	switch v.state {
 	case attr.ValueStateKnown:
 		vals := make(map[string]tftypes.Value, 5)
+
+		val, err = v.Settings.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["settings"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
 
@@ -4286,14 +4300,6 @@ func (v ConfigsMaintenanceCrontabsValue) ToTerraformValue(ctx context.Context) (
 		}
 
 		vals["required"] = val
-
-		val, err = v.Settings.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["settings"] = val
 
 		val, err = v.Start.ToTerraformValue(ctx)
 
@@ -4332,7 +4338,7 @@ func (v ConfigsMaintenanceCrontabsValue) String() string {
 func (v ConfigsMaintenanceCrontabsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	settings := types.ListValueMust(
+	configsMaintenanceCrontabsSettings := types.ListValueMust(
 		ConfigsMaintenanceCrontabsSettingsType{
 			basetypes.ObjectType{
 				AttrTypes: ConfigsMaintenanceCrontabsSettingsValue{}.AttributeTypes(ctx),
@@ -4342,7 +4348,7 @@ func (v ConfigsMaintenanceCrontabsValue) ToObjectValue(ctx context.Context) (bas
 	)
 
 	if v.Settings.IsNull() {
-		settings = types.ListNull(
+		configsMaintenanceCrontabsSettings = types.ListNull(
 			ConfigsMaintenanceCrontabsSettingsType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsMaintenanceCrontabsSettingsValue{}.AttributeTypes(ctx),
@@ -4352,7 +4358,7 @@ func (v ConfigsMaintenanceCrontabsValue) ToObjectValue(ctx context.Context) (bas
 	}
 
 	if v.Settings.IsUnknown() {
-		settings = types.ListUnknown(
+		configsMaintenanceCrontabsSettings = types.ListUnknown(
 			ConfigsMaintenanceCrontabsSettingsType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsMaintenanceCrontabsSettingsValue{}.AttributeTypes(ctx),
@@ -4362,13 +4368,13 @@ func (v ConfigsMaintenanceCrontabsValue) ToObjectValue(ctx context.Context) (bas
 	}
 
 	attributeTypes := map[string]attr.Type{
-		"id":       basetypes.StringType{},
-		"name":     basetypes.StringType{},
-		"required": basetypes.BoolType{},
 		"settings": basetypes.ListType{
 			ElemType: ConfigsMaintenanceCrontabsSettingsValue{}.Type(ctx),
 		},
-		"start": basetypes.StringType{},
+		"id":       basetypes.StringType{},
+		"name":     basetypes.StringType{},
+		"required": basetypes.BoolType{},
+		"start":    basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -4382,10 +4388,10 @@ func (v ConfigsMaintenanceCrontabsValue) ToObjectValue(ctx context.Context) (bas
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
+			"settings": configsMaintenanceCrontabsSettings,
 			"id":       v.Id,
 			"name":     v.Name,
 			"required": v.Required,
-			"settings": settings,
 			"start":    v.Start,
 		})
 
@@ -4407,6 +4413,10 @@ func (v ConfigsMaintenanceCrontabsValue) Equal(o attr.Value) bool {
 		return true
 	}
 
+	if !v.Settings.Equal(other.Settings) {
+		return false
+	}
+
 	if !v.Id.Equal(other.Id) {
 		return false
 	}
@@ -4416,10 +4426,6 @@ func (v ConfigsMaintenanceCrontabsValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.Required.Equal(other.Required) {
-		return false
-	}
-
-	if !v.Settings.Equal(other.Settings) {
 		return false
 	}
 
@@ -4440,13 +4446,13 @@ func (v ConfigsMaintenanceCrontabsValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigsMaintenanceCrontabsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"id":       basetypes.StringType{},
-		"name":     basetypes.StringType{},
-		"required": basetypes.BoolType{},
 		"settings": basetypes.ListType{
 			ElemType: ConfigsMaintenanceCrontabsSettingsValue{}.Type(ctx),
 		},
-		"start": basetypes.StringType{},
+		"id":       basetypes.StringType{},
+		"name":     basetypes.StringType{},
+		"required": basetypes.BoolType{},
+		"start":    basetypes.StringType{},
 	}
 }
 
@@ -5777,22 +5783,22 @@ func (t ConfigsWarehousesType) ValueFromObject(ctx context.Context, in basetypes
 
 	attributes := in.Attributes()
 
-	connectionsAttribute, ok := attributes["connections"]
+	configsWarehousesConnectionsAttribute, ok := attributes["connections"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`connections is missing from object`)
+			`configs_warehouses_connections is missing from object`)
 
 		return nil, diags
 	}
 
-	connectionsVal, ok := connectionsAttribute.(basetypes.ListValue)
+	configsWarehousesConnectionsVal, ok := configsWarehousesConnectionsAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`connections expected to be basetypes.ListValue, was: %T`, connectionsAttribute))
+			fmt.Sprintf(`configs_warehouses_connections expected to be basetypes.ListValue, was: %T`, configsWarehousesConnectionsAttribute))
 	}
 
 	idAttribute, ok := attributes["id"]
@@ -5836,7 +5842,7 @@ func (t ConfigsWarehousesType) ValueFromObject(ctx context.Context, in basetypes
 	}
 
 	return ConfigsWarehousesValue{
-		Connections: connectionsVal,
+		Connections: configsWarehousesConnectionsVal,
 		Id:          idVal,
 		Name:        nameVal,
 		state:       attr.ValueStateKnown,
@@ -5906,22 +5912,22 @@ func NewConfigsWarehousesValue(attributeTypes map[string]attr.Type, attributes m
 		return NewConfigsWarehousesValueUnknown(), diags
 	}
 
-	connectionsAttribute, ok := attributes["connections"]
+	configsWarehousesConnectionsAttribute, ok := attributes["connections"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`connections is missing from object`)
+			`configs_warehouses_connections is missing from object`)
 
 		return NewConfigsWarehousesValueUnknown(), diags
 	}
 
-	connectionsVal, ok := connectionsAttribute.(basetypes.ListValue)
+	configsWarehousesConnectionsVal, ok := configsWarehousesConnectionsAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`connections expected to be basetypes.ListValue, was: %T`, connectionsAttribute))
+			fmt.Sprintf(`configs_warehouses_connections expected to be basetypes.ListValue, was: %T`, configsWarehousesConnectionsAttribute))
 	}
 
 	idAttribute, ok := attributes["id"]
@@ -5965,7 +5971,7 @@ func NewConfigsWarehousesValue(attributeTypes map[string]attr.Type, attributes m
 	}
 
 	return ConfigsWarehousesValue{
-		Connections: connectionsVal,
+		Connections: configsWarehousesConnectionsVal,
 		Id:          idVal,
 		Name:        nameVal,
 		state:       attr.ValueStateKnown,
@@ -6117,7 +6123,7 @@ func (v ConfigsWarehousesValue) String() string {
 func (v ConfigsWarehousesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	connections := types.ListValueMust(
+	configsWarehousesConnections := types.ListValueMust(
 		ConfigsWarehousesConnectionsType{
 			basetypes.ObjectType{
 				AttrTypes: ConfigsWarehousesConnectionsValue{}.AttributeTypes(ctx),
@@ -6127,7 +6133,7 @@ func (v ConfigsWarehousesValue) ToObjectValue(ctx context.Context) (basetypes.Ob
 	)
 
 	if v.Connections.IsNull() {
-		connections = types.ListNull(
+		configsWarehousesConnections = types.ListNull(
 			ConfigsWarehousesConnectionsType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsWarehousesConnectionsValue{}.AttributeTypes(ctx),
@@ -6137,7 +6143,7 @@ func (v ConfigsWarehousesValue) ToObjectValue(ctx context.Context) (basetypes.Ob
 	}
 
 	if v.Connections.IsUnknown() {
-		connections = types.ListUnknown(
+		configsWarehousesConnections = types.ListUnknown(
 			ConfigsWarehousesConnectionsType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsWarehousesConnectionsValue{}.AttributeTypes(ctx),
@@ -6165,7 +6171,7 @@ func (v ConfigsWarehousesValue) ToObjectValue(ctx context.Context) (basetypes.Ob
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"connections": connections,
+			"connections": configsWarehousesConnections,
 			"id":          v.Id,
 			"name":        v.Name,
 		})
@@ -6246,6 +6252,24 @@ func (t ConfigsWarehousesConnectionsType) ValueFromObject(ctx context.Context, i
 
 	attributes := in.Attributes()
 
+	configsWarehousesConnectionsSettingsAttribute, ok := attributes["settings"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`configs_warehouses_connections_settings is missing from object`)
+
+		return nil, diags
+	}
+
+	configsWarehousesConnectionsSettingsVal, ok := configsWarehousesConnectionsSettingsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`configs_warehouses_connections_settings expected to be basetypes.ListValue, was: %T`, configsWarehousesConnectionsSettingsAttribute))
+	}
+
 	createdAtAttribute, ok := attributes["created_at"]
 
 	if !ok {
@@ -6318,34 +6342,16 @@ func (t ConfigsWarehousesConnectionsType) ValueFromObject(ctx context.Context, i
 			fmt.Sprintf(`plug expected to be basetypes.StringValue, was: %T`, plugAttribute))
 	}
 
-	settingsAttribute, ok := attributes["settings"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`settings is missing from object`)
-
-		return nil, diags
-	}
-
-	settingsVal, ok := settingsAttribute.(basetypes.ListValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`settings expected to be basetypes.ListValue, was: %T`, settingsAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return ConfigsWarehousesConnectionsValue{
+		Settings:  configsWarehousesConnectionsSettingsVal,
 		CreatedAt: createdAtVal,
 		Id:        idVal,
 		Name:      nameVal,
 		Plug:      plugVal,
-		Settings:  settingsVal,
 		state:     attr.ValueStateKnown,
 	}, diags
 }
@@ -6413,6 +6419,24 @@ func NewConfigsWarehousesConnectionsValue(attributeTypes map[string]attr.Type, a
 		return NewConfigsWarehousesConnectionsValueUnknown(), diags
 	}
 
+	configsWarehousesConnectionsSettingsAttribute, ok := attributes["settings"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`configs_warehouses_connections_settings is missing from object`)
+
+		return NewConfigsWarehousesConnectionsValueUnknown(), diags
+	}
+
+	configsWarehousesConnectionsSettingsVal, ok := configsWarehousesConnectionsSettingsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`configs_warehouses_connections_settings expected to be basetypes.ListValue, was: %T`, configsWarehousesConnectionsSettingsAttribute))
+	}
+
 	createdAtAttribute, ok := attributes["created_at"]
 
 	if !ok {
@@ -6485,34 +6509,16 @@ func NewConfigsWarehousesConnectionsValue(attributeTypes map[string]attr.Type, a
 			fmt.Sprintf(`plug expected to be basetypes.StringValue, was: %T`, plugAttribute))
 	}
 
-	settingsAttribute, ok := attributes["settings"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`settings is missing from object`)
-
-		return NewConfigsWarehousesConnectionsValueUnknown(), diags
-	}
-
-	settingsVal, ok := settingsAttribute.(basetypes.ListValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`settings expected to be basetypes.ListValue, was: %T`, settingsAttribute))
-	}
-
 	if diags.HasError() {
 		return NewConfigsWarehousesConnectionsValueUnknown(), diags
 	}
 
 	return ConfigsWarehousesConnectionsValue{
+		Settings:  configsWarehousesConnectionsSettingsVal,
 		CreatedAt: createdAtVal,
 		Id:        idVal,
 		Name:      nameVal,
 		Plug:      plugVal,
-		Settings:  settingsVal,
 		state:     attr.ValueStateKnown,
 	}, diags
 }
@@ -6585,11 +6591,11 @@ func (t ConfigsWarehousesConnectionsType) ValueType(ctx context.Context) attr.Va
 var _ basetypes.ObjectValuable = ConfigsWarehousesConnectionsValue{}
 
 type ConfigsWarehousesConnectionsValue struct {
+	Settings  basetypes.ListValue   `tfsdk:"settings"`
 	CreatedAt basetypes.StringValue `tfsdk:"created_at"`
 	Id        basetypes.StringValue `tfsdk:"id"`
 	Name      basetypes.StringValue `tfsdk:"name"`
 	Plug      basetypes.StringValue `tfsdk:"plug"`
-	Settings  basetypes.ListValue   `tfsdk:"settings"`
 	state     attr.ValueState
 }
 
@@ -6599,19 +6605,27 @@ func (v ConfigsWarehousesConnectionsValue) ToTerraformValue(ctx context.Context)
 	var val tftypes.Value
 	var err error
 
+	attrTypes["settings"] = basetypes.ListType{
+		ElemType: ConfigsWarehousesConnectionsSettingsValue{}.Type(ctx),
+	}.TerraformType(ctx)
 	attrTypes["created_at"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["plug"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["settings"] = basetypes.ListType{
-		ElemType: ConfigsWarehousesConnectionsSettingsValue{}.Type(ctx),
-	}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
 		vals := make(map[string]tftypes.Value, 5)
+
+		val, err = v.Settings.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["settings"] = val
 
 		val, err = v.CreatedAt.ToTerraformValue(ctx)
 
@@ -6645,14 +6659,6 @@ func (v ConfigsWarehousesConnectionsValue) ToTerraformValue(ctx context.Context)
 
 		vals["plug"] = val
 
-		val, err = v.Settings.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["settings"] = val
-
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -6682,7 +6688,7 @@ func (v ConfigsWarehousesConnectionsValue) String() string {
 func (v ConfigsWarehousesConnectionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	settings := types.ListValueMust(
+	configsWarehousesConnectionsSettings := types.ListValueMust(
 		ConfigsWarehousesConnectionsSettingsType{
 			basetypes.ObjectType{
 				AttrTypes: ConfigsWarehousesConnectionsSettingsValue{}.AttributeTypes(ctx),
@@ -6692,7 +6698,7 @@ func (v ConfigsWarehousesConnectionsValue) ToObjectValue(ctx context.Context) (b
 	)
 
 	if v.Settings.IsNull() {
-		settings = types.ListNull(
+		configsWarehousesConnectionsSettings = types.ListNull(
 			ConfigsWarehousesConnectionsSettingsType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsWarehousesConnectionsSettingsValue{}.AttributeTypes(ctx),
@@ -6702,7 +6708,7 @@ func (v ConfigsWarehousesConnectionsValue) ToObjectValue(ctx context.Context) (b
 	}
 
 	if v.Settings.IsUnknown() {
-		settings = types.ListUnknown(
+		configsWarehousesConnectionsSettings = types.ListUnknown(
 			ConfigsWarehousesConnectionsSettingsType{
 				basetypes.ObjectType{
 					AttrTypes: ConfigsWarehousesConnectionsSettingsValue{}.AttributeTypes(ctx),
@@ -6712,13 +6718,13 @@ func (v ConfigsWarehousesConnectionsValue) ToObjectValue(ctx context.Context) (b
 	}
 
 	attributeTypes := map[string]attr.Type{
+		"settings": basetypes.ListType{
+			ElemType: ConfigsWarehousesConnectionsSettingsValue{}.Type(ctx),
+		},
 		"created_at": basetypes.StringType{},
 		"id":         basetypes.StringType{},
 		"name":       basetypes.StringType{},
 		"plug":       basetypes.StringType{},
-		"settings": basetypes.ListType{
-			ElemType: ConfigsWarehousesConnectionsSettingsValue{}.Type(ctx),
-		},
 	}
 
 	if v.IsNull() {
@@ -6732,11 +6738,11 @@ func (v ConfigsWarehousesConnectionsValue) ToObjectValue(ctx context.Context) (b
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
+			"settings":   configsWarehousesConnectionsSettings,
 			"created_at": v.CreatedAt,
 			"id":         v.Id,
 			"name":       v.Name,
 			"plug":       v.Plug,
-			"settings":   settings,
 		})
 
 	return objVal, diags
@@ -6757,6 +6763,10 @@ func (v ConfigsWarehousesConnectionsValue) Equal(o attr.Value) bool {
 		return true
 	}
 
+	if !v.Settings.Equal(other.Settings) {
+		return false
+	}
+
 	if !v.CreatedAt.Equal(other.CreatedAt) {
 		return false
 	}
@@ -6773,10 +6783,6 @@ func (v ConfigsWarehousesConnectionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Settings.Equal(other.Settings) {
-		return false
-	}
-
 	return true
 }
 
@@ -6790,13 +6796,13 @@ func (v ConfigsWarehousesConnectionsValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigsWarehousesConnectionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
+		"settings": basetypes.ListType{
+			ElemType: ConfigsWarehousesConnectionsSettingsValue{}.Type(ctx),
+		},
 		"created_at": basetypes.StringType{},
 		"id":         basetypes.StringType{},
 		"name":       basetypes.StringType{},
 		"plug":       basetypes.StringType{},
-		"settings": basetypes.ListType{
-			ElemType: ConfigsWarehousesConnectionsSettingsValue{}.Type(ctx),
-		},
 	}
 }
 
@@ -7204,22 +7210,22 @@ func (t InfoType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue)
 
 	attributes := in.Attributes()
 
-	servicesAttribute, ok := attributes["services"]
+	infoServicesAttribute, ok := attributes["services"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`services is missing from object`)
+			`info_services is missing from object`)
 
 		return nil, diags
 	}
 
-	servicesVal, ok := servicesAttribute.(basetypes.ListValue)
+	infoServicesVal, ok := infoServicesAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`services expected to be basetypes.ListValue, was: %T`, servicesAttribute))
+			fmt.Sprintf(`info_services expected to be basetypes.ListValue, was: %T`, infoServicesAttribute))
 	}
 
 	if diags.HasError() {
@@ -7227,7 +7233,7 @@ func (t InfoType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue)
 	}
 
 	return InfoValue{
-		Services: servicesVal,
+		Services: infoServicesVal,
 		state:    attr.ValueStateKnown,
 	}, diags
 }
@@ -7295,22 +7301,22 @@ func NewInfoValue(attributeTypes map[string]attr.Type, attributes map[string]att
 		return NewInfoValueUnknown(), diags
 	}
 
-	servicesAttribute, ok := attributes["services"]
+	infoServicesAttribute, ok := attributes["services"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`services is missing from object`)
+			`info_services is missing from object`)
 
 		return NewInfoValueUnknown(), diags
 	}
 
-	servicesVal, ok := servicesAttribute.(basetypes.ListValue)
+	infoServicesVal, ok := infoServicesAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`services expected to be basetypes.ListValue, was: %T`, servicesAttribute))
+			fmt.Sprintf(`info_services expected to be basetypes.ListValue, was: %T`, infoServicesAttribute))
 	}
 
 	if diags.HasError() {
@@ -7318,7 +7324,7 @@ func NewInfoValue(attributeTypes map[string]attr.Type, attributes map[string]att
 	}
 
 	return InfoValue{
-		Services: servicesVal,
+		Services: infoServicesVal,
 		state:    attr.ValueStateKnown,
 	}, diags
 }
@@ -7448,7 +7454,7 @@ func (v InfoValue) String() string {
 func (v InfoValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	services := types.ListValueMust(
+	infoServices := types.ListValueMust(
 		InfoServicesType{
 			basetypes.ObjectType{
 				AttrTypes: InfoServicesValue{}.AttributeTypes(ctx),
@@ -7458,7 +7464,7 @@ func (v InfoValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, di
 	)
 
 	if v.Services.IsNull() {
-		services = types.ListNull(
+		infoServices = types.ListNull(
 			InfoServicesType{
 				basetypes.ObjectType{
 					AttrTypes: InfoServicesValue{}.AttributeTypes(ctx),
@@ -7468,7 +7474,7 @@ func (v InfoValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, di
 	}
 
 	if v.Services.IsUnknown() {
-		services = types.ListUnknown(
+		infoServices = types.ListUnknown(
 			InfoServicesType{
 				basetypes.ObjectType{
 					AttrTypes: InfoServicesValue{}.AttributeTypes(ctx),
@@ -7494,7 +7500,7 @@ func (v InfoValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, di
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"services": services,
+			"services": infoServices,
 		})
 
 	return objVal, diags
@@ -8160,40 +8166,40 @@ func (t PodGroupsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
 	}
 
-	resourceAttribute, ok := attributes["resource"]
+	podGroupsResourceAttribute, ok := attributes["resource"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`resource is missing from object`)
+			`pod_groups_resource is missing from object`)
 
 		return nil, diags
 	}
 
-	resourceVal, ok := resourceAttribute.(basetypes.ObjectValue)
+	podGroupsResourceVal, ok := podGroupsResourceAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`resource expected to be basetypes.ObjectValue, was: %T`, resourceAttribute))
+			fmt.Sprintf(`pod_groups_resource expected to be basetypes.ObjectValue, was: %T`, podGroupsResourceAttribute))
 	}
 
-	volumesAttribute, ok := attributes["volumes"]
+	podGroupsVolumesAttribute, ok := attributes["volumes"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`volumes is missing from object`)
+			`pod_groups_volumes is missing from object`)
 
 		return nil, diags
 	}
 
-	volumesVal, ok := volumesAttribute.(basetypes.MapValue)
+	podGroupsVolumesVal, ok := podGroupsVolumesAttribute.(basetypes.MapValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`volumes expected to be basetypes.MapValue, was: %T`, volumesAttribute))
+			fmt.Sprintf(`pod_groups_volumes expected to be basetypes.MapValue, was: %T`, podGroupsVolumesAttribute))
 	}
 
 	if diags.HasError() {
@@ -8207,8 +8213,8 @@ func (t PodGroupsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 		FloatingIpPool:   floatingIpPoolVal,
 		Id:               idVal,
 		Name:             nameVal,
-		Resource:         resourceVal,
-		Volumes:          volumesVal,
+		Resource:         podGroupsResourceVal,
+		Volumes:          podGroupsVolumesVal,
 		state:            attr.ValueStateKnown,
 	}, diags
 }
@@ -8384,40 +8390,40 @@ func NewPodGroupsValue(attributeTypes map[string]attr.Type, attributes map[strin
 			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
 	}
 
-	resourceAttribute, ok := attributes["resource"]
+	podGroupsResourceAttribute, ok := attributes["resource"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`resource is missing from object`)
+			`pod_groups_resource is missing from object`)
 
 		return NewPodGroupsValueUnknown(), diags
 	}
 
-	resourceVal, ok := resourceAttribute.(basetypes.ObjectValue)
+	podGroupsResourceVal, ok := podGroupsResourceAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`resource expected to be basetypes.ObjectValue, was: %T`, resourceAttribute))
+			fmt.Sprintf(`pod_groups_resource expected to be basetypes.ObjectValue, was: %T`, podGroupsResourceAttribute))
 	}
 
-	volumesAttribute, ok := attributes["volumes"]
+	podGroupsVolumesAttribute, ok := attributes["volumes"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`volumes is missing from object`)
+			`pod_groups_volumes is missing from object`)
 
 		return NewPodGroupsValueUnknown(), diags
 	}
 
-	volumesVal, ok := volumesAttribute.(basetypes.MapValue)
+	podGroupsVolumesVal, ok := podGroupsVolumesAttribute.(basetypes.MapValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`volumes expected to be basetypes.MapValue, was: %T`, volumesAttribute))
+			fmt.Sprintf(`pod_groups_volumes expected to be basetypes.MapValue, was: %T`, podGroupsVolumesAttribute))
 	}
 
 	if diags.HasError() {
@@ -8431,8 +8437,8 @@ func NewPodGroupsValue(attributeTypes map[string]attr.Type, attributes map[strin
 		FloatingIpPool:   floatingIpPoolVal,
 		Id:               idVal,
 		Name:             nameVal,
-		Resource:         resourceVal,
-		Volumes:          volumesVal,
+		Resource:         podGroupsResourceVal,
+		Volumes:          podGroupsVolumesVal,
 		state:            attr.ValueStateKnown,
 	}, diags
 }
@@ -8634,28 +8640,28 @@ func (v PodGroupsValue) String() string {
 func (v PodGroupsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var resource basetypes.ObjectValue
+	var podGroupsResource basetypes.ObjectValue
 
 	if v.Resource.IsNull() {
-		resource = types.ObjectNull(
+		podGroupsResource = types.ObjectNull(
 			PodGroupsResourceValue{}.AttributeTypes(ctx),
 		)
 	}
 
 	if v.Resource.IsUnknown() {
-		resource = types.ObjectUnknown(
+		podGroupsResource = types.ObjectUnknown(
 			PodGroupsResourceValue{}.AttributeTypes(ctx),
 		)
 	}
 
 	if !v.Resource.IsNull() && !v.Resource.IsUnknown() {
-		resource = types.ObjectValueMust(
+		podGroupsResource = types.ObjectValueMust(
 			PodGroupsResourceValue{}.AttributeTypes(ctx),
 			v.Resource.Attributes(),
 		)
 	}
 
-	volumes := types.MapValueMust(
+	podGroupsVolumes := types.MapValueMust(
 		PodGroupsVolumesType{
 			basetypes.ObjectType{
 				AttrTypes: PodGroupsVolumesValue{}.AttributeTypes(ctx),
@@ -8665,7 +8671,7 @@ func (v PodGroupsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 	)
 
 	if v.Volumes.IsNull() {
-		volumes = types.MapNull(
+		podGroupsVolumes = types.MapNull(
 			PodGroupsVolumesType{
 				basetypes.ObjectType{
 					AttrTypes: PodGroupsVolumesValue{}.AttributeTypes(ctx),
@@ -8675,7 +8681,7 @@ func (v PodGroupsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 	}
 
 	if v.Volumes.IsUnknown() {
-		volumes = types.MapUnknown(
+		podGroupsVolumes = types.MapUnknown(
 			PodGroupsVolumesType{
 				basetypes.ObjectType{
 					AttrTypes: PodGroupsVolumesValue{}.AttributeTypes(ctx),
@@ -8716,8 +8722,8 @@ func (v PodGroupsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 			"floating_ip_pool":  v.FloatingIpPool,
 			"id":                v.Id,
 			"name":              v.Name,
-			"resource":          resource,
-			"volumes":           volumes,
+			"resource":          podGroupsResource,
+			"volumes":           podGroupsVolumes,
 		})
 
 	return objVal, diags

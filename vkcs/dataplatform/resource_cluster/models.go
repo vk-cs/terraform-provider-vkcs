@@ -175,10 +175,9 @@ func UpdateClusterConfigsUsers(ctx context.Context, users []clusters.ClusterConf
 	for _, u := range users {
 		updated := false
 
-		var roleValue types.String
-		if u.Role == "" {
-			roleValue = types.StringNull()
-		} else {
+		// role is Optional: some products (trino, spark) don't use it
+		roleValue := types.StringNull()
+		if u.Role != "" {
 			roleValue = types.StringValue(u.Role)
 		}
 

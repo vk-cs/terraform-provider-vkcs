@@ -42,7 +42,7 @@ resource "vkcs_dataplatform_cluster" "trino" {
   configs = {
     users = [
       {
-        username = "example"
+        username = "vkdata"
         password = random_password.trino_example.result
       }
     ]

@@ -28,6 +28,7 @@ type ClusterCreate struct {
 	Description       string                  `json:"description,omitempty"`
 	StackID           string                  `json:"stack_id,omitempty"`
 	FloatingIPPool    string                  `json:"floating_ip_pool,omitempty"`
+	SDN               string                  `json:"sdn"`
 }
 
 type ClusterUpdate struct {
@@ -72,15 +73,21 @@ type ClusterCreateConfigMaintenanceCronTabs struct {
 }
 
 type ClusterCreateConfigUser struct {
-	Username string `json:"username" required:"true"`
-	Password string `json:"password" required:"true"`
-	Role     string `json:"role,omitempty"`
+	Username        string                                  `json:"username" required:"true"`
+	Password        string                                  `json:"password" required:"true"`
+	Role            string                                  `json:"role,omitempty"`
+	Settings        []ClusterCreateConfigSetting            `json:"settings"`
+	ConnectionStore *ClusterCreateConfigUserConnectionStore `json:"connection_store,omitempty"`
+}
+
+type ClusterCreateConfigUserConnectionStore struct {
+	Create bool `json:"create"`
 }
 
 type ClusterCreateConfigWarehouse struct {
 	Name        string                                   `json:"name,omitempty"`
 	Connections []ClusterCreateConfigWarehouseConnection `json:"connections,omitempty"`
-	Extensions  []ClusterCreateConfigWarehouseExtension  `json:"extensions,omitempty"`
+	Extensions  []ClusterCreateConfigWarehouseExtension  `json:"extensions"`
 	Users       []string                                 `json:"users,omitempty"`
 }
 
@@ -100,7 +107,7 @@ type ClusterCreatePodGroup struct {
 	Count              *int                                   `json:"count" required:"true"`
 	Resource           *ClusterCreatePodGroupResource         `json:"resource" required:"true"`
 	PodGroupTemplateID string                                 `json:"pod_group_template_id" required:"true"`
-	Volumes            map[string]ClusterCreatePodGroupVolume `json:"volumes,omitempty"`
+	Volumes            map[string]ClusterCreatePodGroupVolume `json:"volumes"`
 	FloatingIPPool     string                                 `json:"floating_ip_pool,omitempty"`
 }
 
