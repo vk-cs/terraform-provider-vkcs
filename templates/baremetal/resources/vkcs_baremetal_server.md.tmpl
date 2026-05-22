@@ -1,0 +1,30 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages a bare metal server resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+### Basic Server
+{{tffile "examples/baremetal/server/basic/main.tf"}}
+
+### Server with bonded interfaces
+{{tffile "examples/baremetal/server/bond/main.tf"}}
+
+{{tffile "examples/baremetal/server/bonds/main.tf"}}
+
+### Server with tagged VLAN interfaces
+{{tffile "examples/baremetal/server/vlan/main.tf"}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+A bare metal server can be imported using the `id`, e.g.
+{{codefile "shell" "templates/baremetal/resources/vkcs_baremetal_server/import.sh"}}

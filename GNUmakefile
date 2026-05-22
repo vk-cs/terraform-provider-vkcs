@@ -95,6 +95,9 @@ testmock_k8saas: fmtcheck
 testacc_k8saas: fmtcheck
 	TF_ACC=1 go test -run=TestAccKubernetes $(TEST) $(TESTARGS) -timeout 120m
 
+testacc_bmaas: fmtcheck
+	TF_ACC=1 go test -run='TestAccBareMetal|TestManualAccBareMetal' $(TEST) $(TESTARGS) -timeout 120m
+
 vet:
 	@echo "go vet ."
 	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
