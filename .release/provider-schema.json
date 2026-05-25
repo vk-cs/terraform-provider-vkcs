@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.15.0",
+  "provider_version": "v0.16.0",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -1169,7 +1169,7 @@
           "floating_ip_pool": {
             "type": "TypeString",
             "optional": true,
-            "description": "Floating IP pool ID. Use `auto` for autoselect. Changing this creates a new resource.",
+            "description": "Floating IP pool ID. Only `auto` is allowed; omit to skip floating IP. Changing this creates a new resource.",
             "computed": true,
             "new_since": "v0.12.1"
           },
@@ -1179,7 +1179,7 @@
             "computed": true
           },
           "info": {
-            "description": "Application info",
+            "description": "Application info.",
             "computed": true,
             "new_since": "v0.12.1"
           },
