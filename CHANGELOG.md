@@ -6,8 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.16.0 (unreleased)
-- Mark configs.users.role as required for vkcs_dataplatform_cluster
+#### v0.16.0
 - Mark configs.users and configs.warehouses as required for vkcs_dataplatform_cluster, with plan-time validation of at least one user and exactly one warehouse
 - Restrict floating_ip_pool of vkcs_dataplatform_cluster to "auto" or omitted; reject any other value at plan time
 - Fix: Always include configs.users[].settings and configs.warehouses[].extensions in vkcs_dataplatform_cluster create requests, even when empty
