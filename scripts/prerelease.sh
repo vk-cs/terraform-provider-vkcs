@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPO_DIR="$(cd "$(dirname "$0")"/.. && pwd)"
+REPO_DIR="$(CDPATH='' cd "$(dirname "$0")"/.. && pwd)"
 cd "${REPO_DIR}"
 
 # shellcheck disable=SC2034 # documented constant, not consumed inside this script
@@ -14,8 +14,16 @@ else
   SED="sed -r"
 fi
 
-if [[ "$(git status --short)" != "" ]]; then
-  echo "Error: working tree is dirty" >&2
+ALLOW_DIRTY="${ALLOW_DIRTY:-}"
+for arg in "$@"; do
+  case "${arg}" in
+    --allow-dirty) ALLOW_DIRTY=1 ;;
+    *) echo "Unknown argument: ${arg}" >&2; exit 64 ;;
+  esac
+done
+
+if [[ -z "${ALLOW_DIRTY}" && "$(git status --short)" != "" ]]; then
+  echo "Error: working tree is dirty (pass --allow-dirty or set ALLOW_DIRTY=1 to bypass)" >&2
   exit 4
 fi
 

@@ -34,16 +34,15 @@ $(TF_PLUGIN_GEN): $(LOCALBIN)
 generate: tfplugingen-framework
 	PATH="$(LOCALBIN):$$PATH" go generate ./...
 
-# Regenerates vkcs/dataplatform/resource_cluster/cluster_resource_gen.go via the
-# scripts/dpgen wrapper, which works around an upstream bug with nested-type name
-# collisions (https://github.com/hashicorp/terraform-plugin-codegen-framework/issues/20).
+# Regenerates only cluster_resource_gen.go. The //go:generate directives in
+# vkcs/dataplatform/resource_cluster/doc.go drive scripts/dpgen (which wraps
+# tfplugingen-framework to work around upstream nested-type name collisions —
+# https://github.com/hashicorp/terraform-plugin-codegen-framework/issues/20) and
+# then format the produced file via gofmt + golines.
 # Targeted manual FIELD renames (not type renames) live in spec/dpgen-overrides.json.
+# Equivalent to `make generate`; provided as a faster selective alias for dev loops.
 generate-dataplatform: tfplugingen-framework
-	$(GO) run ./scripts/dpgen \
-		-spec vkcs/dataplatform/spec/spec.json \
-		-overrides vkcs/dataplatform/spec/dpgen-overrides.json \
-		-out vkcs/dataplatform/resource_cluster/cluster_resource_gen.go \
-		-generator $(TF_PLUGIN_GEN)
+	PATH="$(LOCALBIN):$$PATH" $(GO) generate ./vkcs/dataplatform/...
 
 build: fmtcheck generate
 	go install
@@ -158,4 +157,12 @@ validate-examples:
 prepare-examples-ide:
 	bash scripts/prepare-examples-ide.sh $(ARGS)
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test lint shellcheck-lint update_release_schema generate generate-dataplatform validate-examples prepare-examples-ide tfplugingen-framework
+# Release preparation: drops the `(unreleased)` marker in CHANGELOG.md, refreshes
+# .release/provider-schema.json, and regenerates all `*_gen.go` files. By default
+# requires a clean working tree; set ALLOW_DIRTY=1 to bypass that guard (useful
+# for dev iterations where the script must run on an in-progress branch).
+ALLOW_DIRTY ?=
+prerelease:
+	ALLOW_DIRTY=$(ALLOW_DIRTY) bash scripts/prerelease.sh
+
+.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test lint shellcheck-lint update_release_schema generate generate-dataplatform validate-examples prepare-examples-ide prerelease tfplugingen-framework
