@@ -12,6 +12,8 @@ GOLANGCI_LINT         ?= $(LOCALBIN)/golangci-lint
 GOLANGCI_LINT_VERSION ?= v2.7.2
 TF_PLUGIN_GEN         ?= $(LOCALBIN)/tfplugingen-framework
 TF_PLUGIN_GEN_VERSION ?= v0.4.1
+GOLINES               ?= $(LOCALBIN)/golines
+GOLINES_VERSION       ?= v0.13.0
 
 define go-install-tool
 @[ -f $(LOCALBIN)/$(1) ] || { \
@@ -31,7 +33,11 @@ tfplugingen-framework: $(TF_PLUGIN_GEN)
 $(TF_PLUGIN_GEN): $(LOCALBIN)
 	$(call go-install-tool,$(TF_PLUGIN_GEN),github.com/hashicorp/terraform-plugin-codegen-framework/cmd/tfplugingen-framework,$(TF_PLUGIN_GEN_VERSION))
 
-generate: tfplugingen-framework
+golines: $(GOLINES)
+$(GOLINES): $(LOCALBIN)
+	$(call go-install-tool,$(GOLINES),github.com/segmentio/golines,$(GOLINES_VERSION))
+
+generate: tfplugingen-framework golines
 	PATH="$(LOCALBIN):$$PATH" go generate ./...
 
 # Regenerates only cluster_resource_gen.go. The //go:generate directives in
@@ -103,7 +109,7 @@ vet:
 		exit 1; \
 	fi
 
-fmt:
+fmt: golines golangci-lint
 	gofmt -w $(GOFMT_FILES)
 	golines -w --max-len=120 ./vkcs/dataplatform
 	golangci-lint run --fix --no-config --enable-only wsl_v5 ./vkcs/dataplatform/...
