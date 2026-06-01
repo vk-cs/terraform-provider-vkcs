@@ -30,6 +30,7 @@ func KubernetesVersionsV2DataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The region for which to retrieve available versions. Defaults to provider's `region`.",
 			},
 		},
+		Description: "Use this data source to retrieve information about VKCS Kubernetes cluster versions.",
 	}
 }
 

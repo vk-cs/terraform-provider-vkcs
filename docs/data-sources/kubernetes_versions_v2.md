@@ -3,21 +3,16 @@ subcategory: "Kubernetes"
 layout: "vkcs"
 page_title: "vkcs: vkcs_kubernetes_versions_v2"
 description: |-
-  Returns a list of Kubernetes versions available for provisioning next-generation clusters.
+  Use this data source to retrieve information about VKCS Kubernetes cluster versions.
 ---
 
 # vkcs_kubernetes_versions_v2
 
-
+Use this data source to retrieve information about VKCS Kubernetes cluster versions.
 
 ## Example Usage
 ```terraform
 data "vkcs_kubernetes_versions_v2" "available_versions" {}
-
-output "available_kubernetes_versions" {
-  description = "A set of Kubernetes versions that can be used to deploy a new cluster."
-  value       = data.vkcs_kubernetes_versions_v2.available_versions.k8s_versions
-}
 ```
 
 ## Argument Reference

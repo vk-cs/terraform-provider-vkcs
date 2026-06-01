@@ -1,0 +1,1 @@
+../cluster_v2/standard/main.tf

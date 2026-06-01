@@ -8,6 +8,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	clustersv1 "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v1/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v1/nodegroups"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/addons"
 	clustersv2 "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/clusters"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
@@ -121,6 +122,19 @@ func kubernetesStateRefreshFuncV2(client *gophercloud.ServiceClient, clusterID s
 			return nil, "", err
 		}
 		return cluster, cluster.Status, nil
+	}
+}
+
+func kubernetesAddonStateRefreshFuncV2(client *gophercloud.ServiceClient, clusterAddonID string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		clusteAddon, err := addons.GetClusterAddon(client, clusterAddonID).Extract()
+		if err != nil {
+			if errutil.IsNotFound(err) {
+				return clusteAddon, clusterStatusV2Deleted, nil
+			}
+			return nil, "", err
+		}
+		return clusteAddon, clusteAddon.Status, nil
 	}
 }
 

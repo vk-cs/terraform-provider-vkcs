@@ -1,0 +1,1 @@
+terraform import vkcs_kubernetes_cluster_addon_v2.addon 3E4f0lX3N7HXNzyHl7YDTtX5pgY

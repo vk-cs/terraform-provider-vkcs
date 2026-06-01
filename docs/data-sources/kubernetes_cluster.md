@@ -8,6 +8,9 @@ description: |-
 
 # vkcs_kubernetes_cluster
 
+> **Warning**  
+> This data source is intended for first-generation VKCS Kubernetes clusters and should not be used for new deployments. Use the `v2` version instead.
+
 Use this data source to get the ID of an available VKCS kubernetes cluster.
 
 ## Example Usage

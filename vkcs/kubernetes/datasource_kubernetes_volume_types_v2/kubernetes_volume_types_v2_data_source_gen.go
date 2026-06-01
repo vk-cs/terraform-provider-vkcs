@@ -55,6 +55,7 @@ func KubernetesVolumeTypesV2DataSourceSchema(ctx context.Context) schema.Schema 
 				MarkdownDescription: "A set of available volume types with their supported availability zones.",
 			},
 		},
+		Description: "Use this data source to retrieve information about available VKCS Kubernetes node group root volume types.",
 	}
 }
 

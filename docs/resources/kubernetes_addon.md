@@ -8,6 +8,9 @@ description: |-
 
 # vkcs_kubernetes_addon
 
+> **Warning**
+> This resource is intended for first-generation VKCS Kubernetes clusters and should not be used for new deployments. Use the `v2` version instead.
+
 Provides a kubernetes cluster addon resource. This can be used to create, modify and delete kubernetes cluster addons.
 
 **New since v0.3.0**.

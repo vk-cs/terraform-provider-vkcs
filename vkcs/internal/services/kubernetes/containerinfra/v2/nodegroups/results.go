@@ -24,6 +24,15 @@ type (
 		UUID                 string            `json:"uuid"`
 	}
 
+	ListVolumeTypes struct {
+		StorageClasses []StorageClass `json:"storage_classes"`
+	}
+
+	StorageClass struct {
+		Name  string   `json:"name"`
+		Zones []string `json:"zones"`
+	}
+
 	NodeGroupID struct {
 		ID string `json:"node_group_id"`
 	}
@@ -33,6 +42,10 @@ type (
 	}
 
 	GetResult struct {
+		gophercloud.Result
+	}
+
+	GetVolumeTypesResult struct {
 		gophercloud.Result
 	}
 )
@@ -57,4 +70,10 @@ func (r GetResult) Extract() (*NodeGroup, error) {
 	var ng NodeGroupDetail
 	err := r.ExtractInto(&ng)
 	return &ng.NgSpec, err
+}
+
+func (r GetVolumeTypesResult) Extract() (ListVolumeTypes, error) {
+	var azs ListVolumeTypes
+	err := r.ExtractInto(&azs)
+	return azs, err
 }

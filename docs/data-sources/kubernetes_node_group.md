@@ -8,6 +8,9 @@ description: |-
 
 # vkcs_kubernetes_node_group
 
+> **Warning**  
+> This data source is intended for first-generation VKCS Kubernetes clusters and should not be used for new deployments. Use the `v2` version instead.
+
 Use this data source to get information on VKCS Kubernetes cluster's node group.
 
 ## Example Usage

@@ -11,49 +11,52 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/nodegroups"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func TestAccKubernetesNodeGroupV2_basic(t *testing.T) {
 	t.Parallel()
 
 	clusterName := "tfacc-ng-basic-v2-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
-	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesNodeGroupV2ClusterBase, map[string]string{"ClusterName": clusterName})
+	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesClusterV2Base, map[string]string{
+		"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
+		"ClusterName":                     clusterName,
+	})
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupV2Basic, map[string]string{
-					"TestAccKubernetesNetworkingBase":         testAccKubernetesNetworkingBase,
+				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupV2Base, map[string]string{
 					"TestAccKubernetesNodeGroupV2ClusterBase": clusterConfig,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckKubernetesNodeGroupV2Exists("vkcs_kubernetes_node_group_v2.basic"),
-					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group_v2.basic", "cluster_id", "vkcs_kubernetes_cluster_v2.base", "id"),
-					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.basic", "name", "tfacc-basic-v2"),
-					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.basic", "scale_type", "fixed_scale"),
-					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.basic", "fixed_scale_node_count", "1"),
-					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.basic", "availability_zone", "MS1"),
-					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.basic", "disk_type", "ceph-ssd"),
-					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.basic", "disk_size", "30"),
-					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.basic", "parallel_upgrade_chunk", "20"),
+					testAccCheckKubernetesNodeGroupV2Exists("vkcs_kubernetes_node_group_v2.base"),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group_v2.base", "cluster_id", "vkcs_kubernetes_cluster_v2.base", "id"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.base", "name", "tfacc-basic-v2"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.base", "scale_type", "fixed_scale"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.base", "fixed_scale_node_count", "1"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.base", "availability_zone", "MS1"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.base", "disk_type", "ceph-ssd"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.base", "disk_size", "30"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.base", "parallel_upgrade_chunk", "20"),
 
-					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group_v2.basic", "node_flavor", "data.vkcs_compute_flavor.node_flavor", "id"),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group_v2.base", "node_flavor", "data.vkcs_compute_flavor.node_flavor", "id"),
 
-					resource.TestCheckResourceAttrSet("vkcs_kubernetes_node_group_v2.basic", "id"),
-					resource.TestCheckResourceAttrSet("vkcs_kubernetes_node_group_v2.basic", "uuid"),
-					resource.TestCheckResourceAttrSet("vkcs_kubernetes_node_group_v2.basic", "created_at"),
-					resource.TestCheckResourceAttrSet("vkcs_kubernetes_node_group_v2.basic", "region"),
+					resource.TestCheckResourceAttrSet("vkcs_kubernetes_node_group_v2.base", "id"),
+					resource.TestCheckResourceAttrSet("vkcs_kubernetes_node_group_v2.base", "uuid"),
+					resource.TestCheckResourceAttrSet("vkcs_kubernetes_node_group_v2.base", "created_at"),
+					resource.TestCheckResourceAttrSet("vkcs_kubernetes_node_group_v2.base", "region"),
 
-					resource.TestCheckNoResourceAttr("vkcs_kubernetes_node_group_v2.basic", "auto_scale_min_size"),
-					resource.TestCheckNoResourceAttr("vkcs_kubernetes_node_group_v2.basic", "auto_scale_max_size"),
-					resource.TestCheckNoResourceAttr("vkcs_kubernetes_node_group_v2.basic", "auto_scale_node_count"),
-					resource.TestCheckNoResourceAttr("vkcs_kubernetes_node_group_v2.basic", "labels"),
-					resource.TestCheckNoResourceAttr("vkcs_kubernetes_node_group_v2.basic", "taints"),
+					resource.TestCheckNoResourceAttr("vkcs_kubernetes_node_group_v2.base", "auto_scale_min_size"),
+					resource.TestCheckNoResourceAttr("vkcs_kubernetes_node_group_v2.base", "auto_scale_max_size"),
+					resource.TestCheckNoResourceAttr("vkcs_kubernetes_node_group_v2.base", "auto_scale_node_count"),
+					resource.TestCheckNoResourceAttr("vkcs_kubernetes_node_group_v2.base", "labels"),
+					resource.TestCheckNoResourceAttr("vkcs_kubernetes_node_group_v2.base", "taints"),
 				),
 			},
-			acctest.ImportStep("vkcs_kubernetes_node_group_v2.basic"),
+			acctest.ImportStep("vkcs_kubernetes_node_group_v2.base"),
 		},
 	})
 }
@@ -62,7 +65,10 @@ func TestAccKubernetesNodeGroupV2_full(t *testing.T) {
 	t.Parallel()
 
 	clusterName := "tfacc-ng-full-v2-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
-	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesNodeGroupV2ClusterBase, map[string]string{"ClusterName": clusterName})
+	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesClusterV2Base, map[string]string{
+		"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
+		"ClusterName":                     clusterName,
+	})
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
@@ -70,7 +76,6 @@ func TestAccKubernetesNodeGroupV2_full(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupV2Full, map[string]string{
-					"TestAccKubernetesNetworkingBase":         testAccKubernetesNetworkingBase,
 					"TestAccKubernetesNodeGroupV2ClusterBase": clusterConfig,
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -117,7 +122,10 @@ func TestAccKubernetesNodeGroupV2_update(t *testing.T) {
 	t.Parallel()
 
 	clusterName := "tfacc-ng-update-v2-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
-	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesNodeGroupV2ClusterBase, map[string]string{"ClusterName": clusterName})
+	clusterConfig := acctest.AccTestRenderConfig(testAccKubernetesClusterV2Base, map[string]string{
+		"TestAccKubernetesNetworkingBase": testAccKubernetesNetworkingBase,
+		"ClusterName":                     clusterName,
+	})
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
@@ -125,7 +133,6 @@ func TestAccKubernetesNodeGroupV2_update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.AccTestRenderConfig(testAccKubernetesNodeGroupV2UpdateOld, map[string]string{
-					"TestAccKubernetesNetworkingBase":         testAccKubernetesNetworkingBase,
 					"TestAccKubernetesNodeGroupV2ClusterBase": clusterConfig,
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -210,55 +217,29 @@ func testAccCheckKubernetesNodeGroupV2Exists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("error creating Kubernetes API client: %s", err)
 		}
 
-		found, err := nodegroups.Get(client, rs.Primary.ID).Extract()
+		_, err = nodegroups.GetByID(client, rs.Primary.ID).Extract()
 		if err != nil {
+			if errutil.IsNotFound(err) {
+				return errors.New("Kubernetes node group not found")
+			}
 			return err
-		}
-
-		if found == nil {
-			return errors.New("Kubernetes node group not found")
 		}
 
 		return nil
 	}
 }
 
-const testAccKubernetesNodeGroupV2ClusterBase = `
-data "vkcs_compute_flavor" "base" {
-  name = "Standard-6-12"
-}
-
-resource "vkcs_kubernetes_cluster_v2" "base" {
-  name                   = "{{ .ClusterName }}"
-  version                = "v1.34.2"
-  cluster_type           = "standard"
-  availability_zones     = ["MS1"]
-  master_count           = 1
-  master_flavor          = data.vkcs_compute_flavor.base.id
-  network_plugin         = "calico"
-  pods_ipv4_cidr         = "10.100.0.0/16"
-  network_id             = vkcs_networking_network.base.id
-  subnet_id              = vkcs_networking_subnet.base.id
-  loadbalancer_subnet_id = vkcs_networking_subnet.base.id
-
-  depends_on = [
-    vkcs_networking_router_interface.base,
-  ]
-}
-`
-
-const testAccKubernetesNodeGroupV2Basic = `
-{{ .TestAccKubernetesNetworkingBase }}
+const testAccKubernetesNodeGroupV2Base = `
 {{ .TestAccKubernetesNodeGroupV2ClusterBase }}
 
-data "vkcs_compute_flavor" "node_flavor" {
+data "vkcs_compute_flavor" "worker" {
   name = "Standard-6-12"
 }
 
-resource "vkcs_kubernetes_node_group_v2" "basic" {
+resource "vkcs_kubernetes_node_group_v2" "base" {
   cluster_id               = vkcs_kubernetes_cluster_v2.base.id
   name                     = "tfacc-basic-v2"
-  node_flavor              = data.vkcs_compute_flavor.node_flavor.id
+  node_flavor              = data.vkcs_compute_flavor.worker.id
   availability_zone        = "MS1"
   disk_type                = "ceph-ssd"
   disk_size                = 30
@@ -269,7 +250,6 @@ resource "vkcs_kubernetes_node_group_v2" "basic" {
 `
 
 const testAccKubernetesNodeGroupV2Full = `
-{{ .TestAccKubernetesNetworkingBase }}
 {{ .TestAccKubernetesNodeGroupV2ClusterBase }}
 
 data "vkcs_compute_flavor" "node_flavor" {
@@ -309,7 +289,6 @@ resource "vkcs_kubernetes_node_group_v2" "full" {
 `
 
 const testAccKubernetesNodeGroupV2UpdateOld = `
-{{ .TestAccKubernetesNetworkingBase }}
 {{ .TestAccKubernetesNodeGroupV2ClusterBase }}
 
 data "vkcs_compute_flavor" "node_flavor" {
@@ -342,7 +321,6 @@ resource "vkcs_kubernetes_node_group_v2" "update" {
 `
 
 const testAccKubernetesNodeGroupV2UpdateNew = `
-{{ .TestAccKubernetesNetworkingBase }}
 {{ .TestAccKubernetesNodeGroupV2ClusterBase }}
 
 data "vkcs_compute_flavor" "node_flavor" {

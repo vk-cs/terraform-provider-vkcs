@@ -3,12 +3,20 @@ subcategory: "{{.SubCategory}}"
 layout: "vkcs"
 page_title: "vkcs: {{.Name}}"
 description: |-
-  Retrieves information about a specific node group within a next-generation Kubernetes cluster.
+  Use this data source to retrieve information about VKCS Kubernetes cluster node group.
 ---
 
 # {{.Name}}
 
 {{ .Description }}
+
+The cluster node group can be identified by either:
+
+* `id`
+* `uuid`
+* the combination of `name` and `cluster_id`
+
+These options are mutually exclusive.
 
 ## Example Usage
 {{tffile "examples/kubernetes/node_group_v2/main-datasource.tf"}}

@@ -157,17 +157,20 @@ type (
 		Versions []K8SVersion `json:"k8s_versions"`
 	}
 
-	ListVolumeTypes struct {
-		StorageClasses []StorageClass `json:"storage_classes"`
-	}
-
-	StorageClass struct {
-		Name  string   `json:"name"`
-		Zones []string `json:"zones"`
-	}
-
 	K8SVersion struct {
 		Version string `json:"version"`
+	}
+
+	ListSecPolicyTemplates struct {
+		SecPolicyTemplates []SecPolicyTemplate `json:"security_policies"`
+	}
+
+	SecPolicyTemplate struct {
+		ID                  string `json:"id"`
+		Name                string `json:"name"`
+		Description         string `json:"description"`
+		SettingsDescription string `json:"settings_description"`
+		Version             string `json:"version"`
 	}
 
 	CreateResult struct {
@@ -186,7 +189,11 @@ type (
 		gophercloud.Result
 	}
 
-	GetVolumeTypesResult struct {
+	GetListSecPolicyTemplatesResult struct {
+		gophercloud.Result
+	}
+
+	GetSecPolicyTemplateResult struct {
 		gophercloud.Result
 	}
 )
@@ -225,10 +232,16 @@ func (r GetListK8SVersionResult) Extract() (ListK8SVersion, error) {
 	return k8sListVersions, err
 }
 
-func (r GetVolumeTypesResult) Extract() (ListVolumeTypes, error) {
-	var azs ListVolumeTypes
-	err := r.ExtractInto(&azs)
-	return azs, err
+func (r GetListSecPolicyTemplatesResult) Extract() (ListSecPolicyTemplates, error) {
+	var secPolicyTemplates ListSecPolicyTemplates
+	err := r.ExtractInto(&secPolicyTemplates)
+	return secPolicyTemplates, err
+}
+
+func (r GetSecPolicyTemplateResult) Extract() (SecPolicyTemplate, error) {
+	var secPolicyTemplates SecPolicyTemplate
+	err := r.ExtractInto(&secPolicyTemplates)
+	return secPolicyTemplates, err
 }
 
 // Less reports whether d is less than other.
