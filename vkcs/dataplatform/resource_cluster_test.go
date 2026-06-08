@@ -44,8 +44,16 @@ func TestAccDataPlatformClusterResource_update_big(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "name", oldName),
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "description", oldDescription),
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.settings.0.alias", "sparkproxy.spark_version"),
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.settings.0.value", oldVersion),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"configs.settings.0.alias",
+						"sparkproxy.spark_version",
+					),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"configs.settings.0.value",
+						oldVersion,
+					),
 				),
 			},
 			{
@@ -59,14 +67,25 @@ func TestAccDataPlatformClusterResource_update_big(t *testing.T) {
 				}),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("vkcs_dataplatform_cluster.basic", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(
+							"vkcs_dataplatform_cluster.basic",
+							plancheck.ResourceActionUpdate,
+						),
 					},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "name", newName),
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "description", newDescription),
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.settings.0.alias", "sparkproxy.spark_version"),
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.settings.0.value", newVersion),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"configs.settings.0.alias",
+						"sparkproxy.spark_version",
+					),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"configs.settings.0.value",
+						newVersion,
+					),
 				),
 			},
 		},
@@ -80,16 +99,27 @@ type DataplatformClusterUser struct {
 }
 
 func testRenderDataplatformClusterUsers(users []DataplatformClusterUser) string {
-	usersTmpl := template.Must(template.New("users").Option("missingkey=error").Parse(testAccDataPlatformClusterResourceIcebergUsers))
+	usersTmpl := template.Must(
+		template.New("users").Option("missingkey=error").Parse(testAccDataPlatformClusterResourceIcebergUsers),
+	)
+
 	var buf bytes.Buffer
 
 	_ = usersTmpl.Execute(&buf, users)
+
 	return buf.String()
 }
 
 func TestAccDataPlatformClusterIcebergAddAndDeleteUser_big(t *testing.T) {
-	oneUser := testRenderDataplatformClusterUsers([]DataplatformClusterUser{{Username: "vkdata", Password: "Test_p#ssword-12-3", Role: "dbOwner"}})
-	twoUsers := testRenderDataplatformClusterUsers([]DataplatformClusterUser{{Username: "vkdata", Password: "Test_p#ssword-12-3", Role: "dbOwner"}, {Username: "vkdata1", Password: "Test_p#ssword-12-4", Role: "common"}})
+	oneUser := testRenderDataplatformClusterUsers(
+		[]DataplatformClusterUser{{Username: "vkdata", Password: "Test_p#ssword-12-3", Role: "dbOwner"}},
+	)
+	twoUsers := testRenderDataplatformClusterUsers(
+		[]DataplatformClusterUser{
+			{Username: "vkdata", Password: "Test_p#ssword-12-3", Role: "dbOwner"},
+			{Username: "vkdata1", Password: "Test_p#ssword-12-4", Role: "common"},
+		},
+	)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
@@ -111,7 +141,11 @@ func TestAccDataPlatformClusterIcebergAddAndDeleteUser_big(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "name", "tf-basic-iceberg"),
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "description", "tf-basic-iceberg-description"),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"description",
+						"tf-basic-iceberg-description",
+					),
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.users.#", "1"),
 				),
 			},
@@ -142,7 +176,9 @@ func TestAccDataPlatformClusterIcebergAddAndDeleteUser_big(t *testing.T) {
 }
 
 func TestAccDataPlatformClusterIcebergScale_big(t *testing.T) {
-	user := testRenderDataplatformClusterUsers([]DataplatformClusterUser{{Username: "vkdata", Password: "Test_p#ssword-12-3", Role: "dbOwner"}})
+	user := testRenderDataplatformClusterUsers(
+		[]DataplatformClusterUser{{Username: "vkdata", Password: "Test_p#ssword-12-3", Role: "dbOwner"}},
+	)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
@@ -164,8 +200,16 @@ func TestAccDataPlatformClusterIcebergScale_big(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "name", "tf-basic-iceberg"),
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "description", "tf-basic-iceberg-description"),
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "pod_groups.0.volumes.data.storage", "10"),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"description",
+						"tf-basic-iceberg-description",
+					),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"pod_groups.0.volumes.data.storage",
+						"10",
+					),
 				),
 			},
 			{
@@ -178,7 +222,11 @@ func TestAccDataPlatformClusterIcebergScale_big(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "pod_groups.0.count", "1"),
 					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "pod_groups.1.count", "1"),
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "pod_groups.0.volumes.data.storage", "15"),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"pod_groups.0.volumes.data.storage",
+						"15",
+					),
 				),
 			},
 		},
@@ -198,23 +246,53 @@ func TestAccDataPlatformClusterIcebergUpdateMaintenance_big(t *testing.T) {
 				},
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIcebergUpdateMaintenance1, map[string]string{
-					"TestAccDataPlatformClusterResourceBaseNetwork": testAccDataPlatformClusterResourceBaseNetwork,
-				}),
+				Config: acctest.AccTestRenderConfig(
+					testAccDataPlatformClusterResourceIcebergUpdateMaintenance1,
+					map[string]string{
+						"TestAccDataPlatformClusterResourceBaseNetwork": testAccDataPlatformClusterResourceBaseNetwork,
+					},
+				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.maintenance.start", "0 0 1 * *"),
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.maintenance.backup.full.start", "0 0 1 * *"),
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.maintenance.backup.full.keep_time", "10"),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"configs.maintenance.start",
+						"0 0 1 * *",
+					),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"configs.maintenance.backup.full.start",
+						"0 0 1 * *",
+					),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"configs.maintenance.backup.full.keep_time",
+						"10",
+					),
 				),
 			},
 			{
-				Config: acctest.AccTestRenderConfig(testAccDataPlatformClusterResourceIcebergUpdateMaintenance2, map[string]string{
-					"TestAccDataPlatformClusterResourceBaseNetwork": testAccDataPlatformClusterResourceBaseNetwork,
-				}),
+				Config: acctest.AccTestRenderConfig(
+					testAccDataPlatformClusterResourceIcebergUpdateMaintenance2,
+					map[string]string{
+						"TestAccDataPlatformClusterResourceBaseNetwork": testAccDataPlatformClusterResourceBaseNetwork,
+					},
+				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.maintenance.start", "0 0 2 * *"),
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.maintenance.backup.full.start", "0 0 2 * *"),
-					resource.TestCheckResourceAttr("vkcs_dataplatform_cluster.basic", "configs.maintenance.backup.full.keep_time", "12"),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"configs.maintenance.start",
+						"0 0 2 * *",
+					),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"configs.maintenance.backup.full.start",
+						"0 0 2 * *",
+					),
+					resource.TestCheckResourceAttr(
+						"vkcs_dataplatform_cluster.basic",
+						"configs.maintenance.backup.full.keep_time",
+						"12",
+					),
 				),
 			},
 		},

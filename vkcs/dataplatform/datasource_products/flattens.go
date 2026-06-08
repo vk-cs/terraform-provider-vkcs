@@ -12,6 +12,7 @@ import (
 
 func FlattenProducts(ctx context.Context, o []products.Product) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
 	if o == nil {
 		return types.ListNull(ProductsValue{}.Type(ctx)), nil
 	}
@@ -24,10 +25,13 @@ func FlattenProducts(ctx context.Context, o []products.Product) (basetypes.ListV
 			state:          attr.ValueStateKnown,
 		}
 	}
+
 	result, d := types.ListValue(ProductsValue{}.Type(ctx), productsV)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(ProductsValue{}.Type(ctx)), diags
 	}
+
 	return result, nil
 }

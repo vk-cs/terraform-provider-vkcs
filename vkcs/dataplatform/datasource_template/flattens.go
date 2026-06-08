@@ -22,12 +22,14 @@ func FlattenPodGroups(ctx context.Context, pods []templates.ClusterTemplatePodgr
 	for i, p := range pods {
 		resourceObj, d := FlattenPodGroupResource(ctx, p.Resource)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return types.ListNull(PodGroupsValue{}.Type(ctx)), diags
 		}
 
 		volumesMap, d := FlattenVolumes(ctx, p.Volumes)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return types.ListNull(PodGroupsValue{}.Type(ctx)), diags
 		}
@@ -40,6 +42,7 @@ func FlattenPodGroups(ctx context.Context, pods []templates.ClusterTemplatePodgr
 			state:    attr.ValueStateKnown,
 		}.ToObjectValue(ctx)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return types.ListNull(PodGroupsValue{}.Type(ctx)), diags
 		}
@@ -49,6 +52,7 @@ func FlattenPodGroups(ctx context.Context, pods []templates.ClusterTemplatePodgr
 
 	result, d := types.ListValue(types.ObjectType{AttrTypes: PodGroupsValue{}.AttributeTypes(ctx)}, values)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListNull(PodGroupsValue{}.Type(ctx)), diags
 	}
@@ -56,7 +60,10 @@ func FlattenPodGroups(ctx context.Context, pods []templates.ClusterTemplatePodgr
 	return result, diags
 }
 
-func FlattenPodGroupResource(ctx context.Context, r templates.ClusterTemplatePodgroupResource) (basetypes.ObjectValue, diag.Diagnostics) {
+func FlattenPodGroupResource(
+	ctx context.Context,
+	r templates.ClusterTemplatePodgroupResource,
+) (basetypes.ObjectValue, diag.Diagnostics) {
 	val := PodGroupsResourceValue{
 		CpuRequest: types.StringValue(r.CpuRequest),
 		CpuMargin:  types.NumberValue(big.NewFloat(r.CpuMargin)),
@@ -73,7 +80,10 @@ func FlattenPodGroupResource(ctx context.Context, r templates.ClusterTemplatePod
 	return result, diags
 }
 
-func FlattenVolumes(ctx context.Context, vols map[string]templates.ClusterTemplatePodgroupVolume) (basetypes.MapValue, diag.Diagnostics) {
+func FlattenVolumes(
+	ctx context.Context,
+	vols map[string]templates.ClusterTemplatePodgroupVolume,
+) (basetypes.MapValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if vols == nil {
@@ -92,6 +102,7 @@ func FlattenVolumes(ctx context.Context, vols map[string]templates.ClusterTempla
 
 	result, d := types.MapValue(PodGroupsVolumesValue{}.Type(ctx), values)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.MapNull(PodGroupsVolumesValue{}.Type(ctx)), diags
 	}

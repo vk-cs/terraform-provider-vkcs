@@ -15,9 +15,11 @@ func RequiresReplaceIfWasPresent() planmodifier.String {
 			}
 
 			parentPath := req.Path.ParentPath()
+
 			var oldUsername, newUsername string
 			req.State.GetAttribute(ctx, parentPath.AtName("username"), &oldUsername)
 			req.Config.GetAttribute(ctx, parentPath.AtName("username"), &newUsername)
+
 			if oldUsername != newUsername {
 				return
 			}

@@ -17,6 +17,7 @@ func (m *ProductModel) UpdateFromProduct(ctx context.Context, product *products.
 
 	configs, d := FlattenConfigs(ctx, product.Configs)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return diags
 	}

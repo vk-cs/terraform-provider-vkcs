@@ -19,24 +19,28 @@ func FlattenConfigs(ctx context.Context, o *products.ProductConfig) (ConfigsValu
 
 	connections, d := FlattenConfigsConnections(ctx, o.Connections)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return NewConfigsValueUnknown(), diags
 	}
 
 	settings, d := FlattenConfigsSettings(ctx, o.Settings)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return NewConfigsValueUnknown(), diags
 	}
 
 	userRoles, d := FlattenConfigsUserRoles(ctx, o.UserRoles)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return NewConfigsValueUnknown(), diags
 	}
 
 	crontabs, d := FlattenConfigsCrontabs(ctx, o.Crontabs)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return NewConfigsValueUnknown(), diags
 	}
@@ -52,8 +56,12 @@ func FlattenConfigs(ctx context.Context, o *products.ProductConfig) (ConfigsValu
 	return configsV, nil
 }
 
-func FlattenConfigsConnections(ctx context.Context, o []products.ProductConfigConnection) (basetypes.ListValue, diag.Diagnostics) {
+func FlattenConfigsConnections(
+	ctx context.Context,
+	o []products.ProductConfigConnection,
+) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
 	if o == nil {
 		return types.ListNull(ConfigsConnectionsValue{}.Type(ctx)), nil
 	}
@@ -62,9 +70,11 @@ func FlattenConfigsConnections(ctx context.Context, o []products.ProductConfigCo
 	for i, c := range o {
 		settings, d := FlattenConfigsConnectionsSettings(ctx, c.Settings)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return types.ListUnknown(ConfigsConnectionsValue{}.Type(ctx)), diags
 		}
+
 		connectionsV[i] = ConfigsConnectionsValue{
 			IsRequired:    types.BoolValue(c.IsRequired),
 			Plug:          types.StringValue(c.Plug),
@@ -77,14 +87,20 @@ func FlattenConfigsConnections(ctx context.Context, o []products.ProductConfigCo
 
 	result, d := types.ListValue(ConfigsConnectionsValue{}.Type(ctx), connectionsV)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(ConfigsConnectionsValue{}.Type(ctx)), diags
 	}
+
 	return result, nil
 }
 
-func FlattenConfigsConnectionsSettings(ctx context.Context, o []products.ProductConfigConnectionSetting) (basetypes.ListValue, diag.Diagnostics) {
+func FlattenConfigsConnectionsSettings(
+	ctx context.Context,
+	o []products.ProductConfigConnectionSetting,
+) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
 	if o == nil {
 		return types.ListNull(ConfigsConnectionsSettingsValue{}.Type(ctx)), nil
 	}
@@ -93,6 +109,7 @@ func FlattenConfigsConnectionsSettings(ctx context.Context, o []products.Product
 	for i, s := range o {
 		stringVariation, d := FlattenConfigsConnectionsSettingsStringVariation(ctx, s.StringVariation)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return types.ListUnknown(ConfigsConnectionsSettingsValue{}.Type(ctx)), diags
 		}
@@ -107,16 +124,23 @@ func FlattenConfigsConnectionsSettings(ctx context.Context, o []products.Product
 			state:           attr.ValueStateKnown,
 		}
 	}
+
 	result, d := types.ListValue(ConfigsConnectionsSettingsValue{}.Type(ctx), settingsV)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(ConfigsConnectionsSettingsValue{}.Type(ctx)), diags
 	}
+
 	return result, nil
 }
 
-func FlattenConfigsConnectionsSettingsStringVariation(ctx context.Context, o []string) (basetypes.ListValue, diag.Diagnostics) {
+func FlattenConfigsConnectionsSettingsStringVariation(
+	ctx context.Context,
+	o []string,
+) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
 	if o == nil {
 		return types.ListNull(types.StringType), nil
 	}
@@ -125,16 +149,23 @@ func FlattenConfigsConnectionsSettingsStringVariation(ctx context.Context, o []s
 	for i, s := range o {
 		settingsV[i] = types.StringValue(s)
 	}
+
 	result, d := types.ListValue(types.StringType, settingsV)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(types.StringType), diags
 	}
+
 	return result, nil
 }
 
-func FlattenConfigsSettings(ctx context.Context, o []products.ProductConfigSetting) (basetypes.ListValue, diag.Diagnostics) {
+func FlattenConfigsSettings(
+	ctx context.Context,
+	o []products.ProductConfigSetting,
+) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
 	if o == nil {
 		return types.ListNull(ConfigsSettingsValue{}.Type(ctx)), nil
 	}
@@ -143,6 +174,7 @@ func FlattenConfigsSettings(ctx context.Context, o []products.ProductConfigSetti
 	for i, s := range o {
 		stringVariation, d := FlattenConfigsSettingsStringVariation(ctx, s.StringVariation)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return types.ListUnknown(ConfigsSettingsValue{}.Type(ctx)), diags
 		}
@@ -157,16 +189,20 @@ func FlattenConfigsSettings(ctx context.Context, o []products.ProductConfigSetti
 			state:           attr.ValueStateKnown,
 		}
 	}
+
 	result, d := types.ListValue(ConfigsSettingsValue{}.Type(ctx), settingsV)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(ConfigsSettingsValue{}.Type(ctx)), diags
 	}
+
 	return result, nil
 }
 
 func FlattenConfigsSettingsStringVariation(ctx context.Context, o []string) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
 	if o == nil {
 		return types.ListNull(types.StringType), nil
 	}
@@ -175,16 +211,23 @@ func FlattenConfigsSettingsStringVariation(ctx context.Context, o []string) (bas
 	for i, s := range o {
 		settingsV[i] = types.StringValue(s)
 	}
+
 	result, d := types.ListValue(types.StringType, settingsV)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(types.StringType), diags
 	}
+
 	return result, nil
 }
 
-func FlattenConfigsUserRoles(ctx context.Context, o []products.ProductConfigUserRole) (basetypes.ListValue, diag.Diagnostics) {
+func FlattenConfigsUserRoles(
+	ctx context.Context,
+	o []products.ProductConfigUserRole,
+) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
 	if o == nil {
 		return types.ListNull(ConfigsUserRolesValue{}.Type(ctx)), nil
 	}
@@ -196,16 +239,23 @@ func FlattenConfigsUserRoles(ctx context.Context, o []products.ProductConfigUser
 			state: attr.ValueStateKnown,
 		}
 	}
+
 	result, d := types.ListValue(ConfigsUserRolesValue{}.Type(ctx), userRolesV)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(ConfigsUserRolesValue{}.Type(ctx)), diags
 	}
+
 	return result, nil
 }
 
-func FlattenConfigsCrontabs(ctx context.Context, o []products.ProductConfigCrontabs) (basetypes.ListValue, diag.Diagnostics) {
+func FlattenConfigsCrontabs(
+	ctx context.Context,
+	o []products.ProductConfigCrontabs,
+) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
 	if o == nil {
 		return types.ListNull(ConfigsCrontabsValue{}.Type(ctx)), nil
 	}
@@ -214,9 +264,11 @@ func FlattenConfigsCrontabs(ctx context.Context, o []products.ProductConfigCront
 	for i, c := range o {
 		settings, d := FlattenConfigsCrontabsSettings(ctx, c.Settings)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return types.ListUnknown(ConfigsCrontabsValue{}.Type(ctx)), diags
 		}
+
 		crontabsV[i] = ConfigsCrontabsValue{
 			Name:     types.StringValue(c.Name),
 			Required: types.BoolValue(c.Required),
@@ -225,16 +277,23 @@ func FlattenConfigsCrontabs(ctx context.Context, o []products.ProductConfigCront
 			state:    attr.ValueStateKnown,
 		}
 	}
+
 	result, d := types.ListValue(ConfigsCrontabsValue{}.Type(ctx), crontabsV)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(ConfigsCrontabsValue{}.Type(ctx)), diags
 	}
+
 	return result, nil
 }
 
-func FlattenConfigsCrontabsSettings(ctx context.Context, o []products.ProductConfigCrontabsSettings) (basetypes.ListValue, diag.Diagnostics) {
+func FlattenConfigsCrontabsSettings(
+	ctx context.Context,
+	o []products.ProductConfigCrontabsSettings,
+) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
 	if o == nil {
 		return types.ListNull(ConfigsCrontabsSettingsValue{}.Type(ctx)), nil
 	}
@@ -243,6 +302,7 @@ func FlattenConfigsCrontabsSettings(ctx context.Context, o []products.ProductCon
 	for i, s := range o {
 		stringVariation, d := FlattenConfigsCrontabsSettingsStringVariation(ctx, s.StringVariation)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return types.ListUnknown(ConfigsCrontabsSettingsValue{}.Type(ctx)), diags
 		}
@@ -257,16 +317,23 @@ func FlattenConfigsCrontabsSettings(ctx context.Context, o []products.ProductCon
 			state:           attr.ValueStateKnown,
 		}
 	}
+
 	result, d := types.ListValue(ConfigsCrontabsSettingsValue{}.Type(ctx), settingsV)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(ConfigsCrontabsSettingsValue{}.Type(ctx)), diags
 	}
+
 	return result, nil
 }
 
-func FlattenConfigsCrontabsSettingsStringVariation(ctx context.Context, o []string) (basetypes.ListValue, diag.Diagnostics) {
+func FlattenConfigsCrontabsSettingsStringVariation(
+	ctx context.Context,
+	o []string,
+) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
 	if o == nil {
 		return types.ListNull(types.StringType), nil
 	}
@@ -275,10 +342,13 @@ func FlattenConfigsCrontabsSettingsStringVariation(ctx context.Context, o []stri
 	for i, s := range o {
 		settingsV[i] = types.StringValue(s)
 	}
+
 	result, d := types.ListValue(types.StringType, settingsV)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(types.StringType), diags
 	}
+
 	return result, nil
 }

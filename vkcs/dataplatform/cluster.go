@@ -14,6 +14,7 @@ func clusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterID string
 			if errutil.IsNotFound(err) {
 				return c, string(clusterStatusDeleted), nil
 			}
+
 			return nil, "", err
 		}
 

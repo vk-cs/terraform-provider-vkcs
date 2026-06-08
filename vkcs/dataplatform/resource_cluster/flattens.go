@@ -13,7 +13,10 @@ import (
 	"strings"
 )
 
-func FlattenClusterConfigsSettings(ctx context.Context, o []clusters.ClusterConfigSetting) (basetypes.ListValue, diag.Diagnostics) {
+func FlattenClusterConfigsSettings(
+	ctx context.Context,
+	o []clusters.ClusterConfigSetting,
+) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if len(o) == 0 {
@@ -28,15 +31,21 @@ func FlattenClusterConfigsSettings(ctx context.Context, o []clusters.ClusterConf
 			state: attr.ValueStateKnown,
 		}
 	}
+
 	result, d := types.ListValue(ConfigsSettingsValue{}.Type(ctx), settingsV)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(ConfigsSettingsValue{}.Type(ctx)), diags
 	}
+
 	return result, nil
 }
 
-func FlattenClusterConfigsMaintenance(ctx context.Context, o *clusters.ClusterConfigMaintenance) (basetypes.ObjectValue, diag.Diagnostics) {
+func FlattenClusterConfigsMaintenance(
+	ctx context.Context,
+	o *clusters.ClusterConfigMaintenance,
+) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if o == nil {
@@ -45,12 +54,14 @@ func FlattenClusterConfigsMaintenance(ctx context.Context, o *clusters.ClusterCo
 
 	backup, d := FlattenClusterConfigsMaintenanceBackup(ctx, o.Backup)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ObjectUnknown(ConfigsMaintenanceValue{}.AttributeTypes(ctx)), diags
 	}
 
 	cronTabs, d := FlattenClusterConfigsMaintenanceCronTabs(ctx, o.CronTabs)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ObjectUnknown(ConfigsMaintenanceValue{}.AttributeTypes(ctx)), diags
 	}
@@ -64,6 +75,7 @@ func FlattenClusterConfigsMaintenance(ctx context.Context, o *clusters.ClusterCo
 
 	result, d := maintenanceV.ToObjectValue(ctx)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ObjectUnknown(ConfigsMaintenanceValue{}.AttributeTypes(ctx)), nil
 	}
@@ -71,7 +83,10 @@ func FlattenClusterConfigsMaintenance(ctx context.Context, o *clusters.ClusterCo
 	return result, nil
 }
 
-func FlattenClusterConfigsMaintenanceBackup(ctx context.Context, o *clusters.ClusterConfigMaintenanceBackup) (basetypes.ObjectValue, diag.Diagnostics) {
+func FlattenClusterConfigsMaintenanceBackup(
+	ctx context.Context,
+	o *clusters.ClusterConfigMaintenanceBackup,
+) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if o == nil {
@@ -84,18 +99,21 @@ func FlattenClusterConfigsMaintenanceBackup(ctx context.Context, o *clusters.Clu
 
 	differential, d := FlattenClusterConfigsMaintenanceBackupObj(ctx, o.Differential)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ObjectUnknown(ConfigsMaintenanceBackupValue{}.AttributeTypes(ctx)), diags
 	}
 
 	full, d := FlattenClusterConfigsMaintenanceBackupObj(ctx, o.Full)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ObjectUnknown(ConfigsMaintenanceBackupValue{}.AttributeTypes(ctx)), diags
 	}
 
 	incremental, d := FlattenClusterConfigsMaintenanceBackupObj(ctx, o.Incremental)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ObjectUnknown(ConfigsMaintenanceBackupValue{}.AttributeTypes(ctx)), diags
 	}
@@ -108,6 +126,7 @@ func FlattenClusterConfigsMaintenanceBackup(ctx context.Context, o *clusters.Clu
 	}
 	result, d := backupV.ToObjectValue(ctx)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ObjectUnknown(ConfigsMaintenanceBackupValue{}.AttributeTypes(ctx)), nil
 	}
@@ -115,7 +134,10 @@ func FlattenClusterConfigsMaintenanceBackup(ctx context.Context, o *clusters.Clu
 	return result, nil
 }
 
-func FlattenClusterConfigsMaintenanceBackupObj(ctx context.Context, o *clusters.ClusterConfigMaintenanceBackupObj) (basetypes.ObjectValue, diag.Diagnostics) {
+func FlattenClusterConfigsMaintenanceBackupObj(
+	ctx context.Context,
+	o *clusters.ClusterConfigMaintenanceBackupObj,
+) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if o == nil {
@@ -129,15 +151,18 @@ func FlattenClusterConfigsMaintenanceBackupObj(ctx context.Context, o *clusters.
 	if o.Enabled != nil {
 		objV.Enabled = types.BoolValue(*o.Enabled)
 	}
+
 	if o.KeepCount != nil {
 		objV.KeepCount = types.Int64Value(int64(*o.KeepCount))
 	}
+
 	if o.KeepTime != nil {
 		objV.KeepTime = types.Int64Value(int64(*o.KeepTime))
 	}
 
 	result, d := objV.ToObjectValue(ctx)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ObjectUnknown(ConfigsMaintenanceBackupDifferentialValue{}.AttributeTypes(ctx)), diags
 	}
@@ -145,7 +170,10 @@ func FlattenClusterConfigsMaintenanceBackupObj(ctx context.Context, o *clusters.
 	return result, nil
 }
 
-func FlattenClusterConfigsMaintenanceCronTabs(ctx context.Context, o []clusters.ClusterConfigMaintenanceCronTabs) (basetypes.ListValue, diag.Diagnostics) {
+func FlattenClusterConfigsMaintenanceCronTabs(
+	ctx context.Context,
+	o []clusters.ClusterConfigMaintenanceCronTabs,
+) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if o == nil {
@@ -156,6 +184,7 @@ func FlattenClusterConfigsMaintenanceCronTabs(ctx context.Context, o []clusters.
 	for i, s := range o {
 		settings, d := FlattenClusterConfigsSettings(ctx, s.Settings)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return types.ListUnknown(ConfigsMaintenanceCrontabsValue{}.Type(ctx)), diags
 		}
@@ -172,6 +201,7 @@ func FlattenClusterConfigsMaintenanceCronTabs(ctx context.Context, o []clusters.
 
 	result, d := types.ListValue(ConfigsMaintenanceCrontabsValue{}.Type(ctx), cronTabsV)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(ConfigsMaintenanceCrontabsValue{}.Type(ctx)), diags
 	}
@@ -179,7 +209,10 @@ func FlattenClusterConfigsMaintenanceCronTabs(ctx context.Context, o []clusters.
 	return result, nil
 }
 
-func FlattenClusterPodGroupsResource(ctx context.Context, o *clusters.ClusterPodGroupResource) (basetypes.ObjectValue, diag.Diagnostics) {
+func FlattenClusterPodGroupsResource(
+	ctx context.Context,
+	o *clusters.ClusterPodGroupResource,
+) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if o == nil {
@@ -197,6 +230,7 @@ func FlattenClusterPodGroupsResource(ctx context.Context, o *clusters.ClusterPod
 	}
 	result, d := resourceV.ToObjectValue(ctx)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ObjectUnknown(PodGroupsResourceValue{}.AttributeTypes(ctx)), diags
 	}
@@ -204,7 +238,10 @@ func FlattenClusterPodGroupsResource(ctx context.Context, o *clusters.ClusterPod
 	return result, nil
 }
 
-func FlattenClusterPodGroupsVolumes(ctx context.Context, o map[string]clusters.ClusterPodGroupVolume) (basetypes.MapValue, diag.Diagnostics) {
+func FlattenClusterPodGroupsVolumes(
+	ctx context.Context,
+	o map[string]clusters.ClusterPodGroupVolume,
+) (basetypes.MapValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if o == nil {
@@ -221,9 +258,11 @@ func FlattenClusterPodGroupsVolumes(ctx context.Context, o map[string]clusters.C
 			state:            attr.ValueStateKnown,
 		}
 	}
+
 	result, d := types.MapValue(PodGroupsVolumesValue{}.Type(ctx), volumesV)
 
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.MapUnknown(PodGroupsVolumesValue{}.Type(ctx)), diags
 	}
@@ -240,6 +279,7 @@ func FlattenClusterInfo(ctx context.Context, i *clusters.ClusterInfo) (InfoValue
 
 	services, d := FlattenClusterInfoServices(ctx, i.Services)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return NewInfoValueNull(), nil
 	}
@@ -252,7 +292,10 @@ func FlattenClusterInfo(ctx context.Context, i *clusters.ClusterInfo) (InfoValue
 	return infoV, nil
 }
 
-func FlattenClusterInfoServices(ctx context.Context, o []clusters.ClusterInfoServices) (basetypes.ListValue, diag.Diagnostics) {
+func FlattenClusterInfoServices(
+	ctx context.Context,
+	o []clusters.ClusterInfoServices,
+) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if o == nil {
@@ -269,9 +312,11 @@ func FlattenClusterInfoServices(ctx context.Context, o []clusters.ClusterInfoSer
 			state:            attr.ValueStateKnown,
 		}
 	}
+
 	result, d := types.ListValue(InfoServicesValue{}.Type(ctx), servicesV)
 
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return types.ListUnknown(InfoServicesValue{}.Type(ctx)), diags
 	}

@@ -17,15 +17,23 @@ import (
 
 func makeUsersListValue(t *testing.T, ctx context.Context, users []ConfigsUsersValue) basetypes.ListValue {
 	t.Helper()
+
 	lv, diags := types.ListValueFrom(ctx, ConfigsUsersValue{}.Type(ctx), users)
 	require.False(t, diags.HasError(), "ListValueFrom users: %v", diags)
+
 	return lv
 }
 
-func makeWarehousesListValue(t *testing.T, ctx context.Context, warehouses []ConfigsWarehousesValue) basetypes.ListValue {
+func makeWarehousesListValue(
+	t *testing.T,
+	ctx context.Context,
+	warehouses []ConfigsWarehousesValue,
+) basetypes.ListValue {
 	t.Helper()
+
 	lv, diags := types.ListValueFrom(ctx, ConfigsWarehousesValue{}.Type(ctx), warehouses)
 	require.False(t, diags.HasError(), "ListValueFrom warehouses: %v", diags)
+
 	return lv
 }
 
@@ -56,6 +64,7 @@ type podGroupSpec struct {
 
 func makePodGroupsListValueNoVolumes(t *testing.T, ctx context.Context, specs []podGroupSpec) basetypes.ListValue {
 	t.Helper()
+
 	pgValues := make([]PodGroupsValue, 0, len(specs))
 	for _, s := range specs {
 		pgValues = append(pgValues, PodGroupsValue{
@@ -70,8 +79,10 @@ func makePodGroupsListValueNoVolumes(t *testing.T, ctx context.Context, specs []
 			state:            attr.ValueStateKnown,
 		})
 	}
+
 	lv, diags := types.ListValueFrom(ctx, PodGroupsValue{}.Type(ctx), pgValues)
 	require.False(t, diags.HasError(), "ListValueFrom pod_groups: %v", diags)
+
 	return lv
 }
 
@@ -140,6 +151,7 @@ func TestExpandClusterConfigs_PropagatesUsernamesToSingleWarehouse(t *testing.T)
 	assert.Equal(t, []string{"vkdata", "vkdata1"}, result.Warehouses[0].Users)
 
 	require.Len(t, result.Users, 2)
+
 	for _, u := range result.Users {
 		require.NotNil(t, u.ConnectionStore)
 		assert.False(t, u.ConnectionStore.Create)
@@ -361,6 +373,7 @@ func TestClusterCreate_FullPayloadMatchesAtomShape(t *testing.T) {
 
 	raw, err := json.Marshal(body)
 	require.NoError(t, err)
+
 	s := string(raw)
 
 	assert.Contains(t, s, `"role":"dbOwner"`)
