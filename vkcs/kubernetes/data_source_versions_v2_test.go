@@ -17,20 +17,20 @@ func TestAccKubernetesVersionsV2_basic(t *testing.T) {
 				Config: testAccKubernetesVersionsV2Config,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchResourceAttr(
-						"data.vkcs_kubernetes_versions_v2.versions",
+						"data.vkcs_kubernetes_versions_v2.base",
 						"k8s_versions.#",
 						regexp.MustCompile(`[1-9]\d*`),
 					),
 					resource.TestCheckResourceAttrSet(
-						"data.vkcs_kubernetes_versions_v2.versions",
+						"data.vkcs_kubernetes_versions_v2.base",
 						"region",
 					),
 					resource.TestCheckResourceAttrSet(
-						"data.vkcs_kubernetes_versions_v2.versions",
+						"data.vkcs_kubernetes_versions_v2.base",
 						"id",
 					),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_kubernetes_versions_v2.versions",
+						"data.vkcs_kubernetes_versions_v2.base",
 						"id",
 						"kubernetes_versions",
 					),
@@ -41,5 +41,5 @@ func TestAccKubernetesVersionsV2_basic(t *testing.T) {
 }
 
 const testAccKubernetesVersionsV2Config = `
-data "vkcs_kubernetes_versions_v2" "versions" {}
+data "vkcs_kubernetes_versions_v2" "base" {}
 `

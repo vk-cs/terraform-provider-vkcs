@@ -5,7 +5,7 @@ resource "vkcs_kubernetes_cluster_v2" "k8s_cluster" {
 
   cluster_type       = "regional"
   master_count       = 3
-  availability_zones = ["GZ1", "MS1", "ME1"]
+  availability_zones = ["PA2", "MS1", "ME1"]
   master_flavor      = data.vkcs_compute_flavor.master.id
 
   network_id             = vkcs_networking_network.app.id

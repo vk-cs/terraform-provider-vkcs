@@ -3,12 +3,20 @@ subcategory: "{{.SubCategory}}"
 layout: "vkcs"
 page_title: "vkcs: {{.Name}}"
 description: |-
-  Retrieves information about an existing next-generation Kubernetes cluster.
+  Use this data source to retrieve information about VKCS Kubernetes cluster.
 ---
 
 # {{.Name}}
 
 {{ .Description }}
+
+The cluster can be identified by exactly one of the following arguments:
+
+* `id`
+* `name`
+* `uuid`
+
+Only one of these arguments can be specified at a time.
 
 ## Example Usage
 {{tffile "examples/kubernetes/cluster_v2/standard/main-datasource.tf"}}

@@ -59,7 +59,7 @@ func (m *KubernetesNodeGroupV2Model) UpdateFromNodeGroup(ctx context.Context, no
 
 func FlattenTaints(ctx context.Context, taints []nodegroups.Taint) (types.Set, diag.Diagnostics) {
 	if len(taints) == 0 {
-		return types.SetNull(TaintsValue{}.Type(ctx)), nil
+		return types.SetValueMust(TaintsValue{}.Type(ctx), []attr.Value{}), nil
 	}
 
 	resList := make([]attr.Value, len(taints))

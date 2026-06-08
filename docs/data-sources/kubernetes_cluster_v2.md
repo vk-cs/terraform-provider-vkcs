@@ -3,12 +3,20 @@ subcategory: "Kubernetes"
 layout: "vkcs"
 page_title: "vkcs: vkcs_kubernetes_cluster_v2"
 description: |-
-  Retrieves information about an existing next-generation Kubernetes cluster.
+  Use this data source to retrieve information about VKCS Kubernetes cluster.
 ---
 
 # vkcs_kubernetes_cluster_v2
 
+Use this data source to retrieve information about VKCS Kubernetes cluster.
 
+The cluster can be identified by exactly one of the following arguments:
+
+* `id`
+* `name`
+* `uuid`
+
+Only one of these arguments can be specified at a time.
 
 ## Example Usage
 ```terraform
@@ -18,9 +26,13 @@ data "vkcs_kubernetes_cluster_v2" "k8s_cluster" {
 ```
 
 ## Argument Reference
-- `id` **required** *string* &rarr;  The cluster's ID. Used to fetch a specific cluster.
+- `id` optional *string* &rarr;  The cluster's ID.
+
+- `name` optional *string* &rarr;  The user-assigned name of the cluster.
 
 - `region` optional *string* &rarr;  The region in which the cluster resides. If omitted, the provider's configured `region` is used.
+
+- `uuid` optional *string* &rarr;  The cluster's UUID.
 
 
 ## Attributes Reference
@@ -61,8 +73,6 @@ In addition to all arguments above, the following attributes are exported:
 
 - `master_flavor` *string* &rarr;  The flavor ID (VM type) used for master nodes.
 
-- `name` *string* &rarr;  The user-assigned name of the cluster.
-
 - `network_id` *string* &rarr;  The ID of the VPC network where the cluster is deployed.
 
 - `network_plugin` *string* &rarr;  The CNI network plugin in use (always `calico`).
@@ -88,8 +98,6 @@ In addition to all arguments above, the following attributes are exported:
 - `status` *string* &rarr;  The current operational status of the cluster (e.g., `RUNNING`, `RECONCILING`).
 
 - `subnet_id` *string* &rarr;  The ID of the subnet used by the cluster's nodes.
-
-- `uuid` *string* &rarr;  The cluster's UUID.
 
 - `version` *string* &rarr;  The installed Kubernetes version (e.g., `v1.34.2`).
 

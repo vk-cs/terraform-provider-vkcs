@@ -1,0 +1,23 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Use this data source to retrieve information about specific VKCS Kubernetes cluster security policy template.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+The cluster security policy template can be identified by either:
+
+* `id`
+* the combination of `name` and `version`
+
+These options are mutually exclusive.
+
+## Example Usage
+{{tffile "examples/kubernetes/security_policy_template_v2/main.tf"}}
+
+{{ .SchemaMarkdown }}

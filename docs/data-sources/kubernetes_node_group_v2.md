@@ -3,12 +3,20 @@ subcategory: "Kubernetes"
 layout: "vkcs"
 page_title: "vkcs: vkcs_kubernetes_node_group_v2"
 description: |-
-  Retrieves information about a specific node group within a next-generation Kubernetes cluster.
+  Use this data source to retrieve information about VKCS Kubernetes cluster node group.
 ---
 
 # vkcs_kubernetes_node_group_v2
 
+Use this data source to retrieve information about VKCS Kubernetes cluster node group.
 
+The cluster node group can be identified by either:
+
+* `id`
+* `uuid`
+* the combination of `name` and `cluster_id`
+
+These options are mutually exclusive.
 
 ## Example Usage
 ```terraform
@@ -18,9 +26,15 @@ data "vkcs_kubernetes_node_group_v2" "node_group" {
 ```
 
 ## Argument Reference
-- `id` **required** *string* &rarr;  The ID of the node group to retrieve.
+- `cluster_id` optional *string* &rarr;  The ID of the parent Kubernetes cluster.
+
+- `id` optional *string* &rarr;  The ID of the node group to retrieve.
+
+- `name` optional *string* &rarr;  The user-assigned name of the node group.
 
 - `region` optional *string* &rarr;  The region where the node group resides. Defaults to the provider's `region`.
+
+- `uuid` optional *string* &rarr;  The node group's UUID
 
 
 ## Attributes Reference
@@ -33,8 +47,6 @@ In addition to all arguments above, the following attributes are exported:
 
 - `availability_zone` *string* &rarr;  The availability zone where the nodes are located.
 
-- `cluster_id` *string* &rarr;  The ID of the parent Kubernetes cluster.
-
 - `created_at` *string* &rarr;  The creation timestamp of the node group (ISO 8601 format).
 
 - `disk_size` *number* &rarr;  The size of the root volume in GB.
@@ -44,8 +56,6 @@ In addition to all arguments above, the following attributes are exported:
 - `fixed_scale_node_count` *number* &rarr;  The desired number of nodes when `scale_type` is `fixed_scale`.
 
 - `labels` *map of* *string* &rarr;  Kubernetes labels applied to the nodes in this group.
-
-- `name` *string* &rarr;  The user-assigned name of the node group.
 
 - `node_flavor` *string* &rarr;  The flavor ID (VM type) of each node in the group.
 
@@ -60,7 +70,5 @@ In addition to all arguments above, the following attributes are exported:
 
     - `value` *string* &rarr;  The taint value. Must conform to Kubernetes label value syntax (e.g., `production`).
 
-
-- `uuid` *string* &rarr;  The node group's UUID
 
 

@@ -1,0 +1,24 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Use this data source to retrieve information about specific VKCS Kubernetes addon.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+The addon can be identified by either:
+
+* `id`
+* the combination of `name` and `version`
+
+These options are mutually exclusive.
+
+## Example Usage
+
+{{tffile "examples/kubernetes/addon_v2/data-addon.tf"}}
+
+{{ .SchemaMarkdown }}

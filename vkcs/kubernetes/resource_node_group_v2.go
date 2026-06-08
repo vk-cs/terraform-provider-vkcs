@@ -26,6 +26,7 @@ var (
 	_ resource.ResourceWithConfigure        = (*kubernetesNodeGroupV2Resource)(nil)
 	_ resource.ResourceWithImportState      = (*kubernetesNodeGroupV2Resource)(nil)
 	_ resource.ResourceWithConfigValidators = (*kubernetesNodeGroupV2Resource)(nil)
+	_ resource.ResourceWithModifyPlan       = (*kubernetesNodeGroupV2Resource)(nil)
 )
 
 func NewKubernetesNodeGroupV2Resource() resource.Resource {
@@ -54,6 +55,39 @@ func (r *kubernetesNodeGroupV2Resource) Configure(ctx context.Context, req resou
 func (r *kubernetesNodeGroupV2Resource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		&configvalidators.ScaleTypeConfigValidator{},
+	}
+}
+
+// We use ModifyPlan, because importing resource has problem with field 'auto_scale_node_count'. Field is computed and it doesn't have plan_modifier = UseStateForUnknown,
+// so it leads to error: After the apply operation, the provider still indicated an unknown value... All values must be known after apply, so this is always a bug in the provider
+// and should be reported in the provider's own repository. Terraform will still save the other known object values in the state.
+func (r *kubernetesNodeGroupV2Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var state, plan rkubengv2.KubernetesNodeGroupV2Model
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Only for auto_scale specification
+	if plan.ScaleType.ValueString() != "auto_scale" {
+		return
+	}
+
+	boundsHaveNotChanged := state.AutoScaleMinSize.Equal(plan.AutoScaleMinSize) && state.AutoScaleMaxSize.Equal(plan.AutoScaleMaxSize)
+	stateIsNotNull := !state.AutoScaleNodeCount.IsNull()
+	planIsUnknown := plan.AutoScaleNodeCount.IsUnknown()
+
+	if boundsHaveNotChanged && stateIsNotNull && planIsUnknown {
+		plan.AutoScaleNodeCount = state.AutoScaleNodeCount
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 	}
 }
 
@@ -191,7 +225,7 @@ func (r *kubernetesNodeGroupV2Resource) Read(ctx context.Context, req resource.R
 }
 
 func (r *kubernetesNodeGroupV2Resource) readNodeGroup(client *gophercloud.ServiceClient, nodeGroupID string) (nodeGroup *nodegroups.NodeGroup, diags diag.Diagnostics) {
-	apiNodeGroup, err := nodegroups.Get(client, nodeGroupID).Extract()
+	apiNodeGroup, err := nodegroups.GetByID(client, nodeGroupID).Extract()
 	if err != nil {
 		if errutil.IsNotFound(err) {
 			return nil, diags
@@ -441,7 +475,7 @@ func (r *kubernetesNodeGroupV2Resource) getStateConfForNodeGroupDelete(client *g
 			string(nodeGroupStatusNotFound),
 		},
 		Refresh: func() (interface{}, string, error) {
-			nodeGroup, err := nodegroups.Get(client, nodeGroupID).Extract()
+			nodeGroup, err := nodegroups.GetByID(client, nodeGroupID).Extract()
 			if err != nil {
 				if errutil.IsNotFound(err) {
 					return nodeGroup, string(nodeGroupStatusNotFound), nil

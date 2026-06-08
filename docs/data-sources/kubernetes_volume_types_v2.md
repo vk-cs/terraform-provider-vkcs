@@ -3,21 +3,16 @@ subcategory: "Kubernetes"
 layout: "vkcs"
 page_title: "vkcs: vkcs_kubernetes_volume_types_v2"
 description: |-
-  Returns a list of root volume types available for node group disks.
+  Use this data source to retrieve information about available VKCS Kubernetes node group root volume types.
 ---
 
 # vkcs_kubernetes_volume_types_v2
 
-
+Use this data source to retrieve information about available VKCS Kubernetes node group root volume types.
 
 ## Example Usage
 ```terraform
 data "vkcs_kubernetes_volume_types_v2" "available_volume_types" {}
-
-output "available_volume_types" {
-  description = "A set of storage volume types that can be selected as the root disk for node groups."
-  value       = data.vkcs_kubernetes_volume_types_v2.available_volume_types.volume_types
-}
 ```
 
 ## Argument Reference

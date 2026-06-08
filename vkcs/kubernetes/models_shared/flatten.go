@@ -8,7 +8,7 @@ import (
 
 func FlattenStringSet(strSet []string) (types.Set, diag.Diagnostics) {
 	if len(strSet) == 0 {
-		return types.SetNull(types.StringType), nil
+		return types.SetValueMust(types.StringType, []attr.Value{}), nil
 	}
 
 	resList := make([]attr.Value, len(strSet))
@@ -21,7 +21,7 @@ func FlattenStringSet(strSet []string) (types.Set, diag.Diagnostics) {
 
 func FlattenStringMap(strMap map[string]string) (types.Map, diag.Diagnostics) {
 	if len(strMap) == 0 {
-		return types.MapNull(types.StringType), nil
+		return types.MapValueMust(types.StringType, map[string]attr.Value{}), nil
 	}
 
 	resMap := make(map[string]attr.Value, len(strMap))
