@@ -70,10 +70,15 @@ func (r *clusterResource) Schema(ctx context.Context, req resource.SchemaRequest
 	resp.Schema = resource_cluster.ClusterResourceSchema(ctx)
 }
 
-func (r *clusterResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *clusterResource) Configure(
+	ctx context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	if req.ProviderData == nil {
 		return
 	}
+
 	r.config = req.ProviderData.(clients.Config)
 }
 
@@ -81,6 +86,7 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 	var data resource_cluster.ClusterModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -89,6 +95,7 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 	if region == "" {
 		region = r.config.GetRegion()
 	}
+
 	data.Region = types.StringValue(region)
 
 	client, err := r.config.DataPlatformClient(region)
@@ -99,18 +106,21 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 
 	configOpts, diags := resource_cluster.ExpandClusterConfigs(ctx, data.Configs)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	clusterTemplate, diags := data.GetClusterTemplate(client)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	podGroupOpts, diags := resource_cluster.ExpandClusterPodGroups(ctx, clusterTemplate, data.PodGroups)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -131,7 +141,11 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 		SDN:               dataplatformSDN,
 	}
 
-	tflog.Trace(ctx, "Calling Data Platform API to create cluster", map[string]interface{}{"opts": fmt.Sprintf("%#v", createOpts)})
+	tflog.Trace(
+		ctx,
+		"Calling Data Platform API to create cluster",
+		map[string]interface{}{"opts": fmt.Sprintf("%#v", createOpts)},
+	)
 
 	clusterShort, err := clusters.Create(client, &createOpts).Extract()
 	if err != nil {
@@ -139,7 +153,11 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	tflog.Trace(ctx, "Called Data Platform API to create cluster", map[string]interface{}{"cluster": fmt.Sprintf("%#v", clusterShort)})
+	tflog.Trace(
+		ctx,
+		"Called Data Platform API to create cluster",
+		map[string]interface{}{"cluster": fmt.Sprintf("%#v", clusterShort)},
+	)
 
 	id := types.StringValue(clusterShort.ID)
 	resp.State.SetAttribute(ctx, path.Root("id"), id)
@@ -152,6 +170,7 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 		Delay:      clusterCreateDelay,
 		MinTimeout: clusterCreateMinTimeout,
 	}
+
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error waiting for cluster creation", err.Error())
@@ -171,6 +190,7 @@ func (r *clusterResource) Read(ctx context.Context, req resource.ReadRequest, re
 	var data resource_cluster.ClusterModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -179,6 +199,7 @@ func (r *clusterResource) Read(ctx context.Context, req resource.ReadRequest, re
 	if region == "" {
 		region = r.config.GetRegion()
 	}
+
 	data.Region = types.StringValue(region)
 
 	client, err := r.config.DataPlatformClient(region)
@@ -201,21 +222,29 @@ func (r *clusterResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	tflog.Trace(ctx, "Called Data Platform API to retrieve cluster", map[string]interface{}{"cluster": fmt.Sprintf("%#v", cluster)})
+	tflog.Trace(
+		ctx,
+		"Called Data Platform API to retrieve cluster",
+		map[string]interface{}{"cluster": fmt.Sprintf("%#v", cluster)},
+	)
 
 	resp.Diagnostics.Append(data.UpdateState(ctx, cluster, data.Configs, &resp.State)...)
 }
 
 func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan resource_cluster.ClusterModel
-	var data resource_cluster.ClusterModel
+	var (
+		plan resource_cluster.ClusterModel
+		data resource_cluster.ClusterModel
+	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -224,6 +253,7 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 	if region == "" {
 		region = r.config.GetRegion()
 	}
+
 	data.Region = types.StringValue(region)
 
 	client, err := r.config.DataPlatformClient(region)
@@ -240,7 +270,11 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 		Description: plan.Description.ValueString(),
 	}
 
-	tflog.Trace(ctx, "Calling Data Platform API to update cluster", map[string]interface{}{"opts": fmt.Sprintf("%#v", updateOpts)})
+	tflog.Trace(
+		ctx,
+		"Calling Data Platform API to update cluster",
+		map[string]interface{}{"opts": fmt.Sprintf("%#v", updateOpts)},
+	)
 
 	_, err = clusters.Update(client, id, &updateOpts).Extract()
 	if err != nil {
@@ -293,22 +327,43 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 		resp.Diagnostics.AddError("Error getting cluster", err.Error())
 		return
 	}
-	tflog.Trace(ctx, "Called Data Platform API to update cluster", map[string]interface{}{"cluster": fmt.Sprintf("%#v", cluster)})
+
+	tflog.Trace(
+		ctx,
+		"Called Data Platform API to update cluster",
+		map[string]interface{}{"cluster": fmt.Sprintf("%#v", cluster)},
+	)
 
 	resp.Diagnostics.Append(data.UpdateState(ctx, cluster, plan.Configs, &resp.State)...)
 }
 
-func clusterUpdateConfigsMaintenance(ctx context.Context, client *gophercloud.ServiceClient, id string, currentMaintenance basetypes.ObjectValue, planMaintenance basetypes.ObjectValue) diag.Diagnostics {
-	var diags diag.Diagnostics
-	var d diag.Diagnostics
+func clusterUpdateConfigsMaintenance(
+	ctx context.Context,
+	client *gophercloud.ServiceClient,
+	id string,
+	currentMaintenance basetypes.ObjectValue,
+	planMaintenance basetypes.ObjectValue,
+) diag.Diagnostics {
+	var (
+		diags diag.Diagnostics
+		d     diag.Diagnostics
+	)
 
-	updateMaintenanceOpts, d := resource_cluster.BuildUpdateClusterConfigsMaintenance(ctx, currentMaintenance, planMaintenance)
+	updateMaintenanceOpts, d := resource_cluster.BuildUpdateClusterConfigsMaintenance(
+		ctx,
+		currentMaintenance,
+		planMaintenance,
+	)
 	if d.HasError() {
 		return d
 	}
 
 	if updateMaintenanceOpts != nil {
-		tflog.Trace(ctx, "Calling Data Platform API to update cluster maintenance", map[string]interface{}{"opts": fmt.Sprintf("%#v", planMaintenance)})
+		tflog.Trace(
+			ctx,
+			"Calling Data Platform API to update cluster maintenance",
+			map[string]interface{}{"opts": fmt.Sprintf("%#v", planMaintenance)},
+		)
 
 		resp, err := clusters.UpdateMaintenance(client, id, updateMaintenanceOpts).Extract()
 		if err != nil {
@@ -326,6 +381,7 @@ func clusterUpdateConfigsMaintenance(ctx context.Context, client *gophercloud.Se
 			Delay:      clusterUpdateDelay,
 			MinTimeout: clusterUpdateMinTimeout,
 		}
+
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			diags.AddError("Error waiting for cluster update configs.maintenance", err.Error())
@@ -336,21 +392,37 @@ func clusterUpdateConfigsMaintenance(ctx context.Context, client *gophercloud.Se
 	return nil
 }
 
-func clusterUpdateConfigsSettings(ctx context.Context, client *gophercloud.ServiceClient, id string, settings basetypes.ListValue) diag.Diagnostics {
-	var diags diag.Diagnostics
-	var d diag.Diagnostics
+func clusterUpdateConfigsSettings(
+	ctx context.Context,
+	client *gophercloud.ServiceClient,
+	id string,
+	settings basetypes.ListValue,
+) diag.Diagnostics {
+	var (
+		diags diag.Diagnostics
+		d     diag.Diagnostics
+	)
 
 	updateSettingsOpts := make([]clusters.ClusterUpdateSetting, 0)
+
 	planSettings, d := resource_cluster.ExpandClusterConfigsSettings(ctx, settings)
 	if d.HasError() {
 		return d
 	}
+
 	for _, planSetting := range planSettings {
 		updateSettingsOpts = append(updateSettingsOpts, clusters.ClusterUpdateSetting(planSetting))
 	}
+
 	if len(updateSettingsOpts) > 0 {
-		tflog.Trace(ctx, "Calling Data Platform API to update cluster settings", map[string]interface{}{"opts": fmt.Sprintf("%#v", updateSettingsOpts)})
-		_, err := clusters.UpdateSettings(client, id, &clusters.ClusterUpdateSettings{Settings: updateSettingsOpts}).Extract()
+		tflog.Trace(
+			ctx,
+			"Calling Data Platform API to update cluster settings",
+			map[string]interface{}{"opts": fmt.Sprintf("%#v", updateSettingsOpts)},
+		)
+
+		_, err := clusters.UpdateSettings(client, id, &clusters.ClusterUpdateSettings{Settings: updateSettingsOpts}).
+			Extract()
 		if err != nil {
 			diags.AddError("Error calling Data Platform API to update cluster settings", err.Error())
 			return diags
@@ -364,18 +436,28 @@ func clusterUpdateConfigsSettings(ctx context.Context, client *gophercloud.Servi
 			Delay:      clusterUpdateDelay,
 			MinTimeout: clusterUpdateMinTimeout,
 		}
+
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			diags.AddError("Error waiting for cluster update configs.settings", err.Error())
 			return diags
 		}
 	}
+
 	return nil
 }
 
-func clusterUpdateConfigsUsers(ctx context.Context, client *gophercloud.ServiceClient, id string, dataUsersRaw basetypes.ListValue, planUsersRaw basetypes.ListValue) diag.Diagnostics {
-	var diags diag.Diagnostics
-	var d diag.Diagnostics
+func clusterUpdateConfigsUsers(
+	ctx context.Context,
+	client *gophercloud.ServiceClient,
+	id string,
+	dataUsersRaw basetypes.ListValue,
+	planUsersRaw basetypes.ListValue,
+) diag.Diagnostics {
+	var (
+		diags diag.Diagnostics
+		d     diag.Diagnostics
+	)
 
 	dataUsers, d := resource_cluster.ReadClusterConfigsUsers(ctx, dataUsersRaw)
 	if d.HasError() {
@@ -387,8 +469,11 @@ func clusterUpdateConfigsUsers(ctx context.Context, client *gophercloud.ServiceC
 		return d
 	}
 
-	var usersToAdd []clusters.ClusterUpdateUser
-	var usersToDelete []string
+	var (
+		usersToAdd    []clusters.ClusterUpdateUser
+		usersToDelete []string
+	)
+
 	remainingUsers := make(map[string]bool)
 	userIDs := make(map[string]string)
 
@@ -416,7 +501,12 @@ func clusterUpdateConfigsUsers(ctx context.Context, client *gophercloud.ServiceC
 	}
 
 	if len(usersToAdd) > 0 {
-		tflog.Trace(ctx, "Calling Data Platform API to add cluster users", map[string]interface{}{"opts": fmt.Sprintf("%#v", usersToAdd)})
+		tflog.Trace(
+			ctx,
+			"Calling Data Platform API to add cluster users",
+			map[string]interface{}{"opts": fmt.Sprintf("%#v", usersToAdd)},
+		)
+
 		_, err := clusters.AddClusterUsers(client, id, &clusters.ClusterUpdateUsers{Users: usersToAdd}).Extract()
 		if err != nil {
 			diags.AddError("Error calling Data Platform API to add cluster users", err.Error())
@@ -431,6 +521,7 @@ func clusterUpdateConfigsUsers(ctx context.Context, client *gophercloud.ServiceC
 			Delay:      clusterUpdateDelay,
 			MinTimeout: clusterUpdateMinTimeout,
 		}
+
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			diags.AddError("Error waiting for cluster update configs.users", err.Error())
@@ -439,12 +530,19 @@ func clusterUpdateConfigsUsers(ctx context.Context, client *gophercloud.ServiceC
 	}
 
 	if len(usersToDelete) > 0 {
-		tflog.Trace(ctx, "Calling Data Platform API to delete cluster users", map[string]interface{}{"opts": fmt.Sprintf("%#v", usersToDelete)})
-		err := clusters.DeleteClusterUsers(client, id, &clusters.ClusterDeleteUsers{ClusterUsersIDs: usersToDelete}).ExtractErr()
+		tflog.Trace(
+			ctx,
+			"Calling Data Platform API to delete cluster users",
+			map[string]interface{}{"opts": fmt.Sprintf("%#v", usersToDelete)},
+		)
+
+		err := clusters.DeleteClusterUsers(client, id, &clusters.ClusterDeleteUsers{ClusterUsersIDs: usersToDelete}).
+			ExtractErr()
 		if err != nil {
 			diags.AddError("Error calling Data Platform API to delete cluster users", err.Error())
 			return diags
 		}
+
 		stateConf := &retry.StateChangeConf{
 			Pending:    []string{string(clusterStatusConfiguring), string(clusterStatusUpdating)},
 			Target:     []string{string(clusterStatusActive)},
@@ -453,16 +551,24 @@ func clusterUpdateConfigsUsers(ctx context.Context, client *gophercloud.ServiceC
 			Delay:      clusterUpdateDelay,
 			MinTimeout: clusterUpdateMinTimeout,
 		}
+
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			diags.AddError("Error waiting for cluster update configs.users", err.Error())
 			return diags
 		}
 	}
+
 	return nil
 }
 
-func clusterUpdateConfigsWarehouses(ctx context.Context, client *gophercloud.ServiceClient, clusterID string, dataWarehousesRaw basetypes.ListValue, planWarehousesRaw basetypes.ListValue) diag.Diagnostics {
+func clusterUpdateConfigsWarehouses(
+	ctx context.Context,
+	client *gophercloud.ServiceClient,
+	clusterID string,
+	dataWarehousesRaw basetypes.ListValue,
+	planWarehousesRaw basetypes.ListValue,
+) diag.Diagnostics {
 	var d diag.Diagnostics
 
 	dataWarehouses, d := resource_cluster.ReadClusterConfigsWarehouses(ctx, dataWarehousesRaw)
@@ -483,7 +589,14 @@ func clusterUpdateConfigsWarehouses(ctx context.Context, client *gophercloud.Ser
 	for _, planWarehouse := range planWarehouses {
 		dataConnections := warehouses[planWarehouse.Name.ValueString()].Connections
 		if !dataConnections.Equal(planWarehouse.Connections) {
-			d := clusterUpdateConfigsWarehousesConnections(ctx, client, clusterID, warehouses[planWarehouse.Name.ValueString()].Id.ValueString(), dataConnections, planWarehouse.Connections)
+			d := clusterUpdateConfigsWarehousesConnections(
+				ctx,
+				client,
+				clusterID,
+				warehouses[planWarehouse.Name.ValueString()].Id.ValueString(),
+				dataConnections,
+				planWarehouse.Connections,
+			)
 			if d.HasError() {
 				return d
 			}
@@ -493,12 +606,23 @@ func clusterUpdateConfigsWarehouses(ctx context.Context, client *gophercloud.Ser
 	return nil
 }
 
-func clusterUpdateConfigsWarehousesConnections(ctx context.Context, client *gophercloud.ServiceClient, clusterID string, warehouseID string, dataConnectionsRaw basetypes.ListValue, planConnectionsRaw basetypes.ListValue) diag.Diagnostics {
-	var diags diag.Diagnostics
-	var d diag.Diagnostics
+func clusterUpdateConfigsWarehousesConnections(
+	ctx context.Context,
+	client *gophercloud.ServiceClient,
+	clusterID string,
+	warehouseID string,
+	dataConnectionsRaw basetypes.ListValue,
+	planConnectionsRaw basetypes.ListValue,
+) diag.Diagnostics {
+	var (
+		diags diag.Diagnostics
+		d     diag.Diagnostics
+	)
 
-	var dataConnections []resource_cluster.ConfigsWarehousesConnectionsValue
-	var planConnections []resource_cluster.ConfigsWarehousesConnectionsValue
+	var (
+		dataConnections []resource_cluster.ConfigsWarehousesConnectionsValue
+		planConnections []resource_cluster.ConfigsWarehousesConnectionsValue
+	)
 
 	if !dataConnectionsRaw.IsNull() && !dataConnectionsRaw.IsUnknown() {
 		dataConnections, d = resource_cluster.ReadClusterConfigsWarehousesConnections(ctx, dataConnectionsRaw)
@@ -514,8 +638,11 @@ func clusterUpdateConfigsWarehousesConnections(ctx context.Context, client *goph
 		}
 	}
 
-	var connectionsToAdd []clusters.ClusterAddConnection
-	var connectionsToDelete []string
+	var (
+		connectionsToAdd    []clusters.ClusterAddConnection
+		connectionsToDelete []string
+	)
+
 	remainingConnections := make(map[string]bool)
 	connectionIDs := make(map[string]string)
 
@@ -526,7 +653,10 @@ func clusterUpdateConfigsWarehousesConnections(ctx context.Context, client *goph
 
 	for _, planConnection := range planConnections {
 		if _, ok := remainingConnections[planConnection.Name.ValueString()]; !ok {
-			settings, d := resource_cluster.ReadClusterConfigsWarehousesConnectionsSettings(ctx, planConnection.Settings)
+			settings, d := resource_cluster.ReadClusterConfigsWarehousesConnectionsSettings(
+				ctx,
+				planConnection.Settings,
+			)
 			if d.HasError() {
 				return d
 			}
@@ -556,11 +686,17 @@ func clusterUpdateConfigsWarehousesConnections(ctx context.Context, client *goph
 	}
 
 	if len(connectionsToAdd) > 0 {
-		tflog.Trace(ctx, "Calling Data Platform API to add cluster connections", map[string]interface{}{"opts": fmt.Sprintf("%#v", connectionsToAdd)})
+		tflog.Trace(
+			ctx,
+			"Calling Data Platform API to add cluster connections",
+			map[string]interface{}{"opts": fmt.Sprintf("%#v", connectionsToAdd)},
+		)
+
 		_, err := clusters.AddClusterConfigsWarehouseConnections(client, clusterID, &clusters.ClusterAddWarehouseConnections{
 			WarehouseID: warehouseID,
 			Connections: connectionsToAdd,
-		}).Extract()
+		}).
+			Extract()
 		if err != nil {
 			diags.AddError("Error calling Data Platform API to add cluster connections", err.Error())
 			return diags
@@ -574,6 +710,7 @@ func clusterUpdateConfigsWarehousesConnections(ctx context.Context, client *goph
 			Delay:      clusterUpdateDelay,
 			MinTimeout: clusterUpdateMinTimeout,
 		}
+
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			diags.AddError("Error waiting for cluster update", err.Error())
@@ -582,7 +719,12 @@ func clusterUpdateConfigsWarehousesConnections(ctx context.Context, client *goph
 	}
 
 	if len(connectionsToDelete) > 0 {
-		tflog.Trace(ctx, "Calling Data Platform API to delete cluster connections", map[string]interface{}{"opts": fmt.Sprintf("%#v", connectionsToDelete)})
+		tflog.Trace(
+			ctx,
+			"Calling Data Platform API to delete cluster connections",
+			map[string]interface{}{"opts": fmt.Sprintf("%#v", connectionsToDelete)},
+		)
+
 		err := clusters.DeleteClusterConnections(client, clusterID, &clusters.ClusterDeleteWarehouseConnections{
 			ClusterConnections: connectionsToDelete,
 			WarehouseID:        warehouseID,
@@ -591,6 +733,7 @@ func clusterUpdateConfigsWarehousesConnections(ctx context.Context, client *goph
 			diags.AddError("Error calling Data Platform API to delete cluster connections", err.Error())
 			return diags
 		}
+
 		stateConf := &retry.StateChangeConf{
 			Pending:    []string{string(clusterStatusConfiguring), string(clusterStatusUpdating)},
 			Target:     []string{string(clusterStatusActive)},
@@ -599,26 +742,39 @@ func clusterUpdateConfigsWarehousesConnections(ctx context.Context, client *goph
 			Delay:      clusterUpdateDelay,
 			MinTimeout: clusterUpdateMinTimeout,
 		}
+
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			diags.AddError("Error waiting for cluster update", err.Error())
 			return diags
 		}
 	}
+
 	return nil
 }
 
-func clusterUpdatePodGroups(ctx context.Context, client *gophercloud.ServiceClient, id string, dataPodGroupsRaw basetypes.ListValue, planPodGroupsRaw basetypes.ListValue) diag.Diagnostics {
-	var diags diag.Diagnostics
-	var d diag.Diagnostics
+func clusterUpdatePodGroups(
+	ctx context.Context,
+	client *gophercloud.ServiceClient,
+	id string,
+	dataPodGroupsRaw basetypes.ListValue,
+	planPodGroupsRaw basetypes.ListValue,
+) diag.Diagnostics {
+	var (
+		diags diag.Diagnostics
+		d     diag.Diagnostics
+	)
 
 	planPodGroups, d := resource_cluster.ReadClusterPodGroups(ctx, planPodGroupsRaw)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return diags
 	}
+
 	dataPodGroups, d := resource_cluster.ReadClusterPodGroups(ctx, dataPodGroupsRaw)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return diags
 	}
@@ -635,11 +791,14 @@ func clusterUpdatePodGroups(ctx context.Context, client *gophercloud.ServiceClie
 
 		planVolumes, d := resource_cluster.ReadClusterPodGroupVolumes(ctx, planPodGroup.Volumes)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return diags
 		}
+
 		dataVolumes, d := resource_cluster.ReadClusterPodGroupVolumes(ctx, dataPodGroup.Volumes)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return diags
 		}
@@ -650,6 +809,7 @@ func clusterUpdatePodGroups(ctx context.Context, client *gophercloud.ServiceClie
 		changed := oldCount != newCount
 
 		volumes := make(map[string]clusters.ClusterUpdatePodGroupVolume)
+
 		for volumeName, planVolume := range planVolumes {
 			dataVolume, exists := dataVolumes[volumeName]
 
@@ -672,6 +832,7 @@ func clusterUpdatePodGroups(ctx context.Context, client *gophercloud.ServiceClie
 
 		resource, d := resource_cluster.ReadClusterPodGroupResources(ctx, planPodGroup.Resource)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return diags
 		}
@@ -693,21 +854,32 @@ func clusterUpdatePodGroups(ctx context.Context, client *gophercloud.ServiceClie
 	}
 
 	if len(podGroupsToUpdate) > 0 {
-		tflog.Trace(ctx, "Calling Data Platform API to update cluster pod groups", map[string]interface{}{"opts": fmt.Sprintf("%#v", podGroupsToUpdate)})
-		_, err := clusters.UpdateClusterPodGroup(client, id, &clusters.ClusterUpdatePodGroups{PodGroups: podGroupsToUpdate}).Extract()
+		tflog.Trace(
+			ctx,
+			"Calling Data Platform API to update cluster pod groups",
+			map[string]interface{}{"opts": fmt.Sprintf("%#v", podGroupsToUpdate)},
+		)
+
+		_, err := clusters.UpdateClusterPodGroup(client, id, &clusters.ClusterUpdatePodGroups{PodGroups: podGroupsToUpdate}).
+			Extract()
 		if err != nil {
 			diags.AddError("Error calling Data Platform API to update cluster pod groups", err.Error())
 			return diags
 		}
 
 		stateConf := &retry.StateChangeConf{
-			Pending:    []string{string(clusterStatusConfiguring), string(clusterStatusUpdating), string(clusterStatusScaling)},
+			Pending: []string{
+				string(clusterStatusConfiguring),
+				string(clusterStatusUpdating),
+				string(clusterStatusScaling),
+			},
 			Target:     []string{string(clusterStatusActive)},
 			Refresh:    clusterStateRefreshFunc(client, id),
 			Timeout:    clusterUpdateTimeout,
 			Delay:      clusterUpdateDelay,
 			MinTimeout: clusterUpdateMinTimeout,
 		}
+
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			diags.AddError("Error waiting for cluster update podGroups", err.Error())
@@ -722,6 +894,7 @@ func (r *clusterResource) Delete(ctx context.Context, req resource.DeleteRequest
 	var data resource_cluster.ClusterModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -753,19 +926,30 @@ func (r *clusterResource) Delete(ctx context.Context, req resource.DeleteRequest
 	tflog.Trace(ctx, "Called Data Platform to delete cluster")
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{string(clusterStatusCreating), string(clusterStatusActive), string(clusterStatusDeleting), string(clusterStatusWaitingDeleting), string(clusterStatusConfiguring)},
+		Pending: []string{
+			string(clusterStatusCreating),
+			string(clusterStatusActive),
+			string(clusterStatusDeleting),
+			string(clusterStatusWaitingDeleting),
+			string(clusterStatusConfiguring),
+		},
 		Target:     []string{string(clusterStatusDeleted)},
 		Refresh:    clusterStateRefreshFunc(client, id),
 		Timeout:    clusterDeleteTimeout,
 		Delay:      clusterDeleteDelay,
 		MinTimeout: clusterDeleteMinTimeout,
 	}
+
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error waiting for cluster deletion", err.Error())
 	}
 }
 
-func (r *clusterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *clusterResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

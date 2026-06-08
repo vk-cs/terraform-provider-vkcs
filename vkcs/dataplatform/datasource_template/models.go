@@ -17,6 +17,7 @@ func (m *TemplateModel) UpdateFromTemplate(ctx context.Context, template *templa
 
 	podGroups, d := FlattenPodGroups(ctx, template.PodGroups)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return diags
 	}

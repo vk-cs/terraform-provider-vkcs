@@ -30,7 +30,11 @@ type productDataSource struct {
 	config clients.Config
 }
 
-func (d *productDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *productDataSource) Metadata(
+	ctx context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_dataplatform_product"
 }
 
@@ -38,10 +42,15 @@ func (d *productDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 	resp.Schema = datasource_product.ProductDataSourceSchema(ctx)
 }
 
-func (d *productDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *productDataSource) Configure(
+	ctx context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	if req.ProviderData == nil {
 		return
 	}
+
 	d.config = req.ProviderData.(clients.Config)
 }
 
@@ -49,6 +58,7 @@ func (d *productDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	var data datasource_product.ProductModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -57,6 +67,7 @@ func (d *productDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	if region == "" {
 		region = d.config.GetRegion()
 	}
+
 	data.Region = types.StringValue(region)
 
 	client, err := d.config.DataPlatformClient(region)
@@ -73,11 +84,16 @@ func (d *productDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
-	tflog.Trace(ctx, "Called Data Platform API to list products", map[string]interface{}{"products": fmt.Sprintf("%#v", productsResp.Products)})
+	tflog.Trace(
+		ctx,
+		"Called Data Platform API to list products",
+		map[string]interface{}{"products": fmt.Sprintf("%#v", productsResp.Products)},
+	)
 
 	resp.State.SetAttribute(ctx, path.Root("id"), strconv.FormatInt(time.Now().Unix(), 10))
 
 	var products []products.Product
+
 	productName := data.ProductName.ValueString()
 	productVersion := data.ProductVersion.ValueString()
 
@@ -95,12 +111,17 @@ func (d *productDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	}
 
 	if len(products) > 1 {
-		resp.Diagnostics.AddError("Your query returned more than one result", "Please try a more specific search criteria")
+		resp.Diagnostics.AddError(
+			"Your query returned more than one result",
+			"Please try a more specific search criteria",
+		)
+
 		return
 	}
 
 	diags := data.UpdateFromProduct(ctx, &products[0])
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}

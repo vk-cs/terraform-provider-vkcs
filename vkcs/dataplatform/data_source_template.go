@@ -26,18 +26,31 @@ type templateDataSource struct {
 	config clients.Config
 }
 
-func (d *templateDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *templateDataSource) Metadata(
+	ctx context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_dataplatform_template"
 }
 
-func (d *templateDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *templateDataSource) Schema(
+	ctx context.Context,
+	req datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = datasource_template.TemplateDataSourceSchema(ctx)
 }
 
-func (d *templateDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *templateDataSource) Configure(
+	ctx context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	if req.ProviderData == nil {
 		return
 	}
+
 	d.config = req.ProviderData.(clients.Config)
 }
 
@@ -45,6 +58,7 @@ func (d *templateDataSource) Read(ctx context.Context, req datasource.ReadReques
 	var data datasource_template.TemplateModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -65,9 +79,14 @@ func (d *templateDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	tflog.Trace(ctx, "Called Data Platform API to list templates", map[string]interface{}{"templates": fmt.Sprintf("%#v", templatesResp.ClusterTemplates)})
+	tflog.Trace(
+		ctx,
+		"Called Data Platform API to list templates",
+		map[string]interface{}{"templates": fmt.Sprintf("%#v", templatesResp.ClusterTemplates)},
+	)
 
 	var templates []templates.ClusterTemplate
+
 	productName := data.ProductName.ValueString()
 	productVersion := data.ProductVersion.ValueString()
 
@@ -85,7 +104,11 @@ func (d *templateDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 
 	if len(templates) > 1 {
-		resp.Diagnostics.AddError("Your query returned more than one result", "Please try a more specific search criteria")
+		resp.Diagnostics.AddError(
+			"Your query returned more than one result",
+			"Please try a more specific search criteria",
+		)
+
 		return
 	}
 
@@ -93,6 +116,7 @@ func (d *templateDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 	diags := data.UpdateFromTemplate(ctx, &templates[0])
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}

@@ -29,18 +29,31 @@ type productsDataSource struct {
 	config clients.Config
 }
 
-func (d *productsDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *productsDataSource) Metadata(
+	ctx context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_dataplatform_products"
 }
 
-func (d *productsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *productsDataSource) Schema(
+	ctx context.Context,
+	req datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = datasource_products.ProductsDataSourceSchema(ctx)
 }
 
-func (d *productsDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *productsDataSource) Configure(
+	ctx context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	if req.ProviderData == nil {
 		return
 	}
+
 	d.config = req.ProviderData.(clients.Config)
 }
 
@@ -48,6 +61,7 @@ func (d *productsDataSource) Read(ctx context.Context, req datasource.ReadReques
 	var data datasource_products.ProductsModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -56,6 +70,7 @@ func (d *productsDataSource) Read(ctx context.Context, req datasource.ReadReques
 	if region == "" {
 		region = d.config.GetRegion()
 	}
+
 	data.Region = types.StringValue(region)
 
 	client, err := d.config.DataPlatformClient(region)
@@ -72,15 +87,21 @@ func (d *productsDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	tflog.Trace(ctx, "Called Data Platform API to list products", map[string]interface{}{"products": fmt.Sprintf("%#v", productsResp.Products)})
+	tflog.Trace(
+		ctx,
+		"Called Data Platform API to list products",
+		map[string]interface{}{"products": fmt.Sprintf("%#v", productsResp.Products)},
+	)
 
 	resp.State.SetAttribute(ctx, path.Root("id"), strconv.FormatInt(time.Now().Unix(), 10))
 
 	productsModel, diags := datasource_products.FlattenProducts(ctx, productsResp.Products)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	data.Products = productsModel
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

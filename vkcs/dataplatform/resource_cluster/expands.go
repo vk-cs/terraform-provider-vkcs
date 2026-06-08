@@ -18,6 +18,7 @@ func ExpandClusterConfigs(ctx context.Context, v ConfigsValue) (*clusters.Cluste
 		if diags != nil && diags.HasError() {
 			return nil, diags
 		}
+
 		result.Maintenance = maintenance
 	}
 
@@ -26,6 +27,7 @@ func ExpandClusterConfigs(ctx context.Context, v ConfigsValue) (*clusters.Cluste
 		if diags != nil && diags.HasError() {
 			return nil, diags
 		}
+
 		result.Settings = settings
 	}
 
@@ -34,6 +36,7 @@ func ExpandClusterConfigs(ctx context.Context, v ConfigsValue) (*clusters.Cluste
 		if diags != nil && diags.HasError() {
 			return nil, diags
 		}
+
 		result.Users = users
 	}
 
@@ -42,6 +45,7 @@ func ExpandClusterConfigs(ctx context.Context, v ConfigsValue) (*clusters.Cluste
 		if diags != nil && diags.HasError() {
 			return nil, diags
 		}
+
 		result.Warehouses = warehouses
 	}
 
@@ -52,13 +56,17 @@ func ExpandClusterConfigs(ctx context.Context, v ConfigsValue) (*clusters.Cluste
 		for i, u := range result.Users {
 			usernames[i] = u.Username
 		}
+
 		result.Warehouses[0].Users = usernames
 	}
 
 	return result, nil
 }
 
-func ExpandClusterConfigsMaintenance(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterCreateConfigMaintenance, diag.Diagnostics) {
+func ExpandClusterConfigsMaintenance(
+	ctx context.Context,
+	o basetypes.ObjectValue,
+) (*clusters.ClusterCreateConfigMaintenance, diag.Diagnostics) {
 	maintenanceObjV, diags := ConfigsMaintenanceType{}.ValueFromObject(ctx, o)
 	if diags.HasError() {
 		return nil, diags
@@ -74,6 +82,7 @@ func ExpandClusterConfigsMaintenance(ctx context.Context, o basetypes.ObjectValu
 		if diags.HasError() {
 			return nil, diags
 		}
+
 		result.CronTabs = crontabs
 	}
 
@@ -82,14 +91,19 @@ func ExpandClusterConfigsMaintenance(ctx context.Context, o basetypes.ObjectValu
 		if diags.HasError() {
 			return nil, diags
 		}
+
 		result.Backup = backup
 	}
 
 	return &result, nil
 }
 
-func ExpandClusterCrontabs(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigMaintenanceCronTabs, diag.Diagnostics) {
+func ExpandClusterCrontabs(
+	ctx context.Context,
+	o basetypes.ListValue,
+) ([]clusters.ClusterCreateConfigMaintenanceCronTabs, diag.Diagnostics) {
 	crontabs := make([]ConfigsMaintenanceCrontabsValue, 0, len(o.Elements()))
+
 	diags := o.ElementsAs(ctx, &crontabs, false)
 	if diags.HasError() {
 		return nil, diags
@@ -104,6 +118,7 @@ func ExpandClusterCrontabs(ctx context.Context, o basetypes.ListValue) ([]cluste
 
 		if o := v.Settings; !o.IsUnknown() && !o.IsNull() {
 			var settings []clusters.ClusterCreateConfigSetting
+
 			settings, diags = ExpandClusterCrontabSettings(ctx, &v.Settings)
 			if diags.HasError() {
 				return nil, diags
@@ -116,8 +131,12 @@ func ExpandClusterCrontabs(ctx context.Context, o basetypes.ListValue) ([]cluste
 	return result, nil
 }
 
-func ExpandClusterCrontabSettings(ctx context.Context, o *basetypes.ListValue) ([]clusters.ClusterCreateConfigSetting, diag.Diagnostics) {
+func ExpandClusterCrontabSettings(
+	ctx context.Context,
+	o *basetypes.ListValue,
+) ([]clusters.ClusterCreateConfigSetting, diag.Diagnostics) {
 	settings := make([]ConfigsMaintenanceCrontabsSettingsValue, 0, len(o.Elements()))
+
 	diags := o.ElementsAs(ctx, &settings, false)
 	if diags.HasError() {
 		return nil, diags
@@ -134,8 +153,12 @@ func ExpandClusterCrontabSettings(ctx context.Context, o *basetypes.ListValue) (
 	return result, nil
 }
 
-func ExpandClusterConfigsSettings(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigSetting, diag.Diagnostics) {
+func ExpandClusterConfigsSettings(
+	ctx context.Context,
+	o basetypes.ListValue,
+) ([]clusters.ClusterCreateConfigSetting, diag.Diagnostics) {
 	settingsV := make([]ConfigsSettingsValue, 0, len(o.Elements()))
+
 	diags := o.ElementsAs(ctx, &settingsV, false)
 	if diags.HasError() {
 		return nil, diags
@@ -148,10 +171,14 @@ func ExpandClusterConfigsSettings(ctx context.Context, o basetypes.ListValue) ([
 			Value: s.Value.ValueString(),
 		}
 	}
+
 	return result, nil
 }
 
-func ExpandClusterBackup(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterCreateConfigMaintenanceBackup, diag.Diagnostics) {
+func ExpandClusterBackup(
+	ctx context.Context,
+	o basetypes.ObjectValue,
+) (*clusters.ClusterCreateConfigMaintenanceBackup, diag.Diagnostics) {
 	backupObjV, diags := ConfigsMaintenanceBackupType{}.ValueFromObject(ctx, o)
 	if diags.HasError() {
 		return nil, diags
@@ -166,6 +193,7 @@ func ExpandClusterBackup(ctx context.Context, o basetypes.ObjectValue) (*cluster
 		if diags.HasError() {
 			return nil, diags
 		}
+
 		result.Full = full
 	}
 
@@ -174,6 +202,7 @@ func ExpandClusterBackup(ctx context.Context, o basetypes.ObjectValue) (*cluster
 		if diags.HasError() {
 			return nil, diags
 		}
+
 		result.Incremental = incremental
 	}
 
@@ -182,6 +211,7 @@ func ExpandClusterBackup(ctx context.Context, o basetypes.ObjectValue) (*cluster
 		if diags.HasError() {
 			return nil, diags
 		}
+
 		result.Differential = differential
 	}
 
@@ -192,7 +222,10 @@ func ExpandClusterBackup(ctx context.Context, o basetypes.ObjectValue) (*cluster
 	return &result, nil
 }
 
-func ExpandClusterBackupFull(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterCreateConfigMaintenanceBackupObj, diag.Diagnostics) {
+func ExpandClusterBackupFull(
+	ctx context.Context,
+	o basetypes.ObjectValue,
+) (*clusters.ClusterCreateConfigMaintenanceBackupObj, diag.Diagnostics) {
 	fullObjV, diags := ConfigsMaintenanceBackupFullType{}.ValueFromObject(ctx, o)
 	if diags.HasError() {
 		return nil, diags
@@ -209,7 +242,10 @@ func ExpandClusterBackupFull(ctx context.Context, o basetypes.ObjectValue) (*clu
 	return &result, nil
 }
 
-func ExpandClusterBackupIncremental(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterCreateConfigMaintenanceBackupObj, diag.Diagnostics) {
+func ExpandClusterBackupIncremental(
+	ctx context.Context,
+	o basetypes.ObjectValue,
+) (*clusters.ClusterCreateConfigMaintenanceBackupObj, diag.Diagnostics) {
 	incrementalObjV, diags := ConfigsMaintenanceBackupIncrementalType{}.ValueFromObject(ctx, o)
 	if diags.HasError() {
 		return nil, diags
@@ -226,7 +262,10 @@ func ExpandClusterBackupIncremental(ctx context.Context, o basetypes.ObjectValue
 	return &result, nil
 }
 
-func ExpandClusterBackupDifferential(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterCreateConfigMaintenanceBackupObj, diag.Diagnostics) {
+func ExpandClusterBackupDifferential(
+	ctx context.Context,
+	o basetypes.ObjectValue,
+) (*clusters.ClusterCreateConfigMaintenanceBackupObj, diag.Diagnostics) {
 	differentialObjV, diags := ConfigsMaintenanceBackupDifferentialType{}.ValueFromObject(ctx, o)
 	if diags.HasError() {
 		return nil, diags
@@ -243,7 +282,10 @@ func ExpandClusterBackupDifferential(ctx context.Context, o basetypes.ObjectValu
 	return &result, nil
 }
 
-func ExpandClusterConfigsUsers(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigUser, diag.Diagnostics) {
+func ExpandClusterConfigsUsers(
+	ctx context.Context,
+	o basetypes.ListValue,
+) ([]clusters.ClusterCreateConfigUser, diag.Diagnostics) {
 	usersV, diags := ReadClusterConfigsUsers(ctx, o)
 	if diags.HasError() {
 		return nil, diags
@@ -264,19 +306,25 @@ func ExpandClusterConfigsUsers(ctx context.Context, o basetypes.ListValue) ([]cl
 			},
 		}
 	}
+
 	return result, nil
 }
 
 func ReadClusterConfigsUsers(ctx context.Context, o basetypes.ListValue) ([]ConfigsUsersValue, diag.Diagnostics) {
 	usersV := make([]ConfigsUsersValue, 0, len(o.Elements()))
+
 	diags := o.ElementsAs(ctx, &usersV, false)
 	if diags.HasError() {
 		return nil, diags
 	}
+
 	return usersV, nil
 }
 
-func ExpandClusterConfigsWarehouses(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigWarehouse, diag.Diagnostics) {
+func ExpandClusterConfigsWarehouses(
+	ctx context.Context,
+	o basetypes.ListValue,
+) ([]clusters.ClusterCreateConfigWarehouse, diag.Diagnostics) {
 	warehousesV, diags := ReadClusterConfigsWarehouses(ctx, o)
 	if diags.HasError() {
 		return nil, diags
@@ -295,22 +343,32 @@ func ExpandClusterConfigsWarehouses(ctx context.Context, o basetypes.ListValue) 
 			if diags.HasError() {
 				return nil, diags
 			}
+
 			result[i].Connections = wConnections
 		}
 	}
+
 	return result, nil
 }
 
-func ReadClusterConfigsWarehouses(ctx context.Context, o basetypes.ListValue) ([]ConfigsWarehousesValue, diag.Diagnostics) {
+func ReadClusterConfigsWarehouses(
+	ctx context.Context,
+	o basetypes.ListValue,
+) ([]ConfigsWarehousesValue, diag.Diagnostics) {
 	warehousesV := make([]ConfigsWarehousesValue, 0, len(o.Elements()))
+
 	diags := o.ElementsAs(ctx, &warehousesV, false)
 	if diags.HasError() {
 		return nil, diags
 	}
+
 	return warehousesV, nil
 }
 
-func ExpandClusterConfigsWarehousesConnections(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigWarehouseConnection, diag.Diagnostics) {
+func ExpandClusterConfigsWarehousesConnections(
+	ctx context.Context,
+	o basetypes.ListValue,
+) ([]clusters.ClusterCreateConfigWarehouseConnection, diag.Diagnostics) {
 	connectionsV, diags := ReadClusterConfigsWarehousesConnections(ctx, o)
 	if diags.HasError() {
 		return nil, diags
@@ -328,23 +386,34 @@ func ExpandClusterConfigsWarehousesConnections(ctx context.Context, o basetypes.
 			if diags.HasError() {
 				return nil, diags
 			}
+
 			result[i].Settings = wcSettings
 		}
 	}
+
 	return result, nil
 }
 
-func ReadClusterConfigsWarehousesConnections(ctx context.Context, o basetypes.ListValue) ([]ConfigsWarehousesConnectionsValue, diag.Diagnostics) {
+func ReadClusterConfigsWarehousesConnections(
+	ctx context.Context,
+	o basetypes.ListValue,
+) ([]ConfigsWarehousesConnectionsValue, diag.Diagnostics) {
 	connectionsV := make([]ConfigsWarehousesConnectionsValue, 0, len(o.Elements()))
+
 	diags := o.ElementsAs(ctx, &connectionsV, false)
 	if diags.HasError() {
 		return nil, diags
 	}
+
 	return connectionsV, nil
 }
 
-func ExpandClusterWarehousesConnectionsSettings(ctx context.Context, o basetypes.ListValue) ([]clusters.ClusterCreateConfigSetting, diag.Diagnostics) {
+func ExpandClusterWarehousesConnectionsSettings(
+	ctx context.Context,
+	o basetypes.ListValue,
+) ([]clusters.ClusterCreateConfigSetting, diag.Diagnostics) {
 	settingsV := make([]ConfigsWarehousesConnectionsSettingsValue, 0, len(o.Elements()))
+
 	diags := o.ElementsAs(ctx, &settingsV, false)
 	if diags.HasError() {
 		return nil, diags
@@ -357,20 +426,31 @@ func ExpandClusterWarehousesConnectionsSettings(ctx context.Context, o basetypes
 			Value: v.Value.ValueString(),
 		}
 	}
+
 	return result, nil
 }
 
-func ReadClusterConfigsWarehousesConnectionsSettings(ctx context.Context, o basetypes.ListValue) ([]ConfigsWarehousesConnectionsSettingsValue, diag.Diagnostics) {
+func ReadClusterConfigsWarehousesConnectionsSettings(
+	ctx context.Context,
+	o basetypes.ListValue,
+) ([]ConfigsWarehousesConnectionsSettingsValue, diag.Diagnostics) {
 	settingsV := make([]ConfigsWarehousesConnectionsSettingsValue, 0, len(o.Elements()))
+
 	diags := o.ElementsAs(ctx, &settingsV, false)
 	if diags.HasError() {
 		return nil, diags
 	}
+
 	return settingsV, nil
 }
 
-func ExpandClusterPodGroups(ctx context.Context, template *templates.ClusterTemplate, o basetypes.ListValue) ([]clusters.ClusterCreatePodGroup, diag.Diagnostics) {
+func ExpandClusterPodGroups(
+	ctx context.Context,
+	template *templates.ClusterTemplate,
+	o basetypes.ListValue,
+) ([]clusters.ClusterCreatePodGroup, diag.Diagnostics) {
 	podGroupsV := make([]PodGroupsValue, 0, len(o.Elements()))
+
 	diags := o.ElementsAs(ctx, &podGroupsV, false)
 	if diags.HasError() {
 		return nil, diags
@@ -379,13 +459,16 @@ func ExpandClusterPodGroups(ctx context.Context, template *templates.ClusterTemp
 	result := make([]clusters.ClusterCreatePodGroup, len(podGroupsV))
 	for i, v := range podGroupsV {
 		name := v.Name.ValueString()
+
 		var podGroupTemplateID string
+
 		for _, podGroupTemplate := range template.PodGroups {
 			if name == podGroupTemplate.Name {
 				podGroupTemplateID = podGroupTemplate.ID
 				break
 			}
 		}
+
 		if podGroupTemplateID == "" {
 			diags.AddError("unknown pod group name", "could not find pod group template")
 		}
@@ -403,6 +486,7 @@ func ExpandClusterPodGroups(ctx context.Context, template *templates.ClusterTemp
 			if diags.HasError() {
 				return nil, diags
 			}
+
 			result[i].Resource = pgResource
 		}
 
@@ -411,13 +495,18 @@ func ExpandClusterPodGroups(ctx context.Context, template *templates.ClusterTemp
 			if diags.HasError() {
 				return nil, diags
 			}
+
 			result[i].Volumes = pgVolumes
 		}
 	}
+
 	return result, nil
 }
 
-func ExpandClusterPodGroupsResource(ctx context.Context, o basetypes.ObjectValue) (*clusters.ClusterCreatePodGroupResource, diag.Diagnostics) {
+func ExpandClusterPodGroupsResource(
+	ctx context.Context,
+	o basetypes.ObjectValue,
+) (*clusters.ClusterCreatePodGroupResource, diag.Diagnostics) {
 	resource, diags := ReadClusterPodGroupResources(ctx, o)
 	if diags.HasError() {
 		return nil, diags
@@ -427,11 +516,16 @@ func ExpandClusterPodGroupsResource(ctx context.Context, o basetypes.ObjectValue
 		CPURequest: resource.CpuRequest.ValueString(),
 		RAMRequest: resource.RamRequest.ValueString(),
 	}
+
 	return &result, nil
 }
 
-func ExpandClusterPodGroupsVolumes(ctx context.Context, o basetypes.MapValue) (map[string]clusters.ClusterCreatePodGroupVolume, diag.Diagnostics) {
+func ExpandClusterPodGroupsVolumes(
+	ctx context.Context,
+	o basetypes.MapValue,
+) (map[string]clusters.ClusterCreatePodGroupVolume, diag.Diagnostics) {
 	volumesV := make(map[string]PodGroupsVolumesValue)
+
 	diags := o.ElementsAs(ctx, &volumesV, false)
 	if diags.HasError() {
 		return nil, diags
@@ -445,28 +539,39 @@ func ExpandClusterPodGroupsVolumes(ctx context.Context, o basetypes.MapValue) (m
 			Count:            int(v.Count.ValueInt64()),
 		}
 	}
+
 	return result, nil
 }
 
 func ReadClusterPodGroups(ctx context.Context, o basetypes.ListValue) ([]PodGroupsValue, diag.Diagnostics) {
 	podGroupsV := make([]PodGroupsValue, 0, len(o.Elements()))
+
 	diags := o.ElementsAs(ctx, &podGroupsV, false)
 	if diags.HasError() {
 		return nil, diags
 	}
+
 	return podGroupsV, nil
 }
 
-func ReadClusterPodGroupResources(ctx context.Context, o basetypes.ObjectValue) (*PodGroupsResourceValue, diag.Diagnostics) {
+func ReadClusterPodGroupResources(
+	ctx context.Context,
+	o basetypes.ObjectValue,
+) (*PodGroupsResourceValue, diag.Diagnostics) {
 	resourceV, diags := PodGroupsResourceType{}.ValueFromObject(ctx, o)
 	if diags.HasError() {
 		return nil, diags
 	}
+
 	resource := resourceV.(PodGroupsResourceValue)
+
 	return &resource, nil
 }
 
-func ReadClusterPodGroupVolumes(ctx context.Context, o basetypes.MapValue) (map[string]PodGroupsVolumesValue, diag.Diagnostics) {
+func ReadClusterPodGroupVolumes(
+	ctx context.Context,
+	o basetypes.MapValue,
+) (map[string]PodGroupsVolumesValue, diag.Diagnostics) {
 	volumesV := make(map[string]PodGroupsVolumesValue)
 
 	if o.IsNull() || o.IsUnknown() {
@@ -477,27 +582,37 @@ func ReadClusterPodGroupVolumes(ctx context.Context, o basetypes.MapValue) (map[
 	if diags.HasError() {
 		return nil, diags
 	}
+
 	return volumesV, nil
 }
 
-func BuildUpdateClusterConfigsMaintenance(ctx context.Context, stateMaintenance basetypes.ObjectValue, planMaintenance basetypes.ObjectValue) (*clusters.ClusterUpdateConfigsMaintenance, diag.Diagnostics) {
+func BuildUpdateClusterConfigsMaintenance(
+	ctx context.Context,
+	stateMaintenance basetypes.ObjectValue,
+	planMaintenance basetypes.ObjectValue,
+) (*clusters.ClusterUpdateConfigsMaintenance, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	stateMaintenanceObj, d := ConfigsMaintenanceType{}.ValueFromObject(ctx, stateMaintenance)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return nil, diags
 	}
+
 	stateVal := stateMaintenanceObj.(ConfigsMaintenanceValue)
 
 	planMaintenanceObj, d := ConfigsMaintenanceType{}.ValueFromObject(ctx, planMaintenance)
 	diags.Append(d...)
+
 	if diags.HasError() {
 		return nil, diags
 	}
+
 	planVal := planMaintenanceObj.(ConfigsMaintenanceValue)
 
 	var changed bool
+
 	update := &clusters.ClusterUpdateConfigsMaintenance{}
 
 	if (!planVal.Start.IsUnknown() && !planVal.Start.IsNull()) && !planVal.Start.Equal(stateVal.Start) {
@@ -510,9 +625,11 @@ func BuildUpdateClusterConfigsMaintenance(ctx context.Context, stateMaintenance 
 		if stateVal.Backup.IsNull() || stateVal.Backup.IsUnknown() || !stateVal.Backup.Equal(planVal.Backup) {
 			backup, d := ExpandClusterBackup(ctx, planVal.Backup)
 			diags.Append(d...)
+
 			if diags.HasError() {
 				return nil, diags
 			}
+
 			update.Backup = backup
 			changed = true
 		}
@@ -521,9 +638,11 @@ func BuildUpdateClusterConfigsMaintenance(ctx context.Context, stateMaintenance 
 	if !planVal.Crontabs.IsNull() && !planVal.Crontabs.IsUnknown() {
 		crontabChanges, d := expandClusterCrontabsUpdate(ctx, stateVal.Crontabs, planVal.Crontabs)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return nil, diags
 		}
+
 		if crontabChanges != nil {
 			update.Crontabs = crontabChanges
 			changed = true
@@ -537,14 +656,19 @@ func BuildUpdateClusterConfigsMaintenance(ctx context.Context, stateMaintenance 
 	return update, nil
 }
 
-func expandClusterCrontabsUpdate(ctx context.Context, stateLV, planLV basetypes.ListValue) (*clusters.ClusterUpdateConfigsMaintenanceCrontabs, diag.Diagnostics) {
+func expandClusterCrontabsUpdate(
+	ctx context.Context,
+	stateLV, planLV basetypes.ListValue,
+) (*clusters.ClusterUpdateConfigsMaintenanceCrontabs, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
 	result := clusters.ClusterUpdateConfigsMaintenanceCrontabs{}
 
 	var stateCrontabs []ConfigsMaintenanceCrontabsValue
 	if !stateLV.IsNull() && !stateLV.IsUnknown() {
 		d := stateLV.ElementsAs(ctx, &stateCrontabs, false)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return nil, diags
 		}
@@ -554,6 +678,7 @@ func expandClusterCrontabsUpdate(ctx context.Context, stateLV, planLV basetypes.
 	if !planLV.IsNull() && !planLV.IsUnknown() {
 		d := planLV.ElementsAs(ctx, &planCrontabs, false)
 		diags.Append(d...)
+
 		if diags.HasError() {
 			return nil, diags
 		}
@@ -565,6 +690,7 @@ func expandClusterCrontabsUpdate(ctx context.Context, stateLV, planLV basetypes.
 	}
 
 	planNames := make(map[string]struct{})
+
 	for _, p := range planCrontabs {
 		name := p.Name.ValueString()
 		planNames[name] = struct{}{}
@@ -575,8 +701,10 @@ func expandClusterCrontabsUpdate(ctx context.Context, stateLV, planLV basetypes.
 
 			if !p.Settings.IsNull() && !p.Settings.IsUnknown() {
 				var d diag.Diagnostics
+
 				settings, d = ExpandClusterCrontabSettings(ctx, &p.Settings)
 				diags.Append(d...)
+
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -587,11 +715,13 @@ func expandClusterCrontabsUpdate(ctx context.Context, stateLV, planLV basetypes.
 				Start:    p.Start.ValueString(),
 				Settings: settings,
 			})
+
 			continue
 		}
 
 		needUpdateSettings := false
 		pEmpty := p.Settings.IsNull() || p.Settings.IsUnknown()
+
 		cEmpty := c.Settings.IsNull() || c.Settings.IsUnknown()
 		if (pEmpty && !cEmpty) || (!pEmpty && cEmpty) || (!pEmpty && !cEmpty && !p.Settings.Equal(c.Settings)) {
 			needUpdateSettings = true
@@ -602,8 +732,10 @@ func expandClusterCrontabsUpdate(ctx context.Context, stateLV, planLV basetypes.
 
 			if !p.Settings.IsNull() && !p.Settings.IsUnknown() {
 				var d diag.Diagnostics
+
 				settings, d = ExpandClusterCrontabSettings(ctx, &p.Settings)
 				diags.Append(d...)
+
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -619,7 +751,10 @@ func expandClusterCrontabsUpdate(ctx context.Context, stateLV, planLV basetypes.
 
 	for _, c := range stateCrontabs {
 		if _, exists := planNames[c.Name.ValueString()]; !exists {
-			result.Delete = append(result.Delete, clusters.ClusterUpdateConfigsMaintenanceCrontabsDelete{ID: c.Id.ValueString()})
+			result.Delete = append(
+				result.Delete,
+				clusters.ClusterUpdateConfigsMaintenanceCrontabsDelete{ID: c.Id.ValueString()},
+			)
 		}
 	}
 

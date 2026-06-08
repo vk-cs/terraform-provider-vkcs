@@ -16,21 +16,25 @@ import (
 // configsUsersAttribute walks the schema to extract configs.users as schema.ListNestedAttribute.
 func configsUsersAttribute(t *testing.T, ctx context.Context) schema.ListNestedAttribute {
 	t.Helper()
+
 	s := ClusterResourceSchema(ctx)
 	configsAttr, ok := s.Attributes["configs"].(schema.SingleNestedAttribute)
 	require.True(t, ok, "configs must be SingleNestedAttribute")
 	usersAttr, ok := configsAttr.Attributes["users"].(schema.ListNestedAttribute)
 	require.True(t, ok, "configs.users must be ListNestedAttribute")
+
 	return usersAttr
 }
 
 func configsWarehousesAttribute(t *testing.T, ctx context.Context) schema.ListNestedAttribute {
 	t.Helper()
+
 	s := ClusterResourceSchema(ctx)
 	configsAttr, ok := s.Attributes["configs"].(schema.SingleNestedAttribute)
 	require.True(t, ok)
 	whAttr, ok := configsAttr.Attributes["warehouses"].(schema.ListNestedAttribute)
 	require.True(t, ok, "configs.warehouses must be ListNestedAttribute")
+
 	return whAttr
 }
 
@@ -58,10 +62,12 @@ func runListValidators(ctx context.Context, validators []validator.List, value t
 		PathExpression: path.MatchRoot("test"),
 		ConfigValue:    value,
 	}
+
 	resp := validator.ListResponse{}
 	for _, v := range validators {
 		v.ValidateList(ctx, req, &resp)
 	}
+
 	return resp.Diagnostics.HasError()
 }
 
@@ -91,10 +97,12 @@ func runStringValidators(ctx context.Context, validators []validator.String, val
 		PathExpression: path.MatchRoot("test"),
 		ConfigValue:    value,
 	}
+
 	resp := validator.StringResponse{}
 	for _, v := range validators {
 		v.ValidateString(ctx, req, &resp)
 	}
+
 	return resp.Diagnostics.HasError()
 }
 
