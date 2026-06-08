@@ -17,20 +17,20 @@ func TestAccKubernetesVolumeTypesV2_basic(t *testing.T) {
 				Config: testAccKubernetesVolumeTypesV2Config,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchResourceAttr(
-						"data.vkcs_kubernetes_volume_types_v2.types",
+						"data.vkcs_kubernetes_volume_types_v2.base",
 						"volume_types.#",
 						regexp.MustCompile(`[1-9]\d*`),
 					),
 					resource.TestCheckResourceAttrSet(
-						"data.vkcs_kubernetes_volume_types_v2.types",
+						"data.vkcs_kubernetes_volume_types_v2.base",
 						"region",
 					),
 					resource.TestCheckResourceAttrSet(
-						"data.vkcs_kubernetes_volume_types_v2.types",
+						"data.vkcs_kubernetes_volume_types_v2.base",
 						"id",
 					),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_kubernetes_volume_types_v2.types",
+						"data.vkcs_kubernetes_volume_types_v2.base",
 						"id",
 						"volume_types",
 					),
@@ -40,4 +40,4 @@ func TestAccKubernetesVolumeTypesV2_basic(t *testing.T) {
 	})
 }
 
-const testAccKubernetesVolumeTypesV2Config = `data "vkcs_kubernetes_volume_types_v2" "types" {}`
+const testAccKubernetesVolumeTypesV2Config = `data "vkcs_kubernetes_volume_types_v2" "base" {}`

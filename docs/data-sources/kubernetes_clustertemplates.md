@@ -8,6 +8,9 @@ description: |-
 
 # vkcs_kubernetes_clustertemplates
 
+> **Warning**  
+> This data source is intended for first-generation VKCS Kubernetes clusters and should not be used for new deployments.
+
 Use this data source to get a list of available VKCS Kubernetes Cluster Templates. To get details about each cluster template the data source can be combined with the `vkcs_kubernetes_clustertemplate` data source.
 
 ## Example Usage

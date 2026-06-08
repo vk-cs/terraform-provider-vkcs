@@ -160,16 +160,10 @@ Refer to the `Setting up Data Platform products` guide for details of using the 
         - `start` optional *string* &rarr;  Maintenance cron schedule. Defined in UTC.
 
 
-    - `settings`  *list* &rarr;  Additional common settings.
-        - `alias` **required** *string* &rarr;  Setting alias.
-
-        - `value` **required** *string* &rarr;  Setting value.
-
-
     - `users`  *list* &rarr;  Users settings.
         - `password` **required** sensitive *string* &rarr;  Password. Changing this creates a new resource.
 
-        - `username` **required** *string* &rarr;  Username
+        - `username` **required** *string* &rarr;  Username.
 
         - `role` optional *string* &rarr;  User role. Changing this creates a new resource.
 
@@ -200,6 +194,12 @@ Refer to the `Setting up Data Platform products` guide for details of using the 
         - `id` read-only *string* &rarr;  Warehouse ID.
 
 
+    - `settings`  *list* &rarr;  Additional common settings.
+        - `alias` **required** *string* &rarr;  Setting alias.
+
+        - `value` **required** *string* &rarr;  Setting value.
+
+
 
 - `name` **required** *string* &rarr;  Name of the cluster.
 
@@ -215,7 +215,7 @@ Refer to the `Setting up Data Platform products` guide for details of using the 
 
 - `description` optional *string* &rarr;  Cluster description.
 
-- `floating_ip_pool` optional *string* &rarr;  Floating IP pool ID. Use `auto` for autoselect. Changing this creates a new resource.
+- `floating_ip_pool` optional *string* &rarr;  Floating IP pool ID. Only `auto` is allowed; omit to skip floating IP. Changing this creates a new resource.
 
 - `multiaz` optional *boolean* &rarr;  Enables multi az support. Changing this creates a new resource.
 
@@ -264,15 +264,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` *string* &rarr;  ID of the cluster.
 
-- `info`  &rarr;  Application info
-    - `services`  *list* &rarr;  Application services info
-        - `connection_string` *string* &rarr;  Service connection string
+- `info`  &rarr;  Application info.
+    - `services`  *list* &rarr;  Application services info.
+        - `connection_string` *string* &rarr;  Service connection string.
 
-        - `description` *string* &rarr;  Service description
+        - `description` *string* &rarr;  Service description.
 
-        - `exposed` *boolean* &rarr;  Whether service is exposed
+        - `exposed` *boolean* &rarr;  Whether service is exposed.
 
-        - `type` *string* &rarr;  Service type
+        - `type` *string* &rarr;  Service type.
 
 
 

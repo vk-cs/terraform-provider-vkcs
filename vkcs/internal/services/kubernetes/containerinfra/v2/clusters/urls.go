@@ -34,7 +34,17 @@ func listKubeVersionURL(c *gophercloud.ServiceClient) string {
 	return rootURL(c) + "/k8s_versions"
 }
 
-// kubeconfigURL retrieves volume types with corresponding azs
-func volumeTypesURL(c *gophercloud.ServiceClient) string {
-	return c.ServiceURL("available-resources/storage-classes")
+// secPolicyTemplatesURL retrieves sec policy templates
+func secPolicyTemplatesURL(c *gophercloud.ServiceClient) string {
+	return c.ServiceURL("security_policy")
+}
+
+// secPolicyTemplatesURL retrieves sec policy templates
+func secPolicyTemplateByIDURL(c *gophercloud.ServiceClient, securityPolicyID string) string {
+	return c.ServiceURL("security_policy", securityPolicyID)
+}
+
+// secPolicyTemplatesURL retrieves sec policy templates
+func secPolicyTemplateByNameAndVersionURL(c *gophercloud.ServiceClient, spName, spVersion string) string {
+	return c.ServiceURL("security_policy", spName, "versions", spVersion)
 }

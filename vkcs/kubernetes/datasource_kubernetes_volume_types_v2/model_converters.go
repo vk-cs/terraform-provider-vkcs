@@ -6,10 +6,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/clusters"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kubernetes/containerinfra/v2/nodegroups"
 )
 
-func (m *KubernetesVolumeTypesV2Model) UpdateFromVolumeType(ctx context.Context, volumeTypes clusters.ListVolumeTypes) (diags diag.Diagnostics) {
+func (m *KubernetesVolumeTypesV2Model) UpdateFromVolumeType(ctx context.Context, volumeTypes nodegroups.ListVolumeTypes) (diags diag.Diagnostics) {
 	// It's a synthetic identifier
 	m.Id = types.StringValue("volume_types")
 

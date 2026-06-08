@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 	rkubengv2 "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/resource_kubernetes_node_group_v2"
 )
 
@@ -32,14 +31,14 @@ func (v ScaleTypeConfigValidator) ValidateResource(ctx context.Context, req reso
 
 	switch scaleType {
 	case "fixed_scale":
-		if !util.IsNullOrUnknown(data.AutoScaleMinSize) {
+		if !data.AutoScaleMinSize.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("auto_scale_min_size"),
 				"Invalid Configuration",
 				"auto_scale_min_size cannot be set when scale_type is 'fixed_scale'",
 			)
 		}
-		if !util.IsNullOrUnknown(data.AutoScaleMaxSize) {
+		if !data.AutoScaleMaxSize.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("auto_scale_max_size"),
 				"Invalid Configuration",
@@ -47,7 +46,7 @@ func (v ScaleTypeConfigValidator) ValidateResource(ctx context.Context, req reso
 			)
 		}
 
-		if util.IsNullOrUnknown(data.FixedScaleNodeCount) {
+		if data.FixedScaleNodeCount.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("fixed_scale_node_count"),
 				"Invalid Configuration",
@@ -56,7 +55,7 @@ func (v ScaleTypeConfigValidator) ValidateResource(ctx context.Context, req reso
 		}
 
 	case "auto_scale":
-		if !util.IsNullOrUnknown(data.FixedScaleNodeCount) {
+		if !data.FixedScaleNodeCount.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("fixed_scale_node_count"),
 				"Invalid Configuration",
@@ -64,14 +63,14 @@ func (v ScaleTypeConfigValidator) ValidateResource(ctx context.Context, req reso
 			)
 		}
 
-		if util.IsNullOrUnknown(data.AutoScaleMinSize) {
+		if data.AutoScaleMinSize.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("auto_scale_min_size"),
 				"Invalid Configuration",
 				"auto_scale_min_size is required when scale_type is 'auto_scale'",
 			)
 		}
-		if util.IsNullOrUnknown(data.AutoScaleMaxSize) {
+		if data.AutoScaleMaxSize.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("auto_scale_max_size"),
 				"Invalid Configuration",

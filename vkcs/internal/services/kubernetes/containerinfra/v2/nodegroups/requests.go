@@ -106,10 +106,20 @@ func Create(client *gophercloud.ServiceClient, opts *CreateOpts) CreateResult {
 }
 
 // Get retrieves a specific node group based on its ID.
-func Get(client *gophercloud.ServiceClient, nodeGroupID string) GetResult {
+func GetByID(client *gophercloud.ServiceClient, nodeGroupID string) GetResult {
 	var res GetResult
 
 	_, res.Err = client.Get(resourceURL(client, nodeGroupID), &res.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	return res
+}
+
+// GetByName retrieves a specific node group based on its name and cluster id.
+func GetByName(client *gophercloud.ServiceClient, clusterID, ngName string) GetResult {
+	var res GetResult
+
+	_, res.Err = client.Get(getByName(client, clusterID, ngName), &res.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	return res
@@ -134,6 +144,15 @@ func Delete(client *gophercloud.ServiceClient, nodeGroupID string) error {
 		OkCodes: []int{200},
 	})
 	return err
+}
+
+// Get available volume types for worker node root volume
+func GetVolumeTypes(c *gophercloud.ServiceClient) GetVolumeTypesResult {
+	var res GetVolumeTypesResult
+	_, res.Err = c.Get(volumeTypesURL(c), &res.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	return res
 }
 
 func (t Taint) Less(other Taint) bool {
