@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.17.0 (unreleased)
+#### v0.17.0
 - Add resource vkcs_kubernetes_security_policy_v2
 - Add resource vkcs_kubernetes_cluster_addon_v2
 - Add datasource vkcs_kubernetes_security_policy_template_v2
