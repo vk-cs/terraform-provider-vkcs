@@ -73,6 +73,7 @@ func KubernetesClusterAddonV2DataSourceSchema(ctx context.Context) schema.Schema
 			},
 			"values": schema.StringAttribute{
 				Computed:            true,
+				Sensitive:           true,
 				Description:         "The Helm chart values for configuring the addon, typically provided as YAML string.",
 				MarkdownDescription: "The Helm chart values for configuring the addon, typically provided as YAML string.",
 			},

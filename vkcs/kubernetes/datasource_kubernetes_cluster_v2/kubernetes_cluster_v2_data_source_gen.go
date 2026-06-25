@@ -73,6 +73,7 @@ func KubernetesClusterV2DataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"k8s_config": schema.StringAttribute{
 				Computed:            true,
+				Sensitive:           true,
 				Description:         "The raw kubeconfig file contents used to authenticate to the Kubernetes API.",
 				MarkdownDescription: "The raw kubeconfig file contents used to authenticate to the Kubernetes API.",
 			},

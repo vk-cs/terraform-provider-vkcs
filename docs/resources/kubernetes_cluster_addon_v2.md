@@ -37,7 +37,7 @@ resource "vkcs_kubernetes_cluster_addon_v2" "ingress_nginx" {
 
 - `namespace` **required** *string* &rarr;  The Kubernetes namespace where the addon will be deployed. Must be a valid DNS subdomain name (e.g., 'my-namespace'). **Forces replacement** on change.
 
-- `values` **required** *string* &rarr;  The Helm chart values for configuring the addon, provided as YAML string.
+- `values` **required** sensitive *string* &rarr;  The Helm chart values for configuring the addon, provided as YAML string. **Sensitive** — store securely.
 
 - `region` optional *string* &rarr;  The region in which to create the cluster addon. If omitted, the provider's `region` is used. **Forces replacement** on change.
 

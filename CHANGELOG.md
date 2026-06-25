@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.17.1 (unreleased)
+- Marked `k8s_config` and `values` attributes as `Sensitive` in affected Kubernetes resources and data sources.
+ 
 #### v0.17.0
 - Add resource vkcs_kubernetes_security_policy_v2
 - Add resource vkcs_kubernetes_cluster_addon_v2

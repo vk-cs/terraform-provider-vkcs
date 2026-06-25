@@ -189,7 +189,8 @@
             "name": "k8s_config",
             "string": {
               "computed_optional_required": "computed",
-              "description": "The raw kubeconfig file contents used to authenticate to the Kubernetes API."
+              "description": "The raw kubeconfig file contents used to authenticate to the Kubernetes API.",
+              "sensitive": true
             }
           },
           {
@@ -761,7 +762,8 @@
             "name": "values_template",
             "string": {
               "computed_optional_required": "computed",
-              "description": "Base64-encoded values.yaml template for the addon."
+              "description": "Base64-encoded values.yaml template for the addon.",
+              "sensitive": true
             }
           },
           {
@@ -835,7 +837,8 @@
             "name": "values",
             "string": {
               "computed_optional_required": "computed",
-              "description": "The Helm chart values for configuring the addon, typically provided as YAML string."
+              "description": "The Helm chart values for configuring the addon, typically provided as YAML string.",
+              "sensitive": true
             }
           },
           {
@@ -1698,6 +1701,7 @@
             "string": {
               "computed_optional_required": "computed",
               "description": "The contents of the kubeconfig file. **Sensitive** — store securely.",
+              "sensitive": true,
               "plan_modifiers": [
                 {
                   "custom": {
@@ -2848,7 +2852,8 @@
             "name": "values",
             "string": {
               "computed_optional_required": "required",
-              "description": "The Helm chart values for configuring the addon, provided as YAML string."
+              "description": "The Helm chart values for configuring the addon, provided as YAML string. **Sensitive** — store securely.",
+              "sensitive": true
             }
           },
           {

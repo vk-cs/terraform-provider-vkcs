@@ -136,8 +136,9 @@ func KubernetesClusterAddonV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"values": schema.StringAttribute{
 				Required:            true,
-				Description:         "The Helm chart values for configuring the addon, provided as YAML string.",
-				MarkdownDescription: "The Helm chart values for configuring the addon, provided as YAML string.",
+				Sensitive:           true,
+				Description:         "The Helm chart values for configuring the addon, provided as YAML string. **Sensitive** — store securely.",
+				MarkdownDescription: "The Helm chart values for configuring the addon, provided as YAML string. **Sensitive** — store securely.",
 			},
 		},
 		Description: "Provides a Kubernetes cluster addon resource. This can be used to create, modify, and delete Kubernetes cluster addon.",

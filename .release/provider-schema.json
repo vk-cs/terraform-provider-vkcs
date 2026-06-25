@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.17.0",
+  "provider_version": "v0.17.1",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -4265,7 +4265,7 @@
           "values": {
             "type": "TypeString",
             "required": true,
-            "description": "The Helm chart values for configuring the addon, provided as YAML string."
+            "description": "The Helm chart values for configuring the addon, provided as YAML string. **Sensitive** — store securely."
           }
         },
         "description": "Provides a Kubernetes cluster addon resource. This can be used to create, modify, and delete Kubernetes cluster addon.",

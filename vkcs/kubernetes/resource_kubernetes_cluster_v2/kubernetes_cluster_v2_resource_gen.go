@@ -143,6 +143,7 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"k8s_config": schema.StringAttribute{
 				Computed:            true,
+				Sensitive:           true,
 				Description:         "The contents of the kubeconfig file. **Sensitive** — store securely.",
 				MarkdownDescription: "The contents of the kubeconfig file. **Sensitive** — store securely.",
 				PlanModifiers: []planmodifier.String{
