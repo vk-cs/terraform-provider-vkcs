@@ -43,6 +43,7 @@ func KubernetesAddonV2DataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"values_template": schema.StringAttribute{
 				Computed:            true,
+				Sensitive:           true,
 				Description:         "Base64-encoded values.yaml template for the addon.",
 				MarkdownDescription: "Base64-encoded values.yaml template for the addon.",
 			},
