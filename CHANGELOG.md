@@ -7,6 +7,9 @@ description: |-
 
 # VKCS Provider's changelog
 #### v0.17.1 (unreleased)
+- Fix: Add the ability to create resource vkcs_kubernetes_node_group_v2 with a taint having an empty value.
+- Fix: Add the ability to create resource vkcs_kubernetes_node_group_v2 with auto_scale_min_size equal to zero.
+- Fix: Add the ability to create resource vkcs_kubernetes_node_group_v2 with fixed_scale_node_count equal to zero.
 - Marked `k8s_config` and `values` attributes as `Sensitive` in affected Kubernetes resources and data sources.
  
 #### v0.17.0

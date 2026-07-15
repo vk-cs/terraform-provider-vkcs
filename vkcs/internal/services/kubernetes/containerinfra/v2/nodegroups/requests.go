@@ -51,12 +51,12 @@ type ScaleSpec struct {
 
 // FixedScale represents fixed scaling configuration
 type FixedScale struct {
-	Size int `json:"size" required:"true"`
+	Size int `json:"size"`
 }
 
 // AutoScale represents auto scaling configuration
 type AutoScale struct {
-	MinSize int `json:"min_size" required:"true"`
+	MinSize int `json:"min_size"`
 	MaxSize int `json:"max_size" required:"true"`
 	Size    int `json:"size" required:"true"`
 }
@@ -64,7 +64,7 @@ type AutoScale struct {
 // Taint represents node taint configuration
 type Taint struct {
 	Key    string `json:"key" required:"true"`
-	Value  string `json:"value" required:"true"`
+	Value  string `json:"value"`
 	Effect string `json:"effect" required:"true"`
 }
 
