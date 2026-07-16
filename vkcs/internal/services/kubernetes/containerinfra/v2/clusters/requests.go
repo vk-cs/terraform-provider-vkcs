@@ -105,7 +105,12 @@ type (
 		MasterSpec MasterSpecOpts `json:"master_spec"`
 	}
 
-	// UpgradeOpts represents options for scaling a cluster
+	// UpdateOpts represents options for updating a cluster
+	UpdateOpts struct {
+		Labels *map[string]string `json:"labels,omitempty"`
+	}
+
+	// UpgradeOpts represents options for upgrading a cluster
 	UpgradeOpts struct {
 		Version string `json:"target_version"`
 	}
@@ -113,6 +118,11 @@ type (
 
 // ToClusterCreateMap builds a request body from CreateOpts
 func (opts CreateOpts) ToClusterCreateMap() (map[string]interface{}, error) {
+	return gophercloud.BuildRequestBody(opts, "")
+}
+
+// ToClusterUpdateMap builds a request body from UpdateOpts
+func (opts UpdateOpts) ToClusterUpdateMap() (map[string]interface{}, error) {
 	return gophercloud.BuildRequestBody(opts, "")
 }
 
@@ -149,6 +159,19 @@ func Get(c *gophercloud.ServiceClient, clusterID string) GetResult {
 		OkCodes: []int{200},
 	})
 	return res
+}
+
+// Update updates an existing cluster
+func Update(c *gophercloud.ServiceClient, clusterID string, opts UpdateOpts) error {
+	reqBody, err := opts.ToClusterUpdateMap()
+	if err != nil {
+		return err
+	}
+
+	_, err = c.Patch(updateURL(c, clusterID), reqBody, nil, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	return err
 }
 
 // Scale scales an existing cluster
