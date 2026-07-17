@@ -261,7 +261,7 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
-					stringvalidator.OneOf("calico"),
+					stringvalidator.OneOf("calico", "cilium"),
 				},
 			},
 			"node_groups": schema.SetNestedAttribute{

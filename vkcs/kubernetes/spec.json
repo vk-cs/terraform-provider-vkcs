@@ -1426,7 +1426,7 @@
                         "path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
                       }
                     ],
-                    "schema_definition": "stringvalidator.OneOf(\"calico\")"
+                    "schema_definition": "stringvalidator.OneOf(\"calico\", \"cilium\")"
                   }
                 }
               ],

@@ -7,6 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 #### v0.17.1 (unreleased)
+- Add ability to create resource vkcs_kubernetes_cluster_v2 with cilium network plugin.
 - Fix: Add the ability to create resource vkcs_kubernetes_node_group_v2 with a taint having an empty value.
 - Fix: Add the ability to create resource vkcs_kubernetes_node_group_v2 with auto_scale_min_size equal to zero.
 - Fix: Add the ability to create resource vkcs_kubernetes_node_group_v2 with fixed_scale_node_count equal to zero.
