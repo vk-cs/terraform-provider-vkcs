@@ -322,9 +322,23 @@ func (r *kubernetesClusterV2Resource) Update(ctx context.Context, req resource.U
 	}
 
 	// Check what needs to be updated
+	updateOpts := clusters.UpdateOpts{}
 	upgradeOpts := clusters.UpgradeOpts{}
 	scaleOpts := clusters.ScaleOpts{}
 	hasChanged := false
+
+	// Update labels if changed
+	if !plan.Labels.Equal(state.Labels) {
+		hasChanged = true
+		labels := make(map[string]string, len(plan.Labels.Elements()))
+		if !plan.Labels.IsNull() {
+			resp.Diagnostics.Append(plan.Labels.ElementsAs(ctx, &labels, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		}
+		updateOpts.Labels = &labels
+	}
 
 	// Update version if changed
 	if !plan.Version.Equal(state.Version) {
@@ -352,6 +366,15 @@ func (r *kubernetesClusterV2Resource) Update(ctx context.Context, req resource.U
 	}
 
 	clusterID := plan.Id.ValueString()
+
+	if updateOpts.Labels != nil {
+		// API call
+		err = clusters.Update(client, clusterID, updateOpts)
+		if err != nil {
+			resp.Diagnostics.AddError("Error updating resource vkcs_kubernetes_cluster_v2", err.Error())
+			return
+		}
+	}
 
 	if upgradeOpts.Version != "" {
 		// API call
@@ -417,7 +440,7 @@ func (r *kubernetesClusterV2Resource) getStateConfForClusterUpdate(client *gophe
 		},
 		Refresh:      kubernetesStateRefreshFuncV2(client, clusterID),
 		Timeout:      updateTimeout,
-		Delay:        time.Minute * 3,
+		Delay:        time.Second * 30,
 		PollInterval: time.Second * 20,
 	}
 }

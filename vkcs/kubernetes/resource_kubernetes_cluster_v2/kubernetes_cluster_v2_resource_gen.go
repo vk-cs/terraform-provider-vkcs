@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -156,9 +155,6 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "A map of Kubernetes labels applied to the cluster. Keys and values must conform to Kubernetes label syntax. **Forces replacement** on change.",
 				MarkdownDescription: "A map of Kubernetes labels applied to the cluster. Keys and values must conform to Kubernetes label syntax. **Forces replacement** on change.",
-				PlanModifiers: []planmodifier.Map{
-					mapplanmodifier.RequiresReplace(),
-				},
 				Validators: []validator.Map{
 					schema_validators.KubernetesClusterLabelsValidator{},
 				},
