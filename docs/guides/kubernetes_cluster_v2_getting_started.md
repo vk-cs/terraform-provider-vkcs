@@ -1,0 +1,341 @@
+---
+layout: "vkcs"
+page_title: "Getting Started with Managed Kubernetes"
+description: |-
+  Create your first Managed Kubernetes cluster with the VKCS provider, from network to a working kubectl connection.
+---
+
+# Getting Started with Kubernetes
+
+This guide walks you through creating a working **Managed Kubernetes (mk8s)** cluster with the
+VKCS Terraform provider — from an empty project to a cluster you can reach with `kubectl`.
+
+By the end you will have:
+
+- a network attached to a router with Internet access;
+- a second-generation (`v2`) Kubernetes cluster;
+- a worker node group;
+- a `kubeconfig` file and a verified `kubectl` connection;
+- (optionally) an Ingress NGINX add-on installed via Terraform.
+
+The full configuration is assembled step by step below. You can copy each block into a
+single `main.tf` (plus the referenced files) and run it as one Terraform configuration.
+
+## Before you start
+
+1. **VKCS provider credentials.** Download a preconfigured provider file with `username` and
+   `project_id` from the [VK Cloud portal](https://mcs.mail.ru/app/project): open the
+   `Terraform` tab and click _Download VKCS provider file_. See the
+   [provider configuration reference](https://registry.terraform.io/providers/vk-cs/vkcs/latest/docs)
+   for all authentication options.
+
+2. **Sprut SDN.** Managed Kubernetes `v2` clusters require a network that uses the **`sprut`**
+   SDN — the cluster's CNI (Calico, Cilium) works only over Sprut. If Sprut is not yet available in
+   your project, request access from [technical support](mailto:support@mcs.mail.ru) before you
+   begin. You can list the SDNs available in your project with the
+   [`vkcs_networking_sdn`](../data-sources/networking_sdn) data source.
+
+3. **Quotas.** Make sure your project has enough quota for the resources this guide creates:
+   vCPU/RAM for the master and worker nodes, volumes for their disks and a floating IP (if you
+   enable a public API endpoint).
+
+4. **`kubectl`.** Install [`kubectl`](https://kubernetes.io/docs/tasks/tools/) on the host from
+   which you will manage the cluster. Keep its minor version within one of the cluster version
+   (e.g. `kubectl` 1.34 works with clusters 1.33–1.34).
+
+5. **Terraform** 1.1.5 or later.
+
+## Step 1. Configure the provider
+
+Create `provider.tf`:
+
+```terraform
+terraform {
+  required_providers {
+    vkcs = {
+      source  = "vk-cs/vkcs"
+      version = "< 1.0.0"
+    }
+  }
+}
+
+provider "vkcs" {
+  username   = "USERNAME"
+  password   = "PASSWORD"
+  project_id = "PROJECT_ID"
+  region     = "RegionOne"
+  auth_url   = "AUTH_URL"
+}
+```
+
+Replace the placeholders with the values from your provider file. To avoid keeping secrets in
+the configuration, you can supply `password` via the `OS_PASSWORD` environment variable or a
+`*.auto.tfvars` file that is excluded from version control.
+
+## Step 2. Create the network
+
+The cluster network **must use the `sprut` SDN**. Specify `sdn = "sprut"` on the root network
+and router resources — the subnet and router interfaces inherit the SDN automatically.
+
+Create `network.tf`:
+
+```terraform
+# Create networks
+resource "vkcs_networking_network" "app" {
+  name        = "k8s-net"
+  description = "Network for the Kubernetes cluster"
+  sdn         = "sprut"
+}
+
+resource "vkcs_networking_subnet" "app" {
+  name       = "k8s-subnet"
+  network_id = vkcs_networking_network.app.id
+  cidr       = "192.168.199.0/24"
+}
+
+# Get external network with Internet access
+data "vkcs_networking_network" "extnet" {
+  name = "internet"
+  sdn  = "sprut"
+}
+
+# Create a router to connect networks
+resource "vkcs_networking_router" "router" {
+  name                = "k8s-router"
+  sdn                 = "sprut"
+  # Connect router to Internet
+  external_network_id = data.vkcs_networking_network.extnet.id
+}
+
+# Connect networks to the router
+resource "vkcs_networking_router_interface" "app" {
+  router_id = vkcs_networking_router.router.id
+  subnet_id = vkcs_networking_subnet.app.id
+}
+```
+
+> **Note:** The subnet **must be attached to the router before the cluster is created**. The
+> cluster resource below declares an explicit `depends_on` on the router interface for this
+> reason.
+
+## Step 3. Look up the version, flavor, and volume type
+
+Use data sources to pick valid values instead of hardcoding them.
+
+Create `lookups.tf`:
+
+```terraform
+# Available Kubernetes versions
+data "vkcs_kubernetes_versions_v2" "available" {}
+
+# Flavor for master and worker nodes.
+# Use an STD3-* flavor for clusters in the PA2 availability zone.
+data "vkcs_compute_flavor" "master" {
+  name = "STD3-4-16"
+}
+
+data "vkcs_compute_flavor" "worker" {
+  name = "STD3-2-8"
+}
+
+# Available root volume types per availability zone
+data "vkcs_kubernetes_volume_types_v2" "available" {}
+```
+
+You can inspect the available options after `terraform apply` (or with `terraform console`):
+`data.vkcs_kubernetes_versions_v2.available.k8s_versions` and
+`data.vkcs_kubernetes_volume_types_v2.available.volume_types`.
+
+## Step 4. Create the cluster
+
+A `standard` cluster uses a single availability zone; a `regional` cluster uses three zones and
+requires `master_count = 3` or `master_count = 5` for high availability. This guide creates a `standard` cluster.
+
+Create `cluster.tf`:
+
+```terraform
+resource "vkcs_kubernetes_cluster_v2" "k8s_cluster" {
+  name        = "k8s-standard-cluster"
+  description = "An example of a standard Kubernetes cluster v2 created via Terraform"
+  version     = "v1.34.2"
+
+  cluster_type       = "standard"
+  master_count       = 1
+  availability_zones = ["MS1"]
+  master_flavor      = data.vkcs_compute_flavor.master.id
+
+  network_id             = vkcs_networking_network.app.id
+  subnet_id              = vkcs_networking_subnet.app.id
+  loadbalancer_subnet_id = vkcs_networking_subnet.app.id
+  network_plugin         = "calico"
+  pods_ipv4_cidr         = "10.100.0.0/16"
+
+  # If your configuration also defines a network for the instance,
+  # ensure it is attached to a router before creating of the instance
+  depends_on = [
+    vkcs_networking_router_interface.app,
+  ]
+}
+```
+
+> **Important:** Most cluster arguments **force replacement** on change — editing them destroys
+> and recreates the cluster. Choose `name`, `network_id`, `subnet_id`, `pods_ipv4_cidr`,
+> `cluster_type`, and `availability_zones` carefully up front. `version` can only be _upgraded_
+> to a higher value.
+
+## Step 5. Add a worker node group
+
+The cluster's control plane is created without workers. Add at least one node group to run your
+workloads.
+
+Create `nodegroup.tf`:
+
+```terraform
+resource "vkcs_kubernetes_node_group_v2" "k8s_node_group" {
+  cluster_id = vkcs_kubernetes_cluster_v2.k8s_cluster.id
+  name       = "k8s-node-group"
+
+  node_flavor       = data.vkcs_compute_flavor.worker.id
+  availability_zone = "MS1"
+
+  scale_type             = "fixed_scale"
+  fixed_scale_node_count = 3
+
+  parallel_upgrade_chunk = 40
+
+  disk_type = "high-iops"
+  disk_size = 20
+
+  depends_on = [
+    vkcs_kubernetes_cluster_v2.k8s_cluster,
+  ]
+}
+```
+
+To use autoscaling instead of a fixed size, set `scale_type = "auto_scale"` and provide
+`auto_scale_min_size` and `auto_scale_max_size` (with `min <= max`).
+
+## Step 6. Get the kubeconfig and connect
+
+The cluster exports its kubeconfig as the sensitive `k8s_config` attribute. Write it to a file
+so you can use it with `kubectl`.
+
+Create `outputs.tf`:
+
+```terraform
+resource "local_sensitive_file" "kubeconfig" {
+  content         = vkcs_kubernetes_cluster_v2.k8s_cluster.k8s_config
+  filename        = "${path.module}/kubeconfig.yaml"
+  file_permission = "0600"
+}
+
+output "api_address" {
+  value = vkcs_kubernetes_cluster_v2.k8s_cluster.api_address
+}
+```
+
+The `local` provider is required for `local_sensitive_file`; add it to `provider.tf`:
+
+```terraform
+terraform {
+  required_providers {
+    vkcs = {
+      source  = "vk-cs/vkcs"
+      version = "< 1.0.0"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.4"
+    }
+  }
+}
+```
+
+## Step 7. Apply and verify
+
+```shell
+terraform init
+terraform plan
+terraform apply
+```
+
+Cluster creation takes several minutes (typically 10-20 minutes for the control plane, plus a
+few minutes per node group). When it finishes, connect with the generated kubeconfig.
+
+The kubeconfig does **not** embed a static token. Instead it authenticates through the
+[`client-keystone-auth`](https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/keystone-auth/using-client-keystone-auth.md) credential plugin, which exchanges your VK Cloud credentials for a Keystone token on each call. Two things are required before `kubectl` will work:
+
+1. **Install the `client-keystone-auth` binary** and make sure it is in your `PATH`. It ships
+   with the [OpenStack cloud-provider tools](https://github.com/kubernetes/cloud-provider-openstack/releases).
+2. **Provide your password.** For security, the generated kubeconfig leaves `OS_PASSWORD`
+   commented out under the `users[].user.exec.env` section. Either uncomment it and set your
+   password there, or export it in your shell (the plugin reads standard `OS_*` variables):
+
+   ```shell
+   export OS_PASSWORD='<your-password>'
+   ```
+
+Then connect:
+
+```shell
+export KUBECONFIG=$(pwd)/kubeconfig.yaml
+kubectl get nodes
+```
+
+You should see your worker nodes in the `Ready` state:
+
+```console
+NAME                                    STATUS   ROLES    AGE   VERSION
+k8s-getting-started-default-workers-0   Ready    <none>   5m    v1.34.2
+k8s-getting-started-default-workers-1   Ready    <none>   5m    v1.34.2
+```
+
+> **Note:** If you did **not** set `public_ip = true`, the API endpoint has only an internal IP.
+> In that case run `kubectl` from a VM in the same project/subnet as the cluster.
+
+## Step 8 (optional). Install an add-on
+
+Add-ons such as the Ingress NGINX controller can be installed declaratively. First read the
+add-on definition, then create the add-on resource.
+
+Create `addon.tf`:
+
+```terraform
+data "vkcs_kubernetes_addon_v2" "ingress_nginx" {
+  name    = "ingress-nginx"
+  version = "4.12.1"
+}
+```
+
+```terraform
+resource "vkcs_kubernetes_cluster_addon_v2" "ingress_nginx" {
+  cluster_id       = vkcs_kubernetes_cluster_v2.k8s_cluster.id
+  addon_id         = data.vkcs_kubernetes_addon_v2.ingress_nginx.addon_id
+  addon_version_id = data.vkcs_kubernetes_addon_v2.ingress_nginx.id
+  namespace        = "ingress-nginx"
+  values           = data.vkcs_kubernetes_addon_v2.ingress_nginx.values_template
+  addon_name       = "ingress-nginx"
+
+  depends_on = [
+    vkcs_kubernetes_node_group_v2.k8s_node_group
+  ]
+}
+```
+
+> **Note:** The data source returns `values_template` **base64-encoded** and the resource's
+> `values` argument expects a **base64-encoded** value.
+
+## Cleaning up
+
+To remove everything created by this guide:
+
+```shell
+terraform destroy
+```
+
+## Next steps
+
+- [`vkcs_kubernetes_cluster_v2`](../resources/kubernetes_cluster_v2) — full cluster argument reference.
+- [`vkcs_kubernetes_node_group_v2`](../resources/kubernetes_node_group_v2) — scaling and upgrades of node groups.
+- [`vkcs_kubernetes_cluster_addon_v2`](../resources/kubernetes_cluster_addon_v2) — managing add-ons.
+- [`vkcs_kubernetes_security_policy_v2`](../resources/kubernetes_security_policy_v2) — cluster security policies.
