@@ -1,1 +1,1 @@
-../../compute/flavor/name/main.tf
+../node_group_v2/ng-flavor.tf

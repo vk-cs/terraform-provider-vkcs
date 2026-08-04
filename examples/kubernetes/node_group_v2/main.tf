@@ -2,7 +2,7 @@ resource "vkcs_kubernetes_node_group_v2" "k8s_node_group" {
   cluster_id = vkcs_kubernetes_cluster_v2.k8s_cluster.id
   name       = "k8s-node-group"
 
-  node_flavor       = data.vkcs_compute_flavor.basic.id
+  node_flavor       = data.vkcs_compute_flavor.worker.id
   availability_zone = "MS1"
 
   scale_type             = "fixed_scale"
