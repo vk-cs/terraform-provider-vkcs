@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.17.2 (unreleased)
+- Add guides for Kubernetes: kubernetes_cluster_v2_getting_started and kubernetes_cluster_v2_updating.
+
 #### v0.17.1
 - Add ability to create resource vkcs_kubernetes_cluster_v2 with cilium network plugin.
 - Fix: Add the ability to create resource vkcs_kubernetes_node_group_v2 with a taint having an empty value.
