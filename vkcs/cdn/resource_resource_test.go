@@ -48,7 +48,7 @@ func TestAccCDNResourceResource_full(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "cname", cname),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "active", "true"),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.allowed_http_methods.value.#", "3"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.allowed_http_methods.value.#", "2"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.allowed_http_methods.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.brotli_compression.value.#", "3"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.brotli_compression.enabled", "true"),
@@ -119,7 +119,7 @@ func TestAccCDNResourceResource_update(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "cname", cname),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "active", "false"),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.allowed_http_methods.value.#", "4"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.allowed_http_methods.value.#", "1"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.allowed_http_methods.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.brotli_compression.value.#", "3"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.brotli_compression.enabled", "true"),
@@ -174,7 +174,7 @@ func TestAccCDNResourceResource_update(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "cname", cname),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "active", "true"),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.allowed_http_methods.value.#", "3"),
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.allowed_http_methods.value.#", "2"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.allowed_http_methods.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.brotli_compression.value.#", "3"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.brotli_compression.enabled", "false"),
@@ -339,7 +339,7 @@ resource "vkcs_cdn_resource" "full" {
   active     = true
   options = {
     allowed_http_methods = {
-      value   = ["GET", "HEAD", "OPTIONS"]
+      value   = ["GET", "HEAD"]
       enabled = true
     }
     brotli_compression = {
@@ -430,7 +430,7 @@ resource "vkcs_cdn_resource" "update" {
   active = false
   options = {
     allowed_http_methods = {
-      value   = ["GET", "OPTIONS", "PUT", "PATCH"]
+      value   = ["GET"]
       enabled = true
     }
     brotli_compression = {
@@ -515,7 +515,7 @@ resource "vkcs_cdn_resource" "update" {
   active       = true
   options = {
     allowed_http_methods = {
-      value   = ["GET", "HEAD", "OPTIONS"]
+      value   = ["GET", "HEAD"]
       enabled = true
     }
     brotli_compression = {

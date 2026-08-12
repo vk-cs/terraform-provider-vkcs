@@ -374,6 +374,15 @@ func (r *resourceResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
+	// We have to specify options in update even if they are not changed
+	if opts == nil {
+		opts, diags = data.Options.ToResourceOptions(ctx)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	updateOpts := resources.UpdateOpts{
 		Active:             plan.Active.ValueBoolPointer(),
 		Options:            opts,
