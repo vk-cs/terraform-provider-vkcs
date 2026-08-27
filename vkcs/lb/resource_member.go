@@ -25,7 +25,7 @@ func ResourceMember() *schema.Resource {
 		UpdateContext: resourceMemberUpdate,
 		DeleteContext: resourceMemberDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceMemberImport,
+			StateContext: resourceMemberImport,
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -310,7 +310,7 @@ func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	return nil
 }
 
-func resourceMemberImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceMemberImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	parts := strings.SplitN(d.Id(), "/", 2)
 	if len(parts) != 2 {
 		err := fmt.Errorf("invalid format specified for Member. Format must be <pool id>/<member id>")
