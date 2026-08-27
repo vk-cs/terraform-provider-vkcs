@@ -27,7 +27,7 @@ func ResourceL7Policy() *schema.Resource {
 		UpdateContext: resourceL7PolicyUpdate,
 		DeleteContext: resourceL7PolicyDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceL7PolicyImport,
+			StateContext: resourceL7PolicyImport,
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -385,7 +385,7 @@ func resourceL7PolicyDelete(ctx context.Context, d *schema.ResourceData, meta in
 	return nil
 }
 
-func resourceL7PolicyImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceL7PolicyImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	config := meta.(clients.Config)
 	lbClient, err := config.LoadBalancerV2Client(util.GetRegion(d, config))
 	if err != nil {

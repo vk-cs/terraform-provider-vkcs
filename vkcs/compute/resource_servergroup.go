@@ -17,7 +17,7 @@ func ResourceComputeServerGroup() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceComputeServerGroupCreate,
 		ReadContext:   resourceComputeServerGroupRead,
-		Update:        nil,
+		UpdateContext: nil,
 		DeleteContext: resourceComputeServerGroupDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
