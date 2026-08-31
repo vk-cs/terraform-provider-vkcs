@@ -340,6 +340,19 @@ func (r *kubernetesClusterV2Resource) Update(ctx context.Context, req resource.U
 		updateOpts.Labels = &labels
 	}
 
+	// Update allowed_cidrs if changed
+	if !plan.LoadbalancerAllowedCidrs.Equal(state.LoadbalancerAllowedCidrs) {
+		hasChanged = true
+		allowedCidrs := make([]string, len(plan.LoadbalancerAllowedCidrs.Elements()))
+		if !plan.LoadbalancerAllowedCidrs.IsNull() {
+			resp.Diagnostics.Append(plan.LoadbalancerAllowedCidrs.ElementsAs(ctx, &allowedCidrs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		}
+		updateOpts.AllowedCIDRs = &allowedCidrs
+	}
+
 	// Update version if changed
 	if !plan.Version.Equal(state.Version) {
 		hasChanged = true
@@ -367,7 +380,7 @@ func (r *kubernetesClusterV2Resource) Update(ctx context.Context, req resource.U
 
 	clusterID := plan.Id.ValueString()
 
-	if updateOpts.Labels != nil {
+	if updateOpts.Labels != nil || updateOpts.AllowedCIDRs != nil {
 		// API call
 		err = clusters.Update(client, clusterID, updateOpts)
 		if err != nil {

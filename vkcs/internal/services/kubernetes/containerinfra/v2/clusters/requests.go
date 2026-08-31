@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/gophercloud/gophercloud"
+	"golang.org/x/sync/errgroup"
 )
 
 // CreateOpts represents options for creating a cluster in V2 API
@@ -107,7 +108,8 @@ type (
 
 	// UpdateOpts represents options for updating a cluster
 	UpdateOpts struct {
-		Labels *map[string]string `json:"labels,omitempty"`
+		Labels       *map[string]string `json:"labels,omitempty"`
+		AllowedCIDRs *[]string          `json:"allowed_cidrs,omitempty"`
 	}
 
 	// UpgradeOpts represents options for upgrading a cluster
@@ -168,10 +170,26 @@ func Update(c *gophercloud.ServiceClient, clusterID string, opts UpdateOpts) err
 		return err
 	}
 
-	_, err = c.Patch(updateURL(c, clusterID), reqBody, nil, &gophercloud.RequestOpts{
-		OkCodes: []int{200},
-	})
-	return err
+	egroup := errgroup.Group{}
+	if opts.Labels != nil {
+		egroup.Go(func() error {
+			_, err = c.Patch(updateURL(c, clusterID), reqBody, nil, &gophercloud.RequestOpts{
+				OkCodes: []int{200},
+			})
+			return err
+		})
+	}
+
+	if opts.AllowedCIDRs != nil {
+		egroup.Go(func() error {
+			_, err = c.Patch(updateLoadbalancerListeners(c, clusterID), reqBody, nil, &gophercloud.RequestOpts{
+				OkCodes: []int{200},
+			})
+			return err
+		})
+	}
+
+	return egroup.Wait()
 }
 
 // Scale scales an existing cluster

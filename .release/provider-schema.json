@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.17.2",
+  "provider_version": "v0.17.3",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -4349,7 +4349,7 @@
           "loadbalancer_allowed_cidrs": {
             "type": "TypeSet",
             "optional": true,
-            "description": "A set of CIDR blocks allowed to access the API load balancer. If empty, access is allowed from all IP addresses. **Forces replacement** on change.",
+            "description": "A set of CIDR blocks allowed to access the API load balancer. If empty, access is allowed from all IP addresses. CIDRs are treated as networks: host bits are ignored, so `192.168.10.1/24` and `192.168.10.2/24` are both stored as `192.168.10.0/24`. Each entry must be a distinct subnet.",
             "computed": true,
             "elem": {
               "type": "TypeString"
