@@ -1548,7 +1548,7 @@
             "name": "loadbalancer_allowed_cidrs",
             "set": {
               "computed_optional_required": "computed_optional",
-              "description": "A set of CIDR blocks allowed to access the API load balancer. If empty, access is allowed from all IP addresses. **Forces replacement** on change.",
+              "description": "A set of CIDR blocks allowed to access the API load balancer. If empty, access is allowed from all IP addresses. CIDRs are treated as networks: host bits are ignored, so `192.168.10.1/24` and `192.168.10.2/24` are both stored as `192.168.10.0/24`. Each entry must be a distinct subnet.",
               "element_type": {
                 "string": {}
               },
@@ -1568,18 +1568,6 @@
                   "schema_definition": "setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{}))"
                 }
               },
-              "plan_modifiers": [
-                {
-                  "custom": {
-                    "imports": [
-                      {
-                        "path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
-                      }
-                    ],
-                    "schema_definition": "setplanmodifier.RequiresReplace()"
-                  }
-                }
-              ],
               "validators": [
                 {
                   "custom": {
@@ -1592,6 +1580,16 @@
                       }
                     ],
                     "schema_definition": "setvalidator.ValueStringsAre(schema_validators.LbAllowedCIDRValidator{})"
+                  }
+                },
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes/schema_validators"
+                      }
+                    ],
+                    "schema_definition": "schema_validators.LbAllowedCIDRsUniquenessValidator{}"
                   }
                 }
               ]
