@@ -164,13 +164,11 @@ func KubernetesClusterV2ResourceSchema(ctx context.Context) schema.Schema {
 				ElementType:         types.StringType,
 				Optional:            true,
 				Computed:            true,
-				Description:         "A set of CIDR blocks allowed to access the API load balancer. If empty, access is allowed from all IP addresses. **Forces replacement** on change.",
-				MarkdownDescription: "A set of CIDR blocks allowed to access the API load balancer. If empty, access is allowed from all IP addresses. **Forces replacement** on change.",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(),
-				},
+				Description:         "A set of CIDR blocks allowed to access the API load balancer. If empty, access is allowed from all IP addresses. CIDRs are treated as networks: host bits are ignored, so `192.168.10.1/24` and `192.168.10.2/24` are both stored as `192.168.10.0/24`. Each entry must be a distinct subnet.",
+				MarkdownDescription: "A set of CIDR blocks allowed to access the API load balancer. If empty, access is allowed from all IP addresses. CIDRs are treated as networks: host bits are ignored, so `192.168.10.1/24` and `192.168.10.2/24` are both stored as `192.168.10.0/24`. Each entry must be a distinct subnet.",
 				Validators: []validator.Set{
 					setvalidator.ValueStringsAre(schema_validators.LbAllowedCIDRValidator{}),
+					schema_validators.LbAllowedCIDRsUniquenessValidator{},
 				},
 				Default: setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
 			},

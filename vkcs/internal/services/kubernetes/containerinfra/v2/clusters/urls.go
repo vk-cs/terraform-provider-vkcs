@@ -19,6 +19,11 @@ func updateURL(c *gophercloud.ServiceClient, clusterID string) string {
 	return resourceURL(c, clusterID) + ":update"
 }
 
+// updateURL updates cluster's fields
+func updateLoadbalancerListeners(c *gophercloud.ServiceClient, clusterID string) string {
+	return resourceURL(c, clusterID) + "/listener"
+}
+
 // upgradeURL upgrades cluster's versions
 func upgradeURL(c *gophercloud.ServiceClient, clusterID string) string {
 	return resourceURL(c, clusterID) + ":upgrade"

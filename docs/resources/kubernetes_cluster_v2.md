@@ -93,7 +93,7 @@ resource "vkcs_kubernetes_cluster_v2" "k8s_cluster" {
 
 - `labels` optional *map of* *string* &rarr;  A map of Kubernetes labels applied to the cluster. Keys and values must conform to Kubernetes label syntax. **Forces replacement** on change.
 
-- `loadbalancer_allowed_cidrs` optional *set of* *string* &rarr;  A set of CIDR blocks allowed to access the API load balancer. If empty, access is allowed from all IP addresses. **Forces replacement** on change.
+- `loadbalancer_allowed_cidrs` optional *set of* *string* &rarr;  A set of CIDR blocks allowed to access the API load balancer. If empty, access is allowed from all IP addresses. CIDRs are treated as networks: host bits are ignored, so `192.168.10.1/24` and `192.168.10.2/24` are both stored as `192.168.10.0/24`. Each entry must be a distinct subnet.
 
 - `public_ip` optional *boolean* &rarr;  If `true`, assigns a floating IP to the API endpoint. When enabled, `external_network_id` must be specified. **Forces replacement** on change. Default is `false`.
 
