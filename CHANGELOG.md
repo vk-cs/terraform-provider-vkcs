@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.17.3 (unreleased)
+- Fix backup_schedule causing update of db resources when it was not present in configuration.
+
 #### v0.17.2
 - Update default identity endpoint
 - Add guides for Kubernetes: kubernetes_cluster_v2_getting_started and kubernetes_cluster_v2_updating.

@@ -733,18 +733,18 @@ func resourceDatabaseClusterRead(ctx context.Context, d *schema.ResourceData, me
 
 		d.Set("instances", flattenDatabaseClusterInstances(cluster.Instances))
 	}
-
-	backupSchedule, err := clusters.GetBackupSchedule(DatabaseV1Client, d.Id()).Extract()
-	if err != nil {
-		return diag.Errorf("error getting backup schedule for cluster: %s: %s", d.Id(), err)
+	if _, ok := d.GetOk("backup_schedule"); ok {
+		backupSchedule, err := clusters.GetBackupSchedule(DatabaseV1Client, d.Id()).Extract()
+		if err != nil {
+			return diag.Errorf("error getting backup schedule for cluster: %s: %s", d.Id(), err)
+		}
+		if backupSchedule != nil {
+			flattened := flattenDatabaseBackupSchedule(*backupSchedule)
+			d.Set("backup_schedule", flattened)
+		} else {
+			d.Set("backup_schedule", nil)
+		}
 	}
-	if backupSchedule != nil {
-		flattened := flattenDatabaseBackupSchedule(*backupSchedule)
-		d.Set("backup_schedule", flattened)
-	} else {
-		d.Set("backup_schedule", nil)
-	}
-
 	if !d.HasChangesExcept() {
 		return nil
 	}

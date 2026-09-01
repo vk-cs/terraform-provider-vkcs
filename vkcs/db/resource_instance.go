@@ -721,15 +721,17 @@ func resourceDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("replica_of", instance.ReplicaOf.ID)
 	}
 
-	backupSchedule, err := instances.GetBackupSchedule(DatabaseV1Client, d.Id()).Extract()
-	if err != nil {
-		return diag.Errorf("error getting backup schedule for instance: %s: %s", d.Id(), err)
-	}
-	if backupSchedule != nil {
-		flattened := flattenDatabaseBackupSchedule(*backupSchedule)
-		d.Set("backup_schedule", flattened)
-	} else {
-		d.Set("backup_schedule", nil)
+	if _, ok := d.GetOk("backup_schedule"); ok {
+		backupSchedule, err := instances.GetBackupSchedule(DatabaseV1Client, d.Id()).Extract()
+		if err != nil {
+			return diag.Errorf("error getting backup schedule for instance: %s: %s", d.Id(), err)
+		}
+		if backupSchedule != nil {
+			flattened := flattenDatabaseBackupSchedule(*backupSchedule)
+			d.Set("backup_schedule", flattened)
+		} else {
+			d.Set("backup_schedule", nil)
+		}
 	}
 
 	d.Set("ip", instance.IP)
