@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.17.3 (unreleased)
+- Add opportunity to update lb allowed cidrs of vkcs_kubernetes_cluster_v2 resource
+
 #### v0.17.2
 - Update default identity endpoint
 - Add guides for Kubernetes: kubernetes_cluster_v2_getting_started and kubernetes_cluster_v2_updating.
