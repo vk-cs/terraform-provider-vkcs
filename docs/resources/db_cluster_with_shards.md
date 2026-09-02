@@ -24,7 +24,7 @@ resource "vkcs_db_cluster_with_shards" "clickhouse_cluster" {
   cloud_monitoring_enabled = true
 
   shard {
-    availability_zone = "GZ1"
+    availability_zone = "MS1"
     size              = 1
     shard_id          = "shard0"
     flavor_id         = data.vkcs_compute_flavor.basic.id
@@ -39,7 +39,7 @@ resource "vkcs_db_cluster_with_shards" "clickhouse_cluster" {
   }
 
   shard {
-    availability_zone = "GZ1"
+    availability_zone = "MS1"
     size              = 1
     shard_id          = "shard1"
     flavor_id         = data.vkcs_compute_flavor.basic.id

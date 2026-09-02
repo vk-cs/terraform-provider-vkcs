@@ -19,7 +19,7 @@ resource "vkcs_mlplatform_mlflow" "mlflow" {
   flavor_id         = data.vkcs_compute_flavor.basic.id
   jh_instance_id    = vkcs_mlplatform_jupyterhub.jupyterhub.id
   demo_mode         = true
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   boot_volume = {
     size        = 50
     volume_type = "ceph-ssd"

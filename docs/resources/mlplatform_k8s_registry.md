@@ -19,7 +19,7 @@ resource "vkcs_mlplatform_k8s_registry" "k8s_registry" {
   admin_name        = "admin"
   admin_password    = "dM8Ao21,0S264iZp"
   flavor_id         = data.vkcs_compute_flavor.basic.id
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   boot_volume = {
     volume_type = "ceph-ssd"
   }

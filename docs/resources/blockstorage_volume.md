@@ -21,7 +21,7 @@ resource "vkcs_blockstorage_volume" "data" {
     foo = "bar"
   }
   size              = 1
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   volume_type       = "ceph-ssd"
 }
 ```
@@ -33,7 +33,7 @@ resource "vkcs_blockstorage_volume" "bootable" {
   size              = 10
   volume_type       = "ceph-ssd"
   image_id          = data.vkcs_images_image.debian.id
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
 }
 ```
 

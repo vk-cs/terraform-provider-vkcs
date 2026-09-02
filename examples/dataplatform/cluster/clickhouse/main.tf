@@ -6,7 +6,7 @@ resource "vkcs_dataplatform_cluster" "example" {
 
   network_id        = vkcs_networking_network.db.id
   subnet_id         = vkcs_networking_subnet.db.id
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
 
   pod_groups = [
     {

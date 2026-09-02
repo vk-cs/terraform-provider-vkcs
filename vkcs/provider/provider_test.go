@@ -246,7 +246,7 @@ resource "vkcs_blockstorage_volume" "volume" {
 	provider = vkcs.invalid_config
 	size = 8
 	volume_type = "ssd"
-	availability_zone = "GZ1"
+	availability_zone = "MS1"
 }
 `
 
@@ -289,6 +289,6 @@ resource "vkcs_blockstorage_volume" "volume" {
 	provider = vkcs.endpoint_overrides
 	size = 8
 	volume_type = "ssd"
-	availability_zone = "GZ1"
+	availability_zone = "MS1"
 }
 `

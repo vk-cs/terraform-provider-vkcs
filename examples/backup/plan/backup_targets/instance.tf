@@ -2,7 +2,7 @@ resource "vkcs_compute_instance" "basic" {
   name = "basic-tf-example"
 
   # AZ and flavor are mandatory
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
 
   flavor_name = "Basic-1-2-20"
 

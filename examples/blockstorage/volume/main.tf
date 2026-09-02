@@ -5,6 +5,6 @@ resource "vkcs_blockstorage_volume" "data" {
     foo = "bar"
   }
   size              = 1
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   volume_type       = "ceph-ssd"
 }

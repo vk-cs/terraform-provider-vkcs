@@ -1,6 +1,6 @@
 resource "vkcs_compute_instance" "cloud_monitoring" {
   name              = "cloud-monitoring-tf-example"
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_name       = "Basic-1-2-20"
   block_device {
     source_type           = "image"
