@@ -16,7 +16,7 @@ Provides a db instance resource. This can be used to create, modify and delete d
 resource "vkcs_db_instance" "mysql" {
   name = "basic-tf-example"
   # AZ, flavor and datastore are mandatory
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_id         = data.vkcs_compute_flavor.basic.id
   datastore {
     type    = "mysql"
@@ -97,7 +97,7 @@ resource "vkcs_db_instance" "db_instance" {
 ```terraform
 resource "vkcs_db_instance" "pg_with_backup" {
   name              = "pg-with-backup-tf-example"
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_id         = data.vkcs_compute_flavor.basic.id
 
   datastore {

@@ -376,7 +376,7 @@ const testAccDatabaseClusterShrinkInitial = `
      uuid = vkcs_networking_network.base.id
    }
 	
-   availability_zone = "GZ1"
+   availability_zone = "MS1"
    depends_on = [vkcs_networking_router_interface.base]
  }
 `
@@ -399,7 +399,7 @@ var testAccDatabaseClusterShrinkUpdated = `
      uuid = vkcs_networking_network.base.id
    }
 	
-   availability_zone = "GZ1"
+   availability_zone = "MS1"
    depends_on = [vkcs_networking_router_interface.base]
  }
 `

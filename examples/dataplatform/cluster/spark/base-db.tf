@@ -5,7 +5,7 @@ data "vkcs_compute_flavor" "db" {
 resource "vkcs_db_instance" "db_instance" {
   name = "db-instance-tf-example"
 
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
 
   datastore {
     type    = "postgresql"

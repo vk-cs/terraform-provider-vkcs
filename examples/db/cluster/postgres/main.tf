@@ -1,7 +1,7 @@
 resource "vkcs_db_cluster" "pg_cluster" {
   name = "pg-cluster-tf-example"
 
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   datastore {
     type    = "postgresql"
     version = "16"

@@ -17,7 +17,7 @@ data "vkcs_networking_network" "internet" {
 
 # Create a router to connect networks
 resource "vkcs_dc_router" "router" {
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor            = "standard"
   name              = "dc-router-sprut-tf-example"
   description       = "dc_router in sprut"
