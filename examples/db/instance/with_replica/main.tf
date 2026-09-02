@@ -1,7 +1,7 @@
 resource "vkcs_db_instance" "db_instance" {
   name = "db-instance-tf-example"
 
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
 
   datastore {
     type    = "mysql"
@@ -36,7 +36,7 @@ resource "vkcs_db_instance" "db_instance" {
 resource "vkcs_db_instance" "db_replica" {
   name = "db-instance-replica"
 
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
 
   datastore {
     type    = "mysql"

@@ -3,7 +3,7 @@ resource "vkcs_mlplatform_jupyterhub" "jupyterhub" {
   admin_name        = "admin"
   admin_password    = "Password!"
   flavor_id         = data.vkcs_compute_flavor.basic.id
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   boot_volume = {
     volume_type = "ceph-ssd"
   }

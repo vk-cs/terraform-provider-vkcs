@@ -16,7 +16,7 @@ resource "vkcs_dataplatform_cluster" "trino" {
 
   network_id        = vkcs_networking_network.db.id
   subnet_id         = vkcs_networking_subnet.db.id
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
 
   # in order to create a trino in the same cluster as the iceberg
   stack_id = vkcs_dataplatform_cluster.iceberg.stack_id
