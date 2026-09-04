@@ -16,7 +16,7 @@ Provides a db cluster resource. This can be used to create, modify and delete db
 resource "vkcs_db_cluster" "pg_cluster" {
   name = "pg-cluster-tf-example"
 
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   datastore {
     type    = "postgresql"
     version = "16"
@@ -85,7 +85,7 @@ resource "vkcs_db_cluster" "mydb_cluster" {
 resource "vkcs_db_cluster" "pg_with_backup" {
   name = "pg-with-backup-tf-example"
 
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   datastore {
     type    = "postgresql"
     version = "16"
@@ -123,7 +123,7 @@ To get the cluster IP address, use the "vrrp_port_id" attribute.
 ```terraform
 resource "vkcs_db_cluster" "cluster" {
   name               = "multiaz-cluster-tf-example"
-  availability_zones = ["GZ1", "MS1"]
+  availability_zones = ["ME1", "MS1"]
   cluster_size       = 3
   flavor_id          = data.vkcs_compute_flavor.basic.id
   volume_size        = 10

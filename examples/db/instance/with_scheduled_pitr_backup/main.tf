@@ -1,6 +1,6 @@
 resource "vkcs_db_instance" "pg_with_backup" {
   name              = "pg-with-backup-tf-example"
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_id         = data.vkcs_compute_flavor.basic.id
 
   datastore {

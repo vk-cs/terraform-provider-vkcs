@@ -335,7 +335,7 @@ data "vkcs_compute_flavor" "db" {
 resource "vkcs_db_instance" "db_instance" {
   name = "db-instance-tf-example"
 
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
 
   datastore {
     type    = "postgresql"
@@ -396,7 +396,7 @@ resource "vkcs_dataplatform_cluster" "basic" {
   product_name    = "spark"
   product_version = "3.5.1"
 
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   configs = {
     settings = [
       {
@@ -506,7 +506,7 @@ resource "vkcs_dataplatform_cluster" "basic" {
   product_name    = "iceberg-metastore"
   product_version = "17.2.0"
 
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   configs = {
     maintenance = {
       start = "0 0 1 * *"
@@ -569,7 +569,7 @@ resource "vkcs_dataplatform_cluster" "basic" {
   product_name    = "iceberg-metastore"
   product_version = "17.2.0"
 
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   configs = {
     maintenance = {
       start = "0 0 1 * *"
@@ -638,7 +638,7 @@ resource "vkcs_dataplatform_cluster" "basic" {
   product_name    = "iceberg-metastore"
   product_version = "17.2.0"
 
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   configs = {
     maintenance = {
       start = "0 0 2 * *"

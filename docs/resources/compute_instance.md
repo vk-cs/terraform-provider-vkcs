@@ -18,7 +18,7 @@ Manages a compute VM instance resource.
 resource "vkcs_compute_instance" "basic" {
   name = "basic-tf-example"
   # AZ and flavor are mandatory
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_name       = "Basic-1-2-20"
   # Use block_device to specify instance disk to get full control
   # of it in the future
@@ -55,7 +55,7 @@ Use `vkcs_compute_floatingip_associate` to make the instance accessible from Int
 ```terraform
 resource "vkcs_compute_instance" "volumes_tags_externalip" {
   name              = "volumes-tags-externalip-tf-example"
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_name       = "Basic-1-2-20"
   # Use previously created volume as root device
   block_device {
@@ -92,7 +92,7 @@ resource "vkcs_compute_instance" "volumes_tags_externalip" {
 ```terraform
 resource "vkcs_compute_instance" "multiple_networks" {
   name              = "multiple-networks-tf-example"
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_name       = "Basic-1-2-20"
   block_device {
     source_type           = "image"
@@ -160,7 +160,7 @@ This feature is useful for tasks such as bootstrapping instances with custom con
 ```terraform
 resource "vkcs_compute_instance" "basic" {
   name              = "personality-tf-example"
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_name       = "Basic-1-2-20"
   block_device {
     source_type           = "image"
@@ -189,7 +189,7 @@ This feature is used to provide initialization scripts or configurations to inst
 ```terraform
 resource "vkcs_compute_instance" "basic" {
   name              = "basic-tf-example"
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_name       = "Basic-1-2-20"
   block_device {
     source_type           = "image"
@@ -225,7 +225,7 @@ script and user_data into one file
 ```terraform
 resource "vkcs_compute_instance" "cloud_monitoring" {
   name              = "cloud-monitoring-tf-example"
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_name       = "Basic-1-2-20"
   block_device {
     source_type           = "image"

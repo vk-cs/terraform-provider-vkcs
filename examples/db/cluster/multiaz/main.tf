@@ -1,6 +1,6 @@
 resource "vkcs_db_cluster" "cluster" {
   name               = "multiaz-cluster-tf-example"
-  availability_zones = ["GZ1", "MS1"]
+  availability_zones = ["ME1", "MS1"]
   cluster_size       = 3
   flavor_id          = data.vkcs_compute_flavor.basic.id
   volume_size        = 10

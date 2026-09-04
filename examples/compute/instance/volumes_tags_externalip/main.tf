@@ -1,6 +1,6 @@
 resource "vkcs_compute_instance" "volumes_tags_externalip" {
   name              = "volumes-tags-externalip-tf-example"
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_name       = "Basic-1-2-20"
   # Use previously created volume as root device
   block_device {

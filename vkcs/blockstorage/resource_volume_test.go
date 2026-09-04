@@ -276,6 +276,7 @@ resource "vkcs_compute_instance" "basic" {
   flavor_name   = "{{.FlavorName}}"
   image_id      = data.vkcs_images_image.base.id
   network_mode  = "none"
+  availability_zone = "{{.AvailabilityZone}}"
 }
 
 resource "vkcs_blockstorage_volume" "volume_1" {
@@ -375,7 +376,7 @@ resource "vkcs_blockstorage_volume" "bootable" {
   size              = 10
   volume_type       = "{{.VolumeType}}"
   image_id          = data.vkcs_images_image.base.id
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
 }
 
 resource "vkcs_compute_instance" "basic" {

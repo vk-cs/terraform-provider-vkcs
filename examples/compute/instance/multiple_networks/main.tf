@@ -1,6 +1,6 @@
 resource "vkcs_compute_instance" "multiple_networks" {
   name              = "multiple-networks-tf-example"
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_name       = "Basic-1-2-20"
   block_device {
     source_type           = "image"

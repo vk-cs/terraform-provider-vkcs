@@ -1,7 +1,7 @@
 resource "vkcs_db_instance" "mysql" {
   name = "basic-tf-example"
   # AZ, flavor and datastore are mandatory
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   flavor_id         = data.vkcs_compute_flavor.basic.id
   datastore {
     type    = "mysql"

@@ -27,7 +27,7 @@ locals {
 
 resource "vkcs_mlplatform_spark_k8s" "spark_k8s" {
   name              = "tf-example"
-  availability_zone = "GZ1"
+  availability_zone = "MS1"
   network_id        = vkcs_networking_network.app.id
   subnet_id         = vkcs_networking_subnet.app.id
 
