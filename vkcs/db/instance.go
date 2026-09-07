@@ -246,7 +246,7 @@ func databaseInstanceStateRefreshFunc(client *gophercloud.ServiceClient, instanc
 
 func checkDBMSCapabilities(neededCapabilities []instances.CapabilityOpts, actualCapabilities []instances.DatabaseCapability) (bool, error) {
 	// this is workaround for situation when capabilities are applied sequentially and not all of them are returned by api
-	if len(neededCapabilities) != len(actualCapabilities) {
+	if len(neededCapabilities) > len(actualCapabilities) {
 		return false, nil
 	}
 	for _, neededCap := range neededCapabilities {

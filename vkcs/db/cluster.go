@@ -684,18 +684,16 @@ func databaseClusterStateRefreshFunc(client *gophercloud.ServiceClient, clusterI
 		}
 
 		if capabilitiesOpts != nil && len(*capabilitiesOpts) != 0 {
-			for _, i := range c.Instances {
-				instCapabilities, err := instances.GetCapabilities(client, i.ID).Extract()
-				if err != nil {
-					return nil, "", fmt.Errorf("error getting cluster instance capabilities: %s", err)
-				}
-				capabilitiesReady, err := checkDBMSCapabilities(*capabilitiesOpts, instCapabilities)
-				if err != nil {
-					return nil, "", err
-				}
-				if !capabilitiesReady {
-					return c, string(clusterStatusBuild), nil
-				}
+			clusterCapabilities, err := clusters.GetCapabilities(client, clusterID).Extract()
+			if err != nil {
+				return nil, "", fmt.Errorf("error getting cluster capabilities: %s", err)
+			}
+			capabilitiesReady, err := checkDBMSCapabilities(*capabilitiesOpts, clusterCapabilities)
+			if err != nil {
+				return nil, "", err
+			}
+			if !capabilitiesReady {
+				return c, string(clusterStatusBuild), nil
 			}
 		}
 
