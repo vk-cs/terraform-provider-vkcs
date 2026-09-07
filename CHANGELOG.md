@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.17.3 (unreleased)
+#### v0.17.3
 - Fix backup_schedule causing update of db resources when it was not present in configuration.
 - Fix applying capabilities to db multiaz cluster
 - Add opportunity to update lb allowed cidrs of vkcs_kubernetes_cluster_v2 resource
