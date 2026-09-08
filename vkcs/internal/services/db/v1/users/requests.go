@@ -77,6 +77,16 @@ func List(client *gophercloud.ServiceClient, id string, dbmsType string) paginat
 	})
 }
 
+// Get performs request to get database user
+func Get(client *gophercloud.ServiceClient, id string, name string, dbmsType string) (r GetResult) {
+	resp, err := client.Get(userURL(client, dbmsType, id, name), &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
 // Update performs request to update database user
 func Update(client *gophercloud.ServiceClient, id string, name string, opts OptsBuilder, dbmsType string) (r UpdateResult) {
 	b, err := opts.Map()
