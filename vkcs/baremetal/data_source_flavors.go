@@ -32,6 +32,7 @@ type FlavorsDataSourceModel struct {
 
 type FlavorModel struct {
 	Name            types.String `tfsdk:"name"`
+	DisplayName     types.String `tfsdk:"display_name"`
 	CpuModel        types.String `tfsdk:"cpu_model"`
 	CpuCores        types.Int64  `tfsdk:"cpu_cores"`
 	RamSize         types.Int64  `tfsdk:"ram_size"`
@@ -58,6 +59,10 @@ func (d *FlavorsDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 						"name": schema.StringAttribute{
 							Computed:    true,
 							Description: "The name of the flavor.",
+						},
+						"display_name": schema.StringAttribute{
+							Computed:    true,
+							Description: "The project-specific display name of the flavor.",
 						},
 						"cpu_model": schema.StringAttribute{
 							Computed:    true,
@@ -143,6 +148,7 @@ func flattenFlavors(items []flavors.Flavor) (r []FlavorModel) {
 	for _, item := range items {
 		elem := FlavorModel{
 			Name:            types.StringValue(item.FlavorName),
+			DisplayName:     types.StringPointerValue(item.DisplayName),
 			CpuModel:        types.StringValue(item.CpuModel),
 			CpuCores:        types.Int64Value(item.CpuCores),
 			RamSize:         types.Int64Value(item.RamGb),
