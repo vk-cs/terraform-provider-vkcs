@@ -30,6 +30,7 @@ type FlavorDataSourceModel struct {
 	ID              types.String `tfsdk:"id"`
 	Region          types.String `tfsdk:"region"`
 	Name            types.String `tfsdk:"name"`
+	DisplayName     types.String `tfsdk:"display_name"`
 	CpuModel        types.String `tfsdk:"cpu_model"`
 	CpuCores        types.Int64  `tfsdk:"cpu_cores"`
 	RamSize         types.Int64  `tfsdk:"ram_size"`
@@ -62,8 +63,13 @@ func (d *FlavorDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 				},
 			},
 			"name": schema.StringAttribute{
+				Computed:    true,
 				Optional:    true,
 				Description: "The name of the flavor.",
+			},
+			"display_name": schema.StringAttribute{
+				Computed:    true,
+				Description: "The project-specific display name of the flavor.",
 			},
 			"region": schema.StringAttribute{
 				Optional:    true,
@@ -134,6 +140,7 @@ func (d *FlavorDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	data.ID = types.StringValue(flavor.FlavorId)
 	data.Region = types.StringValue(region)
 	data.Name = types.StringValue(flavor.FlavorName)
+	data.DisplayName = types.StringPointerValue(flavor.DisplayName)
 	data.CpuModel = types.StringValue(flavor.CpuModel)
 	data.CpuCores = types.Int64Value(flavor.CpuCores)
 	data.RamSize = types.Int64Value(flavor.RamGb)

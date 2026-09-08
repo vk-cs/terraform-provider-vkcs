@@ -27,6 +27,7 @@ output "flavor_output" {
   value = {
     id                = data.vkcs_baremetal_flavor.main.id
     name              = data.vkcs_baremetal_flavor.main.name
+    display_name      = data.vkcs_baremetal_flavor.main.display_name
     cpu_cores         = data.vkcs_baremetal_flavor.main.cpu_cores
     ram_size          = data.vkcs_baremetal_flavor.main.ram_size
     ssd_size          = data.vkcs_baremetal_flavor.main.ssd_size
@@ -57,5 +58,7 @@ output "flavor_output" {
 
 
 ## Attributes Reference
-No additional attributes are exported.
+In addition to all arguments above, the following attributes are exported:
+- `display_name` *string* &rarr;  The project-specific display name of the flavor.
+
 
