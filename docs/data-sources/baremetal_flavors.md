@@ -35,6 +35,8 @@ In addition to all arguments above, the following attributes are exported:
 
     - `cpu_model` *string* &rarr;  The CPU model.
 
+    - `display_name` *string* &rarr;  The project-specific display name of the flavor.
+
     - `hdd_size` *number* &rarr;  HDD size in gigabytes.
 
     - `name` *string* &rarr;  The name of the flavor.

@@ -23,6 +23,10 @@ type ListOpts struct {
 	HddSizeMax  *int64  `q:"hddSizeMax"`
 }
 
+type UpdateOpts struct {
+	DisplayName *string `json:"displayName,omitempty"`
+}
+
 // ToListQuery builds request params.
 func (opts *ListOpts) ToListQuery() (string, error) {
 	u, err := gophercloud.BuildQueryString(opts)
@@ -37,6 +41,16 @@ func (opts *ListOpts) ToListQuery() (string, error) {
 func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
 	resp, err := client.Get(flavorURL(client, id), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+// Update updates a baremetal flavor's project-specific display name by ID.
+func Update(client *gophercloud.ServiceClient, id string, opts UpdateOpts) (r UpdateResult) {
+	resp, err := client.Put(flavorURL(client, id), opts, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{204},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))

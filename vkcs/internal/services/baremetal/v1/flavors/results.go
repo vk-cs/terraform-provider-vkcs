@@ -25,6 +25,7 @@ type NetworkInterface struct {
 type Flavor struct {
 	FlavorId           string              `json:"flavorId"`
 	FlavorName         string              `json:"flavorName"`
+	DisplayName        *string             `json:"displayName"`
 	Status             string              `json:"status"`
 	CpuModel           string              `json:"cpuModel"`
 	CpuCores           int64               `json:"cpuCores"`
@@ -49,6 +50,11 @@ func (r commonFlavorResult) Extract() (*Flavor, error) {
 // GetResult represents result of baremetal flavor get.
 type GetResult struct {
 	commonFlavorResult
+}
+
+// UpdateResult represents result of baremetal flavor update.
+type UpdateResult struct {
+	gophercloud.ErrResult
 }
 
 // Page represents a page of baremetal flavors.
