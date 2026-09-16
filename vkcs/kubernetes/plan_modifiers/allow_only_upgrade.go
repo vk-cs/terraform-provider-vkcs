@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Masterminds/semver"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 )
 
@@ -18,7 +19,7 @@ func (m allowOnlyUpgradeModifier) Description(ctx context.Context) string {
 }
 
 func (m allowOnlyUpgradeModifier) MarkdownDescription(_ context.Context) string {
-	return "Prevents downgrading to an older version. Only upgrades to newer versions are allowed."
+	return "Prevents downgrading or skipping cluster versions. Only patch and minor upgrades are allowed."
 }
 
 func (m allowOnlyUpgradeModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
@@ -40,13 +41,35 @@ func (m allowOnlyUpgradeModifier) PlanModifyString(ctx context.Context, req plan
 	oldVersion := req.StateValue.ValueString()
 	newVersion := req.PlanValue.ValueString()
 
-	// Simple string comparison for versions with same format "v1.2.3"
-	// Because "v1.32.1" > "v1.31.4" lexicographically
-	if newVersion < oldVersion {
+	if err := canUpgradeCluster(oldVersion, newVersion); err != nil {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Kubernetes version downgrade not allowed",
-			fmt.Sprintf("Cannot downgrade from %s to %s. Only upgrades to newer versions are permitted.", oldVersion, newVersion),
+			"Invalid Kubernetes version upgrade",
+			err.Error(),
 		)
 	}
+}
+
+func canUpgradeCluster(fromVersion, toVersion string) error {
+	from, err := semver.NewVersion(fromVersion[1:])
+	if err != nil {
+		return fmt.Errorf("current cluster version '%s' is invalid", fromVersion)
+	}
+
+	to, err := semver.NewVersion(toVersion[1:])
+	if err != nil {
+		return fmt.Errorf("target cluster version '%s' is invalid", toVersion)
+	}
+
+	// Patch upgrade. Ex. from 1.31.4 => 1.31.6
+	if from.Major() == to.Major() && from.Minor() == to.Minor() && from.Patch() < to.Patch() {
+		return nil
+	}
+
+	// Minor upgrade. Ex. from 1.31.4 => 1.32.1
+	if from.Major() == to.Major() && from.Minor()+1 == to.Minor() {
+		return nil
+	}
+
+	return fmt.Errorf("cannot upgrade cluster version from '%s' to '%s': only patch and minor upgrades are allowed", fromVersion, toVersion)
 }
