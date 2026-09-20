@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.18.0 (unreleased)
+- Add ability to change availability_zone of vkcs_compute_instance without recreating the instance.
+
 #### v0.17.3
 - Fix backup_schedule causing update of db resources when it was not present in configuration.
 - Fix applying capabilities to db multiaz cluster
