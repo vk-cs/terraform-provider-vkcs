@@ -644,7 +644,7 @@
           "availability_zone": {
             "type": "TypeString",
             "optional": true,
-            "description": "The availability zone in which to create the server. Conflicts with `availability_zone_hints`. Changing this creates a new server.",
+            "description": "The availability zone in which to create the server. Changing this moves the existing server to the specified availability zone without recreating it. An `active` server is live-migrated, a `shutoff` or `shelved_offloaded` server is cold-migrated. Note that the server's volumes are not moved and should be migrated separately.",
             "computed": true
           },
           "block_device": {
