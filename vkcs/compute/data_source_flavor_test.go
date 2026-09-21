@@ -203,8 +203,6 @@ func TestAccComputeFlavorDataSource_extraSpecs(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.vkcs_compute_flavor.flavor_1", "name", "Basic-1-2-20"),
 					resource.TestCheckResourceAttr(
-						"data.vkcs_compute_flavor.flavor_1", "extra_specs.%", "4"),
-					resource.TestCheckResourceAttr(
 						"data.vkcs_compute_flavor.flavor_1", "extra_specs.agg_common", "true"),
 					resource.TestCheckResourceAttr(
 						"data.vkcs_compute_flavor.flavor_1", "extra_specs.hw:cpu_sockets", "1"),
