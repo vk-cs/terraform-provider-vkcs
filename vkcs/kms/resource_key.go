@@ -1,0 +1,37 @@
+package kms
+
+import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+func ResourceKey() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: resourceKeyCreateContext,
+		ReadContext:   resourceKeyReadContext,
+		UpdateContext: resourceKeyUpdateContext,
+		DeleteContext: resourceKeyDeleteContext,
+	}
+}
+
+func resourceKeyCreateContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	diags := make([]diag.Diagnostic, 0)
+	return diags
+}
+
+func resourceKeyReadContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	diags := make([]diag.Diagnostic, 0)
+	return diags
+}
+
+func resourceKeyUpdateContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	diags := make([]diag.Diagnostic, 0)
+	return diags
+}
+
+func resourceKeyDeleteContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	diags := make([]diag.Diagnostic, 0)
+	return diags
+}

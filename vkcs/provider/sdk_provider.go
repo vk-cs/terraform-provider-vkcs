@@ -14,6 +14,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/modutil"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/keymanager"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/lb"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
@@ -223,6 +224,13 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_region":                        regions.DataSourceVkcsRegion(),
 			"vkcs_regions":                       regions.DataSourceVkcsRegions(),
 			"vkcs_publicdns_zone":                publicdns.DataSourcePublicDNSZone(),
+			"vkcs_kms_key_decrypt":               kms.DataSourceKeyDecrypt(),
+			"vkcs_kms_key_encrypt":               kms.DataSourceKeyDecrypt(),
+			"vkcs_kms_key":                       kms.DataSourceKey(),
+			"vkcs_kms_keys_list":                 kms.DataSourceKeysList(),
+			"vkcs_kms_secret":                    kms.DataSourceSecret(),
+			"vkcs_kms_secrets_detailed_list":     kms.DataSourceSecretsDetailedList(),
+			"vkcs_kms_secrets_list":              kms.DataSourceSecretsList(),
 		},
 
 		ResourcesMap: map[string]*sdkschema.Resource{
@@ -276,6 +284,8 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_kubernetes_node_group":              kubernetes.ResourceKubernetesNodeGroup(),
 			"vkcs_publicdns_zone":                     publicdns.ResourcePublicDNSZone(),
 			"vkcs_publicdns_record":                   publicdns.ResourcePublicDNSRecord(),
+			"vkcs_kms_key":                            kms.ResourceKey(),
+			"vkcs_kms_secret":                         kms.ResourceSecret(),
 		},
 	}
 
