@@ -18,8 +18,63 @@ resource "vkcs_baremetal_server" "server" {
   availability_zone = "GZ1"
   flavor_id         = data.vkcs_baremetal_flavor.minimal.id
   os_id             = data.vkcs_baremetal_os.ubuntu.id
+  monitoring        = true
   key_pair          = vkcs_compute_keypair.generated_key.name
-  raid_type         = "RAID1"
+
+  storage_layout {
+    disk {
+      id   = "system-0"
+      type = "SSD"
+      size = 447
+
+      partition {
+        mount = "/boot/efi"
+        fs    = "vfat"
+        size  = "512MiB"
+      }
+
+      partition {
+        mount = "/"
+        fs    = "ext4"
+        size  = "50GiB"
+      }
+
+      partition {
+        mount = ""
+        fs    = "ext4"
+        size  = "60GiB"
+      }
+
+      partition {
+        fs   = "swap"
+        size = "512MiB"
+      }
+    }
+
+    disk {
+      id   = "data-0"
+      type = "HDD"
+      size = 18500
+    }
+
+    disk {
+      id   = "data-1"
+      type = "HDD"
+      size = 18500
+    }
+
+    raid {
+      id      = "raid-data"
+      type    = "raid1"
+      members = ["data-0", "data-1"]
+
+      partition {
+        mount = "/data"
+        fs    = "xfs"
+        size  = "10000GiB"
+      }
+    }
+  }
 
   user_data = <<EOF
     #cloud-config
@@ -57,8 +112,8 @@ resource "vkcs_baremetal_server" "server_bond" {
   availability_zone = "GZ1"
   flavor_id         = data.vkcs_baremetal_flavor.minimal.id
   os_id             = data.vkcs_baremetal_os.ubuntu.id
+  monitoring        = true
   key_pair          = vkcs_compute_keypair.generated_key.name
-  raid_type         = "RAID1"
 
   bond {
     name            = "bond0"
@@ -84,8 +139,8 @@ resource "vkcs_baremetal_server" "server_bond" {
   availability_zone = "GZ1"
   flavor_id         = data.vkcs_baremetal_flavor.minimal.id
   os_id             = data.vkcs_baremetal_os.ubuntu.id
+  monitoring        = true
   key_pair          = vkcs_compute_keypair.generated_key.name
-  raid_type         = "RAID1"
 
   bond {
     name            = "bond0"
@@ -117,8 +172,8 @@ resource "vkcs_baremetal_server" "server_vlan" {
   availability_zone = "GZ1"
   flavor_id         = data.vkcs_baremetal_flavor.minimal.id
   os_id             = data.vkcs_baremetal_os.ubuntu.id
+  monitoring        = true
   key_pair          = vkcs_compute_keypair.generated_key.name
-  raid_type         = "RAID1"
 
   nic {
     name = "nic0"
@@ -160,6 +215,8 @@ resource "vkcs_baremetal_server" "server_vlan" {
 
         - `subnet_id` optional *string* &rarr;  ID of the subnet.
 
+- `monitoring` optional *boolean* &rarr;  Whether the monitoring is actively enabled.
+
 - `nic` optional &rarr;  Physical network interfaces.
     - `name` **required** *string* &rarr;  Interface name (e.g. nic0, eno1). Acts as unique identifier.
 
@@ -174,9 +231,36 @@ resource "vkcs_baremetal_server" "server_vlan" {
 
 - `os_id` optional *string* &rarr;  Set os id.
 
-- `raid_type` optional *string* &rarr;  Parameter to determine should RAID be used during image flashing.
-
 - `region` optional *string* &rarr;  The region to fetch the bare metal server from, defaults to the provider's region.
+
+- `storage_layout` optional &rarr;  Storage layout of the bare metal server: disks carry their own partitions, raids are assembled from whole disks. Changing this triggers reprovisioning.
+    - `disk` optional &rarr;  Logical disks and their partition layout.
+        - `id` **required** *string* &rarr;  Logical disk identifier.
+
+        - `size` **required** *number* &rarr;  Declared disk size in whole GiB, taken from the flavor. Used to pick a real disk within the size tolerance.
+
+        - `type` **required** *string* &rarr;  Storage medium of the disk: SSD, HDD or NVME (case-insensitive). Must match the flavor disk type.
+
+        - `partition` optional &rarr;  Ordered partitions of the device; order determines placement on disk.
+            - `fs` **required** *string* &rarr;  Filesystem type: ext4, xfs, vfat or swap (case-insensitive). Swap requires an empty mount.
+
+            - `size` **required** *string* &rarr;  Partition size with an IEC suffix, for example 512MiB or 50GiB.
+
+            - `mount` optional *string* &rarr;  Mount point of the partition. Empty or omitted means the partition is created but not mounted.
+
+    - `raid` optional &rarr;  RAID arrays assembled from whole disks; partitions are cut on top of the md device.
+        - `id` **required** *string* &rarr;  RAID identifier.
+
+        - `members` **required** *string* &rarr;  Disk identifiers the RAID is assembled from. All members must share the type and the declared size.
+
+        - `type` **required** *string* &rarr;  RAID type: raid1 (case-insensitive).
+
+        - `partition` optional &rarr;  Ordered partitions of the device; order determines placement on disk.
+            - `fs` **required** *string* &rarr;  Filesystem type: ext4, xfs, vfat or swap (case-insensitive). Swap requires an empty mount.
+
+            - `size` **required** *string* &rarr;  Partition size with an IEC suffix, for example 512MiB or 50GiB.
+
+            - `mount` optional *string* &rarr;  Mount point of the partition. Empty or omitted means the partition is created but not mounted.
 
 - `user_data` optional *string* &rarr;  Provide the cloud-init user-data payload.
 

@@ -26,12 +26,14 @@ output "server_output" {
     image_name = data.vkcs_baremetal_server.server.image_name
     os_type    = data.vkcs_baremetal_server.server.os_type
 
-    raid_type = data.vkcs_baremetal_server.server.raid_type
-    flavor_id = data.vkcs_baremetal_server.server.flavor_id
+    monitoring = data.vkcs_baremetal_server.server.monitoring
+    flavor_id  = data.vkcs_baremetal_server.server.flavor_id
 
     target_boot_order = data.vkcs_baremetal_server.server.target_boot_order
 
     local_disks_info = data.vkcs_baremetal_server.server.local_disks_info
+
+    storage_layout = data.vkcs_baremetal_server.server.storage_layout
   }
 }
 

@@ -23,7 +23,6 @@ func TestManualAccBareMetalServerDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.vkcs_baremetal_server.basic", "availability_zone", "ME1"),
 					resource.TestCheckResourceAttr("data.vkcs_baremetal_server.basic", "image_source", "PUBLIC"),
-					resource.TestCheckResourceAttr("data.vkcs_baremetal_server.basic", "raid_type", "RAID1"),
 				),
 			},
 		},

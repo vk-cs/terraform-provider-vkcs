@@ -3,6 +3,7 @@ package servers
 import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/pagination"
+	v1 "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/baremetal/v1"
 	paginationutil "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/pagination"
 )
 
@@ -43,10 +44,11 @@ type Server struct {
 	IsLocked          bool                 `json:"isLocked"`
 	TargetBootOrder   []*BootOrderListItem `json:"targetBootOrder"`
 	ImageUsername     *string              `json:"imageUsername"`
-	RaidType          *string              `json:"raidType"`
+	Monitoring        *bool                `json:"monitoring"`
 	FlavorId          *string              `json:"flavorId"`
 	ProvisionProgress *int                 `json:"provisionProgress"`
 	LocalDisksInfo    []*LocalDiskInfo     `json:"localDisksInfo"`
+	StorageLayout     *v1.StorageLayout    `json:"storageLayout"`
 }
 
 type commonServerResult struct {

@@ -3,6 +3,7 @@ package baremetal
 import (
 	"context"
 	"sort"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	v1 "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/baremetal/v1"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/baremetal/v1/servers"
 )
 
@@ -25,25 +27,26 @@ type ServerDataSource struct {
 }
 
 type ServerDataSourceModel struct {
-	ID               types.String           `tfsdk:"id"`
-	Region           types.String           `tfsdk:"region"`
-	Name             types.String           `tfsdk:"name"`
-	AvailabilityZone types.String           `tfsdk:"availability_zone"`
-	CpuCores         types.List             `tfsdk:"cpu_cores"`
-	CpuTypes         types.List             `tfsdk:"cpu_types"`
-	IsLocked         types.Bool             `tfsdk:"is_locked"`
-	LocalDiskSizes   types.List             `tfsdk:"local_disk_sizes"`
-	RamMegabytes     types.Int64            `tfsdk:"ram_megabytes"`
-	PowerState       types.String           `tfsdk:"power_state"`
-	Tags             types.List             `tfsdk:"tags"`
-	ImageID          types.String           `tfsdk:"image_id"`
-	ImageName        types.String           `tfsdk:"image_name"`
-	OsType           types.String           `tfsdk:"os_type"`
-	RaidType         types.String           `tfsdk:"raid_type"`
-	Status           types.String           `tfsdk:"status"`
-	FlavorID         types.String           `tfsdk:"flavor_id"`
-	TargetBootOrder  []TargetBootOrderModel `tfsdk:"target_boot_order"`
-	LocalDisksInfo   []LocalDiskInfoModel   `tfsdk:"local_disks_info"`
+	ID               types.String              `tfsdk:"id"`
+	Region           types.String              `tfsdk:"region"`
+	Name             types.String              `tfsdk:"name"`
+	AvailabilityZone types.String              `tfsdk:"availability_zone"`
+	CpuCores         types.List                `tfsdk:"cpu_cores"`
+	CpuTypes         types.List                `tfsdk:"cpu_types"`
+	IsLocked         types.Bool                `tfsdk:"is_locked"`
+	LocalDiskSizes   types.List                `tfsdk:"local_disk_sizes"`
+	RamMegabytes     types.Int64               `tfsdk:"ram_megabytes"`
+	PowerState       types.String              `tfsdk:"power_state"`
+	Tags             types.List                `tfsdk:"tags"`
+	ImageID          types.String              `tfsdk:"image_id"`
+	ImageName        types.String              `tfsdk:"image_name"`
+	OsType           types.String              `tfsdk:"os_type"`
+	Monitoring       types.Bool                `tfsdk:"monitoring"`
+	StorageLayout    *ServerStorageLayoutModel `tfsdk:"storage_layout"`
+	Status           types.String              `tfsdk:"status"`
+	FlavorID         types.String              `tfsdk:"flavor_id"`
+	TargetBootOrder  []TargetBootOrderModel    `tfsdk:"target_boot_order"`
+	LocalDisksInfo   []LocalDiskInfoModel      `tfsdk:"local_disks_info"`
 }
 
 type TargetBootOrderModel struct {
@@ -55,6 +58,31 @@ type LocalDiskInfoModel struct {
 	Size  types.Int64  `tfsdk:"size"`
 	Type  types.String `tfsdk:"type"`
 	Model types.String `tfsdk:"model"`
+}
+
+type ServerStorageLayoutModel struct {
+	Disks []ServerStorageDiskModel `tfsdk:"disk"`
+	Raids []ServerStorageRaidModel `tfsdk:"raid"`
+}
+
+type ServerStorageDiskModel struct {
+	Id         types.String                  `tfsdk:"id"`
+	Type       types.String                  `tfsdk:"type"`
+	Size       types.Int64                   `tfsdk:"size"`
+	Partitions []ServerStoragePartitionModel `tfsdk:"partition"`
+}
+
+type ServerStorageRaidModel struct {
+	Id         types.String                  `tfsdk:"id"`
+	Type       types.String                  `tfsdk:"type"`
+	Members    types.List                    `tfsdk:"members"`
+	Partitions []ServerStoragePartitionModel `tfsdk:"partition"`
+}
+
+type ServerStoragePartitionModel struct {
+	Mount types.String `tfsdk:"mount"`
+	Fs    types.String `tfsdk:"fs"`
+	Size  types.String `tfsdk:"size"`
 }
 
 func (s *ServerDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -125,10 +153,11 @@ func (s *ServerDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 				Computed:    true,
 				Description: "Server Operation System type.",
 			},
-			"raid_type": schema.StringAttribute{
+			"monitoring": schema.BoolAttribute{
 				Computed:    true,
-				Description: "Server raid type.",
+				Description: "Whether the monitoring is actively enabled.",
 			},
+			"storage_layout": serverStorageLayoutAttribute(),
 			"status": schema.StringAttribute{
 				Computed:    true,
 				Description: "Server status.",
@@ -226,9 +255,10 @@ func (s *ServerDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	data.ImageID = types.StringPointerValue(server.ImageId)
 	data.ImageName = types.StringPointerValue(server.ImageName)
 	data.OsType = types.StringPointerValue(server.OsType)
-	data.RaidType = types.StringPointerValue(server.RaidType)
+	data.Monitoring = types.BoolPointerValue(server.Monitoring)
 	data.Status = types.StringValue(string(server.Status))
 	data.FlavorID = types.StringPointerValue(server.FlavorId)
+	data.StorageLayout = flattenServerStorageLayout(ctx, server.StorageLayout)
 
 	var d diag.Diagnostics
 	data.CpuCores, d = types.ListValueFrom(ctx, types.Int64Type, server.CpuCores)
@@ -278,4 +308,140 @@ func flattenLocalDiskInfo(info []*servers.LocalDiskInfo) []LocalDiskInfoModel {
 	})
 
 	return r
+}
+
+func serverStorageLayoutAttribute() schema.SingleNestedAttribute {
+	return schema.SingleNestedAttribute{
+		Computed: true,
+		Description: "Storage layout of the bare metal server: the user-submitted document, " +
+			"as applied by the last successful provision.",
+		Attributes: map[string]schema.Attribute{
+			"disk": schema.ListNestedAttribute{
+				Computed:    true,
+				Description: "Logical disks and their partition layout.",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Computed:    true,
+							Description: "Logical disk identifier.",
+						},
+						"type": schema.StringAttribute{
+							Computed:    true,
+							Description: "Storage medium of the disk.",
+						},
+						"size": schema.Int64Attribute{
+							Computed:    true,
+							Description: "Declared disk size in whole GiB.",
+						},
+						"partition": serverPartitionList(),
+					},
+				},
+			},
+			"raid": schema.ListNestedAttribute{
+				Computed:    true,
+				Description: "RAID arrays assembled from whole disks.",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Computed:    true,
+							Description: "RAID identifier.",
+						},
+						"type": schema.StringAttribute{
+							Computed:    true,
+							Description: "RAID type.",
+						},
+						"members": schema.ListAttribute{
+							Computed:    true,
+							ElementType: types.StringType,
+							Description: "Disk identifiers the RAID is assembled from.",
+						},
+						"partition": serverPartitionList(),
+					},
+				},
+			},
+		},
+	}
+}
+
+func serverPartitionList() schema.ListNestedAttribute {
+	return schema.ListNestedAttribute{
+		Computed:    true,
+		Description: "Ordered partitions of the device.",
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"mount": schema.StringAttribute{
+					Computed:    true,
+					Description: "Mount point of the partition. Empty means the partition is not mounted.",
+				},
+				"fs": schema.StringAttribute{
+					Computed:    true,
+					Description: "Filesystem type.",
+				},
+				"size": schema.StringAttribute{
+					Computed:    true,
+					Description: "Partition size with an IEC suffix.",
+				},
+			},
+		},
+	}
+}
+
+// flattenServerStorageLayout converts the API response into the data source
+// model. GetServer returns the user-submitted document, so a null layout
+// stays null.
+func flattenServerStorageLayout(ctx context.Context, layout *v1.StorageLayout) *ServerStorageLayoutModel {
+	if layout == nil {
+		return nil
+	}
+
+	model := &ServerStorageLayoutModel{
+		Disks: make([]ServerStorageDiskModel, 0, len(layout.Disks)),
+	}
+	for _, disk := range layout.Disks {
+		if disk == nil {
+			continue
+		}
+		model.Disks = append(model.Disks, ServerStorageDiskModel{
+			Id:         types.StringValue(disk.Id),
+			Type:       types.StringValue(strings.ToLower(disk.Type)),
+			Size:       types.Int64Value(disk.SizeGib),
+			Partitions: flattenServerPartitions(disk.Partitions),
+		})
+	}
+	for _, raid := range layout.Raids {
+		if raid == nil {
+			continue
+		}
+		members, diags := types.ListValueFrom(ctx, types.StringType, raid.Members)
+		_ = diags // string conversion cannot fail
+		model.Raids = append(model.Raids, ServerStorageRaidModel{
+			Id:         types.StringValue(raid.Id),
+			Type:       types.StringValue(strings.ToLower(raid.Type)),
+			Members:    members,
+			Partitions: flattenServerPartitions(raid.Partitions),
+		})
+	}
+	return model
+}
+
+func flattenServerPartitions(partitions []*v1.StoragePartition) []ServerStoragePartitionModel {
+	if len(partitions) == 0 {
+		return nil
+	}
+	models := make([]ServerStoragePartitionModel, 0, len(partitions))
+	for _, p := range partitions {
+		if p == nil {
+			continue
+		}
+		mount := types.StringNull()
+		if p.Mount != nil {
+			mount = types.StringValue(*p.Mount)
+		}
+		models = append(models, ServerStoragePartitionModel{
+			Mount: mount,
+			Fs:    types.StringValue(strings.ToLower(p.Fstype)),
+			Size:  types.StringValue(p.Size),
+		})
+	}
+	return models
 }
