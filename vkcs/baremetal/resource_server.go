@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"slices"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
@@ -60,18 +61,19 @@ type ServerResource struct {
 }
 
 type ServerResourceModel struct {
-	ID               types.String   `tfsdk:"id"`
-	Name             types.String   `tfsdk:"name"`
-	Region           types.String   `tfsdk:"region"`
-	AvailabilityZone types.String   `tfsdk:"availability_zone"`
-	FlavorID         types.String   `tfsdk:"flavor_id"`
-	KeyPair          types.String   `tfsdk:"key_pair"`
-	UserData         types.String   `tfsdk:"user_data"`
-	OsID             types.String   `tfsdk:"os_id"`
-	RaidType         types.String   `tfsdk:"raid_type"`
-	Nics             []NicModel     `tfsdk:"nic"`
-	Bonds            []BondModel    `tfsdk:"bond"`
-	Timeouts         timeouts.Value `tfsdk:"timeouts"`
+	ID               types.String        `tfsdk:"id"`
+	Name             types.String        `tfsdk:"name"`
+	Region           types.String        `tfsdk:"region"`
+	AvailabilityZone types.String        `tfsdk:"availability_zone"`
+	FlavorID         types.String        `tfsdk:"flavor_id"`
+	KeyPair          types.String        `tfsdk:"key_pair"`
+	UserData         types.String        `tfsdk:"user_data"`
+	OsID             types.String        `tfsdk:"os_id"`
+	Monitoring       types.Bool          `tfsdk:"monitoring"`
+	StorageLayout    *StorageLayoutModel `tfsdk:"storage_layout"`
+	Nics             []NicModel          `tfsdk:"nic"`
+	Bonds            []BondModel         `tfsdk:"bond"`
+	Timeouts         timeouts.Value      `tfsdk:"timeouts"`
 }
 
 type NicModel struct {
@@ -90,6 +92,34 @@ type VlanModel struct {
 	Native    types.Bool   `tfsdk:"native"`
 	NetworkId types.String `tfsdk:"network_id"`
 	SubnetId  types.String `tfsdk:"subnet_id"`
+}
+
+type StorageLayoutModel struct {
+	Disks []StorageDiskModel `tfsdk:"disk"`
+	Raids []StorageRaidModel `tfsdk:"raid"`
+}
+
+type StorageDiskModel struct {
+	Id         types.String            `tfsdk:"id"`
+	Type       types.String            `tfsdk:"type"`
+	Size       types.Int64             `tfsdk:"size"`
+	Partitions []StoragePartitionModel `tfsdk:"partition"`
+}
+
+type StorageRaidModel struct {
+	Id         types.String            `tfsdk:"id"`
+	Type       types.String            `tfsdk:"type"`
+	Members    types.List              `tfsdk:"members"`
+	Partitions []StoragePartitionModel `tfsdk:"partition"`
+}
+
+// StoragePartitionModel carries its own mount and filesystem type. A null or
+// empty mount means the partition is created but not mounted; both
+// representations round-trip through the API as supplied.
+type StoragePartitionModel struct {
+	Mount types.String `tfsdk:"mount"`
+	Fs    types.String `tfsdk:"fs"`
+	Size  types.String `tfsdk:"size"`
 }
 
 func (r *ServerResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -136,9 +166,9 @@ func (r *ServerResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Optional:    true,
 				Description: "Set os id.",
 			},
-			"raid_type": schema.StringAttribute{
+			"monitoring": schema.BoolAttribute{
 				Optional:    true,
-				Description: "Parameter to determine should RAID be used during image flashing.",
+				Description: "Whether the monitoring is actively enabled.",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,
@@ -148,6 +178,57 @@ func (r *ServerResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			}),
 		},
 		Blocks: map[string]schema.Block{
+			"storage_layout": schema.SingleNestedBlock{
+				Description: "Storage layout of the bare metal server: disks carry their own partitions, " +
+					"raids are assembled from whole disks. Changing this triggers reprovisioning.",
+				Blocks: map[string]schema.Block{
+					"disk": schema.ListNestedBlock{
+						Description: "Logical disks and their partition layout.",
+						NestedObject: schema.NestedBlockObject{
+							Attributes: map[string]schema.Attribute{
+								"id": schema.StringAttribute{
+									Required:    true,
+									Description: "Logical disk identifier.",
+								},
+								"type": schema.StringAttribute{
+									Required:    true,
+									Description: "Storage medium of the disk: SSD, HDD or NVME (case-insensitive). Must match the flavor disk type.",
+								},
+								"size": schema.Int64Attribute{
+									Required:    true,
+									Description: "Declared disk size in whole GiB, taken from the flavor. Used to pick a real disk within the size tolerance.",
+								},
+							},
+							Blocks: map[string]schema.Block{
+								"partition": partitionBlock(),
+							},
+						},
+					},
+					"raid": schema.ListNestedBlock{
+						Description: "RAID arrays assembled from whole disks; partitions are cut on top of the md device.",
+						NestedObject: schema.NestedBlockObject{
+							Attributes: map[string]schema.Attribute{
+								"id": schema.StringAttribute{
+									Required:    true,
+									Description: "RAID identifier.",
+								},
+								"type": schema.StringAttribute{
+									Required:    true,
+									Description: "RAID type: raid1 (case-insensitive).",
+								},
+								"members": schema.ListAttribute{
+									Required:    true,
+									ElementType: types.StringType,
+									Description: "Disk identifiers the RAID is assembled from. All members must share the type and the declared size.",
+								},
+							},
+							Blocks: map[string]schema.Block{
+								"partition": partitionBlock(),
+							},
+						},
+					},
+				},
+			},
 			"nic": schema.ListNestedBlock{
 				Description: "Physical network interfaces.",
 				NestedObject: schema.NestedBlockObject{
@@ -248,6 +329,14 @@ func (r *ServerResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	// Enum-like layout values are case-insensitive: normalize the plan to the
+	// canonical lowercase form so any spelling compares equal against the
+	// state (flatten canonicalizes the same way).
+	if plan.StorageLayout != nil {
+		plan.StorageLayout = flattenStorageLayout(ctx, expandStorageLayout(ctx, plan.StorageLayout))
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("storage_layout"), plan.StorageLayout)...)
 	}
 
 	region := plan.Region.ValueString()
@@ -367,8 +456,9 @@ func (r *ServerResource) Read(ctx context.Context, req resource.ReadRequest, res
 	state.Region = types.StringValue(region)
 	state.AvailabilityZone = types.StringValue(server.AvailabilityZone)
 	state.FlavorID = types.StringPointerValue(server.FlavorId)
-	state.RaidType = types.StringPointerValue(server.RaidType)
+	state.Monitoring = types.BoolPointerValue(server.Monitoring)
 	state.OsID = types.StringPointerValue(server.ImageId)
+	state.StorageLayout = flattenStorageLayout(ctx, server.StorageLayout)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -528,9 +618,10 @@ func action(plan, state ServerResourceModel) func(context.Context, ServerResourc
 
 func needProvision(plan, state ServerResourceModel) bool {
 	return !plan.OsID.Equal(state.OsID) ||
-		!plan.RaidType.Equal(state.RaidType) ||
 		!plan.UserData.Equal(state.UserData) ||
-		!plan.KeyPair.Equal(state.KeyPair)
+		!plan.KeyPair.Equal(state.KeyPair) ||
+		!plan.Monitoring.Equal(state.Monitoring) ||
+		!equalStorageLayout(plan.StorageLayout, state.StorageLayout)
 }
 
 func needUpdateNetworkConfig(plan, state ServerResourceModel) bool {
@@ -627,11 +718,12 @@ func updateNetworkConfig(ctx context.Context, data ServerResourceModel, client *
 func defineProvisionFields(ctx context.Context, data ServerResourceModel) v1.ProvisionFields {
 	fields := v1.ProvisionFields{
 		ProvisionType:     v1.ProvisionTypeNOOS,
-		RaidType:          data.RaidType.ValueStringPointer(),
 		KeypairName:       data.KeyPair.ValueString(),
 		UserData:          encodeUserData(data.UserData), // base64 encode
+		Monitoring:        data.Monitoring.ValueBoolPointer(),
 		NetworkInterfaces: flattenNetworkInterfaces(data.Nics),
 		Bonds:             flattenBonds(ctx, data.Bonds),
+		StorageLayout:     expandStorageLayout(ctx, data.StorageLayout),
 	}
 
 	if !data.OsID.IsNull() && !data.OsID.IsUnknown() {
@@ -814,4 +906,215 @@ func equalStringLists(a, b types.List) bool {
 	slices.Sort(bValues)
 
 	return slices.Equal(aValues, bValues)
+}
+
+func partitionBlock() schema.ListNestedBlock {
+	return schema.ListNestedBlock{
+		Description: "Ordered partitions of the device; order determines placement on disk.",
+		NestedObject: schema.NestedBlockObject{
+			Attributes: map[string]schema.Attribute{
+				"mount": schema.StringAttribute{
+					Optional: true,
+					Description: "Mount point of the partition. Empty or omitted means the partition is " +
+						"created but not mounted.",
+				},
+				"fs": schema.StringAttribute{
+					Required:    true,
+					Description: "Filesystem type: ext4, xfs, vfat or swap (case-insensitive). Swap requires an empty mount.",
+				},
+				"size": schema.StringAttribute{
+					Required:    true,
+					Description: "Partition size with an IEC suffix, for example 512MiB or 50GiB.",
+				},
+			},
+		},
+	}
+}
+
+// expandStorageLayout converts the Terraform model into the API request
+// payload. A null mount is omitted, an explicitly empty one is sent as "".
+func expandStorageLayout(ctx context.Context, model *StorageLayoutModel) *v1.StorageLayout {
+	if model == nil {
+		return nil
+	}
+
+	layout := &v1.StorageLayout{
+		Disks: make([]*v1.StorageDisk, 0, len(model.Disks)),
+	}
+	for _, disk := range model.Disks {
+		layout.Disks = append(layout.Disks, &v1.StorageDisk{
+			Id:         disk.Id.ValueString(),
+			Type:       strings.ToUpper(disk.Type.ValueString()),
+			SizeGib:    disk.Size.ValueInt64(),
+			Partitions: expandPartitions(disk.Partitions),
+		})
+	}
+	if len(model.Raids) > 0 {
+		layout.Raids = make([]*v1.StorageRaid, 0, len(model.Raids))
+	}
+	for _, raid := range model.Raids {
+		var members []string
+		raid.Members.ElementsAs(ctx, &members, false)
+		layout.Raids = append(layout.Raids, &v1.StorageRaid{
+			Id:         raid.Id.ValueString(),
+			Type:       strings.ToUpper(raid.Type.ValueString()),
+			Members:    members,
+			Partitions: expandPartitions(raid.Partitions),
+		})
+	}
+	return layout
+}
+
+func expandPartitions(models []StoragePartitionModel) []*v1.StoragePartition {
+	if len(models) == 0 {
+		return nil
+	}
+	partitions := make([]*v1.StoragePartition, 0, len(models))
+	for _, p := range models {
+		var mount *string
+		if !p.Mount.IsNull() {
+			value := p.Mount.ValueString()
+			mount = &value
+		}
+		partitions = append(partitions, &v1.StoragePartition{
+			Mount:  mount,
+			Fstype: strings.ToUpper(p.Fs.ValueString()),
+			Size:   p.Size.ValueString(),
+		})
+	}
+	return partitions
+}
+
+// flattenStorageLayout converts the API response into the Terraform model.
+// GetServer returns the user-submitted document, so a null layout stays null.
+func flattenStorageLayout(ctx context.Context, layout *v1.StorageLayout) *StorageLayoutModel {
+	if layout == nil {
+		return nil
+	}
+
+	model := &StorageLayoutModel{
+		Disks: make([]StorageDiskModel, 0, len(layout.Disks)),
+	}
+	for _, disk := range layout.Disks {
+		if disk == nil {
+			continue
+		}
+		model.Disks = append(model.Disks, StorageDiskModel{
+			Id:         types.StringValue(disk.Id),
+			Type:       types.StringValue(strings.ToLower(disk.Type)),
+			Size:       types.Int64Value(disk.SizeGib),
+			Partitions: flattenPartitions(disk.Partitions),
+		})
+	}
+	for _, raid := range layout.Raids {
+		if raid == nil {
+			continue
+		}
+		members, diags := types.ListValueFrom(ctx, types.StringType, raid.Members)
+		_ = diags // string conversion cannot fail
+		model.Raids = append(model.Raids, StorageRaidModel{
+			Id:         types.StringValue(raid.Id),
+			Type:       types.StringValue(strings.ToLower(raid.Type)),
+			Members:    members,
+			Partitions: flattenPartitions(raid.Partitions),
+		})
+	}
+	return model
+}
+
+func flattenPartitions(partitions []*v1.StoragePartition) []StoragePartitionModel {
+	if len(partitions) == 0 {
+		return nil
+	}
+	models := make([]StoragePartitionModel, 0, len(partitions))
+	for _, p := range partitions {
+		if p == nil {
+			continue
+		}
+		mount := types.StringNull()
+		if p.Mount != nil {
+			mount = types.StringValue(*p.Mount)
+		}
+		models = append(models, StoragePartitionModel{
+			Mount: mount,
+			Fs:    types.StringValue(strings.ToLower(p.Fstype)),
+			Size:  types.StringValue(p.Size),
+		})
+	}
+	return models
+}
+
+// equalStorageLayout compares two layout models for the reprovision trigger.
+// Disks and raids are unordered (matched by id); partition order is
+// significant — it determines placement on the device.
+func equalStorageLayout(a, b *StorageLayoutModel) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+
+	disks := slices.Clone(a.Disks)
+	otherDisks := slices.Clone(b.Disks)
+	slices.SortFunc(disks, func(x, y StorageDiskModel) int {
+		return cmp.Compare(x.Id.ValueString(), y.Id.ValueString())
+	})
+	slices.SortFunc(otherDisks, func(x, y StorageDiskModel) int {
+		return cmp.Compare(x.Id.ValueString(), y.Id.ValueString())
+	})
+	if !equalDisks(disks, otherDisks) {
+		return false
+	}
+
+	raids := slices.Clone(a.Raids)
+	otherRaids := slices.Clone(b.Raids)
+	slices.SortFunc(raids, func(x, y StorageRaidModel) int {
+		return cmp.Compare(x.Id.ValueString(), y.Id.ValueString())
+	})
+	slices.SortFunc(otherRaids, func(x, y StorageRaidModel) int {
+		return cmp.Compare(x.Id.ValueString(), y.Id.ValueString())
+	})
+	return equalRaids(raids, otherRaids)
+}
+
+func equalDisks(a, b []StorageDiskModel) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if !a[i].Id.Equal(b[i].Id) ||
+			!strings.EqualFold(a[i].Type.ValueString(), b[i].Type.ValueString()) ||
+			!a[i].Size.Equal(b[i].Size) ||
+			!equalPartitions(a[i].Partitions, b[i].Partitions) {
+			return false
+		}
+	}
+	return true
+}
+
+func equalRaids(a, b []StorageRaidModel) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if !a[i].Id.Equal(b[i].Id) ||
+			!strings.EqualFold(a[i].Type.ValueString(), b[i].Type.ValueString()) ||
+			!a[i].Members.Equal(b[i].Members) ||
+			!equalPartitions(a[i].Partitions, b[i].Partitions) {
+			return false
+		}
+	}
+	return true
+}
+
+func equalPartitions(a, b []StoragePartitionModel) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if !a[i].Mount.Equal(b[i].Mount) ||
+			!strings.EqualFold(a[i].Fs.ValueString(), b[i].Fs.ValueString()) ||
+			!a[i].Size.Equal(b[i].Size) {
+			return false
+		}
+	}
+	return true
 }

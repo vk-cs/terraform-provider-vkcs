@@ -41,12 +41,14 @@ output "server_output" {
     image_name = data.vkcs_baremetal_server.server.image_name
     os_type    = data.vkcs_baremetal_server.server.os_type
 
-    raid_type = data.vkcs_baremetal_server.server.raid_type
-    flavor_id = data.vkcs_baremetal_server.server.flavor_id
+    monitoring = data.vkcs_baremetal_server.server.monitoring
+    flavor_id  = data.vkcs_baremetal_server.server.flavor_id
 
     target_boot_order = data.vkcs_baremetal_server.server.target_boot_order
 
     local_disks_info = data.vkcs_baremetal_server.server.local_disks_info
+
+    storage_layout = data.vkcs_baremetal_server.server.storage_layout
   }
 }
 
@@ -103,17 +105,51 @@ In addition to all arguments above, the following attributes are exported:
     - `type` *string* &rarr;  The type of the disk.
 
 
+- `monitoring` *boolean* &rarr;  Whether the monitoring is actively enabled.
+
 - `name` *string* &rarr;  The name of the server.
 
 - `os_type` *string* &rarr;  Server Operation System type.
 
 - `power_state` *string* &rarr;  Server power state.
 
-- `raid_type` *string* &rarr;  Server raid type.
-
 - `ram_megabytes` *number* &rarr;  Server memory size in megabytes.
 
 - `status` *string* &rarr;  Server status.
+
+- `storage_layout`  &rarr;  Storage layout of the bare metal server: the user-submitted document, as applied by the last successful provision.
+    - `disk`  *list* &rarr;  Logical disks and their partition layout.
+        - `id` *string* &rarr;  Logical disk identifier.
+
+        - `partition`  *list* &rarr;  Ordered partitions of the device.
+            - `fs` *string* &rarr;  Filesystem type.
+
+            - `mount` *string* &rarr;  Mount point of the partition. Empty means the partition is not mounted.
+
+            - `size` *string* &rarr;  Partition size with an IEC suffix.
+
+
+        - `size` *number* &rarr;  Declared disk size in whole GiB.
+
+        - `type` *string* &rarr;  Storage medium of the disk.
+
+
+    - `raid`  *list* &rarr;  RAID arrays assembled from whole disks.
+        - `id` *string* &rarr;  RAID identifier.
+
+        - `members` *string* &rarr;  Disk identifiers the RAID is assembled from.
+
+        - `partition`  *list* &rarr;  Ordered partitions of the device.
+            - `fs` *string* &rarr;  Filesystem type.
+
+            - `mount` *string* &rarr;  Mount point of the partition. Empty means the partition is not mounted.
+
+            - `size` *string* &rarr;  Partition size with an IEC suffix.
+
+
+        - `type` *string* &rarr;  RAID type.
+
+
 
 - `tags` *string* &rarr;  Server tags.
 

@@ -3,8 +3,63 @@ resource "vkcs_baremetal_server" "server" {
   availability_zone = "GZ1"
   flavor_id         = data.vkcs_baremetal_flavor.minimal.id
   os_id             = data.vkcs_baremetal_os.ubuntu.id
+  monitoring        = true
   key_pair          = vkcs_compute_keypair.generated_key.name
-  raid_type         = "RAID1"
+
+  storage_layout {
+    disk {
+      id   = "system-0"
+      type = "SSD"
+      size = 447
+
+      partition {
+        mount = "/boot/efi"
+        fs    = "vfat"
+        size  = "512MiB"
+      }
+
+      partition {
+        mount = "/"
+        fs    = "ext4"
+        size  = "50GiB"
+      }
+
+      partition {
+        mount = ""
+        fs    = "ext4"
+        size  = "60GiB"
+      }
+
+      partition {
+        fs   = "swap"
+        size = "512MiB"
+      }
+    }
+
+    disk {
+      id   = "data-0"
+      type = "HDD"
+      size = 18500
+    }
+
+    disk {
+      id   = "data-1"
+      type = "HDD"
+      size = 18500
+    }
+
+    raid {
+      id      = "raid-data"
+      type    = "raid1"
+      members = ["data-0", "data-1"]
+
+      partition {
+        mount = "/data"
+        fs    = "xfs"
+        size  = "10000GiB"
+      }
+    }
+  }
 
   user_data = <<EOF
     #cloud-config

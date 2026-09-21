@@ -3,8 +3,8 @@ resource "vkcs_baremetal_server" "server_vlan" {
   availability_zone = "GZ1"
   flavor_id         = data.vkcs_baremetal_flavor.minimal.id
   os_id             = data.vkcs_baremetal_os.ubuntu.id
+  monitoring        = true
   key_pair          = vkcs_compute_keypair.generated_key.name
-  raid_type         = "RAID1"
 
   nic {
     name = "nic0"
