@@ -6,6 +6,10 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+
+#### v0.18.0 (unreleased)
+- Added KMS resources and datasources for secrets and keys.
+
 #### v0.17.3
 - Fix backup_schedule causing update of db resources when it was not present in configuration.
 - Fix applying capabilities to db multiaz cluster
