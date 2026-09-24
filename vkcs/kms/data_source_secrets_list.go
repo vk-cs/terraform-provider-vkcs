@@ -10,6 +10,12 @@ import (
 func DataSourceSecretsList() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceSecretsListReadContext,
+		Schema: map[string]*schema.Schema{
+			"query": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+		},
 	}
 }
 

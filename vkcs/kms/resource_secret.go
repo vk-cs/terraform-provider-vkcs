@@ -13,6 +13,34 @@ func ResourceSecret() *schema.Resource {
 		ReadContext:   resourceSecretReadContext,
 		UpdateContext: resourceSecretUpdateContext,
 		DeleteContext: resourceSecretDeleteContext,
+
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultTimeout),
+		},
+
+		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"path": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"deletion_protection": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"data_json": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+		},
 	}
 }
 

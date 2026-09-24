@@ -10,6 +10,12 @@ import (
 func DataSourceKey() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceKeyReadContext,
+		Schema: map[string]*schema.Schema{
+			"key": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+		},
 	}
 }
 

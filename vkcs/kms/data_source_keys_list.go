@@ -9,7 +9,12 @@ import (
 
 func DataSourceKeysList() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceKeysListReadContext,
+		ReadContext: dataSourceKeysListReadContext, Schema: map[string]*schema.Schema{
+			"query": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+		},
 	}
 }
 

@@ -10,6 +10,16 @@ import (
 func DataSourceKeyDecrypt() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceKeyDecryptReadContext,
+		Schema: map[string]*schema.Schema{
+			"key": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"ciphertext": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+		},
 	}
 }
 

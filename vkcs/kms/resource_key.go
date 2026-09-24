@@ -13,6 +13,20 @@ func ResourceKey() *schema.Resource {
 		ReadContext:   resourceKeyReadContext,
 		UpdateContext: resourceKeyUpdateContext,
 		DeleteContext: resourceKeyDeleteContext,
+		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"type": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"deletion_protection": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+		},
 	}
 }
 
