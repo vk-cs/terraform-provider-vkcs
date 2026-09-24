@@ -42,6 +42,10 @@ func newCDNV1(client *gophercloud.ProviderClient, opts clientOpts) (*gophercloud
 	return initClientOptsNew(client, opts, "cdn")
 }
 
+func newKMSV1(client *gophercloud.ProviderClient, opts clientOpts) (*gophercloud.ServiceClient, error) {
+	return initClientOptsNew(client, opts, "kms")
+}
+
 func newComputeV2(client *gophercloud.ProviderClient, opts clientOpts) (*gophercloud.ServiceClient, error) {
 	c, err := initClientOptsNew(client, opts, "compute")
 	if err != nil {

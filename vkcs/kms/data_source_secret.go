@@ -10,16 +10,7 @@ import (
 func DataSourceSecret() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceSecretReadContext,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"version": {
-				Type:     schema.TypeInt,
-				Optional: true,
-			},
-		},
+		Schema:      map[string]*schema.Schema{},
 	}
 }
 

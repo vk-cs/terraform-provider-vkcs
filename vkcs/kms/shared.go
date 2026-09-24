@@ -1,6 +1,9 @@
 package kms
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type SecretStatus = string
 
@@ -19,3 +22,5 @@ const (
 const (
 	defaultTimeout = 1 * time.Minute
 )
+
+var ErrResponseDecodeFail = errors.New("failed to decode response")
