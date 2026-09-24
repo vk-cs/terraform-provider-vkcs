@@ -6,6 +6,10 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+
+#### v0.18.1 (unreleased)
+- Fix updating private DNS domain for `vkcs_networking_network`.
+
 #### v0.18.0
 - Add ability to change availability_zone of vkcs_compute_instance without recreating the instance.
 - Fix Kubernetes cluster version comparison to handle multi-digit components correctly and restrict upgrades to patch and minor only
