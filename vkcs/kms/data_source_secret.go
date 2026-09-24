@@ -82,7 +82,7 @@ func dataSourceSecretReadContext(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if secret.Data.Metadata.DeletionTime != nil {
-		err = d.Set("created_time", secret.Data.Metadata.DeletionTime.String())
+		err = d.Set("deletion_time", secret.Data.Metadata.DeletionTime.String())
 		if err != nil {
 			return diag.Errorf("Error setting data_json: %s", err)
 		}
