@@ -20,6 +20,5 @@ func DataSourceSecretsDetailedList() *schema.Resource {
 }
 
 func dataSourceSecretsDetailedListReadContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	diags := make([]diag.Diagnostic, 0)
-	return diags
+	return nil
 }

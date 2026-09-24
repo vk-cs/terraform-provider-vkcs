@@ -12,6 +12,7 @@ import (
 const (
 	defaultEnvPrefix                     = "OS_"
 	defaultIdentityEndpoint              = "https://msk.cloud.vk.ru/infra/identity/v3/"
+	defaultKMSEndpoint                   = "https://msk.cloud.vk.ru/kms/user/v1"
 	defaulUserDomainName                 = "users"
 	defaulRegionName                     = "RegionOne"
 	defaultContainerInfraAPIMicroVersion = "1.33"

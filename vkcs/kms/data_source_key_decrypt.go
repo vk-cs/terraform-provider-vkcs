@@ -24,6 +24,5 @@ func DataSourceKeyDecrypt() *schema.Resource {
 }
 
 func dataSourceKeyDecryptReadContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	diags := make([]diag.Diagnostic, 0)
-	return diags
+	return nil
 }

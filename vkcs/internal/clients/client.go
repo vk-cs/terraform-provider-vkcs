@@ -44,7 +44,7 @@ func newCDNV1(client *gophercloud.ProviderClient, opts clientOpts) (*gophercloud
 
 func newKMSV1(client *gophercloud.ProviderClient, opts clientOpts) (*gophercloud.ServiceClient, error) {
 	if opts.EndpointOverride == "" {
-		opts.EndpointOverride = "https://msk.cloud.vk.ru/kms/user/v1"
+		opts.EndpointOverride = defaultKMSEndpoint
 	}
 	opts.EndpointOverride = gophercloud.NormalizeURL(opts.EndpointOverride)
 

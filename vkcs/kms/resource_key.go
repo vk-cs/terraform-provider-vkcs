@@ -31,21 +31,17 @@ func ResourceKey() *schema.Resource {
 }
 
 func resourceKeyCreateContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	diags := make([]diag.Diagnostic, 0)
-	return diags
+	return nil
 }
 
 func resourceKeyReadContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	diags := make([]diag.Diagnostic, 0)
-	return diags
+	return nil
 }
 
 func resourceKeyUpdateContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	diags := make([]diag.Diagnostic, 0)
-	return diags
+	return nil
 }
 
 func resourceKeyDeleteContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	diags := make([]diag.Diagnostic, 0)
-	return diags
+	return nil
 }

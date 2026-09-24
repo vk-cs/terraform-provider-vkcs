@@ -1,6 +1,10 @@
 package secrets
 
-import "github.com/gophercloud/gophercloud"
+import (
+	"time"
+
+	"github.com/gophercloud/gophercloud"
+)
 
 // GetResult is the result of a get request.
 // Call its Extract method to interpret a result as a ListSecrets.
@@ -10,7 +14,12 @@ type GetResult struct {
 
 type Secret struct {
 	Data struct {
-		Data map[string]string `json:"data"`
+		Data     map[string]string `json:"data"`
+		Metadata struct {
+			CreatedTime  time.Time  `json:"created_time"`
+			DeletionTime *time.Time `json:"deletion_time"`
+			Version      int        `json:"version"`
+		} `json:"metadata"`
 	} `json:"data"`
 }
 
