@@ -194,6 +194,11 @@ func SDKProviderBase() *sdkschema.Provider {
 							Optional:    true,
 							Description: "Templater API custom endpoint.",
 						},
+						"kms": {
+							Type:        sdkschema.TypeString,
+							Optional:    true,
+							Description: "KMS API custom endpoint.",
+						},
 					},
 				},
 			},
@@ -326,6 +331,7 @@ func SDKProviderBase() *sdkschema.Provider {
 				"public-dns":             m["public_dns"],
 				"shared-filesystem":      m["shared_filesystem"],
 				"templater":              m["templater"],
+				"kms":                    m["kms"],
 			}
 		}
 

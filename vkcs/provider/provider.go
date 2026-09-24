@@ -29,9 +29,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
 )
 
-var (
-	_ provider.Provider = (*vkcsProvider)(nil)
-)
+var _ provider.Provider = (*vkcsProvider)(nil)
 
 // Provider is a helper function to simplify provider server and testing implementation.
 func Provider() provider.Provider {
@@ -79,6 +77,7 @@ type vkcsProviderEndpointOverridesModel struct {
 	PublicDNS            types.String `tfsdk:"public_dns"`
 	SharedFilesystem     types.String `tfsdk:"shared_filesystem"`
 	Templater            types.String `tfsdk:"templater"`
+	KMS                  types.String `tfsdk:"kms"`
 }
 
 // Metadata returns the provider type name.
@@ -220,6 +219,10 @@ func (p *vkcsProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp 
 							Optional:    true,
 							Description: "Templater API custom endpoint.",
 						},
+						"kms": schema.StringAttribute{
+							Optional:    true,
+							Description: "KMS API custom endpoint.",
+						},
 					},
 				},
 			},
@@ -270,6 +273,7 @@ func (p *vkcsProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 			"public-dns":             eo.PublicDNS.ValueString(),
 			"shared-filesystem":      eo.SharedFilesystem.ValueString(),
 			"templater":              eo.Templater.ValueString(),
+			"kms":                    eo.KMS.ValueString(),
 		}
 	}
 

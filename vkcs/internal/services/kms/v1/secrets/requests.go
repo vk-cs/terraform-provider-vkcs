@@ -6,7 +6,7 @@ import (
 )
 
 func List(client *gophercloud.ServiceClient) (r ListResult) {
-	resp, err := client.Get(keysURL(client), &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Get(secretsURL(client), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
@@ -14,11 +14,11 @@ func List(client *gophercloud.ServiceClient) (r ListResult) {
 	return
 }
 
-// func Get(client *gophercloud.ServiceClient, name string) (r GetResult) {
-// 	resp, err := client.Get(keyURL(client, name), &r.Body, &gophercloud.RequestOpts{
-// 		OkCodes: []int{200},
-// 	})
-// 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
-// 	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
-// 	return
-// }
+func Get(client *gophercloud.ServiceClient, name string) (r GetResult) {
+	resp, err := client.Get(secretURL(client, name), &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}

@@ -92,6 +92,8 @@ provider "vkcs" {
 
     - `templater` optional *string* &rarr;  Templater API custom endpoint.
 
+    - `kms` optional *string* &rarr;  KMS API custom endpoint.
+
 - `password` optional sensitive *string* &rarr;  Password to login with.
 
 - `project_id` optional *string* &rarr;  The ID of Project to login with.

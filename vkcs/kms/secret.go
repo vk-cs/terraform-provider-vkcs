@@ -12,3 +12,11 @@ func listSecrets(client *gophercloud.ServiceClient) ([]string, error) {
 	}
 	return s, nil
 }
+
+func getSecret(client *gophercloud.ServiceClient, name string) (secrets.Secret, error) {
+	s, err := secrets.Get(client, name).Extract()
+	if err != nil {
+		return secrets.Secret{}, err
+	}
+	return s, nil
+}
