@@ -1,0 +1,1 @@
+terraform import vkcs_baremetal_server.server 57b4d7f1-3acc-4843-b811-51df18badd9f
