@@ -18,6 +18,11 @@ type User struct {
 	Databases []databases.Database
 }
 
+// UserRespOpts is used to get user response
+type UserRespOpts struct {
+	User *User `json:"user"`
+}
+
 // Custom type implementation of gophercloud/users.UserPage
 type Page struct {
 	pagination.LinkedPageBase
@@ -55,6 +60,15 @@ type commonResult struct {
 	gophercloud.ErrResult
 }
 
+type commonUserResult struct {
+	gophercloud.Result
+}
+
+// GetResult represents result of database user get
+type GetResult struct {
+	commonUserResult
+}
+
 // CreateResult represents result of database user create
 type CreateResult struct {
 	commonResult
@@ -78,4 +92,27 @@ type DeleteDatabaseResult struct {
 // DeleteResult represents result of database user delete
 type DeleteResult struct {
 	commonResult
+}
+
+// Extract is used to extract result into user response struct.
+func (r GetResult) Extract() (*User, error) {
+	var u *UserRespOpts
+	if err := r.ExtractInto(&u); err != nil {
+		return nil, err
+	}
+	if u != nil && u.User != nil {
+		return u.User, nil
+	}
+
+	// Fallback for APIs that return users array even for GET.
+	var list struct {
+		Users []User `json:"users"`
+	}
+	if err := r.ExtractInto(&list); err != nil {
+		return nil, err
+	}
+	if len(list.Users) > 0 {
+		return &list.Users[0], nil
+	}
+	return nil, nil
 }

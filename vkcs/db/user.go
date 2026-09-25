@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	db "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/databases"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/db/v1/users"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func extractDatabaseUserDatabases(v []string) ([]db.CreateOpts, error) {
@@ -29,44 +30,42 @@ func flattenDatabaseUserDatabases(v []db.Database) []string {
 
 func databaseUserStateRefreshFunc(client *gophercloud.ServiceClient, dbmsID string, userName string, dbmsType string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		pages, err := users.List(client, dbmsID, dbmsType).AllPages()
-		if err != nil {
-			return nil, "", fmt.Errorf("unable to retrieve vkcs database users: %s", err)
-		}
-
-		allUsers, err := users.ExtractUsers(pages)
-		if err != nil {
-			return nil, "", fmt.Errorf("unable to extract vkcs database users: %s", err)
-		}
-
-		for _, v := range allUsers {
-			if v.Name == userName {
-				return v, "ACTIVE", nil
+		result := users.Get(client, dbmsID, userName, dbmsType)
+		if result.Err != nil {
+			if errutil.IsNotFound(result.Err) {
+				return nil, "BUILD", nil
 			}
+			return nil, "", fmt.Errorf("unable to retrieve vkcs database user: %s", result.Err)
 		}
 
-		return nil, "BUILD", nil
+		userObj, err := result.Extract()
+		if err != nil {
+			return nil, "", fmt.Errorf("unable to extract vkcs database user: %s", err)
+		}
+		if userObj == nil {
+			return nil, "BUILD", nil
+		}
+
+		return userObj, "ACTIVE", nil
 	}
 }
 
 func databaseUserExists(client *gophercloud.ServiceClient, dbmsID string, userName string, dbmsType string) (bool, *users.User, error) {
-	var err error
-
-	pages, err := users.List(client, dbmsID, dbmsType).AllPages()
-	if err != nil {
-		return false, nil, err
-	}
-
-	allUsers, err := users.ExtractUsers(pages)
-	if err != nil {
-		return false, nil, err
-	}
-
-	for _, v := range allUsers {
-		if v.Name == userName {
-			return true, &v, nil
+	result := users.Get(client, dbmsID, userName, dbmsType)
+	if result.Err != nil {
+		if errutil.IsNotFound(result.Err) {
+			return false, nil, nil
 		}
+		return false, nil, result.Err
 	}
 
-	return false, nil, err
+	userObj, err := result.Extract()
+	if err != nil {
+		return false, nil, err
+	}
+	if userObj == nil {
+		return false, nil, nil
+	}
+
+	return true, userObj, nil
 }
