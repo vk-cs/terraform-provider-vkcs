@@ -84,3 +84,29 @@ func TestResourceNetworkingSecGroupRuleV2ProtocolNumber(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
 }
+
+func TestSuppressSecGroupRuleProtocolDiffs(t *testing.T) {
+	cases := []struct {
+		old, new string
+		expected bool
+	}{
+		{"tcp", "6", true},
+		{"6", "tcp", true},
+		{"udp", "17", true},
+		{"icmp", "1", true},
+		{"tcp", "tcp", true},
+		{"6", "6", true},
+		{"41", "41", true},
+		{"", "", true},
+		{"tcp", "17", false},
+		{"udp", "tcp", false},
+		{"", "6", false},
+		{"tcp", "", false},
+	}
+
+	for _, c := range cases {
+		actual := suppressSecGroupRuleProtocolDiffs("protocol", c.old, c.new, nil)
+
+		assert.Equal(t, c.expected, actual, "old: %q, new: %q", c.old, c.new)
+	}
+}
