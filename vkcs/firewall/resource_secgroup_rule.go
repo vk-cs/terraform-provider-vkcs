@@ -83,11 +83,12 @@ func ResourceNetworkingSecGroupRule() *schema.Resource {
 			},
 
 			"protocol": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
-				Description: "The layer 4 protocol type, valid values are following. Changing this creates a new security group rule. This is required if you want to specify a port range.\n" +
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				DiffSuppressFunc: suppressSecGroupRuleProtocolDiffs,
+				Description: "The layer 4 protocol type, valid values are following or an IP protocol number. Changing this creates a new security group rule. This is required if you want to specify a port range.\n" +
 					"  * __tcp__\n" +
 					"  * __udp__\n" +
 					"  * __icmp__\n" +
@@ -232,7 +233,9 @@ func resourceNetworkingSecGroupRuleRead(ctx context.Context, d *schema.ResourceD
 	d.Set("description", sgRule.Description)
 	d.Set("direction", sgRule.Direction)
 	d.Set("ethertype", sgRule.EtherType)
-	d.Set("protocol", sgRule.Protocol)
+	if protocol := d.Get("protocol").(string); !secgroupRuleProtocolsEqual(protocol, sgRule.Protocol) {
+		d.Set("protocol", sgRule.Protocol)
+	}
 	d.Set("port_range_min", sgRule.PortRangeMin)
 	d.Set("port_range_max", sgRule.PortRangeMax)
 	d.Set("remote_group_id", sgRule.RemoteGroupID)

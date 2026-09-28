@@ -7,6 +7,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	irules "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/firewall/v2/rules"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/networking"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
@@ -95,4 +96,39 @@ func resourceNetworkingSecGroupRuleProtocol(protocol string) (rules.RuleProtocol
 	}
 
 	return "", fmt.Errorf("unknown protocol for vkcs_networking_secgroup_rule: %s", protocol)
+}
+
+var secgroupRuleProtocolNumbers = map[string]string{
+	string(rules.ProtocolICMP):    "1",
+	string(rules.ProtocolIGMP):    "2",
+	string(rules.ProtocolTCP):     "6",
+	string(rules.ProtocolEGP):     "8",
+	string(rules.ProtocolUDP):     "17",
+	string(rules.ProtocolDCCP):    "33",
+	string(rules.ProtocolRSVP):    "46",
+	string(rules.ProtocolGRE):     "47",
+	string(rules.ProtocolESP):     "50",
+	string(rules.ProtocolAH):      "51",
+	string(rules.ProtocolOSPF):    "89",
+	string(rules.ProtocolVRRP):    "112",
+	string(rules.ProtocolPGM):     "113",
+	string(rules.ProtocolSCTP):    "132",
+	string(rules.ProtocolUDPLite): "136",
+}
+
+func secgroupRuleProtocolNumber(protocol string) string {
+	if number, ok := secgroupRuleProtocolNumbers[protocol]; ok {
+		return number
+	}
+
+	return protocol
+}
+
+// Sprut returns a protocol name even if the rule was created with a protocol number ("6" -> "tcp").
+func secgroupRuleProtocolsEqual(a, b string) bool {
+	return secgroupRuleProtocolNumber(a) == secgroupRuleProtocolNumber(b)
+}
+
+func suppressSecGroupRuleProtocolDiffs(_, old, new string, _ *schema.ResourceData) bool {
+	return secgroupRuleProtocolsEqual(old, new)
 }
