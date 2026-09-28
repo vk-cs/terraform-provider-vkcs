@@ -6,6 +6,16 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.19.0
+- Add resource vkcs_baremetal_server
+- Add resource vkcs_baremetal_flavor_display_name
+- Add datasource vkcs_baremetal_server
+- Add datasource vkcs_baremetal_flavor
+- Add datasource vkcs_baremetal_flavors
+- Add datasource vkcs_baremetal_os
+- Add datasource vkcs_baremetal_oses
+- Add baremetal argument to the provider to override the Bare Metal API endpoint
+
 #### v0.18.0
 - Add ability to change availability_zone of vkcs_compute_instance without recreating the instance.
 - Fix Kubernetes cluster version comparison to handle multi-digit components correctly and restrict upgrades to patch and minor only

@@ -26,6 +26,5 @@ const testAccOSDataSourceBasic = `
 data "vkcs_baremetal_os" "basic" {
   name      = "ubuntu"
   version   = "22.04"
-  raid_type = "no_raid"
 }
 `

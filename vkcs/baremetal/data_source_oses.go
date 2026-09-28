@@ -31,9 +31,8 @@ type OSesDataSourceModel struct {
 }
 
 type OSModel struct {
-	Name     types.String `tfsdk:"name"`
-	Version  types.String `tfsdk:"version"`
-	RaidType types.String `tfsdk:"raid_type"`
+	Name    types.String `tfsdk:"name"`
+	Version types.String `tfsdk:"version"`
 }
 
 func (d *OSesDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -58,10 +57,6 @@ func (d *OSesDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 						"version": schema.StringAttribute{
 							Computed:    true,
 							Description: "The version of the OS.",
-						},
-						"raid_type": schema.StringAttribute{
-							Computed:    true,
-							Description: "The raid type of the OS.",
 						},
 					},
 				},
@@ -121,10 +116,12 @@ func (d *OSesDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 
 func flattenImages(items []images.Image) (r []OSModel) {
 	for _, item := range items {
+		if item.RaidType == "RAID1" {
+			continue
+		}
 		r = append(r, OSModel{
-			Name:     types.StringValue(item.OsType),
-			Version:  types.StringValue(item.OsVersion),
-			RaidType: types.StringValue(item.RaidType),
+			Name:    types.StringValue(item.OsType),
+			Version: types.StringValue(item.OsVersion),
 		})
 	}
 

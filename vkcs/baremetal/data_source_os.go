@@ -28,11 +28,10 @@ type OSDataSource struct {
 }
 
 type OSDataSourceModel struct {
-	ID       types.String `tfsdk:"id"`
-	Name     types.String `tfsdk:"name"`
-	Region   types.String `tfsdk:"region"`
-	Version  types.String `tfsdk:"version"`
-	RaidType types.String `tfsdk:"raid_type"`
+	ID      types.String `tfsdk:"id"`
+	Name    types.String `tfsdk:"name"`
+	Region  types.String `tfsdk:"region"`
+	Version types.String `tfsdk:"version"`
 }
 
 func (d *OSDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -50,7 +49,6 @@ func (d *OSDataSource) Schema(ctx context.Context, req datasource.SchemaRequest,
 					stringvalidator.ConflictsWith(path.Expressions{
 						path.MatchRoot("name"),
 						path.MatchRoot("version"),
-						path.MatchRoot("raid_type"),
 					}...),
 				},
 			},
@@ -65,10 +63,6 @@ func (d *OSDataSource) Schema(ctx context.Context, req datasource.SchemaRequest,
 			"version": schema.StringAttribute{
 				Optional:    true,
 				Description: "The version of the OS.",
-			},
-			"raid_type": schema.StringAttribute{
-				Optional:    true,
-				Description: "The raid type of the OS.",
 			},
 		},
 		Description: "Use this data source to get information about a VKCS baremetal OS.",
@@ -112,7 +106,6 @@ func (d *OSDataSource) Read(ctx context.Context, req datasource.ReadRequest, res
 	data.Region = types.StringValue(region)
 	data.Name = types.StringValue(image.OsType)
 	data.Version = types.StringValue(image.OsVersion)
-	data.RaidType = types.StringValue(image.RaidType)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -150,6 +143,9 @@ func getImage(client *gophercloud.ServiceClient, data OSDataSourceModel) (*image
 
 func filterImages(data OSDataSourceModel, items []images.Image) (r []images.Image) {
 	for _, item := range items {
+		if item.RaidType == "RAID1" {
+			continue
+		}
 		if imageMatches(data, item) {
 			r = append(r, item)
 		}
@@ -166,11 +162,6 @@ func imageMatches(data OSDataSourceModel, item images.Image) bool {
 	}
 	if !data.Version.IsNull() && !data.Version.IsUnknown() {
 		if !strings.EqualFold(item.OsVersion, data.Version.ValueString()) {
-			return false
-		}
-	}
-	if !data.RaidType.IsNull() && !data.RaidType.IsUnknown() {
-		if !strings.EqualFold(item.RaidType, data.RaidType.ValueString()) {
 			return false
 		}
 	}

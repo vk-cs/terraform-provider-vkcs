@@ -31,8 +31,6 @@ In addition to all arguments above, the following attributes are exported:
 - `oses`  *list* &rarr;  Available Baremetal OSes.
     - `name` *string* &rarr;  The name of the OS.
 
-    - `raid_type` *string* &rarr;  The raid type of the OS.
-
     - `version` *string* &rarr;  The version of the OS.
 
 
