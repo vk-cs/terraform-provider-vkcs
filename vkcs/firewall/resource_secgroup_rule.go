@@ -233,9 +233,7 @@ func resourceNetworkingSecGroupRuleRead(ctx context.Context, d *schema.ResourceD
 	d.Set("description", sgRule.Description)
 	d.Set("direction", sgRule.Direction)
 	d.Set("ethertype", sgRule.EtherType)
-	if protocol := d.Get("protocol").(string); !secgroupRuleProtocolsEqual(protocol, sgRule.Protocol) {
-		d.Set("protocol", sgRule.Protocol)
-	}
+	d.Set("protocol", sgRule.Protocol)
 	d.Set("port_range_min", sgRule.PortRangeMin)
 	d.Set("port_range_max", sgRule.PortRangeMax)
 	d.Set("remote_group_id", sgRule.RemoteGroupID)

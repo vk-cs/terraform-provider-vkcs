@@ -125,10 +125,6 @@ func secgroupRuleProtocolNumber(protocol string) string {
 }
 
 // Sprut returns a protocol name even if the rule was created with a protocol number ("6" -> "tcp").
-func secgroupRuleProtocolsEqual(a, b string) bool {
-	return secgroupRuleProtocolNumber(a) == secgroupRuleProtocolNumber(b)
-}
-
 func suppressSecGroupRuleProtocolDiffs(_, old, new string, _ *schema.ResourceData) bool {
-	return secgroupRuleProtocolsEqual(old, new)
+	return secgroupRuleProtocolNumber(old) == secgroupRuleProtocolNumber(new)
 }

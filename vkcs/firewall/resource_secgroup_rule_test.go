@@ -165,9 +165,9 @@ func TestAccFirewallSecGroupRule_protocolNumbers(t *testing.T) {
 					testAccFirewallCheckSecGroupRuleExists(
 						"vkcs_networking_secgroup_rule.secgroup_rule_udp", &secgroupRuleUDP),
 					resource.TestCheckResourceAttr(
-						"vkcs_networking_secgroup_rule.secgroup_rule_tcp", "protocol", "6"),
+						"vkcs_networking_secgroup_rule.secgroup_rule_tcp", "protocol", "tcp"),
 					resource.TestCheckResourceAttr(
-						"vkcs_networking_secgroup_rule.secgroup_rule_udp", "protocol", "17"),
+						"vkcs_networking_secgroup_rule.secgroup_rule_udp", "protocol", "udp"),
 				),
 			},
 		},
