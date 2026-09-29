@@ -1,0 +1,27 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Manages the project-specific display name of an existing VKCS bare metal flavor.
+---
+
+# {{.Name}}
+
+{{ .Description }} The flavor itself is not created or deleted.
+
+## Example Usage
+
+{{tffile "examples/baremetal/flavor/resource/main.tf"}}
+
+{{ .SchemaMarkdown }}
+
+Destroying the resource clears the project-specific display name. The flavor is not deleted.
+
+## Import
+
+An existing flavor can be imported using its ID:
+
+```shell
+terraform import vkcs_baremetal_flavor_display_name.main <flavor-id>
+```
