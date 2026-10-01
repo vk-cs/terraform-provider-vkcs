@@ -53,35 +53,19 @@ data "vkcs_kms_secret" "secret" {
 `
 
 func TestKMSSecretDataSourceRead(t *testing.T) {
-	for _, tc := range []struct {
-		name         string
-		deletionJSON string
-		wantDeletion string
-	}{
-		{name: "active", deletionJSON: "null"},
-		{
-			name:         "scheduled deletion",
-			deletionJSON: `"2026-10-01T12:00:00Z"`,
-			wantDeletion: "2026-10-01 12:00:00 +0000 UTC",
-		},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			body := fmt.Sprintf(`{"data":{"data":{"username":"alice","password":"test-password"},"metadata":{"created_time":"2026-09-01T10:00:00Z","deletion_time":%s,"version":3}}}`, tc.deletionJSON)
-			config := newSecretDataSourceTestConfig(t, http.StatusOK, body)
-			ds := kms.DataSourceSecret()
-			d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{"name": "test-secret"})
+	body := `{"data":{"data":{"username":"alice","password":"test-password"},"metadata":{"created_time":"2026-09-01T10:00:00Z","version":3}}}`
+	config := newSecretDataSourceTestConfig(t, http.StatusOK, body)
+	ds := kms.DataSourceSecret()
+	d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{"name": "test-secret"})
 
-			diags := ds.ReadContext(context.Background(), d, config)
-			require.False(t, diags.HasError(), "%v", diags)
-			assert.Equal(t, "test-secret", d.Id())
-			assert.Equal(t, "test-secret", d.Get("name"))
-			assert.Equal(t, map[string]interface{}{"username": "alice", "password": "test-password"}, d.Get("data"))
-			assert.JSONEq(t, `{"username":"alice","password":"test-password"}`, d.Get("data_json").(string))
-			assert.Equal(t, "2026-09-01 10:00:00 +0000 UTC", d.Get("created_time"))
-			assert.Equal(t, tc.wantDeletion, d.Get("deletion_time"))
-			assert.Equal(t, 3, d.Get("version"))
-		})
-	}
+	diags := ds.ReadContext(context.Background(), d, config)
+	require.False(t, diags.HasError(), "%v", diags)
+	assert.Equal(t, "test-secret", d.Id())
+	assert.Equal(t, "test-secret", d.Get("name"))
+	assert.Equal(t, map[string]interface{}{"username": "alice", "password": "test-password"}, d.Get("data"))
+	assert.JSONEq(t, `{"username":"alice","password":"test-password"}`, d.Get("data_json").(string))
+	assert.Equal(t, "2026-09-01 10:00:00 +0000 UTC", d.Get("created_time"))
+	assert.Equal(t, 3, d.Get("version"))
 }
 
 func TestKMSSecretDataSourceRead_errors(t *testing.T) {

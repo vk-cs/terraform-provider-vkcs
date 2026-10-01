@@ -34,6 +34,14 @@ func ResourceSecret() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"created_time": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"version": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -76,6 +84,16 @@ func resourceSecretReadContext(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("Error setting data_json: %s", err)
 	}
 
+	err = d.Set("created_time", secret.Data.Metadata.CreatedTime.String())
+	if err != nil {
+		return diag.Errorf("Error setting data_json: %s", err)
+	}
+
+	err = d.Set("version", secret.Data.Metadata.Version)
+	if err != nil {
+		return diag.Errorf("Error setting data_json: %s", err)
+	}
+
 	return nil
 }
 
@@ -84,5 +102,20 @@ func resourceSecretUpdateContext(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceSecretDeleteContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	config := meta.(clients.Config)
+	kmsV1Client, err := config.KMSV1Client(util.GetRegion(d, config))
+	if err != nil {
+		return diag.Errorf("Error creating VKCS KMS client: %s", err)
+	}
+
+	name, ok := d.Get("name").(string)
+	if !ok {
+		return diag.Errorf("Error retrieving name from resource: %s", err)
+	}
+
+	err = deleteSecret(kmsV1Client, name)
+	if err != nil {
+		return diag.Errorf("Error deleting secret: %s", err)
+	}
 	return nil
 }

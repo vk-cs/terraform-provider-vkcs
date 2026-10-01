@@ -20,3 +20,7 @@ func getSecret(client *gophercloud.ServiceClient, name string) (secrets.Secret, 
 	}
 	return s, nil
 }
+
+func deleteSecret(client *gophercloud.ServiceClient, name string) error {
+	return secrets.Delete(client, name).Extract()
+}

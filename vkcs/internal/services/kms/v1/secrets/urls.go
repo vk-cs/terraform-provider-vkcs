@@ -6,10 +6,14 @@ func baseURL() string {
 	return "secret"
 }
 
-func secretsURL(c *gophercloud.ServiceClient) string {
+func secretsMetadataURL(c *gophercloud.ServiceClient) string {
 	return c.ServiceURL(baseURL(), "metadata/?list=true")
 }
 
-func secretURL(c *gophercloud.ServiceClient, secretName string) string {
+func secretDataURL(c *gophercloud.ServiceClient, secretName string) string {
 	return c.ServiceURL(baseURL(), "data", secretName)
+}
+
+func secretMetadataURL(c *gophercloud.ServiceClient, secretName string) string {
+	return c.ServiceURL(baseURL(), "metadata", secretName)
 }
