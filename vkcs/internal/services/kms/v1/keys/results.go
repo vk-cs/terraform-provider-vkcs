@@ -2,8 +2,8 @@ package keys
 
 import "github.com/gophercloud/gophercloud"
 
-// GetResult is the result of a get request. Call its Extract method
-// to interpret a result as a Key.
+// GetResult is the result of a get request.
+// Call its Extract method to interpret a result as a Key.
 type GetResult struct {
 	gophercloud.Result
 }
@@ -14,3 +14,19 @@ type GetResult struct {
 // 	err := r.ExtractInto(&s)
 // 	return &s, err
 // }
+
+// EncryptResult is the result of an encrypt request. Call its Extract method
+// to interpret a result as a Key.
+type EncryptResult struct {
+	gophercloud.Result
+}
+
+type EncryptData struct {
+	Ciphertext string `json:"ciphertext"`
+}
+
+func (r EncryptResult) Extract() (string, error) {
+	var d EncryptData
+	err := r.ExtractInto(&d)
+	return d.Ciphertext, err
+}

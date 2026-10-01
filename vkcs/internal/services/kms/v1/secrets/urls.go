@@ -7,7 +7,7 @@ func baseURL() string {
 }
 
 func secretsURL(c *gophercloud.ServiceClient) string {
-	return c.ServiceURL(baseURL(), "metadata")
+	return c.ServiceURL(baseURL(), "metadata/?list=true")
 }
 
 func secretURL(c *gophercloud.ServiceClient, secretName string) string {

@@ -13,3 +13,7 @@ func keysURL(c *gophercloud.ServiceClient) string {
 func keyURL(c *gophercloud.ServiceClient, keyName string) string {
 	return c.ServiceURL(keysURL(c), keyName)
 }
+
+func encryptURL(c *gophercloud.ServiceClient, keyName string) string {
+	return c.ServiceURL(baseURL(), "encrypt", keyName)
+}
