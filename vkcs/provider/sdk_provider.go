@@ -234,7 +234,6 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_kms_key":                       kms.DataSourceKey(),
 			"vkcs_kms_keys_list":                 kms.DataSourceKeysList(),
 			"vkcs_kms_secret":                    kms.DataSourceSecret(),
-			"vkcs_kms_secrets_detailed_list":     kms.DataSourceSecretsDetailedList(),
 			"vkcs_kms_secrets_list":              kms.DataSourceSecretsList(),
 		},
 
