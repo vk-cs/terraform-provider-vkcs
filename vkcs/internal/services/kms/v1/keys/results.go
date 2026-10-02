@@ -22,11 +22,13 @@ type EncryptResult struct {
 }
 
 type EncryptData struct {
-	Ciphertext string `json:"ciphertext"`
+	Data struct {
+		Ciphertext string `json:"ciphertext"`
+	} `json:"data"`
 }
 
 func (r EncryptResult) Extract() (string, error) {
 	var d EncryptData
 	err := r.ExtractInto(&d)
-	return d.Ciphertext, err
+	return d.Data.Ciphertext, err
 }

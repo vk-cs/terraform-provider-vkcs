@@ -302,7 +302,7 @@ output "windows_password" {
 
 - `admin_pass` optional sensitive *string* &rarr;  The administrative password to assign to the server. For some images, the password must meet certain requirements, which can be found here: https://cloud.vk.com/docs/en/computing/iaas/service-management/vm/vm-manage. <br>**Note:** If the password does not meet these requirements, the resource creation may hang until the timeout due to repeated attempts to set the password.
 
-- `availability_zone` optional *string* &rarr;  The availability zone in which to create the server. Conflicts with `availability_zone_hints`. Changing this creates a new server.
+- `availability_zone` optional *string* &rarr;  The availability zone in which to create the server. Changing this moves the existing server to the specified availability zone without recreating it. An `active` server is live-migrated, a `shutoff` or `shelved_offloaded` server is cold-migrated. Note that the server's volumes are not moved and should be migrated separately.
 
 - `block_device` optional &rarr;  Configuration of block devices. The block_device structure is documented below. Changing this creates a new server. You can specify multiple block devices which will create an instance with multiple disks. This configuration is very flexible, so please see the following [reference](https://docs.openstack.org/nova/latest/user/block-device-mapping.html) for more information.
     - `source_type` **required** *string* &rarr;  The source type of the device. Must be one of "blank", "image", "volume", or "snapshot". Changing this creates a new server.

@@ -19,6 +19,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/extendedstatus"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/shelveunshelve"
@@ -37,6 +38,7 @@ import (
 	iflavors "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/flavors"
 	iimages "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/images"
 	isecgroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/secgroups"
+	iserveraz "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/serveraz"
 	iservers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servers"
 	ishelveunshelve "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/shelveunshelve"
 	istartstop "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/startstop"
@@ -172,7 +174,7 @@ func ResourceComputeInstance() *schema.Resource {
 				Optional:         true,
 				Computed:         true,
 				DiffSuppressFunc: suppressAvailabilityZoneDetailDiffs,
-				Description:      "The availability zone in which to create the server. Conflicts with `availability_zone_hints`. Changing this creates a new server.",
+				Description:      "The availability zone in which to create the server. Changing this moves the existing server to the specified availability zone without recreating it. An `active` server is live-migrated, a `shutoff` or `shelved_offloaded` server is cold-migrated. Note that the server's volumes are not moved and should be migrated separately.",
 			},
 			"network_mode": {
 				Type:          schema.TypeString,
@@ -891,6 +893,45 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
+	if d.HasChange("availability_zone") {
+		_, newAZRaw := d.GetChange("availability_zone")
+		targetAZ := availabilityZoneName(newAZRaw.(string))
+
+		currentAZ, err := getServerAvailabilityZone(computeClient, d.Id())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// Do not trigger a migration when the server is already in the target
+		// availability zone, e.g. it has been moved by another actor or the
+		// change has already been applied.
+		if targetAZ == "" || currentAZ == targetAZ {
+			log.Printf("[DEBUG] Instance (%s) is already in availability zone %s, skipping change", d.Id(), targetAZ)
+		} else {
+			log.Printf("[DEBUG] Changing availability zone of instance (%s) from %s to %s", d.Id(), currentAZ, targetAZ)
+
+			err = iserveraz.ChangeAvailabilityZone(computeClient, d.Id(), iserveraz.ChangeOpts{AvailabilityZone: targetAZ}).ExtractErr()
+			if err != nil {
+				return diag.Errorf("Error changing availability zone of VKCS instance %s: %s", d.Id(), err)
+			}
+
+			stateConf := &retry.StateChangeConf{
+				Pending:    []string{"pending"},
+				Target:     []string{"changed"},
+				Refresh:    serverAvailabilityZoneStateRefreshFunc(computeClient, d.Id(), targetAZ),
+				Timeout:    d.Timeout(schema.TimeoutUpdate),
+				Delay:      10 * time.Second,
+				MinTimeout: 3 * time.Second,
+			}
+
+			log.Printf("[DEBUG] Waiting for instance (%s) availability zone to become %s", d.Id(), targetAZ)
+			_, err = stateConf.WaitForStateContext(ctx)
+			if err != nil {
+				return diag.Errorf("Error waiting for availability zone of instance (%s) to change: %s", d.Id(), err)
+			}
+		}
+	}
+
 	if d.HasChange("metadata") {
 		oldMetadata, newMetadataRaw := d.GetChange("metadata")
 
@@ -1223,13 +1264,6 @@ func resourceComputeInstanceCustomizeDiff(ctx context.Context, diff *schema.Reso
 		log.Printf("[DEBUG] failed to set diff for `block_device`: %s", err)
 	}
 
-	oldState, newState := diff.GetChange("power_state")
-	if (oldState.(string) != "shelved_offloaded" || newState.(string) != "active") && diff.Get("power_state").(string) != "shelved_offloaded" {
-		if err := diff.ForceNew("availability_zone"); err != nil {
-			log.Printf("[DEBUG] failed to set force new for `availability_zone`: %s", err)
-		}
-	}
-
 	if diff.GetRawState().IsNull() {
 		vendorOptionsRaw := diff.Get("vendor_options").(*schema.Set)
 		if shouldGetServerPassword(vendorOptionsRaw) {
@@ -1354,6 +1388,69 @@ func ServerStateRefreshFunc(client *gophercloud.ServiceClient, instanceID string
 
 		return s, s.Status, nil
 	}
+}
+
+type serverWithAvailabilityZone struct {
+	servers.Server
+	availabilityzones.ServerAvailabilityZoneExt
+	extendedstatus.ServerExtendedStatusExt
+}
+
+func getServerAvailabilityZone(client *gophercloud.ServiceClient, id string) (string, error) {
+	var server serverWithAvailabilityZone
+	if err := iservers.Get(client, id).ExtractInto(&server); err != nil {
+		return "", err
+	}
+
+	return server.AvailabilityZone, nil
+}
+
+// serverAvailabilityZoneStateRefreshFunc returns a retry.StateRefreshFunc that
+// waits until the server is located in the requested availability zone and no
+// asynchronous task is in progress.
+func serverAvailabilityZoneStateRefreshFunc(client *gophercloud.ServiceClient, instanceID, zone string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		var s serverWithAvailabilityZone
+		err := iservers.Get(client, instanceID).ExtractInto(&s)
+		if err != nil {
+			if errutil.IsNotFound(err) {
+				return s, "DELETED", nil
+			}
+			return nil, "", err
+		}
+
+		if s.Status == "ERROR" {
+			return s, s.Status, errors.New(s.Fault.Message)
+		}
+
+		if s.AvailabilityZone == zone && s.TaskState == "" && isServerStatusSettled(s.Status) {
+			return s, "changed", nil
+		}
+
+		return s, "pending", nil
+	}
+}
+
+// isServerStatusSettled reports whether the server has no task in progress,
+// including a migration or resize.
+func isServerStatusSettled(status string) bool {
+	switch status {
+	case "ACTIVE", "SHUTOFF", "PAUSED", "SHELVED", "SHELVED_OFFLOADED":
+		return true
+	default:
+		return false
+	}
+}
+
+// availabilityZoneName strips the optional host and node parts from an
+// availability zone value in the `az:host:node` format. The Compute API
+// accepts only the availability zone name when changing it.
+func availabilityZoneName(az string) string {
+	if idx := strings.Index(az, ":"); idx != -1 {
+		return az[:idx]
+	}
+
+	return az
 }
 
 func resourceInstanceSecGroupsV2(d *schema.ResourceData) []string {

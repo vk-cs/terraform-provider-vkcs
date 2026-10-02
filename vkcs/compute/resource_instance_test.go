@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
@@ -877,6 +878,99 @@ func TestAccComputeInstance_AdminPasswordUpdate(t *testing.T) {
 	})
 }
 
+func TestAccComputeInstance_changeAvailabilityZone(t *testing.T) {
+	var instanceID string
+	var zones []string
+
+	resourceName := "vkcs_compute_instance.instance_1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			acctest.AccTestPreCheck(t)
+
+			zones = accTestComputeAvailabilityZones(t)
+			if len(zones) < 2 {
+				t.Skip("at least two availability zones are required to run this test")
+			}
+		},
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceChangeAZActiveZone0),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceIDNotChanged(resourceName, &instanceID),
+					testAccCheckComputeInstanceAvailabilityZone(resourceName, &zones, 0),
+					resource.TestCheckResourceAttr(resourceName, "power_state", "active"),
+				),
+			},
+			{
+				// Live migration of an active server.
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceChangeAZActiveZone1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceIDNotChanged(resourceName, &instanceID),
+					testAccCheckComputeInstanceAvailabilityZone(resourceName, &zones, 1),
+					resource.TestCheckResourceAttr(resourceName, "power_state", "active"),
+				),
+			},
+			{
+				// Cold migration of a stopped server.
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceChangeAZShutoffZone0),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceIDNotChanged(resourceName, &instanceID),
+					testAccCheckComputeInstanceAvailabilityZone(resourceName, &zones, 0),
+					resource.TestCheckResourceAttr(resourceName, "power_state", "shutoff"),
+				),
+			},
+			{
+				// Start and live migration of an active server.
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceChangeAZActiveZone1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceIDNotChanged(resourceName, &instanceID),
+					testAccCheckComputeInstanceAvailabilityZone(resourceName, &zones, 1),
+					resource.TestCheckResourceAttr(resourceName, "power_state", "active"),
+				),
+			},
+		},
+	})
+}
+
+func accTestComputeAvailabilityZones(t *testing.T) []string {
+	t.Helper()
+
+	opts := clients.ConfigOpts{}
+	config, err := opts.LoadAndValidate()
+	if err != nil {
+		t.Fatalf("Error authenticating clients from environment: %s", err)
+	}
+
+	computeClient, err := config.ComputeV2Client(acctest.OsRegionName)
+	if err != nil {
+		t.Fatalf("Error creating VKCS compute client: %s", err)
+	}
+
+	allPages, err := availabilityzones.List(computeClient).AllPages()
+	if err != nil {
+		t.Fatalf("Error retrieving availability zones: %s", err)
+	}
+
+	zoneInfo, err := availabilityzones.ExtractAvailabilityZones(allPages)
+	if err != nil {
+		t.Fatalf("Error extracting availability zones: %s", err)
+	}
+
+	var zones []string
+	for _, z := range zoneInfo {
+		if z.ZoneState.Available {
+			zones = append(zones, z.ZoneName)
+		}
+	}
+
+	sort.Strings(zones)
+
+	return zones
+}
+
 func testAccCheckComputeInstanceDestroy(s *terraform.State) error {
 	opts := clients.ConfigOpts{}
 	config, err := opts.LoadAndValidate()
@@ -937,6 +1031,50 @@ func testAccCheckComputeInstanceExists(resourceName string, instance *servers.Se
 		}
 
 		*instance = *found
+
+		return nil
+	}
+}
+
+// testAccCheckComputeInstanceIDNotChanged remembers the resource ID on the
+// first invocation and fails if it changes on the following ones, which means
+// the instance was recreated.
+func testAccCheckComputeInstanceIDNotChanged(resourceName string, id *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		if *id == "" {
+			*id = rs.Primary.ID
+			return nil
+		}
+
+		if *id != rs.Primary.ID {
+			return fmt.Errorf("Instance %s was recreated: expected ID %s, got %s", resourceName, *id, rs.Primary.ID)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckComputeInstanceAvailabilityZone(resourceName string, zones *[]string, idx int) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		if idx >= len(*zones) {
+			return fmt.Errorf("availability zone index %d is out of range", idx)
+		}
+
+		expected := (*zones)[idx]
+		actual := rs.Primary.Attributes["availability_zone"]
+		if actual != expected {
+			return fmt.Errorf("%s availability_zone: expected %s, got %s", resourceName, expected, actual)
+		}
 
 		return nil
 	}
@@ -1100,6 +1238,72 @@ resource "vkcs_compute_instance" "instance_1" {
 	image_id = data.vkcs_images_image.base.id
 	flavor_id = data.vkcs_compute_flavor.base.id
   }
+`
+
+const testAccComputeInstanceChangeAZActiveZone0 = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
+{{.BaseSecurityGroup}}
+
+data "vkcs_compute_availability_zones" "zones" {}
+
+resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_router_interface.base"]
+  name = "instance_1"
+  availability_zone = data.vkcs_compute_availability_zones.zones.names[0]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
+  power_state = "active"
+}
+`
+
+const testAccComputeInstanceChangeAZActiveZone1 = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
+{{.BaseSecurityGroup}}
+
+data "vkcs_compute_availability_zones" "zones" {}
+
+resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_router_interface.base"]
+  name = "instance_1"
+  availability_zone = data.vkcs_compute_availability_zones.zones.names[1]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
+  power_state = "active"
+}
+`
+
+const testAccComputeInstanceChangeAZShutoffZone0 = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
+{{.BaseSecurityGroup}}
+
+data "vkcs_compute_availability_zones" "zones" {}
+
+resource "vkcs_compute_instance" "instance_1" {
+  depends_on = ["vkcs_networking_router_interface.base"]
+  name = "instance_1"
+  availability_zone = data.vkcs_compute_availability_zones.zones.names[0]
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
+  power_state = "shutoff"
+}
 `
 
 const testAccComputeInstanceBootFromVolumeImage = `

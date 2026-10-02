@@ -230,7 +230,7 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_regions":                       regions.DataSourceVkcsRegions(),
 			"vkcs_publicdns_zone":                publicdns.DataSourcePublicDNSZone(),
 			"vkcs_kms_key_decrypt":               kms.DataSourceKeyDecrypt(),
-			"vkcs_kms_key_encrypt":               kms.DataSourceKeyDecrypt(),
+			"vkcs_kms_key_encrypt":               kms.DataSourceKeyEncrypt(),
 			"vkcs_kms_key":                       kms.DataSourceKey(),
 			"vkcs_kms_keys_list":                 kms.DataSourceKeysList(),
 			"vkcs_kms_secret":                    kms.DataSourceSecret(),

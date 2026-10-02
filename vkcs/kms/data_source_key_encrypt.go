@@ -23,7 +23,9 @@ func DataSourceKeyEncrypt() *schema.Resource {
 				Required: true,
 			},
 			"ciphertext": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
 			},
 		},
 	}

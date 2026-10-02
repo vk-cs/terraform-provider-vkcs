@@ -19,6 +19,11 @@ func DataSourceKeyDecrypt() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"plaintext": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 		},
 	}
 }

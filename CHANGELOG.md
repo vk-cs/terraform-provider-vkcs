@@ -7,8 +7,15 @@ description: |-
 
 # VKCS Provider's changelog
 
-#### v0.18.0 (unreleased)
+#### v0.19.0 (unreleased)
 - Added KMS resources and datasources for secrets and keys.
+
+#### v0.18.1 (unreleased)
+- Fix: protocol of vkcs_networking_secgroup_rule specified as a number causing recreation of the rule on Sprut SDN.
+
+#### v0.18.0
+- Add ability to change availability_zone of vkcs_compute_instance without recreating the instance.
+- Fix Kubernetes cluster version comparison to handle multi-digit components correctly and restrict upgrades to patch and minor only
 
 #### v0.17.3
 - Fix backup_schedule causing update of db resources when it was not present in configuration.
