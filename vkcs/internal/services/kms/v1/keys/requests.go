@@ -18,7 +18,7 @@ type EncryptOpts struct {
 	Plaintext string `json:"plaintext"`
 }
 
-func (opts EncryptOpts) Map() (map[string]interface{}, error) {
+func (opts EncryptOpts) Map() (map[string]any, error) {
 	return gophercloud.BuildRequestBody(opts, "")
 }
 
@@ -29,6 +29,28 @@ func Encrypt(client *gophercloud.ServiceClient, key string, opts EncryptOpts) (r
 		return
 	}
 	resp, err := client.Post(encryptURL(client, key), b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+type DecryptOpts struct {
+	Ciphertext string `json:"ciphertext"`
+}
+
+func (opts DecryptOpts) Map() (map[string]any, error) {
+	return gophercloud.BuildRequestBody(opts, "")
+}
+
+func Decrypt(client *gophercloud.ServiceClient, key string, opts DecryptOpts) (r DecryptResult) {
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := client.Post(decryptURL(client, key), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)

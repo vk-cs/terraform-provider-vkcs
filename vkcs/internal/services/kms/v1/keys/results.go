@@ -16,7 +16,7 @@ type GetResult struct {
 // }
 
 // EncryptResult is the result of an encrypt request. Call its Extract method
-// to interpret a result as a Key.
+// to interpret a result as a string.
 type EncryptResult struct {
 	gophercloud.Result
 }
@@ -31,4 +31,22 @@ func (r EncryptResult) Extract() (string, error) {
 	var d EncryptData
 	err := r.ExtractInto(&d)
 	return d.Data.Ciphertext, err
+}
+
+// DecryptResult is the result of an decrypt request. Call its Extract method
+// to interpret a result as a string.
+type DecryptResult struct {
+	gophercloud.Result
+}
+
+type DecryptData struct {
+	Data struct {
+		Plaintext string `json:"plaintext"`
+	} `json:"data"`
+}
+
+func (r DecryptResult) Extract() (string, error) {
+	var d DecryptData
+	err := r.ExtractInto(&d)
+	return d.Data.Plaintext, err
 }

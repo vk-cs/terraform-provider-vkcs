@@ -2,7 +2,8 @@ package kms
 
 import (
 	"context"
-	"encoding/base64"
+	"crypto/sha256"
+	"encoding/hex"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -45,7 +46,7 @@ func dataSourceKeyEncryptReadContext(ctx context.Context, d *schema.ResourceData
 
 	plaintext, ok := d.Get("plaintext").(string)
 	if !ok {
-		return diag.Errorf("Error retrieving name from resource: %s", err)
+		return diag.Errorf("Error retrieving plaintext from resource: %s", err)
 	}
 
 	ciphertext, err := encrypt(kmsV1Client, key, plaintext)
@@ -53,7 +54,9 @@ func dataSourceKeyEncryptReadContext(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("Error encrypting: %s", err)
 	}
 
-	d.SetId(base64.StdEncoding.EncodeToString([]byte(ciphertext)))
+	hash := sha256.Sum256([]byte(ciphertext))
+	d.SetId(hex.EncodeToString(hash[:]))
+
 	err = d.Set("ciphertext", ciphertext)
 	if err != nil {
 		return diag.Errorf("Error setting ciphertext: %s", err)
