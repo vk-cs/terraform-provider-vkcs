@@ -26,7 +26,7 @@ func Get(client *gophercloud.ServiceClient, name string) (r GetResult) {
 }
 
 func Delete(client *gophercloud.ServiceClient, name string) (r DeleteResult) {
-	resp, err := client.Get(secretDataURL(client, name), &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Get(secretMetadataURL(client, name), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{http.StatusNoContent},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)

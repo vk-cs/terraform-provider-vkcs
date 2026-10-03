@@ -54,7 +54,7 @@ func dataSourceSecretsListReadContext(ctx context.Context, d *schema.ResourceDat
 			return diag.Errorf("Error building id: %s", err)
 		}
 	}
-	hash := sha256.Sum256([]byte(fmt.Appendf(nil, "%s:%d", builder.String(), len(secrets))))
+	hash := sha256.Sum256(fmt.Appendf(nil, "%s:%d", builder.String(), len(secrets)))
 
 	d.SetId(hex.EncodeToString(hash[:]))
 	err = d.Set("secrets_count", len(secrets))
