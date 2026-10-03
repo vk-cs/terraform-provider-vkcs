@@ -6,7 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.18.1 (unreleased)
+
+#### v0.18.1
+- Fix updating private DNS domain for `vkcs_networking_network`.
 - Fix: protocol of vkcs_networking_secgroup_rule specified as a number causing recreation of the rule on Sprut SDN.
 
 #### v0.18.0

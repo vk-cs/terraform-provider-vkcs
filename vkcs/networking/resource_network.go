@@ -265,6 +265,11 @@ func resourceNetworkingNetworkUpdate(ctx context.Context, d *schema.ResourceData
 		updateOpts.AdminStateUp = &asu
 	}
 
+	if d.HasChange("private_dns_domain") {
+		privateDNSDomain := d.Get("private_dns_domain").(string)
+		updateOpts.PrivateDNSDomain = privateDNSDomain
+	}
+
 	// Change tags if needed.
 	if d.HasChange("tags") {
 		tags := NetworkingV2UpdateAttributesTags(d)
