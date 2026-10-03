@@ -14,6 +14,9 @@ import (
 func DataSourceKeyEncrypt() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceKeyEncryptReadContext,
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultTimeout),
+		},
 		Schema: map[string]*schema.Schema{
 			"key": {
 				Type:     schema.TypeString,

@@ -10,7 +10,10 @@ import (
 func DataSourceKeysList() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceKeysListReadContext,
-		Schema:      map[string]*schema.Schema{},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultTimeout),
+		},
+		Schema: map[string]*schema.Schema{},
 	}
 }
 

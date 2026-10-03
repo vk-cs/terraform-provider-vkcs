@@ -13,6 +13,9 @@ import (
 func DataSourceSecret() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceSecretReadContext,
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultTimeout),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,

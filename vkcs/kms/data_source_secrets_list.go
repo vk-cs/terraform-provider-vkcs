@@ -16,6 +16,9 @@ import (
 func DataSourceSecretsList() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceSecretsListReadContext,
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultTimeout),
+		},
 		Schema: map[string]*schema.Schema{
 			"secrets_count": {
 				Type:     schema.TypeInt,
@@ -45,7 +48,7 @@ func dataSourceSecretsListReadContext(ctx context.Context, d *schema.ResourceDat
 	}
 
 	var builder strings.Builder
-	for _, secret := range secrets {
+	for _, secret := range secrets[:min(len(secrets), maxItemsInListForIDBuild)] {
 		_, err := builder.WriteString(secret)
 		if err != nil {
 			return diag.Errorf("Error building id: %s", err)

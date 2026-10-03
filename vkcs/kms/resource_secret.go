@@ -16,11 +16,9 @@ func ResourceSecret() *schema.Resource {
 		ReadContext:   resourceSecretReadContext,
 		UpdateContext: resourceSecretUpdateContext,
 		DeleteContext: resourceSecretDeleteContext,
-
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
-
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,

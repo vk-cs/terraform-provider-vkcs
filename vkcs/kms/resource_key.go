@@ -13,6 +13,9 @@ func ResourceKey() *schema.Resource {
 		ReadContext:   resourceKeyReadContext,
 		UpdateContext: resourceKeyUpdateContext,
 		DeleteContext: resourceKeyDeleteContext,
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultTimeout),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
