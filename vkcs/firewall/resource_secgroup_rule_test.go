@@ -148,6 +148,32 @@ func TestAccFirewallSecGroupRule_protocols(t *testing.T) {
 	})
 }
 
+func TestAccFirewallSecGroupRule_protocolNumbers(t *testing.T) {
+	var secgroupRuleTCP rules.SecGroupRule
+	var secgroupRuleUDP rules.SecGroupRule
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccFirewallCheckSecGroupRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFirewallSecGroupRuleProtocolNumbers,
+				Check: resource.ComposeTestCheckFunc(
+					testAccFirewallCheckSecGroupRuleExists(
+						"vkcs_networking_secgroup_rule.secgroup_rule_tcp", &secgroupRuleTCP),
+					testAccFirewallCheckSecGroupRuleExists(
+						"vkcs_networking_secgroup_rule.secgroup_rule_udp", &secgroupRuleUDP),
+					resource.TestCheckResourceAttr(
+						"vkcs_networking_secgroup_rule.secgroup_rule_tcp", "protocol", "tcp"),
+					resource.TestCheckResourceAttr(
+						"vkcs_networking_secgroup_rule.secgroup_rule_udp", "protocol", "udp"),
+				),
+			},
+		},
+	})
+}
+
 func testAccFirewallCheckSecGroupRuleDestroy(s *terraform.State) error {
 	config := acctest.AccTestProvider.Meta().(clients.Config)
 	networkingClient, err := config.NetworkingV2Client(acctest.OsRegionName, networking.DefaultSDN)
@@ -374,5 +400,33 @@ resource "vkcs_networking_secgroup_rule" "secgroup_rule_vrrp" {
   protocol = "vrrp"
   remote_ip_prefix = "0.0.0.0/0"
   security_group_id = vkcs_networking_secgroup.secgroup_1.id
+}
+`
+
+const testAccFirewallSecGroupRuleProtocolNumbers = `
+resource "vkcs_networking_secgroup" "secgroup_1" {
+  name = "secgroup_1"
+  description = "terraform security group rule acceptance test"
+  sdn = "sprut"
+}
+
+resource "vkcs_networking_secgroup_rule" "secgroup_rule_tcp" {
+  direction = "ingress"
+  port_range_max = 22
+  port_range_min = 22
+  protocol = "6"
+  remote_ip_prefix = "0.0.0.0/0"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
+  sdn = "sprut"
+}
+
+resource "vkcs_networking_secgroup_rule" "secgroup_rule_udp" {
+  direction = "ingress"
+  port_range_max = 53
+  port_range_min = 53
+  protocol = "17"
+  remote_ip_prefix = "0.0.0.0/0"
+  security_group_id = vkcs_networking_secgroup.secgroup_1.id
+  sdn = "sprut"
 }
 `
