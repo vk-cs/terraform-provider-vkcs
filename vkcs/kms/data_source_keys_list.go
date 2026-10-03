@@ -1,0 +1,22 @@
+package kms
+
+import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+func DataSourceKeysList() *schema.Resource {
+	return &schema.Resource{
+		ReadContext: dataSourceKeysListReadContext,
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultTimeout),
+		},
+		Schema: map[string]*schema.Schema{},
+	}
+}
+
+func dataSourceKeysListReadContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	return nil
+}

@@ -6,6 +6,10 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+
+#### v0.19.0 (unreleased)
+- Added KMS resources and datasources for secrets and keys.
+
 #### v0.18.1 (unreleased)
 - Fix: protocol of vkcs_networking_secgroup_rule specified as a number causing recreation of the rule on Sprut SDN.
 
