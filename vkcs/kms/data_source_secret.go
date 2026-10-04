@@ -32,10 +32,12 @@ func DataSourceSecret() *schema.Resource {
 			"created_time": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"version": {
 				Type:     schema.TypeInt,
 				Optional: true,
+				Computed: true,
 			},
 		},
 	}
