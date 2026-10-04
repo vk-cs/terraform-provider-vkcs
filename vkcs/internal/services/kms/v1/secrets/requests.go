@@ -16,8 +16,8 @@ func List(client *gophercloud.ServiceClient) (r ListResult) {
 	return
 }
 
-func Get(client *gophercloud.ServiceClient, name string) (r GetResult) {
-	resp, err := client.Get(secretDataURL(client, name), &r.Body, &gophercloud.RequestOpts{
+func Get(client *gophercloud.ServiceClient, path string) (r GetResult) {
+	resp, err := client.Get(secretDataURL(client, path), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{http.StatusOK},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)

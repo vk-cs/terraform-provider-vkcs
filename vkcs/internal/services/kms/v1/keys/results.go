@@ -2,18 +2,56 @@ package keys
 
 import "github.com/gophercloud/gophercloud"
 
+// ListResult is the result of a list request.
+// Call its Extract method to interpret a result as a Keys.
+type ListResult struct {
+	gophercloud.Result
+}
+
+type Keys struct {
+	Data struct {
+		Keys []string `json:"keys"`
+	} `json:"data"`
+}
+
+// Extract interprets a get result as a list of keys.
+func (r ListResult) Extract() ([]string, error) {
+	var k Keys
+	err := r.ExtractInto(&k)
+	return k.Data.Keys, err
+}
+
+// DeleteResult is the result of a delete request.
+// Call its Extract method to interpret a result as an error.
+type DeleteResult struct {
+	gophercloud.Result
+}
+
+// Extract interprets a get result as an error.
+func (r DeleteResult) Extract() error {
+	return r.Err
+}
+
 // GetResult is the result of a get request.
 // Call its Extract method to interpret a result as a Key.
 type GetResult struct {
 	gophercloud.Result
 }
 
-// // Extract interprets a get result as a ServiceUser.
-// func (r GetResult) Extract() (*ServiceUser, error) {
-// 	var s ServiceUser
-// 	err := r.ExtractInto(&s)
-// 	return &s, err
-// }
+type Key struct {
+	Data struct {
+		Name            string `json:"name"`
+		Type            string `json:"type"`
+		DeletionAllowed bool   `json:"deletion_allowed"`
+	} `json:"data"`
+}
+
+// Extract interprets a get result as a Key.
+func (r GetResult) Extract() (Key, error) {
+	var k Key
+	err := r.ExtractInto(&k)
+	return k, err
+}
 
 // EncryptResult is the result of an encrypt request. Call its Extract method
 // to interpret a result as a string.

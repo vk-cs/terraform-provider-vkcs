@@ -17,7 +17,7 @@ func DataSourceSecret() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
-			"name": {
+			"path": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -48,17 +48,17 @@ func dataSourceSecretReadContext(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("Error creating VKCS KMS client: %s", err)
 	}
 
-	name, ok := d.Get("name").(string)
+	path, ok := d.Get("path").(string)
 	if !ok {
 		return diag.Errorf("Error retrieving name from resource: %s", err)
 	}
 
-	secret, err := getSecret(kmsV1Client, name)
+	secret, err := getSecret(kmsV1Client, path)
 	if err != nil {
-		return diag.Errorf("Error listing secrets: %s", err)
+		return diag.Errorf("Error getting secret: %s", err)
 	}
 
-	d.SetId(name)
+	d.SetId(path)
 
 	err = d.Set("data", secret.Data.Data)
 	if err != nil {
@@ -77,12 +77,12 @@ func dataSourceSecretReadContext(ctx context.Context, d *schema.ResourceData, me
 
 	err = d.Set("created_time", secret.Data.Metadata.CreatedTime.String())
 	if err != nil {
-		return diag.Errorf("Error setting data_json: %s", err)
+		return diag.Errorf("Error setting created_time: %s", err)
 	}
 
 	err = d.Set("version", secret.Data.Metadata.Version)
 	if err != nil {
-		return diag.Errorf("Error setting data_json: %s", err)
+		return diag.Errorf("Error setting version: %s", err)
 	}
 
 	return nil

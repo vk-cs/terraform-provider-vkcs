@@ -11,11 +11,11 @@ func baseURL() string {
 }
 
 func keysURL(c *gophercloud.ServiceClient) string {
-	return c.ServiceURL(baseURL(), "keys")
+	return c.ServiceURL(baseURL(), "keys?list=true")
 }
 
 func keyURL(c *gophercloud.ServiceClient, keyName string) string {
-	return c.ServiceURL(keysURL(c), url.PathEscape(keyName))
+	return c.ServiceURL(baseURL(), "keys", url.PathEscape(keyName))
 }
 
 func encryptURL(c *gophercloud.ServiceClient, keyName string) string {

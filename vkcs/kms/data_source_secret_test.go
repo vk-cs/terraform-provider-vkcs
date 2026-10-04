@@ -36,7 +36,7 @@ func TestAccKMSSecretDataSource_basic(t *testing.T) {
 				Config: fmt.Sprintf(testAccKMSSecretDataSourceBasic, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.vkcs_kms_secret.secret", "id", name),
-					resource.TestCheckResourceAttr("data.vkcs_kms_secret.secret", "name", name),
+					resource.TestCheckResourceAttr("data.vkcs_kms_secret.secret", "path", name),
 					resource.TestCheckResourceAttrSet("data.vkcs_kms_secret.secret", "data_json"),
 					resource.TestCheckResourceAttrSet("data.vkcs_kms_secret.secret", "created_time"),
 					resource.TestCheckResourceAttrSet("data.vkcs_kms_secret.secret", "version"),
@@ -48,7 +48,7 @@ func TestAccKMSSecretDataSource_basic(t *testing.T) {
 
 const testAccKMSSecretDataSourceBasic = `
 data "vkcs_kms_secret" "secret" {
-  name = %q
+  path = %q
 }
 `
 
@@ -56,12 +56,12 @@ func TestKMSSecretDataSourceRead(t *testing.T) {
 	body := `{"data":{"data":{"username":"alice","password":"test-password"},"metadata":{"created_time":"2026-09-01T10:00:00Z","version":3}}}`
 	config := newSecretDataSourceTestConfig(t, http.StatusOK, body)
 	ds := kms.DataSourceSecret()
-	d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{"name": "test-secret"})
+	d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{"path": "test-secret"})
 
 	diags := ds.ReadContext(context.Background(), d, config)
 	require.False(t, diags.HasError(), "%v", diags)
 	assert.Equal(t, "test-secret", d.Id())
-	assert.Equal(t, "test-secret", d.Get("name"))
+	assert.Equal(t, "test-secret", d.Get("path"))
 	assert.Equal(t, map[string]interface{}{"username": "alice", "password": "test-password"}, d.Get("data"))
 	assert.JSONEq(t, `{"username":"alice","password":"test-password"}`, d.Get("data_json").(string))
 	assert.Equal(t, "2026-09-01 10:00:00 +0000 UTC", d.Get("created_time"))
@@ -81,12 +81,12 @@ func TestKMSSecretDataSourceRead_errors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			config := newSecretDataSourceTestConfig(t, tc.status, tc.body)
 			ds := kms.DataSourceSecret()
-			d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{"name": "test-secret"})
+			d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{"path": "test-secret"})
 
 			diags := ds.ReadContext(context.Background(), d, config)
 			require.True(t, diags.HasError())
 			require.Len(t, diags, 1)
-			assert.Contains(t, diags[0].Summary, "Error listing secrets:")
+			assert.Contains(t, diags[0].Summary, "Error getting secret:")
 			assert.Empty(t, d.Id())
 		})
 	}
@@ -94,7 +94,7 @@ func TestKMSSecretDataSourceRead_errors(t *testing.T) {
 
 func TestKMSSecretDataSourceRead_clientError(t *testing.T) {
 	ds := kms.DataSourceSecret()
-	d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{"name": "test-secret"})
+	d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{"path": "test-secret"})
 	config := &secretDataSourceTestConfig{err: errors.New("client unavailable")}
 
 	diags := ds.ReadContext(context.Background(), d, config)
