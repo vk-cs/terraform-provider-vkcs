@@ -11,22 +11,26 @@ import (
 
 func DataSourceKey() *schema.Resource {
 	return &schema.Resource{
+		Description: "A data source containing a KMS key",
 		ReadContext: dataSourceKeyReadContext,
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Key name",
 			},
 			"type": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Key type, take a look at type parameter in OpenBao documentation: https://openbao.org/docs/api/secret/transit/#parameters",
 			},
 			"deletion_allowed": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "A flag that shows if key can be deleted or not",
 			},
 		},
 	}

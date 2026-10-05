@@ -13,23 +13,27 @@ import (
 
 func DataSourceKeyEncrypt() *schema.Resource {
 	return &schema.Resource{
+		Description: "Data source containing encrypt result by KMS key",
 		ReadContext: dataSourceKeyEncryptReadContext,
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"key": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Key used to encrypt data",
 			},
 			"plaintext": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
+				Description: "Data to encrypt encoded in base64",
 			},
 			"ciphertext": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Resulting encrypted data",
 			},
 		},
 	}

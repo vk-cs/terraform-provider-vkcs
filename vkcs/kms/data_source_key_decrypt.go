@@ -13,23 +13,27 @@ import (
 
 func DataSourceKeyDecrypt() *schema.Resource {
 	return &schema.Resource{
+		Description: "Data source containing decrypt result by KMS key",
 		ReadContext: dataSourceKeyDecryptReadContext,
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"key": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Key used to decrypt data",
 			},
 			"ciphertext": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Encrypted data",
 			},
 			"plaintext": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Sensitive:   true,
+				Description: "Resulting decrypted data encoded in base64",
 			},
 		},
 	}

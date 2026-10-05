@@ -11,6 +11,7 @@ import (
 
 func ResourceKey() *schema.Resource {
 	return &schema.Resource{
+		Description:   "Resource representing KMS key",
 		CreateContext: resourceKeyCreateContext,
 		ReadContext:   resourceKeyReadContext,
 		UpdateContext: resourceKeyUpdateContext,
@@ -20,18 +21,21 @@ func ResourceKey() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Key name",
 			},
 			"type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Key type, take a look at type parameter in OpenBao documentation: https://openbao.org/docs/api/secret/transit/#parameters",
 			},
 			"deletion_allowed": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "A flag that shows if key can be deleted or not",
 			},
 		},
 	}

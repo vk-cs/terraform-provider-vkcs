@@ -15,15 +15,17 @@ import (
 
 func DataSourceSecretsList() *schema.Resource {
 	return &schema.Resource{
+		Description: "Data source containing list of KMS secrets",
 		ReadContext: dataSourceSecretsListReadContext,
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"secrets_count": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Number of secrets in list",
 			},
 			"secrets": {
 				Type:     schema.TypeList,
@@ -32,6 +34,7 @@ func DataSourceSecretsList() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Description: "List of keys' paths",
 			},
 		},
 	}

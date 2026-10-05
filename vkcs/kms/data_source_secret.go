@@ -12,32 +12,39 @@ import (
 
 func DataSourceSecret() *schema.Resource {
 	return &schema.Resource{
+		Description: "A data source containing a KMS secret",
 		ReadContext: dataSourceSecretReadContext,
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"path": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Identifier of a secret",
 			},
 			"data": {
-				Type:     schema.TypeMap,
-				Optional: true,
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Computed:    true,
+				Description: "Data stored in secret as a Terraform object",
 			},
 			"data_json": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Data stored in secret as a JSON object",
 			},
 			"created_time": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Time of secret's creation",
 			},
 			"version": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Current version of secret",
 			},
 		},
 	}

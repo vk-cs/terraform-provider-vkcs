@@ -1,0 +1,23 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Represents a KMS key resource within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+~> **Implementation status:** Creation, updates, and deletion are not implemented yet. The configuration below describes the resource schema; applying it does not create a key. Use the `vkcs_kms_key` data source to read an existing key.
+
+## Example Usage
+
+{{tffile "examples/kms/key/main.tf"}}
+
+{{ .SchemaMarkdown }}
+
+## Import
+
+Import is not currently supported.
