@@ -122,6 +122,11 @@ func resourceSecretReadContext(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("Error creating data_json: %s", err)
 	}
 
+	deleteProtection, err := getSecretDeleteProtection(kmsV1Client, path)
+	if err != nil {
+		return diag.Errorf("Error getting secret delete protection: %s", err)
+	}
+
 	err = d.Set(SecretFieldDataJSON, string(secretString))
 	if err != nil {
 		return diag.Errorf(diagSetErrorTemplate, SecretFieldDataJSON, err)
@@ -135,6 +140,11 @@ func resourceSecretReadContext(ctx context.Context, d *schema.ResourceData, meta
 	err = d.Set(SecretFieldVersion, secret.Data.Metadata.Version)
 	if err != nil {
 		return diag.Errorf(diagSetErrorTemplate, SecretFieldVersion, err)
+	}
+
+	err = d.Set(SecretFieldDeleteProtection, deleteProtection)
+	if err != nil {
+		return diag.Errorf(diagSetErrorTemplate, SecretFieldDeleteProtection, err)
 	}
 
 	return nil
