@@ -73,7 +73,7 @@ func SetDeleteProtection(client *gophercloud.ServiceClient, path string, opts Se
 	_, err = client.Put(secretDeleteProtectionURL(client, path), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{http.StatusOK},
 	})
-	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	r.Err = errutil.ErrorWithRequestID(err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 
