@@ -105,8 +105,6 @@ func resourceSecretReadContext(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("Error getting secret: %s", err)
 	}
 
-	d.SetId(path)
-
 	secretString, err := json.Marshal(secret.Data.Data)
 	if err != nil {
 		return diag.Errorf("Error creating data_json: %s", err)

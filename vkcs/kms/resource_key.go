@@ -102,8 +102,6 @@ func resourceKeyReadContext(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.Errorf("Error getting key: %s", err)
 	}
 
-	d.SetId(name)
-
 	err = d.Set("name", key.Data.Name)
 	if err != nil {
 		return diag.Errorf("Error setting name: %s", err)
