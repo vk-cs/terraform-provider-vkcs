@@ -4,9 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
-	"strings"
 	"testing"
 
 	"github.com/gophercloud/gophercloud"
@@ -43,6 +41,7 @@ func TestAccKMSSecretDataSource_basic(t *testing.T) {
 const testAccKMSSecretDataSourceBasic = `
 resource "vkcs_kms_secret" "secret" {
   path = %q
+  delete_protection = false
   data_json = jsonencode({ password = "test-password" })
 }
 
@@ -53,7 +52,7 @@ data "vkcs_kms_secret" "secret" {
 
 func TestKMSSecretDataSourceRead(t *testing.T) {
 	body := `{"data":{"data":{"username":"alice","password":"test-password"},"metadata":{"created_time":"2026-09-01T10:00:00Z","version":3}}}`
-	config := newSecretDataSourceTestConfig(t, http.StatusOK, body)
+	config := newSecretDataSourceTestConfig(t, http.StatusOK, body, true)
 	ds := kms.DataSourceSecret()
 	d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{"path": "test-secret", "data_json": `{"stale":"value"}`, "created_time": "stale-time", "version": 1})
 
@@ -65,6 +64,7 @@ func TestKMSSecretDataSourceRead(t *testing.T) {
 	assert.JSONEq(t, `{"username":"alice","password":"test-password"}`, d.Get("data_json").(string))
 	assert.Equal(t, "2026-09-01 10:00:00 +0000 UTC", d.Get("created_time"))
 	assert.Equal(t, 3, d.Get("version"))
+	assert.Equal(t, true, d.Get(kms.SecretFieldDeleteProtection))
 }
 
 func TestKMSSecretDataSourceRead_errors(t *testing.T) {
@@ -124,28 +124,13 @@ func (f secretDataSourceTestTransport) RoundTrip(r *http.Request) (*http.Respons
 	return f(r)
 }
 
-func newSecretDataSourceTestConfig(t *testing.T, status int, body string) *secretDataSourceTestConfig {
+func newSecretDataSourceTestConfig(t *testing.T, status int, body string, protection ...bool) *secretDataSourceTestConfig {
 	t.Helper()
-	calls := 0
-	t.Cleanup(func() { assert.Equal(t, 1, calls, "expected one KMS request") })
-	provider := &gophercloud.ProviderClient{}
-	provider.HTTPClient.Transport = secretDataSourceTestTransport(func(r *http.Request) (*http.Response, error) {
-		calls++
-		assert.Empty(t, r.URL.Fragment)
-		assert.Equal(t, http.MethodGet, r.Method)
-		assert.Equal(t, "/kms/user/v1/secret/data/test-secret", r.URL.EscapedPath())
-		assert.Empty(t, r.URL.RawQuery)
-		return &http.Response{
-			StatusCode: status,
-			Header:     http.Header{"Content-Type": []string{"application/json"}},
-			Body:       io.NopCloser(strings.NewReader(body)),
-			Request:    r,
-		}, nil
-	})
-	return &secretDataSourceTestConfig{client: &gophercloud.ServiceClient{
-		ProviderClient: provider,
-		Endpoint:       "https://kms.example.test/kms/user/v1/",
-	}}
+	requests := []kmsResourceRequest{{"GET", "secret/data/test-secret", "", status, body}}
+	for _, enabled := range protection {
+		requests = append(requests, kmsResourceRequest{"GET", "secret/metadata/delete-protection/test-secret", "", 200, fmt.Sprintf(`{"delete_protection":%t}`, enabled)})
+	}
+	return newKMSResourceTestConfig(t, requests...)
 }
 
 func TestKMSSecretDataSourceRead_escapedPath(t *testing.T) {
@@ -156,7 +141,7 @@ func TestKMSSecretDataSourceRead_escapedPath(t *testing.T) {
 		path:     "secret/data/secret%20%2F%3F%23%25",
 		status:   http.StatusOK,
 		response: `{"data":{"data":{"password":"test-password"},"metadata":{"created_time":"2026-09-01T10:00:00Z","version":1}}}`,
-	})
+	}, kmsResourceRequest{"GET", "secret/metadata/delete-protection/secret%20%2F%3F%23%25", "", 200, `{"delete_protection":false}`})
 	diags := ds.ReadContext(context.Background(), d, config)
 	require.False(t, diags.HasError(), "%v", diags)
 	assert.Equal(t, "secret /?#%", d.Id())

@@ -10,19 +10,20 @@ description: |-
 
 Resource representing KMS secret
 
-~> **Implementation status:** Creation and updates are not implemented yet, and deletion is not functional with the current schema. The configuration below describes the resource schema; applying it does not create a secret. Use the `vkcs_kms_secret` data source to read an existing secret.
+Secrets are protected from deletion by default. Before destroying a secret, set `delete_protection = false` and apply the change.
 
-Secret values read into `data` and `data_json` are stored in Terraform state. Neither field is currently marked as sensitive in the resource schema.
+Secret values in `data_json` are stored in Terraform state. This field is not marked as sensitive in the schema.
 
 ## Example Usage
 
 ```terraform
 resource "vkcs_kms_secret" "secret" {
-  path = "application/config"
+  path              = "application/config"
+  delete_protection = true
 
-  data = {
+  data_json = jsonencode({
     username = "example-user"
-  }
+  })
 }
 ```
 
@@ -30,13 +31,13 @@ resource "vkcs_kms_secret" "secret" {
 
 - `path` **required** *string* &rarr; Identifier (path) of the secret within the KMS secret store. Changing this forces a new resource.
 
-- `data` optional computed *map of* *string* &rarr; Data stored in the secret as a Terraform object of string key-value pairs. Refreshed from KMS when the resource is read.
-
-- `data_json` optional *string* &rarr; Data stored in the secret as a JSON object, represented as a string. When the resource is read, this field is populated from the same data as `data`.
+- `data_json` **required** *string* &rarr; Data stored in the secret as a JSON object, represented as a string. Use `jsonencode` to encode a Terraform object. Refreshed from KMS when the resource is read.
 
 - `created_time` optional computed *string* &rarr; Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.
 
 - `version` optional computed *number* &rarr; Current version of the secret returned in its metadata.
+
+- `delete_protection` optional *boolean* &rarr; Whether the secret is protected from deletion. Defaults to `true`. Set to `false` and apply before destroying the secret.
 
 ## Attributes Reference
 

@@ -3,6 +3,6 @@ data "vkcs_kms_secret" "secret" {
 }
 
 output "secret_data" {
-  value     = data.vkcs_kms_secret.secret.data
+  value     = jsondecode(data.vkcs_kms_secret.secret.data_json)
   sensitive = true
 }

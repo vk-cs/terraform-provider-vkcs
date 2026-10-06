@@ -10,7 +10,7 @@ description: |-
 
 A data source containing a KMS secret
 
-Secret values read into `data` and `data_json` are stored in Terraform state. Neither field is currently marked as sensitive in the data source schema.
+Secret values in `data_json` are stored in Terraform state. This field is not marked as sensitive in the schema.
 
 ## Example Usage
 
@@ -20,7 +20,7 @@ data "vkcs_kms_secret" "secret" {
 }
 
 output "secret_data" {
-  value     = data.vkcs_kms_secret.secret.data
+  value     = jsondecode(data.vkcs_kms_secret.secret.data_json)
   sensitive = true
 }
 ```
@@ -29,13 +29,13 @@ output "secret_data" {
 
 - `path` **required** *string* &rarr; Identifier (path) of the secret within the KMS secret store.
 
-- `data` optional computed *map of* *string* &rarr; Data stored in the secret as a Terraform object of string key-value pairs, populated from KMS when the data source is read.
-
-- `data_json` optional *string* &rarr; Data stored in the secret as a JSON object, represented as a string containing the same key-value pairs returned in `data`.
+- `data_json` optional *string* &rarr; Secret data as a JSON object, represented as a string and populated from KMS when the data source is read. Use `jsondecode` to access its fields.
 
 - `created_time` optional computed *string* &rarr; Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.
 
 - `version` optional computed *number* &rarr; Current version of the secret returned in its metadata. This field does not select a version to read.
+
+- `delete_protection` optional *boolean* &rarr; Whether the secret is protected from deletion, populated from KMS when the data source is read. This field does not change the deletion policy.
 
 ## Attributes Reference
 

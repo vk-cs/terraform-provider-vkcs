@@ -26,20 +26,20 @@ func ResourceKey() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "Key name",
+				Description: "Name of the KMS key. Changing this forces a new resource.",
 			},
 			KeyFieldType: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "Key type, choose one from list: `aes128-gcm96`, `aes256-gcm96` (default), `chacha20-poly1305`, `xchacha20-poly1305`",
 				Default:     "aes256-gcm96",
+				Description: "Type of the KMS key: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, or `xchacha20-poly1305`. Defaults to `aes256-gcm96`. Changing this forces a new resource.",
 			},
 			KeyFieldDeletionAllowed: {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "A flag that represents if key can be deleted or not",
 				Default:     false,
+				Description: "Whether KMS allows the key to be deleted. Defaults to `false`. Set to `true` and apply before destroying the key. Refreshed from KMS when the resource is read.",
 			},
 		},
 	}
@@ -74,21 +74,18 @@ func resourceKeyCreateContext(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldDeletionAllowed)
 	}
 
-	// If deletion_allowed is true - we need to wait for the key to be ready, then set this flag
-	if deletionAllowed {
-		var err error
-		for range retriesCount {
-			_, err = updateKey(kmsV1Client, name, keys.UpdateOpts{
-				DeletionAllowed: deletionAllowed,
-			})
-			if err == nil {
-				break
-			}
-			time.Sleep(defaultThreshold)
+	// We need to wait for the key to be ready, then set this flag
+	for range retriesCount {
+		_, err = updateKey(kmsV1Client, name, keys.UpdateOpts{
+			DeletionAllowed: deletionAllowed,
+		})
+		if err == nil {
+			break
 		}
-		if err != nil {
-			return diag.Errorf("Error updating key configuration: %s", err)
-		}
+		time.Sleep(defaultThreshold)
+	}
+	if err != nil {
+		return diag.Errorf("Error updating key configuration: %s", err)
 	}
 
 	d.SetId(name)

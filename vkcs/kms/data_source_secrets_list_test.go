@@ -40,6 +40,7 @@ func TestAccKMSSecretsListDataSource_basic(t *testing.T) {
 const testAccKMSSecretsListDataSourceBasic = `
 resource "vkcs_kms_secret" "secret" {
   path = %q
+  delete_protection = false
   data_json = jsonencode({ password = "test-password" })
 }
 
@@ -96,10 +97,8 @@ func TestKMSSecretsListDataSourceRead_errors(t *testing.T) {
 		status int
 		body   string
 	}{
-		{name: "not found", status: http.StatusNotFound, body: `{"errors"
-"fmt":["secrets not found"]}`},
-		{name: "forbidden", status: http.StatusForbidden, body: `{"errors"
-"fmt":["permission denied"]}`},
+		{name: "not found", status: http.StatusNotFound, body: `{"errors":["secrets not found"]}`},
+		{name: "forbidden", status: http.StatusForbidden, body: `{"errors":["permission denied"]}`},
 		{name: "invalid JSON", status: http.StatusOK, body: `invalid`},
 		{name: "invalid keys type", status: http.StatusOK, body: `{"data":{"keys":123}}`},
 		{name: "invalid key element", status: http.StatusOK, body: `{"data":{"keys":[123]}}`},

@@ -21,29 +21,29 @@ func DataSourceSecret() *schema.Resource {
 			SecretFieldPath: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Identifier of a secret",
+				Description: "Identifier (path) of the secret within the KMS secret store.",
 			},
 			SecretFieldDataJSON: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Data stored in secret as a JSON object",
+				Description: "Secret data as a JSON object, represented as a string and populated from KMS when the data source is read. Use `jsondecode` to access its fields.",
 			},
 			SecretFieldCreatedTime: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Time of secret's creation",
+				Description: "Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.",
 			},
 			SecretFieldVersion: {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "Current version of secret",
+				Description: "Current version of the secret returned in its metadata. This field does not select a version to read.",
 			},
 			SecretFieldDeleteProtection: {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "A flag that represents if secret can be deleted or not",
+				Description: "Whether the secret is protected from deletion, populated from KMS when the data source is read. This field does not change the deletion policy.",
 			},
 		},
 	}

@@ -15,7 +15,7 @@ import (
 
 func TestKMSSecretResourceRead(t *testing.T) {
 	body := `{"data":{"data":{"username":"alice","password":"test-password"},"metadata":{"created_time":"2026-09-01T10:00:00Z","version":3}}}`
-	config := newSecretDataSourceTestConfig(t, http.StatusOK, body)
+	config := newSecretDataSourceTestConfig(t, http.StatusOK, body, false)
 	ds := kms.ResourceSecret()
 	d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{
 		"path":      "test-secret",
@@ -30,6 +30,7 @@ func TestKMSSecretResourceRead(t *testing.T) {
 	assert.JSONEq(t, `{"username":"alice","password":"test-password"}`, d.Get("data_json").(string))
 	assert.Equal(t, "2026-09-01 10:00:00 +0000 UTC", d.Get("created_time"))
 	assert.Equal(t, 3, d.Get("version"))
+	assert.Equal(t, false, d.Get(kms.SecretFieldDeleteProtection))
 }
 
 func TestKMSSecretResourceRead_errors(t *testing.T) {
@@ -82,7 +83,7 @@ func TestKMSSecretResourceWrite(t *testing.T) {
 				call = r.UpdateContext
 				d.SetId("secret /?#%")
 			}
-			config := newKMSResourceTestConfig(t, kmsResourceRequest{"POST", "secret/data/secret%20%2F%3F%23%25", `{"data":"{\"password\":\"new-value\"}"}`, 200, `{"data":{"created_time":"2026-09-01T10:00:00Z","version":2}}`})
+			config := newKMSResourceTestConfig(t, kmsResourceRequest{"POST", "secret/data/secret%20%2F%3F%23%25", `{"data":{"password":"new-value"}}`, 200, `{"data":{"created_time":"2026-09-01T10:00:00Z","version":2}}`}, kmsResourceRequest{"PUT", "secret/metadata/delete-protection/secret%20%2F%3F%23%25", `{"delete_protection":true}`, 200, `{}`})
 			diags := call(context.Background(), d, config)
 			require.False(t, diags.HasError(), "%v", diags)
 			assert.Equal(t, "secret /?#%", d.Id())
@@ -97,7 +98,7 @@ func TestKMSSecretResourceDelete(t *testing.T) {
 	r := kms.ResourceSecret()
 	d := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{"path": "secret /?#%"})
 	d.SetId("secret /?#%")
-	config := newKMSResourceTestConfig(t, kmsResourceRequest{"DELETE", "secret/metadata/secret%20%2F%3F%23%25", "", 204, ""})
+	config := newKMSResourceTestConfig(t, kmsResourceRequest{"DELETE", "secret/metadata/secret%20%2F%3F%23%25", "", 204, ""}, kmsResourceRequest{"GET", "secret/data/secret%20%2F%3F%23%25", "", 404, `{"errors":["secret not found"]}`})
 	diags := r.DeleteContext(context.Background(), d, config)
 	require.False(t, diags.HasError(), "%v", diags)
 }
@@ -120,7 +121,7 @@ func TestKMSSecretResourceWriteErrors(t *testing.T) {
 				r := kms.ResourceSecret()
 				d := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{"path": "test-secret", "data_json": `{}`, "created_time": "old-time", "version": 1})
 				var call func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics = r.CreateContext
-				request := kmsResourceRequest{"POST", "secret/data/test-secret", `{"data":"{}"}`, failure.status, failure.body}
+				request := kmsResourceRequest{"POST", "secret/data/test-secret", `{"data":{}}`, failure.status, failure.body}
 				prefix := "Error creating secret:"
 				if operation != "create" {
 					d.SetId("test-secret")

@@ -99,7 +99,7 @@ func TestKMSKeyResourceCreate(t *testing.T) {
 			d := schema.TestResourceDataRaw(t, r.Schema, input)
 			config := newKMSResourceTestConfig(
 				t,
-				kmsResourceRequest{"POST", "transit/keys", fmt.Sprintf(`{"name":"test-key","type":%q}`, tc.keyType), 201, `{"data":{"name":"test-key"}}`},
+				kmsResourceRequest{"POST", "transit/keys/test-key", fmt.Sprintf(`{"type":%q}`, tc.keyType), 200, `{"data":{"name":"test-key"}}`},
 				kmsResourceRequest{"POST", "transit/keys/test-key/config", fmt.Sprintf(`{"deletion_allowed":%t}`, tc.allowed), 200, `{"data":{}}`},
 			)
 			diags := r.CreateContext(context.Background(), d, config)
@@ -129,7 +129,7 @@ func TestKMSKeyResourceDelete(t *testing.T) {
 	r := kms.ResourceKey()
 	d := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{"name": "key /?#%"})
 	d.SetId("key /?#%")
-	config := newKMSResourceTestConfig(t, kmsResourceRequest{"DELETE", "transit/keys/key%20%2F%3F%23%25", "", 204, ""})
+	config := newKMSResourceTestConfig(t, kmsResourceRequest{"DELETE", "transit/keys/key%20%2F%3F%23%25", "", 204, ""}, kmsResourceRequest{"GET", "transit/keys/key%20%2F%3F%23%25", "", 404, `{"errors":["key not found"]}`})
 	diags := r.DeleteContext(context.Background(), d, config)
 	require.False(t, diags.HasError(), "%v", diags)
 }
@@ -151,12 +151,12 @@ func TestKMSKeyResourceWriteErrors(t *testing.T) {
 				r := kms.ResourceKey()
 				d := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{"name": "test-key"})
 				var call func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics = r.CreateContext
-				request := kmsResourceRequest{"POST", "transit/keys", `{"name":"test-key","type":"aes256-gcm96"}`, failure.status, failure.body}
+				request := kmsResourceRequest{"POST", "transit/keys/test-key", `{"type":"aes256-gcm96"}`, failure.status, failure.body}
 				prefix := "Error creating key:"
 				var requests []kmsResourceRequest
 				switch operation {
 				case "configure after create":
-					requests = append(requests, kmsResourceRequest{"POST", "transit/keys", request.body, 201, `{"data":{}}`})
+					requests = append(requests, kmsResourceRequest{"POST", "transit/keys/test-key", request.body, 200, `{"data":{}}`})
 					fallthrough
 				case "update":
 					request.path = "transit/keys/test-key/config"
@@ -175,9 +175,15 @@ func TestKMSKeyResourceWriteErrors(t *testing.T) {
 					prefix = "Error deleting key:"
 				}
 				if operation == "create" && failure.name == "invalid JSON" {
-					request.status = 201
+					request.status = 200
 				}
-				config := newKMSResourceTestConfig(t, append(requests, request)...)
+				requests = append(requests, request)
+				if operation == "configure after create" {
+					for range 9 {
+						requests = append(requests, request)
+					}
+				}
+				config := newKMSResourceTestConfig(t, requests...)
 				diags := call(context.Background(), d, config)
 				require.True(t, diags.HasError())
 				require.Len(t, diags, 1)
