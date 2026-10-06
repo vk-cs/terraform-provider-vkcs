@@ -74,7 +74,7 @@ func resourceKeyCreateContext(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldDeletionAllowed)
 	}
 
-	// If deletion_allowed is true - we need to wait for key to be ready
+	// If deletion_allowed is true - we need to wait for the key to be ready, then set this flag
 	if deletionAllowed {
 		var err error
 		for range retriesCount {

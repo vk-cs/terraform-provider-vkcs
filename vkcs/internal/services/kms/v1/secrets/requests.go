@@ -57,7 +57,7 @@ func CreateOrUpdate(client *gophercloud.ServiceClient, path string, opts CreateO
 }
 
 type SetDeleteProtectionOpts struct {
-	Data map[string]any `json:"data"`
+	DeleteProtection bool `json:"delete_protection"`
 }
 
 func (opts SetDeleteProtectionOpts) Map() (map[string]any, error) {

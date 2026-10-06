@@ -85,6 +85,28 @@ func resourceSecretCreateContext(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("Error creating secret: %s", err)
 	}
 
+	deleteProtection, ok := d.Get(SecretFieldDeleteProtection).(bool)
+	if !ok {
+		return diag.Errorf(diagRetrieveErrorTemplate, SecretFieldDeleteProtection)
+	}
+
+	// If delete_protection is false - we need to wait for the secret to be ready, then set this flag
+	if !deleteProtection {
+		var err error
+		for range retriesCount {
+			err = setSecretDeleteProtection(kmsV1Client, path, secrets.SetDeleteProtectionOpts{
+				DeleteProtection: deleteProtection,
+			})
+			if err == nil {
+				break
+			}
+			time.Sleep(defaultThreshold)
+		}
+		if err != nil {
+			return diag.Errorf("Error updating secret delete protection: %s", err)
+		}
+	}
+
 	d.SetId(path)
 
 	err = d.Set(SecretFieldCreatedTime, secret.Data.CreatedTime.String())
@@ -213,7 +235,7 @@ func resourceSecretDeleteContext(ctx context.Context, d *schema.ResourceData, me
 	// Waiting for the secret to be fully deleted
 	for range retriesCount {
 		var err error
-		_, err = getKey(kmsV1Client, path)
+		_, err = getSecret(kmsV1Client, path)
 		if err != nil {
 			break
 		}
