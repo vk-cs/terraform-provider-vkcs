@@ -12,6 +12,9 @@ description: |-
 
 ## Example Usage
 {{tffile .ExampleFile}}
+
+~> **Note:** The `members` attribute is read-only. Server group membership is managed through the `server_group_id` argument of the `vkcs_compute_instance` resource (or the deprecated `scheduler_hints.group` argument at creation time).
+
 {{ .SchemaMarkdown }}
 ## Policies
 

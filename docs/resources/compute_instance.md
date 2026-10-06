@@ -50,6 +50,46 @@ resource "vkcs_compute_instance" "basic" {
 ```
 Use `vkcs_compute_floatingip_associate` to make the instance accessible from Internet.
 
+### Instance in a server group
+The `server_group_id` argument places the instance into a server group at creation time and allows moving it between groups later without recreating the server. An active instance is moved only when `vendor_options.stop_before_server_group_change` is enabled. To remove the instance from the group, remove the argument from the configuration.
+```terraform
+resource "vkcs_compute_servergroup" "example" {
+  name     = "servergroup-tf-example"
+  policies = ["soft-anti-affinity"]
+}
+
+resource "vkcs_compute_instance" "servergroup" {
+  name              = "servergroup-tf-example"
+  availability_zone = "MS1"
+  flavor_name       = "Basic-1-2-20"
+
+  block_device {
+    source_type           = "image"
+    uuid                  = data.vkcs_images_image.debian.id
+    destination_type      = "volume"
+    volume_size           = 10
+    volume_type           = "ceph-ssd"
+    delete_on_termination = true
+  }
+
+  network {
+    uuid = vkcs_networking_network.app.id
+  }
+
+  security_group_ids = [
+    vkcs_networking_secgroup.admin.id
+  ]
+
+  # The server is placed into the group at creation time and can be moved
+  # between groups later without recreation.
+  server_group_id = vkcs_compute_servergroup.example.id
+
+  depends_on = [
+    vkcs_networking_router_interface.app
+  ]
+}
+```
+
 ### Instance with volume, tags and external IP
 ~> **Attention:** First, you should create the block storage volume and then attach it to the instance. Failing to do so will result in the virtual machine being provisioned with an ephemeral disk instead. Ephemeral disks lack certain capabilities, such as the ability to move or resize them. It's essential to adhere to the correct order of operations to avoid limitations in the management of block storage.
 ```terraform
@@ -369,11 +409,13 @@ output "windows_password" {
 - `region` optional *string* &rarr;  The region in which to create the server instance. If omitted, the `region` argument of the provider is used. Changing this creates a new server.
 
 - `scheduler_hints` optional &rarr;  Provide the Nova scheduler with hints on how the instance should be launched. The available hints are described below.
-    - `group` optional *string* &rarr;  A UUID of a Server Group. The instance will be placed into that group.
+    - `group` optional deprecated *string* &rarr;  A UUID of a Server Group. The instance will be placed into that group. **Deprecated** Use the `server_group_id` argument instead.
 
 - `security_group_ids` optional *set of* *string* &rarr;  An array of one or more security group ids to associate with the server. Changing this results in adding/removing security groups from the existing server. <br>**Note:** When attaching the instance to networks using Ports, place the security groups on the Port and not the instance.<br>**New since v0.7.3**.
 
 - `security_groups` optional deprecated *set of* *string* &rarr;  An array of one or more security group names to associate with the server. Changing this results in adding/removing security groups from the existing server. <br>**Note:** When attaching the instance to networks using Ports, place the security groups on the Port and not the instance. **Deprecated** Configure `security_group_ids` instead.
+
+- `server_group_id` optional *string* &rarr;  The UUID of a Server Group to place the instance into. Unlike `scheduler_hints.group`, this can be changed without recreating the server: the server is added to or removed from the group. Adding a server to a group requires the server to be stopped or shelved; enable `vendor_options.stop_before_server_group_change` to let the provider stop and start an active server automatically. Removing this argument removes the server from the group. Conflicts with `scheduler_hints`.
 
 - `stop_before_destroy` optional *boolean* &rarr;  Whether to try stop instance gracefully before destroying it, thus giving chance for guest OS daemons to stop correctly. If instance doesn't stop within timeout, it will be destroyed anyway.
 
@@ -387,6 +429,8 @@ output "windows_password" {
     - `get_password_data` optional *boolean* &rarr;  If true, wait for initial windows admin password to be generated and retrieve it. Use this attribute only for instances running Microsoft Windows. The password data is exported to the `password_data` attribute. The password will be generated only if you specify the instance `key_pair`. The password will be read only once when the instance is created.<br>**New since v0.9.3**.
 
     - `ignore_resize_confirmation` optional *boolean* &rarr;  Boolean to control whether to ignore manual confirmation of the instance resizing.
+
+    - `stop_before_server_group_change` optional *boolean* &rarr;  If true, the provider stops an active instance before changing its server group membership via `server_group_id` and starts it back afterwards.
 
 
 ## Attributes Reference

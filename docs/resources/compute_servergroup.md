@@ -17,6 +17,9 @@ resource "vkcs_compute_servergroup" "cusom_group" {
   policies = ["anti-affinity"]
 }
 ```
+
+~> **Note:** The `members` attribute is read-only. Server group membership is managed through the `server_group_id` argument of the `vkcs_compute_instance` resource (or the deprecated `scheduler_hints.group` argument at creation time).
+
 ## Argument Reference
 - `name` **required** *string* &rarr;  A unique name for the server group. Changing this creates a new server group.
 
@@ -31,7 +34,7 @@ resource "vkcs_compute_servergroup" "cusom_group" {
 In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  ID of the resource.
 
-- `members` *string* &rarr;  The instances that are part of this server group.
+- `members` *string* &rarr;  The instances that are part of this server group. Read-only.
 
 
 ## Policies

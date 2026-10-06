@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.18.0",
+  "provider_version": "v0.18.1",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -900,8 +900,9 @@
                 "group": {
                   "type": "TypeString",
                   "optional": true,
-                  "description": "A UUID of a Server Group. The instance will be placed into that group.",
-                  "force_new": true
+                  "description": "A UUID of a Server Group. The instance will be placed into that group. Deprecated, use `server_group_id` instead.",
+                  "force_new": true,
+                  "deprecated": "Use the `server_group_id` argument instead."
                 }
               }
             }
@@ -925,6 +926,12 @@
               "type": "TypeString"
             },
             "deprecated": "Configure `security_group_ids` instead."
+          },
+          "server_group_id": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The UUID of a Server Group to place the instance into. Unlike `scheduler_hints.group`, this can be changed without recreating the server: the server is added to or removed from the group. Adding a server to a group requires the server to be stopped or shelved; enable `vendor_options.stop_before_server_group_change` to let the provider stop and start an active server automatically. Removing this argument removes the server from the group. Conflicts with `scheduler_hints`.",
+            "new_since": "v0.18.1"
           },
           "stop_before_destroy": {
             "type": "TypeBool",
@@ -970,6 +977,13 @@
                   "optional": true,
                   "default": false,
                   "description": "Boolean to control whether to ignore manual confirmation of the instance resizing."
+                },
+                "stop_before_server_group_change": {
+                  "type": "TypeBool",
+                  "optional": true,
+                  "default": false,
+                  "description": "If true, the provider stops an active instance before changing its server group membership via `server_group_id` and starts it back afterwards.",
+                  "new_since": "v0.18.1"
                 }
               }
             },
@@ -6842,7 +6856,7 @@
           "protocol": {
             "type": "TypeString",
             "optional": true,
-            "description": "The layer 4 protocol type, valid values are following. Changing this creates a new security group rule. This is required if you want to specify a port range.\n  * __tcp__\n  * __udp__\n  * __icmp__\n  * __ah__\n  * __dccp__\n  * __egp__\n  * __esp__\n  * __gre__\n  * __igmp__\n  * __ospf__\n  * __pgm__\n  * __rsvp__\n  * __sctp__\n  * __udplite__\n  * __vrrp__",
+            "description": "The layer 4 protocol type, valid values are following or an IP protocol number. Changing this creates a new security group rule. This is required if you want to specify a port range.\n  * __tcp__\n  * __udp__\n  * __icmp__\n  * __ah__\n  * __dccp__\n  * __egp__\n  * __esp__\n  * __gre__\n  * __igmp__\n  * __ospf__\n  * __pgm__\n  * __rsvp__\n  * __sctp__\n  * __udplite__\n  * __vrrp__",
             "computed": true,
             "force_new": true
           },
@@ -8646,6 +8660,47 @@
           }
         },
         "description": "Use this data source to get the compute quotaset of an VKCS project."
+      },
+      "vkcs_compute_servergroup": {
+        "schema": {
+          "members": {
+            "type": "TypeList",
+            "description": "The instances that are part of this server group.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "metadata": {
+            "type": "TypeMap",
+            "description": "The metadata of the server group.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "The name of the server group."
+          },
+          "policies": {
+            "type": "TypeList",
+            "description": "The set of policies for the server group.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "region": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "The region in which to obtain the Compute client. If omitted, the `region` argument of the provider is used.",
+            "computed": true
+          }
+        },
+        "description": "Use this data source to get the ID of an available VKCS server group.",
+        "new_since": "v0.18.1"
       },
       "vkcs_dataplatform_product": {
         "schema": {
