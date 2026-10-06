@@ -6,29 +6,6 @@ import (
 	"github.com/gophercloud/gophercloud"
 )
 
-// GetResult is the result of a get request.
-// Call its Extract method to interpret a result as a ListSecrets.
-type GetResult struct {
-	gophercloud.Result
-}
-
-type Secret struct {
-	Data struct {
-		Data     map[string]string `json:"data"`
-		Metadata struct {
-			CreatedTime time.Time `json:"created_time"`
-			Version     int       `json:"version"`
-		} `json:"metadata"`
-	} `json:"data"`
-}
-
-// Extract interprets a get result as a secret.
-func (r GetResult) Extract() (Secret, error) {
-	var s Secret
-	err := r.ExtractInto(&s)
-	return s, err
-}
-
 // ListResult is the result of a list request.
 // Call its Extract method to interpret a result as a Secrets.
 type ListResult struct {
@@ -41,11 +18,54 @@ type Secrets struct {
 	} `json:"data"`
 }
 
-// Extract interprets a get result as a list of secrets.
+// Extract interprets a get result as a list of secrets' keys.
 func (r ListResult) Extract() ([]string, error) {
 	var s Secrets
 	err := r.ExtractInto(&s)
 	return s.Data.Keys, err
+}
+
+// GetResult is the result of a get request.
+// Call its Extract method to interpret a result as a GetSecret.
+type GetResult struct {
+	gophercloud.Result
+}
+
+type GetSecret struct {
+	Data struct {
+		Data     map[string]string `json:"data"`
+		Metadata struct {
+			CreatedTime time.Time `json:"created_time"`
+			Version     int       `json:"version"`
+		} `json:"metadata"`
+	} `json:"data"`
+}
+
+// Extract interprets a get result as a GetSecret.
+func (r GetResult) Extract() (GetSecret, error) {
+	var s GetSecret
+	err := r.ExtractInto(&s)
+	return s, err
+}
+
+// CreateOrUpdateResult is the result of a get request.
+// Call its Extract method to interpret a result as a CreateOrUpdateSecret.
+type CreateOrUpdateResult struct {
+	gophercloud.Result
+}
+
+type CreateOrUpdateSecret struct {
+	Data struct {
+		CreatedTime time.Time `json:"created_time"`
+		Version     int       `json:"version"`
+	} `json:"data"`
+}
+
+// Extract interprets a get result as a CreateOrUpdateSecret.
+func (r CreateOrUpdateResult) Extract() (CreateOrUpdateSecret, error) {
+	var s CreateOrUpdateSecret
+	err := r.ExtractInto(&s)
+	return s, err
 }
 
 // DeleteResult is the result of a delete request.

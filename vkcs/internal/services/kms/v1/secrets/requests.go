@@ -25,8 +25,30 @@ func Get(client *gophercloud.ServiceClient, path string) (r GetResult) {
 	return
 }
 
-func Delete(client *gophercloud.ServiceClient, name string) (r DeleteResult) {
-	resp, err := client.Get(secretMetadataURL(client, name), &r.Body, &gophercloud.RequestOpts{
+type CreateOrUpdateOpts struct {
+	Data string `json:"data"`
+}
+
+func (opts CreateOrUpdateOpts) Map() (map[string]any, error) {
+	return gophercloud.BuildRequestBody(opts, "")
+}
+
+func CreateOrUpdate(client *gophercloud.ServiceClient, path string, opts CreateOrUpdateOpts) (r CreateOrUpdateResult) {
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := client.Post(secretDataURL(client, path), b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{http.StatusOK},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+func Delete(client *gophercloud.ServiceClient, path string) (r DeleteResult) {
+	resp, err := client.Delete(secretMetadataURL(client, path), &gophercloud.RequestOpts{
 		OkCodes: []int{http.StatusNoContent},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)

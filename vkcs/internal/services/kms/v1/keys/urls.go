@@ -18,6 +18,10 @@ func keyURL(c *gophercloud.ServiceClient, keyName string) string {
 	return c.ServiceURL(baseURL(), "keys", url.PathEscape(keyName))
 }
 
+func keyConfigURL(c *gophercloud.ServiceClient, keyName string) string {
+	return c.ServiceURL(baseURL(), "keys", url.PathEscape(keyName), "config")
+}
+
 func encryptURL(c *gophercloud.ServiceClient, keyName string) string {
 	return c.ServiceURL(baseURL(), "encrypt", url.PathEscape(keyName))
 }

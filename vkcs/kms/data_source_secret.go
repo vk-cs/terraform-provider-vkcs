@@ -23,12 +23,6 @@ func DataSourceSecret() *schema.Resource {
 				Required:    true,
 				Description: "Identifier of a secret",
 			},
-			"data": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Computed:    true,
-				Description: "Data stored in secret as a Terraform object",
-			},
 			"data_json": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -68,11 +62,6 @@ func dataSourceSecretReadContext(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	d.SetId(path)
-
-	err = d.Set("data", secret.Data.Data)
-	if err != nil {
-		return diag.Errorf("Error setting data_json: %s", err)
-	}
 
 	secretString, err := json.Marshal(secret.Data.Data)
 	if err != nil {

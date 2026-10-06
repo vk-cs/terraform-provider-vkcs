@@ -18,7 +18,61 @@ func List(client *gophercloud.ServiceClient) (r ListResult) {
 
 func Get(client *gophercloud.ServiceClient, name string) (r GetResult) {
 	resp, err := client.Get(keyURL(client, name), &r.Body, &gophercloud.RequestOpts{
-		OkCodes: []int{200},
+		OkCodes: []int{http.StatusOK},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+type CreateOpts struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+func (opts CreateOpts) Map() (map[string]any, error) {
+	return gophercloud.BuildRequestBody(opts, "")
+}
+
+func Create(client *gophercloud.ServiceClient, opts CreateOpts) (r CreateResult) {
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := client.Post(client.ServiceURL(baseURL(), "keys"), b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{http.StatusCreated},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+type UpdateOpts struct {
+	DeletionAllowed bool `json:"deletion_allowed"`
+}
+
+func (opts UpdateOpts) Map() (map[string]any, error) {
+	return gophercloud.BuildRequestBody(opts, "")
+}
+
+func Update(client *gophercloud.ServiceClient, name string, opts UpdateOpts) (r CreateResult) {
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := client.Post(keyConfigURL(client, name), b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{http.StatusOK},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+func Delete(client *gophercloud.ServiceClient, name string) (r DeleteResult) {
+	resp, err := client.Delete(keyURL(client, name), &gophercloud.RequestOpts{
+		OkCodes: []int{http.StatusNoContent},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
@@ -40,7 +94,7 @@ func Encrypt(client *gophercloud.ServiceClient, key string, opts EncryptOpts) (r
 		return
 	}
 	resp, err := client.Post(encryptURL(client, key), b, &r.Body, &gophercloud.RequestOpts{
-		OkCodes: []int{200},
+		OkCodes: []int{http.StatusOK},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
@@ -62,7 +116,7 @@ func Decrypt(client *gophercloud.ServiceClient, key string, opts DecryptOpts) (r
 		return
 	}
 	resp, err := client.Post(decryptURL(client, key), b, &r.Body, &gophercloud.RequestOpts{
-		OkCodes: []int{200},
+		OkCodes: []int{http.StatusOK},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))

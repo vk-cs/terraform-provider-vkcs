@@ -21,6 +21,66 @@ func (r ListResult) Extract() ([]string, error) {
 	return k.Data.Keys, err
 }
 
+// GetResult is the result of a get request.
+// Call its Extract method to interpret a result as a GetKey.
+type GetResult struct {
+	gophercloud.Result
+}
+
+type GetKey struct {
+	Data struct {
+		Name            string `json:"name"`
+		Type            string `json:"type"`
+		DeletionAllowed bool   `json:"deletion_allowed"`
+	} `json:"data"`
+}
+
+// Extract interprets a get result as a GetKey.
+func (r GetResult) Extract() (GetKey, error) {
+	var k GetKey
+	err := r.ExtractInto(&k)
+	return k, err
+}
+
+// GetResult is the result of a create request.
+// Call its Extract method to interpret a result as a CreateKey.
+type CreateResult struct {
+	gophercloud.Result
+}
+
+type CreateKey struct {
+	Data struct {
+		Name string `json:"name"`
+		Type string `json:"type"`
+	} `json:"data"`
+}
+
+// Extract interprets a create result as a CreateKey.
+func (r CreateResult) Extract() (CreateKey, error) {
+	var k CreateKey
+	err := r.ExtractInto(&k)
+	return k, err
+}
+
+// UpdateResult is the result of an update request.
+// Call its Extract method to interpret a result as an UpdateKey.
+type UpdateResult struct {
+	gophercloud.Result
+}
+
+type UpdateKey struct {
+	Data struct {
+		DeletionAllowed bool `json:"deletion_allowed"`
+	} `json:"data"`
+}
+
+// Extract interprets an update result as an UpdateKey.
+func (r UpdateResult) Extract() (UpdateKey, error) {
+	var k UpdateKey
+	err := r.ExtractInto(&k)
+	return k, err
+}
+
 // DeleteResult is the result of a delete request.
 // Call its Extract method to interpret a result as an error.
 type DeleteResult struct {
@@ -30,27 +90,6 @@ type DeleteResult struct {
 // Extract interprets a get result as an error.
 func (r DeleteResult) Extract() error {
 	return r.Err
-}
-
-// GetResult is the result of a get request.
-// Call its Extract method to interpret a result as a Key.
-type GetResult struct {
-	gophercloud.Result
-}
-
-type Key struct {
-	Data struct {
-		Name            string `json:"name"`
-		Type            string `json:"type"`
-		DeletionAllowed bool   `json:"deletion_allowed"`
-	} `json:"data"`
-}
-
-// Extract interprets a get result as a Key.
-func (r GetResult) Extract() (Key, error) {
-	var k Key
-	err := r.ExtractInto(&k)
-	return k, err
 }
 
 // EncryptResult is the result of an encrypt request. Call its Extract method

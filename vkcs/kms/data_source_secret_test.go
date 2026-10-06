@@ -62,7 +62,6 @@ func TestKMSSecretDataSourceRead(t *testing.T) {
 	require.False(t, diags.HasError(), "%v", diags)
 	assert.Equal(t, "test-secret", d.Id())
 	assert.Equal(t, "test-secret", d.Get("path"))
-	assert.Equal(t, map[string]interface{}{"username": "alice", "password": "test-password"}, d.Get("data"))
 	assert.JSONEq(t, `{"username":"alice","password":"test-password"}`, d.Get("data_json").(string))
 	assert.Equal(t, "2026-09-01 10:00:00 +0000 UTC", d.Get("created_time"))
 	assert.Equal(t, 3, d.Get("version"))

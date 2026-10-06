@@ -13,12 +13,32 @@ func listKeys(client *gophercloud.ServiceClient) ([]string, error) {
 	return k, nil
 }
 
-func getKey(client *gophercloud.ServiceClient, name string) (keys.Key, error) {
+func getKey(client *gophercloud.ServiceClient, name string) (keys.GetKey, error) {
 	k, err := keys.Get(client, name).Extract()
 	if err != nil {
-		return keys.Key{}, err
+		return keys.GetKey{}, err
 	}
 	return k, nil
+}
+
+func createKey(client *gophercloud.ServiceClient, opts keys.CreateOpts) (keys.CreateKey, error) {
+	k, err := keys.Create(client, opts).Extract()
+	if err != nil {
+		return keys.CreateKey{}, err
+	}
+	return k, nil
+}
+
+func updateKey(client *gophercloud.ServiceClient, name string, opts keys.UpdateOpts) (keys.CreateKey, error) {
+	k, err := keys.Update(client, name, opts).Extract()
+	if err != nil {
+		return keys.CreateKey{}, err
+	}
+	return k, nil
+}
+
+func deleteKey(client *gophercloud.ServiceClient, name string) error {
+	return keys.Delete(client, name).Extract()
 }
 
 func encrypt(client *gophercloud.ServiceClient, key string, plaintext string) (string, error) {
