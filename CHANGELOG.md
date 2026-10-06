@@ -6,9 +6,12 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.18.1 (unreleased)
+#### v0.19.0 (unreleased)
 - Fix: protocol of vkcs_networking_secgroup_rule specified as a number causing recreation of the rule on Sprut SDN.
 - Fix: allow the creation of an insecure registry without dots in the domain name.
+- Add data source `vkcs_compute_servergroup`.
+- Add ability to manage server group membership of `vkcs_compute_instance` via the `server_group_id` argument without recreating the server.
+- Deprecate the `group` argument of `vkcs_compute_instance.scheduler_hints` in favor of `server_group_id`.
 
 #### v0.18.0
 - Add ability to change availability_zone of vkcs_compute_instance without recreating the instance.
