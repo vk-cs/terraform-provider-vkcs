@@ -9,15 +9,15 @@ description: |-
 
 #### v0.19.0 (unreleased)
 - Added KMS resources:
-  Secrets:
+  - Secrets:
     - `vkcs_kms_secret`: a secret resouce
-  Keys:
+  - Keys:
     - `vkcs_kms_key`: a key resource
 - Added KMS data sources:
-  Secrets:
+  - Secrets:
     - `vkcs_kms_secret`: get the secret by path
     - `vkcs_kms_secrets_list`: get the list of secrets
-  Keys:
+  - Keys:
     - `vkcs_kms_key`: get the key by name
     - `vkcs_kms_keys_list`: get the list of keys
     - `vkcs_kms_key_encrypt`: encrypt arbitrary data using a key
