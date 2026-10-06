@@ -204,6 +204,7 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_compute_availability_zones":    compute.DataSourceComputeAvailabilityZones(),
 			"vkcs_compute_flavor":                compute.DataSourceComputeFlavor(),
 			"vkcs_compute_quotaset":              compute.DataSourceComputeQuotaset(),
+			"vkcs_compute_servergroup":           compute.DataSourceComputeServerGroup(),
 			"vkcs_images_image":                  images.DataSourceImagesImage(),
 			"vkcs_networking_network":            networking.DataSourceNetworkingNetwork(),
 			"vkcs_networking_router":             networking.DataSourceNetworkingRouter(),
