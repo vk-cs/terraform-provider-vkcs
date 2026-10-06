@@ -19,18 +19,18 @@ func DataSourceKeyEncrypt() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
-			"key": {
+			KeyCryptFieldKey: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Key used to encrypt data",
 			},
-			"plaintext": {
+			KeyCryptFieldPlaintext: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
 				Description: "Data to encrypt encoded in base64",
 			},
-			"ciphertext": {
+			KeyCryptFieldCiphertext: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Resulting encrypted data",
@@ -46,14 +46,14 @@ func dataSourceKeyEncryptReadContext(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("Error creating VKCS KMS client: %s", err)
 	}
 
-	key, ok := d.Get("key").(string)
+	key, ok := d.Get(KeyCryptFieldKey).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving key from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, KeyCryptFieldKey)
 	}
 
-	plaintext, ok := d.Get("plaintext").(string)
+	plaintext, ok := d.Get(KeyCryptFieldPlaintext).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving plaintext from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, KeyCryptFieldPlaintext)
 	}
 
 	ciphertext, err := encrypt(kmsV1Client, key, plaintext)
@@ -64,9 +64,9 @@ func dataSourceKeyEncryptReadContext(ctx context.Context, d *schema.ResourceData
 	hash := sha256.Sum256([]byte(ciphertext))
 	d.SetId(hex.EncodeToString(hash[:]))
 
-	err = d.Set("ciphertext", ciphertext)
+	err = d.Set(KeyCryptFieldCiphertext, ciphertext)
 	if err != nil {
-		return diag.Errorf("Error setting ciphertext: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, KeyCryptFieldCiphertext, err)
 	}
 
 	return nil

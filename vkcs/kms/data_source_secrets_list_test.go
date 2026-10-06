@@ -3,13 +3,14 @@ package kms_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/gophercloud/gophercloud"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
@@ -18,20 +19,14 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 )
 
-// The KMS resource does not implement creation yet, so this read-only acceptance
-// test uses an existing secret supplied through OS_KMS_SECRET_NAME.
 func TestAccKMSSecretsListDataSource_basic(t *testing.T) {
-	name := os.Getenv("OS_KMS_SECRET_NAME")
+	name := sdkacctest.RandomWithPrefix("tf-acc-kms-secret")
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			if name == "" {
-				t.Fatal("OS_KMS_SECRET_NAME must be set for this acceptance test")
-			}
-		},
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccKMSSecretsListDataSourceBasic,
+				Config: fmt.Sprintf(testAccKMSSecretsListDataSourceBasic, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", "id"),
 					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", "secrets_count"),
@@ -43,7 +38,14 @@ func TestAccKMSSecretsListDataSource_basic(t *testing.T) {
 }
 
 const testAccKMSSecretsListDataSourceBasic = `
-data "vkcs_kms_secrets_list" "secrets" {}
+resource "vkcs_kms_secret" "secret" {
+  path = %q
+  data_json = jsonencode({ password = "test-password" })
+}
+
+data "vkcs_kms_secrets_list" "secrets" {
+  depends_on = [vkcs_kms_secret.secret]
+}
 `
 
 func TestKMSSecretsListDataSourceRead(t *testing.T) {
@@ -94,9 +96,13 @@ func TestKMSSecretsListDataSourceRead_errors(t *testing.T) {
 		status int
 		body   string
 	}{
-		{name: "not found", status: http.StatusNotFound, body: `{"errors":["secrets not found"]}`},
-		{name: "forbidden", status: http.StatusForbidden, body: `{"errors":["permission denied"]}`},
+		{name: "not found", status: http.StatusNotFound, body: `{"errors"
+"fmt":["secrets not found"]}`},
+		{name: "forbidden", status: http.StatusForbidden, body: `{"errors"
+"fmt":["permission denied"]}`},
 		{name: "invalid JSON", status: http.StatusOK, body: `invalid`},
+		{name: "invalid keys type", status: http.StatusOK, body: `{"data":{"keys":123}}`},
+		{name: "invalid key element", status: http.StatusOK, body: `{"data":{"keys":[123]}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			config := newSecretsListDataSourceTestConfig(t, tc.status, tc.body)
@@ -126,8 +132,12 @@ func TestKMSSecretsListDataSourceRead_clientError(t *testing.T) {
 
 func newSecretsListDataSourceTestConfig(t *testing.T, status int, body string) *secretDataSourceTestConfig {
 	t.Helper()
+	calls := 0
+	t.Cleanup(func() { assert.Equal(t, 1, calls, "expected one KMS request") })
 	provider := &gophercloud.ProviderClient{}
 	provider.HTTPClient.Transport = secretDataSourceTestTransport(func(r *http.Request) (*http.Response, error) {
+		calls++
+		assert.Empty(t, r.URL.Fragment)
 		assert.Equal(t, http.MethodGet, r.Method)
 		assert.Equal(t, "/kms/user/v1/secret/metadata/", r.URL.Path)
 		assert.Equal(t, "list=true", r.URL.RawQuery)

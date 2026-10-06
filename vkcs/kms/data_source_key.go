@@ -17,17 +17,17 @@ func DataSourceKey() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
-			"name": {
+			KeyFieldName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Key name",
 			},
-			"type": {
+			KeyFieldType: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Key type, take a look at type parameter in OpenBao documentation: https://openbao.org/docs/api/secret/transit/#parameters",
+				Description: "Key type from list: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, `xchacha20-poly1305`",
 			},
-			"deletion_allowed": {
+			KeyFieldDeletionAllowed: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "A flag that shows if key can be deleted or not",
@@ -43,9 +43,9 @@ func dataSourceKeyReadContext(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("Error creating VKCS KMS client: %s", err)
 	}
 
-	name, ok := d.Get("name").(string)
+	name, ok := d.Get(KeyFieldName).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving name from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldName)
 	}
 
 	key, err := getKey(kmsV1Client, name)
@@ -55,19 +55,19 @@ func dataSourceKeyReadContext(ctx context.Context, d *schema.ResourceData, meta 
 
 	d.SetId(name)
 
-	err = d.Set("name", key.Data.Name)
+	err = d.Set(KeyFieldName, key.Data.Name)
 	if err != nil {
-		return diag.Errorf("Error setting name: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, KeyFieldName, err)
 	}
 
-	err = d.Set("type", key.Data.Type)
+	err = d.Set(KeyFieldType, key.Data.Type)
 	if err != nil {
-		return diag.Errorf("Error setting type: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, KeyFieldType, err)
 	}
 
-	err = d.Set("deletion_allowed", key.Data.DeletionAllowed)
+	err = d.Set(KeyFieldDeletionAllowed, key.Data.DeletionAllowed)
 	if err != nil {
-		return diag.Errorf("Error setting deletion_allowed: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, KeyFieldDeletionAllowed, err)
 	}
 
 	return nil

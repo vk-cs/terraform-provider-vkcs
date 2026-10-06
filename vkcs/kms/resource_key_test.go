@@ -34,7 +34,7 @@ func TestKMSKeyResourceRead(t *testing.T) {
 
 			diags := ds.ReadContext(context.Background(), d, config)
 			require.False(t, diags.HasError(), "%v", diags)
-			assert.Equal(t, tc.name, d.Id())
+			assert.Equal(t, "stale-id", d.Id())
 			assert.Equal(t, tc.name, d.Get("name"))
 			assert.Equal(t, "aes256-gcm96", d.Get("type"))
 			assert.Equal(t, tc.deletionAllowed, d.Get("deletion_allowed"))

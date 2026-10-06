@@ -21,3 +21,7 @@ func secretDataURL(c *gophercloud.ServiceClient, secretPath string) string {
 func secretMetadataURL(c *gophercloud.ServiceClient, secretName string) string {
 	return c.ServiceURL(baseURL(), "metadata", url.PathEscape(secretName))
 }
+
+func secretDeleteProtectionURL(c *gophercloud.ServiceClient, secretName string) string {
+	return c.ServiceURL(baseURL(), "metadata", "delete-protection", url.PathEscape(secretName))
+}

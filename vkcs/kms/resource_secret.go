@@ -3,6 +3,7 @@ package kms
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,28 +23,33 @@ func ResourceSecret() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
-			"path": {
+			SecretFieldPath: {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: "Identifier of a secret",
 			},
-			"data_json": {
+			SecretFieldDataJSON: {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Data stored in secret as a JSON object",
 			},
-			"created_time": {
+			SecretFieldCreatedTime: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
 				Description: "Time of secret's creation",
 			},
-			"version": {
+			SecretFieldVersion: {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
 				Description: "Current version of secret",
+			},
+			SecretFieldDeleteProtection: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "A flag that represents if secret can be deleted or not",
 			},
 		},
 	}
@@ -56,18 +62,24 @@ func resourceSecretCreateContext(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("Error creating VKCS KMS client: %s", err)
 	}
 
-	path, ok := d.Get("path").(string)
+	path, ok := d.Get(SecretFieldPath).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving path from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, SecretFieldPath)
 	}
 
-	data, ok := d.Get("data_json").(string)
+	data, ok := d.Get(SecretFieldDataJSON).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving data_json from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, SecretFieldDataJSON)
+	}
+
+	secretData := make(map[string]any)
+	err = json.Unmarshal([]byte(data), &secretData)
+	if err != nil {
+		return diag.Errorf("Error unmarshalling data: %s", err)
 	}
 
 	secret, err := createOrUpdateSecret(kmsV1Client, path, secrets.CreateOrUpdateOpts{
-		Data: data,
+		Data: secretData,
 	})
 	if err != nil {
 		return diag.Errorf("Error creating secret: %s", err)
@@ -75,14 +87,14 @@ func resourceSecretCreateContext(ctx context.Context, d *schema.ResourceData, me
 
 	d.SetId(path)
 
-	err = d.Set("created_time", secret.Data.CreatedTime.String())
+	err = d.Set(SecretFieldCreatedTime, secret.Data.CreatedTime.String())
 	if err != nil {
-		return diag.Errorf("Error setting created_time: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, SecretFieldCreatedTime, err)
 	}
 
-	err = d.Set("version", secret.Data.Version)
+	err = d.Set(SecretFieldVersion, secret.Data.Version)
 	if err != nil {
-		return diag.Errorf("Error setting version: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, SecretFieldVersion, err)
 	}
 
 	return nil
@@ -95,9 +107,9 @@ func resourceSecretReadContext(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("Error creating VKCS KMS client: %s", err)
 	}
 
-	path, ok := d.Get("path").(string)
+	path, ok := d.Get(SecretFieldPath).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving path from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, SecretFieldPath)
 	}
 
 	secret, err := getSecret(kmsV1Client, path)
@@ -110,19 +122,19 @@ func resourceSecretReadContext(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("Error creating data_json: %s", err)
 	}
 
-	err = d.Set("data_json", string(secretString))
+	err = d.Set(SecretFieldDataJSON, string(secretString))
 	if err != nil {
-		return diag.Errorf("Error setting data_json: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, SecretFieldDataJSON, err)
 	}
 
-	err = d.Set("created_time", secret.Data.Metadata.CreatedTime.String())
+	err = d.Set(SecretFieldCreatedTime, secret.Data.Metadata.CreatedTime.String())
 	if err != nil {
-		return diag.Errorf("Error setting created_time: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, SecretFieldCreatedTime, err)
 	}
 
-	err = d.Set("version", secret.Data.Metadata.Version)
+	err = d.Set(SecretFieldVersion, secret.Data.Metadata.Version)
 	if err != nil {
-		return diag.Errorf("Error setting version: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, SecretFieldVersion, err)
 	}
 
 	return nil
@@ -135,31 +147,37 @@ func resourceSecretUpdateContext(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("Error creating VKCS KMS client: %s", err)
 	}
 
-	path, ok := d.Get("path").(string)
+	path, ok := d.Get(SecretFieldPath).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving path from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, SecretFieldPath)
 	}
 
-	data, ok := d.Get("data_json").(string)
+	data, ok := d.Get(SecretFieldDataJSON).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving data_json from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, SecretFieldDataJSON)
+	}
+
+	secretData := make(map[string]any)
+	err = json.Unmarshal([]byte(data), &secretData)
+	if err != nil {
+		return diag.Errorf("Error unmarshalling data: %s", err)
 	}
 
 	secret, err := createOrUpdateSecret(kmsV1Client, path, secrets.CreateOrUpdateOpts{
-		Data: data,
+		Data: secretData,
 	})
 	if err != nil {
 		return diag.Errorf("Error creating secret: %s", err)
 	}
 
-	err = d.Set("created_time", secret.Data.CreatedTime.String())
+	err = d.Set(SecretFieldCreatedTime, secret.Data.CreatedTime.String())
 	if err != nil {
-		return diag.Errorf("Error setting created_time: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, SecretFieldCreatedTime, err)
 	}
 
-	err = d.Set("version", secret.Data.Version)
+	err = d.Set(SecretFieldVersion, secret.Data.Version)
 	if err != nil {
-		return diag.Errorf("Error setting version: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, SecretFieldVersion, err)
 	}
 
 	return nil
@@ -172,14 +190,25 @@ func resourceSecretDeleteContext(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("Error creating VKCS KMS client: %s", err)
 	}
 
-	path, ok := d.Get("path").(string)
+	path, ok := d.Get(SecretFieldPath).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving path from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, SecretFieldPath)
 	}
 
 	err = deleteSecret(kmsV1Client, path)
 	if err != nil {
 		return diag.Errorf("Error deleting secret: %s", err)
 	}
+
+	// Waiting for the secret to be fully deleted
+	for range retriesCount {
+		var err error
+		_, err = getKey(kmsV1Client, path)
+		if err != nil {
+			break
+		}
+		time.Sleep(defaultThreshold)
+	}
+
 	return nil
 }

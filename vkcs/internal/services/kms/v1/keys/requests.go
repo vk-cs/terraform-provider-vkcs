@@ -26,7 +26,6 @@ func Get(client *gophercloud.ServiceClient, name string) (r GetResult) {
 }
 
 type CreateOpts struct {
-	Name string `json:"name"`
 	Type string `json:"type"`
 }
 
@@ -34,14 +33,14 @@ func (opts CreateOpts) Map() (map[string]any, error) {
 	return gophercloud.BuildRequestBody(opts, "")
 }
 
-func Create(client *gophercloud.ServiceClient, opts CreateOpts) (r CreateResult) {
+func Create(client *gophercloud.ServiceClient, name string, opts CreateOpts) (r CreateResult) {
 	b, err := opts.Map()
 	if err != nil {
 		r.Err = err
 		return
 	}
-	resp, err := client.Post(client.ServiceURL(baseURL(), "keys"), b, &r.Body, &gophercloud.RequestOpts{
-		OkCodes: []int{http.StatusCreated},
+	resp, err := client.Post(keyURL(client, name), b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{http.StatusOK},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
@@ -56,7 +55,7 @@ func (opts UpdateOpts) Map() (map[string]any, error) {
 	return gophercloud.BuildRequestBody(opts, "")
 }
 
-func Update(client *gophercloud.ServiceClient, name string, opts UpdateOpts) (r CreateResult) {
+func Update(client *gophercloud.ServiceClient, name string, opts UpdateOpts) (r UpdateResult) {
 	b, err := opts.Map()
 	if err != nil {
 		r.Err = err

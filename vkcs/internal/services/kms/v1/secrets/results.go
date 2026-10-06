@@ -48,6 +48,23 @@ func (r GetResult) Extract() (GetSecret, error) {
 	return s, err
 }
 
+// GetDeleteProtectionResult is the result of a get request.
+// Call its Extract method to interpret a result as a bool.
+type GetDeleteProtectionResult struct {
+	gophercloud.Result
+}
+
+type GetSecretDeleteProtection struct {
+	DeleteProtection bool `json:"delete_protection"`
+}
+
+// Extract interprets a get result as a bool.
+func (r GetDeleteProtectionResult) Extract() (bool, error) {
+	var s GetSecretDeleteProtection
+	err := r.ExtractInto(&s)
+	return s.DeleteProtection, err
+}
+
 // CreateOrUpdateResult is the result of a get request.
 // Call its Extract method to interpret a result as a CreateOrUpdateSecret.
 type CreateOrUpdateResult struct {
@@ -66,6 +83,17 @@ func (r CreateOrUpdateResult) Extract() (CreateOrUpdateSecret, error) {
 	var s CreateOrUpdateSecret
 	err := r.ExtractInto(&s)
 	return s, err
+}
+
+// SetDeleteProtectionResult is the result of a set delete protection request.
+// Call its Extract method to interpret a result as an error.
+type SetDeleteProtectionResult struct {
+	gophercloud.Result
+}
+
+// Extract interprets a get result as an error.
+func (r SetDeleteProtectionResult) Extract() error {
+	return r.Err
 }
 
 // DeleteResult is the result of a delete request.

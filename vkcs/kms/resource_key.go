@@ -2,6 +2,7 @@ package kms
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -21,23 +22,23 @@ func ResourceKey() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
-			"name": {
+			KeyFieldName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: "Key name",
 			},
-			"type": {
+			KeyFieldType: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "Key type, take a look at type parameter in OpenBao documentation: https://openbao.org/docs/api/secret/transit/#parameters",
+				Description: "Key type, choose one from list: `aes128-gcm96`, `aes256-gcm96` (default), `chacha20-poly1305`, `xchacha20-poly1305`",
 				Default:     "aes256-gcm96",
 			},
-			"deletion_allowed": {
+			KeyFieldDeletionAllowed: {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "A flag that shows if key can be deleted or not",
+				Description: "A flag that represents if key can be deleted or not",
 				Default:     false,
 			},
 		},
@@ -51,34 +52,43 @@ func resourceKeyCreateContext(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("Error creating VKCS KMS client: %s", err)
 	}
 
-	name, ok := d.Get("name").(string)
+	name, ok := d.Get(KeyFieldName).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving name from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldName)
 	}
 
-	t, ok := d.Get("type").(string)
+	t, ok := d.Get(KeyFieldType).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving type from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldType)
 	}
 
-	_, err = createKey(kmsV1Client, keys.CreateOpts{
-		Name: name,
+	_, err = createKey(kmsV1Client, name, keys.CreateOpts{
 		Type: t,
 	})
 	if err != nil {
 		return diag.Errorf("Error creating key: %s", err)
 	}
 
-	deletionAllowed, ok := d.Get("deletion_allowed").(bool)
+	deletionAllowed, ok := d.Get(KeyFieldDeletionAllowed).(bool)
 	if !ok {
-		return diag.Errorf("Error retrieving deletion_allowed from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldDeletionAllowed)
 	}
 
-	_, err = updateKey(kmsV1Client, name, keys.UpdateOpts{
-		DeletionAllowed: deletionAllowed,
-	})
-	if err != nil {
-		return diag.Errorf("Error updating key configuration: %s", err)
+	// If deletion_allowed is true - we need to wait for key to be ready
+	if deletionAllowed {
+		var err error
+		for range retriesCount {
+			_, err = updateKey(kmsV1Client, name, keys.UpdateOpts{
+				DeletionAllowed: deletionAllowed,
+			})
+			if err == nil {
+				break
+			}
+			time.Sleep(defaultThreshold)
+		}
+		if err != nil {
+			return diag.Errorf("Error updating key configuration: %s", err)
+		}
 	}
 
 	d.SetId(name)
@@ -92,9 +102,9 @@ func resourceKeyReadContext(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.Errorf("Error creating VKCS KMS client: %s", err)
 	}
 
-	name, ok := d.Get("name").(string)
+	name, ok := d.Get(KeyFieldName).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving name from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldName)
 	}
 
 	key, err := getKey(kmsV1Client, name)
@@ -102,19 +112,19 @@ func resourceKeyReadContext(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.Errorf("Error getting key: %s", err)
 	}
 
-	err = d.Set("name", key.Data.Name)
+	err = d.Set(KeyFieldName, key.Data.Name)
 	if err != nil {
-		return diag.Errorf("Error setting name: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, KeyFieldName, err)
 	}
 
-	err = d.Set("type", key.Data.Type)
+	err = d.Set(KeyFieldType, key.Data.Type)
 	if err != nil {
-		return diag.Errorf("Error setting type: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, KeyFieldType, err)
 	}
 
-	err = d.Set("deletion_allowed", key.Data.DeletionAllowed)
+	err = d.Set(KeyFieldDeletionAllowed, key.Data.DeletionAllowed)
 	if err != nil {
-		return diag.Errorf("Error setting deletion_allowed: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, KeyFieldDeletionAllowed, err)
 	}
 
 	return nil
@@ -127,9 +137,9 @@ func resourceKeyUpdateContext(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("Error creating VKCS KMS client: %s", err)
 	}
 
-	deletionAllowed, ok := d.Get("deletion_allowed").(bool)
+	deletionAllowed, ok := d.Get(KeyFieldDeletionAllowed).(bool)
 	if !ok {
-		return diag.Errorf("Error retrieving deletion_allowed from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldDeletionAllowed)
 	}
 
 	_, err = updateKey(kmsV1Client, d.Id(), keys.UpdateOpts{
@@ -149,14 +159,25 @@ func resourceKeyDeleteContext(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("Error creating VKCS KMS client: %s", err)
 	}
 
-	name, ok := d.Get("name").(string)
+	name, ok := d.Get(KeyFieldName).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving name from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldName)
 	}
 
 	err = deleteKey(kmsV1Client, name)
 	if err != nil {
 		return diag.Errorf("Error deleting key: %s", err)
 	}
+
+	// Waiting for the key to be fully deleted
+	for range retriesCount {
+		var err error
+		_, err = getKey(kmsV1Client, name)
+		if err != nil {
+			break
+		}
+		time.Sleep(defaultThreshold)
+	}
+
 	return nil
 }

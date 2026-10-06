@@ -21,13 +21,13 @@ func DataSourceKeysList() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
-			"keys_count": {
+			KeysListFieldKeysCount: {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
 				Description: "Number of keys in list",
 			},
-			"keys": {
+			KeysListFieldKeys: {
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
@@ -62,13 +62,13 @@ func dataSourceKeysListReadContext(ctx context.Context, d *schema.ResourceData, 
 	hash := sha256.Sum256(fmt.Appendf(nil, "%s:%d", builder.String(), len(keys)))
 
 	d.SetId(hex.EncodeToString(hash[:]))
-	err = d.Set("keys_count", len(keys))
+	err = d.Set(KeysListFieldKeysCount, len(keys))
 	if err != nil {
-		return diag.Errorf("Error setting keys_count: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, KeysListFieldKeysCount, err)
 	}
-	err = d.Set("keys", keys)
+	err = d.Set(KeysListFieldKeys, keys)
 	if err != nil {
-		return diag.Errorf("Error setting keys: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, KeysListFieldKeys, err)
 	}
 	return nil
 }

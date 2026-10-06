@@ -21,13 +21,13 @@ func DataSourceSecretsList() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
-			"secrets_count": {
+			SecretsListFieldSecretsCount: {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
 				Description: "Number of secrets in list",
 			},
-			"secrets": {
+			SecretsListFieldSecrets: {
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
@@ -62,13 +62,13 @@ func dataSourceSecretsListReadContext(ctx context.Context, d *schema.ResourceDat
 	hash := sha256.Sum256(fmt.Appendf(nil, "%s:%d", builder.String(), len(secrets)))
 
 	d.SetId(hex.EncodeToString(hash[:]))
-	err = d.Set("secrets_count", len(secrets))
+	err = d.Set(SecretsListFieldSecretsCount, len(secrets))
 	if err != nil {
-		return diag.Errorf("Error setting secrets_count: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, SecretsListFieldSecretsCount, err)
 	}
-	err = d.Set("secrets", secrets)
+	err = d.Set(SecretsListFieldSecrets, secrets)
 	if err != nil {
-		return diag.Errorf("Error setting secrets: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, SecretsListFieldSecrets, err)
 	}
 	return nil
 }

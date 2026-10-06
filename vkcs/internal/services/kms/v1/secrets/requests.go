@@ -25,8 +25,17 @@ func Get(client *gophercloud.ServiceClient, path string) (r GetResult) {
 	return
 }
 
+func GetDeleteProtection(client *gophercloud.ServiceClient, path string) (r GetDeleteProtectionResult) {
+	resp, err := client.Get(secretDeleteProtectionURL(client, path), &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{http.StatusOK},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
 type CreateOrUpdateOpts struct {
-	Data string `json:"data"`
+	Data map[string]any `json:"data"`
 }
 
 func (opts CreateOrUpdateOpts) Map() (map[string]any, error) {
@@ -40,6 +49,28 @@ func CreateOrUpdate(client *gophercloud.ServiceClient, path string, opts CreateO
 		return
 	}
 	resp, err := client.Post(secretDataURL(client, path), b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{http.StatusOK},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
+	return
+}
+
+type SetDeleteProtectionOpts struct {
+	Data map[string]any `json:"data"`
+}
+
+func (opts SetDeleteProtectionOpts) Map() (map[string]any, error) {
+	return gophercloud.BuildRequestBody(opts, "")
+}
+
+func SetDeleteProtection(client *gophercloud.ServiceClient, path string, opts SetDeleteProtectionOpts) (r SetDeleteProtectionResult) {
+	b, err := opts.Map()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := client.Post(secretDeleteProtectionURL(client, path), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{http.StatusOK},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)

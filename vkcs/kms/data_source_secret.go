@@ -18,27 +18,32 @@ func DataSourceSecret() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		Schema: map[string]*schema.Schema{
-			"path": {
+			SecretFieldPath: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Identifier of a secret",
 			},
-			"data_json": {
+			SecretFieldDataJSON: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Data stored in secret as a JSON object",
 			},
-			"created_time": {
+			SecretFieldCreatedTime: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
 				Description: "Time of secret's creation",
 			},
-			"version": {
+			SecretFieldVersion: {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
 				Description: "Current version of secret",
+			},
+			SecretFieldDeleteProtection: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "A flag that represents if secret can be deleted or not",
 			},
 		},
 	}
@@ -51,14 +56,19 @@ func dataSourceSecretReadContext(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("Error creating VKCS KMS client: %s", err)
 	}
 
-	path, ok := d.Get("path").(string)
+	path, ok := d.Get(SecretFieldPath).(string)
 	if !ok {
-		return diag.Errorf("Error retrieving name from resource: %s", err)
+		return diag.Errorf(diagRetrieveErrorTemplate, SecretFieldPath)
 	}
 
 	secret, err := getSecret(kmsV1Client, path)
 	if err != nil {
 		return diag.Errorf("Error getting secret: %s", err)
+	}
+
+	deleteProtection, err := getSecretDeleteProtection(kmsV1Client, path)
+	if err != nil {
+		return diag.Errorf("Error getting secret delete protection: %s", err)
 	}
 
 	d.SetId(path)
@@ -68,19 +78,24 @@ func dataSourceSecretReadContext(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("Error creating data_json: %s", err)
 	}
 
-	err = d.Set("data_json", string(secretString))
+	err = d.Set(SecretFieldDataJSON, string(secretString))
 	if err != nil {
-		return diag.Errorf("Error setting data_json: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, SecretFieldDataJSON, err)
 	}
 
-	err = d.Set("created_time", secret.Data.Metadata.CreatedTime.String())
+	err = d.Set(SecretFieldCreatedTime, secret.Data.Metadata.CreatedTime.String())
 	if err != nil {
-		return diag.Errorf("Error setting created_time: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, SecretFieldCreatedTime, err)
 	}
 
-	err = d.Set("version", secret.Data.Metadata.Version)
+	err = d.Set(SecretFieldVersion, secret.Data.Metadata.Version)
 	if err != nil {
-		return diag.Errorf("Error setting version: %s", err)
+		return diag.Errorf(diagSetErrorTemplate, SecretFieldVersion, err)
+	}
+
+	err = d.Set(SecretFieldDeleteProtection, deleteProtection)
+	if err != nil {
+		return diag.Errorf(diagSetErrorTemplate, SecretFieldDeleteProtection, err)
 	}
 
 	return nil
