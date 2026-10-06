@@ -3,13 +3,14 @@ package kms_test
 import (
 	"context"
 	"errors"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/stretchr/testify/assert"

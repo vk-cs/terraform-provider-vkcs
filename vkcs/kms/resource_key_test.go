@@ -97,7 +97,8 @@ func TestKMSKeyResourceCreate(t *testing.T) {
 				input["deletion_allowed"] = true
 			}
 			d := schema.TestResourceDataRaw(t, r.Schema, input)
-			config := newKMSResourceTestConfig(t,
+			config := newKMSResourceTestConfig(
+				t,
 				kmsResourceRequest{"POST", "transit/keys", fmt.Sprintf(`{"name":"test-key","type":%q}`, tc.keyType), 201, `{"data":{"name":"test-key"}}`},
 				kmsResourceRequest{"POST", "transit/keys/test-key/config", fmt.Sprintf(`{"deletion_allowed":%t}`, tc.allowed), 200, `{"data":{}}`},
 			)
