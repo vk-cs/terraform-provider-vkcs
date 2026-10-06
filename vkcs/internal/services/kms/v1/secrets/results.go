@@ -7,7 +7,7 @@ import (
 )
 
 // ListResult is the result of a list request.
-// Call its Extract method to interpret a result as a Secrets.
+// Call its Extract method to interpret a result as a Secrets object.
 type ListResult struct {
 	gophercloud.Result
 }
@@ -26,7 +26,7 @@ func (r ListResult) Extract() ([]string, error) {
 }
 
 // GetResult is the result of a get request.
-// Call its Extract method to interpret a result as a GetSecret.
+// Call its Extract method to interpret a result as a GetSecret object.
 type GetResult struct {
 	gophercloud.Result
 }
@@ -41,7 +41,7 @@ type GetSecret struct {
 	} `json:"data"`
 }
 
-// Extract interprets a get result as a GetSecret.
+// Extract interprets a get result as a GetSecret object.
 func (r GetResult) Extract() (GetSecret, error) {
 	var s GetSecret
 	err := r.ExtractInto(&s)
@@ -66,7 +66,7 @@ func (r GetDeleteProtectionResult) Extract() (bool, error) {
 }
 
 // CreateOrUpdateResult is the result of a get request.
-// Call its Extract method to interpret a result as a CreateOrUpdateSecret.
+// Call its Extract method to interpret a result as a CreateOrUpdateSecret object.
 type CreateOrUpdateResult struct {
 	gophercloud.Result
 }
@@ -78,7 +78,7 @@ type CreateOrUpdateSecret struct {
 	} `json:"data"`
 }
 
-// Extract interprets a get result as a CreateOrUpdateSecret.
+// Extract interprets a get result as a CreateOrUpdateSecret object.
 func (r CreateOrUpdateResult) Extract() (CreateOrUpdateSecret, error) {
 	var s CreateOrUpdateSecret
 	err := r.ExtractInto(&s)

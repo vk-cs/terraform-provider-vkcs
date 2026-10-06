@@ -3,7 +3,7 @@ package keys
 import "github.com/gophercloud/gophercloud"
 
 // ListResult is the result of a list request.
-// Call its Extract method to interpret a result as a Keys.
+// Call its Extract method to interpret a result as a Keys object.
 type ListResult struct {
 	gophercloud.Result
 }
@@ -22,7 +22,7 @@ func (r ListResult) Extract() ([]string, error) {
 }
 
 // GetResult is the result of a get request.
-// Call its Extract method to interpret a result as a GetKey.
+// Call its Extract method to interpret a result as a GetKey object.
 type GetResult struct {
 	gophercloud.Result
 }
@@ -35,15 +35,15 @@ type GetKey struct {
 	} `json:"data"`
 }
 
-// Extract interprets a get result as a GetKey.
+// Extract interprets a get result as a GetKey object.
 func (r GetResult) Extract() (GetKey, error) {
 	var k GetKey
 	err := r.ExtractInto(&k)
 	return k, err
 }
 
-// GetResult is the result of a create request.
-// Call its Extract method to interpret a result as a CreateKey.
+// CreateResult is the result of a create request.
+// Call its Extract method to interpret a result as a CreateKey object.
 type CreateResult struct {
 	gophercloud.Result
 }
@@ -55,7 +55,7 @@ type CreateKey struct {
 	} `json:"data"`
 }
 
-// Extract interprets a create result as a CreateKey.
+// Extract interprets a create result as a CreateKey object.
 func (r CreateResult) Extract() (CreateKey, error) {
 	var k CreateKey
 	err := r.ExtractInto(&k)
@@ -63,7 +63,7 @@ func (r CreateResult) Extract() (CreateKey, error) {
 }
 
 // UpdateResult is the result of an update request.
-// Call its Extract method to interpret a result as an UpdateKey.
+// Call its Extract method to interpret a result as an UpdateKey object.
 type UpdateResult struct {
 	gophercloud.Result
 }
@@ -74,7 +74,7 @@ type UpdateKey struct {
 	} `json:"data"`
 }
 
-// Extract interprets an update result as an UpdateKey.
+// Extract interprets an update result as an UpdateKey object.
 func (r UpdateResult) Extract() (UpdateKey, error) {
 	var k UpdateKey
 	err := r.ExtractInto(&k)

@@ -76,7 +76,7 @@ func TestKMSKeysListDataSourceRead_errors(t *testing.T) {
 			diags := ds.ReadContext(context.Background(), d, config)
 			require.True(t, diags.HasError())
 			require.Len(t, diags, 1)
-			assert.Contains(t, diags[0].Summary, "Error listing secrets:")
+			assert.Contains(t, diags[0].Summary, "Error listing keys:")
 			assert.Empty(t, d.Id())
 		})
 	}

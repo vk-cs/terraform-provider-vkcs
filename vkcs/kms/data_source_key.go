@@ -50,7 +50,7 @@ func dataSourceKeyReadContext(ctx context.Context, d *schema.ResourceData, meta 
 
 	key, err := getKey(kmsV1Client, name)
 	if err != nil {
-		return diag.Errorf("Error listing secrets: %s", err)
+		return diag.Errorf("Error getting key: %s", err)
 	}
 
 	d.SetId(name)

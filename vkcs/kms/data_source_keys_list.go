@@ -49,7 +49,7 @@ func dataSourceKeysListReadContext(ctx context.Context, d *schema.ResourceData, 
 
 	keys, err := listKeys(kmsV1Client)
 	if err != nil {
-		return diag.Errorf("Error listing secrets: %s", err)
+		return diag.Errorf("Error listing keys: %s", err)
 	}
 
 	var builder strings.Builder

@@ -75,7 +75,7 @@ func dataSourceSecretReadContext(ctx context.Context, d *schema.ResourceData, me
 
 	secretString, err := json.Marshal(secret.Data.Data)
 	if err != nil {
-		return diag.Errorf("Error creating data_json: %s", err)
+		return diag.Errorf("Error marshalling data_json: %s", err)
 	}
 
 	err = d.Set(SecretFieldDataJSON, string(secretString))
