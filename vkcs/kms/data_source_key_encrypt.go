@@ -24,16 +24,16 @@ func DataSourceKeyEncrypt() *schema.Resource {
 				Required:    true,
 				Description: "Key used to encrypt data",
 			},
+			KeyCryptFieldCiphertext: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Resulting encrypted data",
+			},
 			KeyCryptFieldPlaintext: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
 				Description: "Data to encrypt encoded in base64",
-			},
-			KeyCryptFieldCiphertext: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Resulting encrypted data",
 			},
 		},
 	}

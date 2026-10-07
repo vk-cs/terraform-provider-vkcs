@@ -26,6 +26,7 @@ func DataSourceSecret() *schema.Resource {
 			SecretFieldDataJSON: {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Secret data as a JSON object, represented as a string and populated from KMS when the data source is read. Use `jsondecode` to access its fields.",
 			},
 			SecretFieldCreatedTime: {
@@ -43,6 +44,7 @@ func DataSourceSecret() *schema.Resource {
 			SecretFieldDeleteProtection: {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "Whether the secret is protected from deletion, populated from KMS when the data source is read. This field does not change the deletion policy.",
 			},
 		},

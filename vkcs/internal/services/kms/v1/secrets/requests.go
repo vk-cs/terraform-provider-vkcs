@@ -70,10 +70,12 @@ func SetDeleteProtection(client *gophercloud.ServiceClient, path string, opts Se
 		r.Err = err
 		return
 	}
-	_, err = client.Put(secretDeleteProtectionURL(client, path), b, &r.Body, &gophercloud.RequestOpts{
+	// This operation can return an empty success body; no JSON response is needed.
+	resp, err := client.Put(secretDeleteProtectionURL(client, path), b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{http.StatusOK},
 	})
-	r.Err = errutil.ErrorWithRequestID(err, r.Header.Get(errutil.RequestIDHeader))
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	r.Err = errutil.ErrorWithRequestID(r.Err, r.Header.Get(errutil.RequestIDHeader))
 	return
 }
 

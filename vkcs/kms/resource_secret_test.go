@@ -83,7 +83,7 @@ func TestKMSSecretResourceWrite(t *testing.T) {
 				call = r.UpdateContext
 				d.SetId("secret /?#%")
 			}
-			config := newKMSResourceTestConfig(t, kmsResourceRequest{"POST", "secret/data/secret%20%2F%3F%23%25", `{"data":{"password":"new-value"}}`, 200, `{"data":{"created_time":"2026-09-01T10:00:00Z","version":2}}`}, kmsResourceRequest{"PUT", "secret/metadata/delete-protection/secret%20%2F%3F%23%25", `{"delete_protection":true}`, 200, `{}`})
+			config := newKMSResourceTestConfig(t, kmsResourceRequest{"POST", "secret/data/secret%20%2F%3F%23%25", `{"data":{"password":"new-value"}}`, 200, `{"data":{"created_time":"2026-09-01T10:00:00Z","version":2}}`}, kmsResourceRequest{"PUT", "secret/metadata/delete-protection/secret%20%2F%3F%23%25", `{"delete_protection":true}`, 200, ""})
 			diags := call(context.Background(), d, config)
 			require.False(t, diags.HasError(), "%v", diags)
 			assert.Equal(t, "secret /?#%", d.Id())
