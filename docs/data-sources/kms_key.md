@@ -13,8 +13,14 @@ A data source containing a KMS key
 ## Example Usage
 
 ```terraform
+resource "vkcs_kms_key" "key" {
+  name             = "some-key"
+  type             = "aes256-gcm96"
+  deletion_allowed = true
+}
+
 data "vkcs_kms_key" "key" {
-  name = "key-tf-example"
+  name = vkcs_kms_key.key.id
 }
 
 output "key_type" {

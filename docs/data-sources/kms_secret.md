@@ -15,8 +15,18 @@ Secret values in `data_json` are stored in Terraform state. This field is not ma
 ## Example Usage
 
 ```terraform
+resource "vkcs_kms_secret" "secret" {
+  path              = "credentials"
+  delete_protection = false
+
+  data_json = jsonencode({
+    username = "my-username"
+    password = "my-password"
+  })
+}
+
 data "vkcs_kms_secret" "secret" {
-  path = "application/config"
+  path = vkcs_kms_secret.secret.id
 }
 
 output "secret_data" {

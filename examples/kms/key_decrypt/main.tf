@@ -14,11 +14,11 @@ output "encrypted" {
 }
 
 data "vkcs_kms_key_decrypt" "decrypted" {
-  key       = vkcs_kms_key.encrypt_decrypt_key.id
+  key        = vkcs_kms_key.encrypt_decrypt_key.id
   ciphertext = data.vkcs_kms_key_encrypt.encrypted.ciphertext
 }
 
 output "decrypted" {
-  value = base64decode(data.vkcs_kms_key_decrypt.decrypted.plaintext)
+  value     = base64decode(data.vkcs_kms_key_decrypt.decrypted.plaintext)
   sensitive = true
 }
