@@ -20,9 +20,7 @@ const (
 	requestsRetryDelay      = 1 * time.Second
 )
 
-var (
-	_ Config = (*config)(nil)
-)
+var _ Config = (*config)(nil)
 
 type Config interface {
 	GetRegion() string
@@ -50,6 +48,7 @@ type Config interface {
 	PublicDNSV2Client(region string) (*gophercloud.ServiceClient, error)
 	SharedFilesystemV2Client(region string) (*gophercloud.ServiceClient, error)
 	TemplaterV2Client(region string, projectID string) (*gophercloud.ServiceClient, error)
+	KMSV1Client(region string) (*gophercloud.ServiceClient, error)
 }
 
 type config struct {
@@ -188,6 +187,10 @@ func (c *config) TemplaterV2Client(region string, projectID string) (*gopherclou
 	}
 
 	return client, nil
+}
+
+func (c *config) KMSV1Client(region string) (*gophercloud.ServiceClient, error) {
+	return c.initClient(newKMSV1, region, "kms")
 }
 
 type clientFactoryFn func(*gophercloud.ProviderClient, clientOpts) (*gophercloud.ServiceClient, error)

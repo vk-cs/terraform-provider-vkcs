@@ -12,6 +12,7 @@ subCategoryMapping:
   kubernetes: Kubernetes
   db: Databases
   keymanager: Key Manager
+  kms: Key Management Service (KMS)
   backup: Backup
   dc: Direct Connect
   mlplatform: ML Platform
