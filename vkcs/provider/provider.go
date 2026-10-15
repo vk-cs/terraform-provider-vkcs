@@ -23,6 +23,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	wrapper "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/providerwrapper/framework"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/keymanager"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/mlplatform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/monitoring"
@@ -329,6 +330,12 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		images.NewImagesDataSource,
 		keymanager.NewContainerDataSource,
 		keymanager.NewSecretDataSource,
+		kms.NewKeyDataSource,
+		kms.NewKeyEncryptDataSource,
+		kms.NewKeyDecryptDataSource,
+		kms.NewKeysListDataSource,
+		kms.NewSecretDataSource,
+		kms.NewSecretsListDataSource,
 		kubernetes.NewAddonDatasource,
 		kubernetes.NewAddonsDatasource,
 		kubernetes.NewClusterTemplatesDataSource,
@@ -371,6 +378,8 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		dc.NewIPPortForwardingResource,
 		iam.NewServiceUserResource,
 		iam.NewS3AccountResource,
+		kms.NewKeyResource,
+		kms.NewSecretResource,
 		kubernetes.NewAddonResource,
 		kubernetes.NewKubernetesClusterAddonV2Resource,
 		kubernetes.NewKubernetesClusterV2Resource,

@@ -7,68 +7,99 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
-func DataSourceSecretsList() *schema.Resource {
-	return &schema.Resource{
+var _ datasource.DataSourceWithConfigure = (*secretsListDataSource)(nil)
+
+func NewSecretsListDataSource() datasource.DataSource {
+	return &secretsListDataSource{}
+}
+
+type secretsListDataSource struct {
+	config clients.Config
+}
+
+type secretsListDataSourceModel struct {
+	ID           types.String `tfsdk:"id"`
+	SecretsCount types.Int64  `tfsdk:"secrets_count"`
+	Secrets      types.List   `tfsdk:"secrets"`
+}
+
+func (r *secretsListDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_kms_secrets_list"
+}
+
+func (r *secretsListDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData != nil {
+		r.config = req.ProviderData.(clients.Config)
+	}
+}
+
+func (r *secretsListDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
 		Description: "Data source containing list of KMS secrets",
-		ReadContext: dataSourceSecretsListReadContext,
-		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultTimeout),
-		},
-		Schema: map[string]*schema.Schema{
-			SecretsListFieldSecretsCount: {
-				Type:        schema.TypeInt,
+		Attributes: map[string]schema.Attribute{
+			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS secrets list"},
+			SecretsListFieldSecretsCount: schema.Int64Attribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Number of secrets in list",
 			},
-			SecretsListFieldSecrets: {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
+			SecretsListFieldSecrets: schema.ListAttribute{
+				Optional:    true,
+				Computed:    true,
+				ElementType: types.StringType,
 				Description: "List of keys' paths",
 			},
 		},
 	}
 }
 
-func dataSourceSecretsListReadContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	config := meta.(clients.Config)
-	kmsV1Client, err := config.KMSV1Client(util.GetRegion(d, config))
+func (r *secretsListDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data secretsListDataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	config := r.config
+	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		return diag.Errorf("Error creating VKCS KMS client: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		return
 	}
 
 	secrets, err := listSecrets(kmsV1Client)
 	if err != nil {
-		return diag.Errorf("Error listing secrets: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error listing secrets: %s", err), "")
+		return
 	}
 
 	var builder strings.Builder
 	for _, secret := range secrets[:min(len(secrets), maxItemsInListForIDBuild)] {
 		_, err := builder.WriteString(secret)
 		if err != nil {
-			return diag.Errorf("Error building id: %s", err)
+			resp.Diagnostics.AddError(fmt.Sprintf("Error building id: %s", err), "")
+			return
 		}
 	}
 	hash := sha256.Sum256(fmt.Appendf(nil, "%s:%d", builder.String(), len(secrets)))
 
-	d.SetId(hex.EncodeToString(hash[:]))
-	err = d.Set(SecretsListFieldSecretsCount, len(secrets))
-	if err != nil {
-		return diag.Errorf(diagSetErrorTemplate, SecretsListFieldSecretsCount, err)
+	data.ID = types.StringValue(hex.EncodeToString(hash[:]))
+	data.SecretsCount = types.Int64Value(int64(len(secrets)))
+	if secrets == nil {
+		secrets = []string{}
 	}
-	err = d.Set(SecretsListFieldSecrets, secrets)
-	if err != nil {
-		return diag.Errorf(diagSetErrorTemplate, SecretsListFieldSecrets, err)
+	var listDiags diag.Diagnostics
+	data.Secrets, listDiags = types.ListValueFrom(ctx, types.StringType, secrets)
+	resp.Diagnostics.Append(listDiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

@@ -2,77 +2,101 @@ package kms
 
 import (
 	"context"
+	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/keys"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
-func ResourceKey() *schema.Resource {
-	return &schema.Resource{
-		Description:   "Resource representing KMS key",
-		CreateContext: resourceKeyCreateContext,
-		ReadContext:   resourceKeyReadContext,
-		UpdateContext: resourceKeyUpdateContext,
-		DeleteContext: resourceKeyDeleteContext,
-		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultTimeout),
-		},
-		Schema: map[string]*schema.Schema{
-			KeyFieldName: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Name of the KMS key. Changing this forces a new resource.",
+var _ resource.ResourceWithConfigure = (*keyResource)(nil)
+
+func NewKeyResource() resource.Resource {
+	return &keyResource{}
+}
+
+type keyResource struct {
+	config clients.Config
+}
+
+type keyResourceModel struct {
+	ID              types.String `tfsdk:"id"`
+	Name            types.String `tfsdk:"name"`
+	Type            types.String `tfsdk:"type"`
+	DeletionAllowed types.Bool   `tfsdk:"deletion_allowed"`
+}
+
+func (r *keyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_kms_key"
+}
+
+func (r *keyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData != nil {
+		r.config = req.ProviderData.(clients.Config)
+	}
+}
+
+func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Description: "Resource representing KMS key",
+		Attributes: map[string]schema.Attribute{
+			EntityFieldID: schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, Description: "Identifier of the KMS key"},
+			KeyFieldName: schema.StringAttribute{
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				Description:   "Name of the KMS key. Changing this forces a new resource.",
 			},
-			KeyFieldType: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     "aes256-gcm96",
-				Description: "Type of the KMS key: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, or `xchacha20-poly1305`. Defaults to `aes256-gcm96`. Changing this forces a new resource.",
+			KeyFieldType: schema.StringAttribute{
+				Computed:      true,
+				Optional:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				Default:       stringdefault.StaticString("aes256-gcm96"),
+				Description:   "Type of the KMS key: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, or `xchacha20-poly1305`. Defaults to `aes256-gcm96`. Changing this forces a new resource.",
 			},
-			KeyFieldDeletionAllowed: {
-				Type:        schema.TypeBool,
+			KeyFieldDeletionAllowed: schema.BoolAttribute{
+				Computed:    true,
 				Optional:    true,
-				Default:     false,
+				Default:     booldefault.StaticBool(false),
 				Description: "Whether KMS allows the key to be deleted. Defaults to `false`. Set to `true` and apply before destroying the key. Refreshed from KMS when the resource is read.",
 			},
 		},
 	}
 }
 
-func resourceKeyCreateContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	config := meta.(clients.Config)
-	kmsV1Client, err := config.KMSV1Client(util.GetRegion(d, config))
+func (r *keyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data keyResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	config := r.config
+	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		return diag.Errorf("Error creating VKCS KMS client: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		return
 	}
 
-	name, ok := d.Get(KeyFieldName).(string)
-	if !ok {
-		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldName)
-	}
+	name := data.Name.ValueString()
 
-	t, ok := d.Get(KeyFieldType).(string)
-	if !ok {
-		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldType)
-	}
+	t := data.Type.ValueString()
 
 	_, err = createKey(kmsV1Client, name, keys.CreateOpts{
 		Type: t,
 	})
 	if err != nil {
-		return diag.Errorf("Error creating key: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error creating key: %s", err), "")
+		return
 	}
 
-	deletionAllowed, ok := d.Get(KeyFieldDeletionAllowed).(bool)
-	if !ok {
-		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldDeletionAllowed)
-	}
+	deletionAllowed := data.DeletionAllowed.ValueBool()
 
 	// We need to wait for the key to be ready, then set this flag
 	for range retriesCount {
@@ -85,85 +109,92 @@ func resourceKeyCreateContext(ctx context.Context, d *schema.ResourceData, meta 
 		time.Sleep(defaultThreshold)
 	}
 	if err != nil {
-		return diag.Errorf("Error updating key configuration: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error updating key configuration: %s", err), "")
+		return
 	}
 
-	d.SetId(name)
-	return nil
+	data.ID = types.StringValue(name)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func resourceKeyReadContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	config := meta.(clients.Config)
-	kmsV1Client, err := config.KMSV1Client(util.GetRegion(d, config))
-	if err != nil {
-		return diag.Errorf("Error creating VKCS KMS client: %s", err)
+func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data keyResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	name, ok := d.Get(KeyFieldName).(string)
-	if !ok {
-		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldName)
+	config := r.config
+	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
+	if err != nil {
+		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		return
 	}
+
+	name := data.Name.ValueString()
 
 	key, err := getKey(kmsV1Client, name)
 	if err != nil {
-		return diag.Errorf("Error getting key: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error getting key: %s", err), "")
+		return
 	}
 
-	err = d.Set(KeyFieldName, key.Data.Name)
-	if err != nil {
-		return diag.Errorf(diagSetErrorTemplate, KeyFieldName, err)
-	}
+	data.Name = types.StringValue(key.Data.Name)
 
-	err = d.Set(KeyFieldType, key.Data.Type)
-	if err != nil {
-		return diag.Errorf(diagSetErrorTemplate, KeyFieldType, err)
-	}
+	data.Type = types.StringValue(key.Data.Type)
 
-	err = d.Set(KeyFieldDeletionAllowed, key.Data.DeletionAllowed)
-	if err != nil {
-		return diag.Errorf(diagSetErrorTemplate, KeyFieldDeletionAllowed, err)
-	}
+	data.DeletionAllowed = types.BoolValue(key.Data.DeletionAllowed)
 
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func resourceKeyUpdateContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	config := meta.(clients.Config)
-	kmsV1Client, err := config.KMSV1Client(util.GetRegion(d, config))
+func (r *keyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data keyResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	config := r.config
+	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		return diag.Errorf("Error creating VKCS KMS client: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		return
 	}
 
-	deletionAllowed, ok := d.Get(KeyFieldDeletionAllowed).(bool)
-	if !ok {
-		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldDeletionAllowed)
-	}
+	deletionAllowed := data.DeletionAllowed.ValueBool()
 
-	_, err = updateKey(kmsV1Client, d.Id(), keys.UpdateOpts{
+	_, err = updateKey(kmsV1Client, data.ID.ValueString(), keys.UpdateOpts{
 		DeletionAllowed: deletionAllowed,
 	})
 	if err != nil {
-		return diag.Errorf("Error updating key configuration: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error updating key configuration: %s", err), "")
+		return
 	}
 
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func resourceKeyDeleteContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	config := meta.(clients.Config)
-	kmsV1Client, err := config.KMSV1Client(util.GetRegion(d, config))
-	if err != nil {
-		return diag.Errorf("Error creating VKCS KMS client: %s", err)
+func (r *keyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data keyResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	name, ok := d.Get(KeyFieldName).(string)
-	if !ok {
-		return diag.Errorf(diagRetrieveErrorTemplate, KeyFieldName)
+	config := r.config
+	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
+	if err != nil {
+		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		return
 	}
+
+	name := data.Name.ValueString()
 
 	err = deleteKey(kmsV1Client, name)
 	if err != nil {
-		return diag.Errorf("Error deleting key: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error deleting key: %s", err), "")
+		return
 	}
 
 	// Waiting for the key to be fully deleted
@@ -175,6 +206,4 @@ func resourceKeyDeleteContext(ctx context.Context, d *schema.ResourceData, meta 
 		}
 		time.Sleep(defaultThreshold)
 	}
-
-	return nil
 }

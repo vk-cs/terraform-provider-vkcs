@@ -3,46 +3,68 @@ package kms
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
-func DataSourceSecret() *schema.Resource {
-	return &schema.Resource{
+var _ datasource.DataSourceWithConfigure = (*secretDataSource)(nil)
+
+func NewSecretDataSource() datasource.DataSource {
+	return &secretDataSource{}
+}
+
+type secretDataSource struct {
+	config clients.Config
+}
+
+type secretDataSourceModel struct {
+	ID               types.String `tfsdk:"id"`
+	Path             types.String `tfsdk:"path"`
+	DataJSON         types.String `tfsdk:"data_json"`
+	CreatedTime      types.String `tfsdk:"created_time"`
+	Version          types.Int64  `tfsdk:"version"`
+	DeleteProtection types.Bool   `tfsdk:"delete_protection"`
+}
+
+func (r *secretDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_kms_secret"
+}
+
+func (r *secretDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData != nil {
+		r.config = req.ProviderData.(clients.Config)
+	}
+}
+
+func (r *secretDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
 		Description: "A data source containing a KMS secret",
-		ReadContext: dataSourceSecretReadContext,
-		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultTimeout),
-		},
-		Schema: map[string]*schema.Schema{
-			SecretFieldPath: {
-				Type:        schema.TypeString,
+		Attributes: map[string]schema.Attribute{
+			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS secret"},
+			SecretFieldPath: schema.StringAttribute{
 				Required:    true,
 				Description: "Identifier (path) of the secret within the KMS secret store.",
 			},
-			SecretFieldDataJSON: {
-				Type:        schema.TypeString,
+			SecretFieldDataJSON: schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Secret data as a JSON object, represented as a string and populated from KMS when the data source is read. Use `jsondecode` to access its fields.",
 			},
-			SecretFieldCreatedTime: {
-				Type:        schema.TypeString,
+			SecretFieldCreatedTime: schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.",
 			},
-			SecretFieldVersion: {
-				Type:        schema.TypeInt,
+			SecretFieldVersion: schema.Int64Attribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Current version of the secret returned in its metadata. This field does not select a version to read.",
 			},
-			SecretFieldDeleteProtection: {
-				Type:        schema.TypeBool,
+			SecretFieldDeleteProtection: schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Whether the secret is protected from deletion, populated from KMS when the data source is read. This field does not change the deletion policy.",
@@ -51,54 +73,49 @@ func DataSourceSecret() *schema.Resource {
 	}
 }
 
-func dataSourceSecretReadContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	config := meta.(clients.Config)
-	kmsV1Client, err := config.KMSV1Client(util.GetRegion(d, config))
-	if err != nil {
-		return diag.Errorf("Error creating VKCS KMS client: %s", err)
+func (r *secretDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data secretDataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	path, ok := d.Get(SecretFieldPath).(string)
-	if !ok {
-		return diag.Errorf(diagRetrieveErrorTemplate, SecretFieldPath)
+	config := r.config
+	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
+	if err != nil {
+		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		return
 	}
+
+	path := data.Path.ValueString()
 
 	secret, err := getSecret(kmsV1Client, path)
 	if err != nil {
-		return diag.Errorf("Error getting secret: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error getting secret: %s", err), "")
+		return
 	}
 
 	deleteProtection, err := getSecretDeleteProtection(kmsV1Client, path)
 	if err != nil {
-		return diag.Errorf("Error getting secret delete protection: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error getting secret delete protection: %s", err), "")
+		return
 	}
 
-	d.SetId(path)
+	data.ID = types.StringValue(path)
 
 	secretString, err := json.Marshal(secret.Data.Data)
 	if err != nil {
-		return diag.Errorf("Error marshalling data_json: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error marshalling data_json: %s", err), "")
+		return
 	}
 
-	err = d.Set(SecretFieldDataJSON, string(secretString))
-	if err != nil {
-		return diag.Errorf(diagSetErrorTemplate, SecretFieldDataJSON, err)
-	}
+	data.DataJSON = types.StringValue(string(secretString))
 
-	err = d.Set(SecretFieldCreatedTime, secret.Data.Metadata.CreatedTime.String())
-	if err != nil {
-		return diag.Errorf(diagSetErrorTemplate, SecretFieldCreatedTime, err)
-	}
+	data.CreatedTime = types.StringValue(secret.Data.Metadata.CreatedTime.String())
 
-	err = d.Set(SecretFieldVersion, secret.Data.Metadata.Version)
-	if err != nil {
-		return diag.Errorf(diagSetErrorTemplate, SecretFieldVersion, err)
-	}
+	data.Version = types.Int64Value(int64(secret.Data.Metadata.Version))
 
-	err = d.Set(SecretFieldDeleteProtection, deleteProtection)
-	if err != nil {
-		return diag.Errorf(diagSetErrorTemplate, SecretFieldDeleteProtection, err)
-	}
+	data.DeleteProtection = types.BoolValue(deleteProtection)
 
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

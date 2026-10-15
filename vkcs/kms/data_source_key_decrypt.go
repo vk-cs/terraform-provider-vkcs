@@ -4,33 +4,55 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
-func DataSourceKeyDecrypt() *schema.Resource {
-	return &schema.Resource{
+var _ datasource.DataSourceWithConfigure = (*keyDecryptDataSource)(nil)
+
+func NewKeyDecryptDataSource() datasource.DataSource {
+	return &keyDecryptDataSource{}
+}
+
+type keyDecryptDataSource struct {
+	config clients.Config
+}
+
+type keyDecryptDataSourceModel struct {
+	ID         types.String `tfsdk:"id"`
+	Key        types.String `tfsdk:"key"`
+	Ciphertext types.String `tfsdk:"ciphertext"`
+	Plaintext  types.String `tfsdk:"plaintext"`
+}
+
+func (r *keyDecryptDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_kms_key_decrypt"
+}
+
+func (r *keyDecryptDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData != nil {
+		r.config = req.ProviderData.(clients.Config)
+	}
+}
+
+func (r *keyDecryptDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
 		Description: "Data source containing decrypt result by KMS key",
-		ReadContext: dataSourceKeyDecryptReadContext,
-		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultTimeout),
-		},
-		Schema: map[string]*schema.Schema{
-			KeyCryptFieldKey: {
-				Type:        schema.TypeString,
+		Attributes: map[string]schema.Attribute{
+			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS key decrypt"},
+			KeyCryptFieldKey: schema.StringAttribute{
 				Required:    true,
 				Description: "Key used to decrypt data",
 			},
-			KeyCryptFieldCiphertext: {
-				Type:        schema.TypeString,
+			KeyCryptFieldCiphertext: schema.StringAttribute{
 				Required:    true,
 				Description: "Encrypted data",
 			},
-			KeyCryptFieldPlaintext: {
-				Type:        schema.TypeString,
+			KeyCryptFieldPlaintext: schema.StringAttribute{
 				Computed:    true,
 				Sensitive:   true,
 				Description: "Resulting decrypted data encoded in base64",
@@ -39,35 +61,34 @@ func DataSourceKeyDecrypt() *schema.Resource {
 	}
 }
 
-func dataSourceKeyDecryptReadContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	config := meta.(clients.Config)
-	kmsV1Client, err := config.KMSV1Client(util.GetRegion(d, config))
+func (r *keyDecryptDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data keyDecryptDataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	config := r.config
+	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		return diag.Errorf("Error creating VKCS KMS client: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		return
 	}
 
-	key, ok := d.Get(KeyCryptFieldKey).(string)
-	if !ok {
-		return diag.Errorf(diagRetrieveErrorTemplate, KeyCryptFieldKey)
-	}
+	key := data.Key.ValueString()
 
-	ciphertext, ok := d.Get(KeyCryptFieldCiphertext).(string)
-	if !ok {
-		return diag.Errorf(diagRetrieveErrorTemplate, KeyCryptFieldCiphertext)
-	}
+	ciphertext := data.Ciphertext.ValueString()
 
 	plaintext, err := decrypt(kmsV1Client, key, ciphertext)
 	if err != nil {
-		return diag.Errorf("Error decrypting: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error decrypting: %s", err), "")
+		return
 	}
 
 	hash := sha256.Sum256([]byte(plaintext))
-	d.SetId(hex.EncodeToString(hash[:]))
+	data.ID = types.StringValue(hex.EncodeToString(hash[:]))
 
-	err = d.Set(KeyCryptFieldPlaintext, plaintext)
-	if err != nil {
-		return diag.Errorf(diagSetErrorTemplate, KeyCryptFieldPlaintext, err)
-	}
+	data.Plaintext = types.StringValue(plaintext)
 
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

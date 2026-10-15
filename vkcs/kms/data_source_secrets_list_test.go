@@ -11,7 +11,7 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -28,9 +28,9 @@ func TestAccKMSSecretsListDataSource_basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccKMSSecretsListDataSourceBasic, name),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", "id"),
-					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", "secrets_count"),
-					resource.TestCheckTypeSetElemAttr("data.vkcs_kms_secrets_list.secrets", "secrets.*", name),
+					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", kms.EntityFieldID),
+					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", kms.SecretsListFieldSecretsCount),
+					resource.TestCheckTypeSetElemAttr("data.vkcs_kms_secrets_list.secrets", kms.SecretsListFieldSecrets+".*", name),
 				),
 			},
 		},
@@ -77,16 +77,16 @@ func TestKMSSecretsListDataSourceRead(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			config := newSecretsListDataSourceTestConfig(t, http.StatusOK, tc.body)
-			ds := kms.DataSourceSecretsList()
-			d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{
-				"secrets": []interface{}{"stale-secret"}, "secrets_count": 1,
+			ds := newFrameworkTestEndpoint(t, kms.NewSecretsListDataSource())
+			d := newFrameworkTestData(t, ds, map[string]interface{}{
+				kms.SecretsListFieldSecrets: []interface{}{"stale-secret"}, kms.SecretsListFieldSecretsCount: 1,
 			})
 
 			diags := ds.ReadContext(context.Background(), d, config)
 			require.False(t, diags.HasError(), "%v", diags)
 			assert.Equal(t, tc.wantID, d.Id())
-			assert.Equal(t, len(tc.wantSecrets), d.Get("secrets_count"))
-			assert.Equal(t, tc.wantSecrets, d.Get("secrets"))
+			assert.Equal(t, len(tc.wantSecrets), d.Get(kms.SecretsListFieldSecretsCount))
+			assert.Equal(t, tc.wantSecrets, d.Get(kms.SecretsListFieldSecrets))
 		})
 	}
 }
@@ -105,27 +105,27 @@ func TestKMSSecretsListDataSourceRead_errors(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			config := newSecretsListDataSourceTestConfig(t, tc.status, tc.body)
-			ds := kms.DataSourceSecretsList()
-			d := schema.TestResourceDataRaw(t, ds.Schema, nil)
+			ds := newFrameworkTestEndpoint(t, kms.NewSecretsListDataSource())
+			d := newFrameworkTestData(t, ds, nil)
 
 			diags := ds.ReadContext(context.Background(), d, config)
 			require.True(t, diags.HasError())
 			require.Len(t, diags, 1)
-			assert.Contains(t, diags[0].Summary, "Error listing secrets:")
+			assert.Contains(t, diags[0].Summary(), "Error listing secrets:")
 			assert.Empty(t, d.Id())
 		})
 	}
 }
 
 func TestKMSSecretsListDataSourceRead_clientError(t *testing.T) {
-	ds := kms.DataSourceSecretsList()
-	d := schema.TestResourceDataRaw(t, ds.Schema, nil)
+	ds := newFrameworkTestEndpoint(t, kms.NewSecretsListDataSource())
+	d := newFrameworkTestData(t, ds, nil)
 	config := &secretDataSourceTestConfig{err: errors.New("client unavailable")}
 
 	diags := ds.ReadContext(context.Background(), d, config)
 	require.True(t, diags.HasError())
 	require.Len(t, diags, 1)
-	assert.Equal(t, "Error creating VKCS KMS client: client unavailable", diags[0].Summary)
+	assert.Equal(t, "Error creating VKCS KMS client: client unavailable", diags[0].Summary())
 	assert.Empty(t, d.Id())
 }
 

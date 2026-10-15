@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
@@ -17,18 +17,18 @@ import (
 
 func TestKMSKeyDecryptDataSourceRead(t *testing.T) {
 	config := newKeyDecryptDataSourceTestConfig(t, http.StatusOK, `{"data":{"plaintext":"aGVsbG8="}}`, nil)
-	ds := kms.DataSourceKeyDecrypt()
-	d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{
-		"key": "test-key", "ciphertext": "vault:v1:dGVzdA==", "plaintext": "stale-output",
+	ds := newFrameworkTestEndpoint(t, kms.NewKeyDecryptDataSource())
+	d := newFrameworkTestData(t, ds, map[string]interface{}{
+		kms.KeyCryptFieldKey: "test-key", kms.KeyCryptFieldCiphertext: "vault:v1:dGVzdA==", kms.KeyCryptFieldPlaintext: "stale-output",
 	})
 	d.SetId("stale-id")
 
 	diags := ds.ReadContext(context.Background(), d, config)
 	require.False(t, diags.HasError(), "%v", diags)
 	assert.Equal(t, "333d6b3a3c1f5db6c9bdda5939b136986d170f4649172a68368d54ecb44c2ff2", d.Id())
-	assert.Equal(t, "aGVsbG8=", d.Get("plaintext"))
-	assert.Equal(t, "test-key", d.Get("key"))
-	assert.Equal(t, "vault:v1:dGVzdA==", d.Get("ciphertext"))
+	assert.Equal(t, "aGVsbG8=", d.Get(kms.KeyCryptFieldPlaintext))
+	assert.Equal(t, "test-key", d.Get(kms.KeyCryptFieldKey))
+	assert.Equal(t, "vault:v1:dGVzdA==", d.Get(kms.KeyCryptFieldCiphertext))
 }
 
 func TestKMSKeyDecryptDataSourceRead_errors(t *testing.T) {
@@ -48,35 +48,35 @@ func TestKMSKeyDecryptDataSourceRead_errors(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			config := newKeyDecryptDataSourceTestConfig(t, tc.status, tc.body, tc.transportErr)
-			ds := kms.DataSourceKeyDecrypt()
-			d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{
-				"key": "test-key", "ciphertext": "vault:v1:dGVzdA==",
+			ds := newFrameworkTestEndpoint(t, kms.NewKeyDecryptDataSource())
+			d := newFrameworkTestData(t, ds, map[string]interface{}{
+				kms.KeyCryptFieldKey: "test-key", kms.KeyCryptFieldCiphertext: "vault:v1:dGVzdA==",
 			})
 
 			diags := ds.ReadContext(context.Background(), d, config)
 			require.True(t, diags.HasError())
 			require.Len(t, diags, 1)
-			assert.Contains(t, diags[0].Summary, "Error decrypting:")
-			assert.Contains(t, diags[0].Summary, tc.wantError)
+			assert.Contains(t, diags[0].Summary(), "Error decrypting:")
+			assert.Contains(t, diags[0].Summary(), tc.wantError)
 			assert.Empty(t, d.Id())
-			assert.Empty(t, d.Get("plaintext"))
+			assert.Empty(t, d.Get(kms.KeyCryptFieldPlaintext))
 		})
 	}
 }
 
 func TestKMSKeyDecryptDataSourceRead_clientError(t *testing.T) {
-	ds := kms.DataSourceKeyDecrypt()
-	d := schema.TestResourceDataRaw(t, ds.Schema, map[string]interface{}{
-		"key": "test-key", "ciphertext": "vault:v1:dGVzdA==",
+	ds := newFrameworkTestEndpoint(t, kms.NewKeyDecryptDataSource())
+	d := newFrameworkTestData(t, ds, map[string]interface{}{
+		kms.KeyCryptFieldKey: "test-key", kms.KeyCryptFieldCiphertext: "vault:v1:dGVzdA==",
 	})
 	config := &secretDataSourceTestConfig{err: errors.New("client unavailable")}
 
 	diags := ds.ReadContext(context.Background(), d, config)
 	require.True(t, diags.HasError())
 	require.Len(t, diags, 1)
-	assert.Equal(t, "Error creating VKCS KMS client: client unavailable", diags[0].Summary)
+	assert.Equal(t, "Error creating VKCS KMS client: client unavailable", diags[0].Summary())
 	assert.Empty(t, d.Id())
-	assert.Empty(t, d.Get("plaintext"))
+	assert.Empty(t, d.Get(kms.KeyCryptFieldPlaintext))
 }
 
 func newKeyDecryptDataSourceTestConfig(t *testing.T, status int, body string, transportErr error) *secretDataSourceTestConfig {

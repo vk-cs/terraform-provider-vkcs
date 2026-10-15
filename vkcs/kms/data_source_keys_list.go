@@ -7,68 +7,99 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 )
 
-func DataSourceKeysList() *schema.Resource {
-	return &schema.Resource{
+var _ datasource.DataSourceWithConfigure = (*keysListDataSource)(nil)
+
+func NewKeysListDataSource() datasource.DataSource {
+	return &keysListDataSource{}
+}
+
+type keysListDataSource struct {
+	config clients.Config
+}
+
+type keysListDataSourceModel struct {
+	ID        types.String `tfsdk:"id"`
+	KeysCount types.Int64  `tfsdk:"keys_count"`
+	Keys      types.List   `tfsdk:"keys"`
+}
+
+func (r *keysListDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_kms_keys_list"
+}
+
+func (r *keysListDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData != nil {
+		r.config = req.ProviderData.(clients.Config)
+	}
+}
+
+func (r *keysListDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
 		Description: "Data source containing list of KMS keys",
-		ReadContext: dataSourceKeysListReadContext,
-		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultTimeout),
-		},
-		Schema: map[string]*schema.Schema{
-			KeysListFieldKeysCount: {
-				Type:        schema.TypeInt,
+		Attributes: map[string]schema.Attribute{
+			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS keys list"},
+			KeysListFieldKeysCount: schema.Int64Attribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Number of keys in list",
 			},
-			KeysListFieldKeys: {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
+			KeysListFieldKeys: schema.ListAttribute{
+				Optional:    true,
+				Computed:    true,
+				ElementType: types.StringType,
 				Description: "List of keys' names",
 			},
 		},
 	}
 }
 
-func dataSourceKeysListReadContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	config := meta.(clients.Config)
-	kmsV1Client, err := config.KMSV1Client(util.GetRegion(d, config))
+func (r *keysListDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data keysListDataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	config := r.config
+	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		return diag.Errorf("Error creating VKCS KMS client: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		return
 	}
 
 	keys, err := listKeys(kmsV1Client)
 	if err != nil {
-		return diag.Errorf("Error listing keys: %s", err)
+		resp.Diagnostics.AddError(fmt.Sprintf("Error listing keys: %s", err), "")
+		return
 	}
 
 	var builder strings.Builder
 	for _, secret := range keys[:min(len(keys), maxItemsInListForIDBuild)] {
 		_, err := builder.WriteString(secret)
 		if err != nil {
-			return diag.Errorf("Error building id: %s", err)
+			resp.Diagnostics.AddError(fmt.Sprintf("Error building id: %s", err), "")
+			return
 		}
 	}
 	hash := sha256.Sum256(fmt.Appendf(nil, "%s:%d", builder.String(), len(keys)))
 
-	d.SetId(hex.EncodeToString(hash[:]))
-	err = d.Set(KeysListFieldKeysCount, len(keys))
-	if err != nil {
-		return diag.Errorf(diagSetErrorTemplate, KeysListFieldKeysCount, err)
+	data.ID = types.StringValue(hex.EncodeToString(hash[:]))
+	data.KeysCount = types.Int64Value(int64(len(keys)))
+	if keys == nil {
+		keys = []string{}
 	}
-	err = d.Set(KeysListFieldKeys, keys)
-	if err != nil {
-		return diag.Errorf(diagSetErrorTemplate, KeysListFieldKeys, err)
+	var listDiags diag.Diagnostics
+	data.Keys, listDiags = types.ListValueFrom(ctx, types.StringType, keys)
+	resp.Diagnostics.Append(listDiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
