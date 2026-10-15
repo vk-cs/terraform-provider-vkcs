@@ -58,7 +58,7 @@ type FixedScale struct {
 type AutoScale struct {
 	MinSize int `json:"min_size"`
 	MaxSize int `json:"max_size" required:"true"`
-	Size    int `json:"size" required:"true"`
+	Size    int `json:"size"`
 }
 
 // Taint represents node taint configuration
