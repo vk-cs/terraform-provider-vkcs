@@ -3,7 +3,6 @@ package kms
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -31,7 +30,7 @@ type secretDataSourceModel struct {
 }
 
 func (r *secretDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_kms_secret"
+	resp.TypeName = entityName(req.ProviderTypeName, SecretEntityName)
 }
 
 func (r *secretDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -83,7 +82,7 @@ func (r *secretDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	config := r.config
 	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		resp.Diagnostics.AddError("Error creating VKCS KMS client", err.Error())
 		return
 	}
 
@@ -91,13 +90,13 @@ func (r *secretDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	secret, err := getSecret(kmsV1Client, path)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error getting secret: %s", err), "")
+		resp.Diagnostics.AddError("Error getting secret", err.Error())
 		return
 	}
 
 	deleteProtection, err := getSecretDeleteProtection(kmsV1Client, path)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error getting secret delete protection: %s", err), "")
+		resp.Diagnostics.AddError("Error getting secret delete protection", err.Error())
 		return
 	}
 
@@ -105,7 +104,7 @@ func (r *secretDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	secretString, err := json.Marshal(secret.Data.Data)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error marshalling data_json: %s", err), "")
+		resp.Diagnostics.AddError("Error marshalling data_json", err.Error())
 		return
 	}
 

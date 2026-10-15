@@ -1,6 +1,9 @@
 package kms
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 const (
 	retriesCount             = 10
@@ -11,3 +14,7 @@ const (
 const (
 	EntityFieldID = "id"
 )
+
+func entityName(providerTypeName string, entityName string) string {
+	return fmt.Sprintf("%s_%s", providerTypeName, entityName)
+}

@@ -2,7 +2,6 @@ package kms
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -28,7 +27,7 @@ type keyDataSourceModel struct {
 }
 
 func (r *keyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_kms_key"
+	resp.TypeName = entityName(req.ProviderTypeName, KeyEntityName)
 }
 
 func (r *keyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -70,7 +69,7 @@ func (r *keyDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	config := r.config
 	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		resp.Diagnostics.AddError("Error creating VKCS KMS client", err.Error())
 		return
 	}
 
@@ -78,7 +77,7 @@ func (r *keyDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 
 	key, err := getKey(kmsV1Client, name)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error getting key: %s", err), "")
+		resp.Diagnostics.AddError("Error getting key", err.Error())
 		return
 	}
 

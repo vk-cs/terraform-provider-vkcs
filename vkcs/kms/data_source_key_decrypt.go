@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -30,7 +29,7 @@ type keyDecryptDataSourceModel struct {
 }
 
 func (r *keyDecryptDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_kms_key_decrypt"
+	resp.TypeName = entityName(req.ProviderTypeName, KeyDecryptEntityName)
 }
 
 func (r *keyDecryptDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -71,7 +70,7 @@ func (r *keyDecryptDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	config := r.config
 	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		resp.Diagnostics.AddError("Error creating VKCS KMS client", err.Error())
 		return
 	}
 
@@ -81,7 +80,7 @@ func (r *keyDecryptDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	plaintext, err := decrypt(kmsV1Client, key, ciphertext)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error decrypting: %s", err), "")
+		resp.Diagnostics.AddError("Error decrypting", err.Error())
 		return
 	}
 

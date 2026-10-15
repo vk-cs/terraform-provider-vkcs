@@ -63,7 +63,8 @@ func TestKMSResourceWriteClientErrors(t *testing.T) {
 				diags := call(context.Background(), d, &secretDataSourceTestConfig{err: errors.New("client unavailable")})
 				require.True(t, diags.HasError())
 				require.Len(t, diags, 1)
-				assert.Equal(t, "Error creating VKCS KMS client: client unavailable", diags[0].Summary())
+				assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
+				assert.Equal(t, "client unavailable", diags[0].Detail())
 				assert.Equal(t, id, d.Id())
 			})
 		}

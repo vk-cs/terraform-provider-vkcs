@@ -2,7 +2,6 @@ package kms
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -34,7 +33,7 @@ type keyResourceModel struct {
 }
 
 func (r *keyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_kms_key"
+	resp.TypeName = entityName(req.ProviderTypeName, KeyEntityName)
 }
 
 func (r *keyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -80,7 +79,7 @@ func (r *keyResource) Create(ctx context.Context, req resource.CreateRequest, re
 	config := r.config
 	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		resp.Diagnostics.AddError("Error creating VKCS KMS client", err.Error())
 		return
 	}
 
@@ -92,7 +91,7 @@ func (r *keyResource) Create(ctx context.Context, req resource.CreateRequest, re
 		Type: t,
 	})
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating key: %s", err), "")
+		resp.Diagnostics.AddError("Error creating key", err.Error())
 		return
 	}
 
@@ -109,7 +108,7 @@ func (r *keyResource) Create(ctx context.Context, req resource.CreateRequest, re
 		time.Sleep(defaultThreshold)
 	}
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error updating key configuration: %s", err), "")
+		resp.Diagnostics.AddError("Error updating key configuration", err.Error())
 		return
 	}
 
@@ -127,7 +126,7 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	config := r.config
 	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		resp.Diagnostics.AddError("Error creating VKCS KMS client", err.Error())
 		return
 	}
 
@@ -135,7 +134,7 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 
 	key, err := getKey(kmsV1Client, name)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error getting key: %s", err), "")
+		resp.Diagnostics.AddError("Error getting key", err.Error())
 		return
 	}
 
@@ -158,7 +157,7 @@ func (r *keyResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	config := r.config
 	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		resp.Diagnostics.AddError("Error creating VKCS KMS client", err.Error())
 		return
 	}
 
@@ -168,7 +167,7 @@ func (r *keyResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		DeletionAllowed: deletionAllowed,
 	})
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error updating key configuration: %s", err), "")
+		resp.Diagnostics.AddError("Error updating key configuration", err.Error())
 		return
 	}
 
@@ -185,7 +184,7 @@ func (r *keyResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	config := r.config
 	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		resp.Diagnostics.AddError("Error creating VKCS KMS client", err.Error())
 		return
 	}
 
@@ -193,7 +192,7 @@ func (r *keyResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 
 	err = deleteKey(kmsV1Client, name)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error deleting key: %s", err), "")
+		resp.Diagnostics.AddError("Error deleting key", err.Error())
 		return
 	}
 

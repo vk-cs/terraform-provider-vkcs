@@ -52,7 +52,7 @@ func TestKMSSecretResourceRead_errors(t *testing.T) {
 			diags := ds.ReadContext(context.Background(), d, config)
 			require.True(t, diags.HasError())
 			require.Len(t, diags, 1)
-			assert.Contains(t, diags[0].Summary(), "Error getting secret:")
+			assert.Contains(t, diags[0].Summary(), "Error getting secret")
 			assert.Equal(t, "test-secret", d.Id())
 		})
 	}
@@ -67,7 +67,8 @@ func TestKMSSecretResourceRead_clientError(t *testing.T) {
 	diags := ds.ReadContext(context.Background(), d, config)
 	require.True(t, diags.HasError())
 	require.Len(t, diags, 1)
-	assert.Equal(t, "Error creating VKCS KMS client: client unavailable", diags[0].Summary())
+	assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
+	assert.Equal(t, "client unavailable", diags[0].Detail())
 	assert.Equal(t, "test-secret", d.Id())
 }
 
@@ -120,7 +121,7 @@ func TestKMSSecretResourceWriteErrors(t *testing.T) {
 				d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{}`, kms.SecretFieldCreatedTime: "old-time", kms.SecretFieldVersion: 1})
 				call := r.CreateContext
 				request := kmsResourceRequest{"POST", "secret/data/test-secret", `{"data":{}}`, failure.status, failure.body}
-				prefix := "Error creating secret:"
+				prefix := "Error creating secret"
 				if operation != "create" {
 					d.SetId("test-secret")
 				}
@@ -132,7 +133,7 @@ func TestKMSSecretResourceWriteErrors(t *testing.T) {
 					request.method = "DELETE"
 					request.path = "secret/metadata/test-secret"
 					request.body = ""
-					prefix = "Error deleting secret:"
+					prefix = "Error deleting secret"
 				}
 				diags := call(context.Background(), d, newKMSResourceTestConfig(t, request))
 				require.True(t, diags.HasError())

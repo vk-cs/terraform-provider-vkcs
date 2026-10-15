@@ -60,7 +60,7 @@ func TestKMSKeyResourceRead_errors(t *testing.T) {
 			diags := ds.ReadContext(context.Background(), d, config)
 			require.True(t, diags.HasError())
 			require.Len(t, diags, 1)
-			assert.Contains(t, diags[0].Summary(), "Error getting key:")
+			assert.Contains(t, diags[0].Summary(), "Error getting key")
 			assert.Equal(t, "test-key", d.Id())
 		})
 	}
@@ -75,7 +75,8 @@ func TestKMSKeyResourceRead_clientError(t *testing.T) {
 	diags := ds.ReadContext(context.Background(), d, config)
 	require.True(t, diags.HasError())
 	require.Len(t, diags, 1)
-	assert.Equal(t, "Error creating VKCS KMS client: client unavailable", diags[0].Summary())
+	assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
+	assert.Equal(t, "client unavailable", diags[0].Detail())
 	assert.Equal(t, "test-key", d.Id())
 }
 
@@ -150,7 +151,7 @@ func TestKMSKeyResourceWriteErrors(t *testing.T) {
 				d := newFrameworkTestData(t, r, map[string]interface{}{kms.KeyFieldName: "test-key"})
 				call := r.CreateContext
 				request := kmsResourceRequest{"POST", "transit/keys/test-key", `{"type":"aes256-gcm96"}`, failure.status, failure.body}
-				prefix := "Error creating key:"
+				prefix := "Error creating key"
 				var requests []kmsResourceRequest
 				switch operation {
 				case "configure after create":
@@ -159,7 +160,7 @@ func TestKMSKeyResourceWriteErrors(t *testing.T) {
 				case "update":
 					request.path = "transit/keys/test-key/config"
 					request.body = `{"deletion_allowed":false}`
-					prefix = "Error updating key configuration:"
+					prefix = "Error updating key configuration"
 					if operation == "update" {
 						call = r.UpdateContext
 						d.SetId("test-key")
@@ -170,7 +171,7 @@ func TestKMSKeyResourceWriteErrors(t *testing.T) {
 					request.method = "DELETE"
 					request.path = "transit/keys/test-key"
 					request.body = ""
-					prefix = "Error deleting key:"
+					prefix = "Error deleting key"
 				}
 				if operation == "create" && failure.name == "invalid JSON" {
 					request.status = 200

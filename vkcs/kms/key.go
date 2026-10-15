@@ -6,6 +6,13 @@ import (
 )
 
 const (
+	KeyEntityName        = "kms_key"
+	KeysListEntityName   = "kms_keys_list"
+	KeyEncryptEntityName = "kms_key_encrypt"
+	KeyDecryptEntityName = "kms_key_decrypt"
+)
+
+const (
 	KeyFieldName            = "name"
 	KeyFieldType            = "type"
 	KeyFieldDeletionAllowed = "deletion_allowed"

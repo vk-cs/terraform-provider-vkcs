@@ -31,7 +31,7 @@ type keysListDataSourceModel struct {
 }
 
 func (r *keysListDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_kms_keys_list"
+	resp.TypeName = entityName(req.ProviderTypeName, KeysListEntityName)
 }
 
 func (r *keysListDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -70,13 +70,13 @@ func (r *keysListDataSource) Read(ctx context.Context, req datasource.ReadReques
 	config := r.config
 	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		resp.Diagnostics.AddError("Error creating VKCS KMS client", err.Error())
 		return
 	}
 
 	keys, err := listKeys(kmsV1Client)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error listing keys: %s", err), "")
+		resp.Diagnostics.AddError("Error listing keys", err.Error())
 		return
 	}
 
@@ -84,7 +84,7 @@ func (r *keysListDataSource) Read(ctx context.Context, req datasource.ReadReques
 	for _, secret := range keys[:min(len(keys), maxItemsInListForIDBuild)] {
 		_, err := builder.WriteString(secret)
 		if err != nil {
-			resp.Diagnostics.AddError(fmt.Sprintf("Error building id: %s", err), "")
+			resp.Diagnostics.AddError("Error building id", err.Error())
 			return
 		}
 	}

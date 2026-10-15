@@ -6,6 +6,11 @@ import (
 )
 
 const (
+	SecretEntityName      = "kms_secret"
+	SecretsListEntityName = "kms_secrets_list"
+)
+
+const (
 	SecretFieldPath             = "path"
 	SecretFieldDataJSON         = "data_json"
 	SecretFieldCreatedTime      = "created_time"

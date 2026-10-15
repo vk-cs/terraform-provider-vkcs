@@ -111,7 +111,7 @@ func TestKMSSecretsListDataSourceRead_errors(t *testing.T) {
 			diags := ds.ReadContext(context.Background(), d, config)
 			require.True(t, diags.HasError())
 			require.Len(t, diags, 1)
-			assert.Contains(t, diags[0].Summary(), "Error listing secrets:")
+			assert.Contains(t, diags[0].Summary(), "Error listing secrets")
 			assert.Empty(t, d.Id())
 		})
 	}
@@ -125,7 +125,8 @@ func TestKMSSecretsListDataSourceRead_clientError(t *testing.T) {
 	diags := ds.ReadContext(context.Background(), d, config)
 	require.True(t, diags.HasError())
 	require.Len(t, diags, 1)
-	assert.Equal(t, "Error creating VKCS KMS client: client unavailable", diags[0].Summary())
+	assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
+	assert.Equal(t, "client unavailable", diags[0].Detail())
 	assert.Empty(t, d.Id())
 }
 

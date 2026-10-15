@@ -3,7 +3,6 @@ package kms
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -36,7 +35,7 @@ type secretResourceModel struct {
 }
 
 func (r *secretResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_kms_secret"
+	resp.TypeName = entityName(req.ProviderTypeName, SecretEntityName)
 }
 
 func (r *secretResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -89,7 +88,7 @@ func (r *secretResource) Create(ctx context.Context, req resource.CreateRequest,
 	config := r.config
 	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		resp.Diagnostics.AddError("Error creating VKCS KMS client", err.Error())
 		return
 	}
 
@@ -100,7 +99,7 @@ func (r *secretResource) Create(ctx context.Context, req resource.CreateRequest,
 	secretData := make(map[string]any)
 	err = json.Unmarshal([]byte(dataJSON), &secretData)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error unmarshalling data: %s", err), "")
+		resp.Diagnostics.AddError("Error unmarshalling data", err.Error())
 		return
 	}
 
@@ -108,7 +107,7 @@ func (r *secretResource) Create(ctx context.Context, req resource.CreateRequest,
 		Data: secretData,
 	})
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating secret: %s", err), "")
+		resp.Diagnostics.AddError("Error creating secret", err.Error())
 		return
 	}
 
@@ -125,7 +124,7 @@ func (r *secretResource) Create(ctx context.Context, req resource.CreateRequest,
 		time.Sleep(defaultThreshold)
 	}
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error updating secret delete protection: %s", err), "")
+		resp.Diagnostics.AddError("Error updating secret delete protection", err.Error())
 		return
 	}
 
@@ -148,7 +147,7 @@ func (r *secretResource) Read(ctx context.Context, req resource.ReadRequest, res
 	config := r.config
 	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		resp.Diagnostics.AddError("Error creating VKCS KMS client", err.Error())
 		return
 	}
 
@@ -156,19 +155,19 @@ func (r *secretResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	secret, err := getSecret(kmsV1Client, path)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error getting secret: %s", err), "")
+		resp.Diagnostics.AddError("Error getting secret", err.Error())
 		return
 	}
 
 	secretString, err := json.Marshal(secret.Data.Data)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating data_json: %s", err), "")
+		resp.Diagnostics.AddError("Error creating data_json", err.Error())
 		return
 	}
 
 	deleteProtection, err := getSecretDeleteProtection(kmsV1Client, path)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error getting secret delete protection: %s", err), "")
+		resp.Diagnostics.AddError("Error getting secret delete protection", err.Error())
 		return
 	}
 
@@ -193,7 +192,7 @@ func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest,
 	config := r.config
 	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		resp.Diagnostics.AddError("Error creating VKCS KMS client", err.Error())
 		return
 	}
 
@@ -204,7 +203,7 @@ func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest,
 	secretData := make(map[string]any)
 	err = json.Unmarshal([]byte(dataJSON), &secretData)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error unmarshalling data: %s", err), "")
+		resp.Diagnostics.AddError("Error unmarshalling data", err.Error())
 		return
 	}
 
@@ -212,7 +211,7 @@ func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest,
 		Data: secretData,
 	})
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating secret: %s", err), "")
+		resp.Diagnostics.AddError("Error creating secret", err.Error())
 		return
 	}
 
@@ -229,7 +228,7 @@ func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest,
 		time.Sleep(defaultThreshold)
 	}
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error updating secret delete protection: %s", err), "")
+		resp.Diagnostics.AddError("Error updating secret delete protection", err.Error())
 		return
 	}
 
@@ -250,7 +249,7 @@ func (r *secretResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	config := r.config
 	kmsV1Client, err := config.KMSV1Client(config.GetRegion())
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error creating VKCS KMS client: %s", err), "")
+		resp.Diagnostics.AddError("Error creating VKCS KMS client", err.Error())
 		return
 	}
 
@@ -258,7 +257,7 @@ func (r *secretResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	err = deleteSecret(kmsV1Client, path)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error deleting secret: %s", err), "")
+		resp.Diagnostics.AddError("Error deleting secret", err.Error())
 		return
 	}
 
