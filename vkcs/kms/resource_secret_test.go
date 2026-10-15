@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
@@ -78,7 +76,7 @@ func TestKMSSecretResourceWrite(t *testing.T) {
 		t.Run(operation, func(t *testing.T) {
 			r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
 			d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "secret /?#%", kms.SecretFieldDataJSON: `{"password":"new-value"}`, kms.SecretFieldCreatedTime: "stale-time", kms.SecretFieldVersion: 1})
-			var call func(context.Context, *frameworkTestData, interface{}) diag.Diagnostics = r.CreateContext
+			call := r.CreateContext
 			if operation == "update" {
 				call = r.UpdateContext
 				d.SetId("secret /?#%")
@@ -120,7 +118,7 @@ func TestKMSSecretResourceWriteErrors(t *testing.T) {
 			t.Run(operation+"/"+failure.name, func(t *testing.T) {
 				r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
 				d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{}`, kms.SecretFieldCreatedTime: "old-time", kms.SecretFieldVersion: 1})
-				var call func(context.Context, *frameworkTestData, interface{}) diag.Diagnostics = r.CreateContext
+				call := r.CreateContext
 				request := kmsResourceRequest{"POST", "secret/data/test-secret", `{"data":{}}`, failure.status, failure.body}
 				prefix := "Error creating secret:"
 				if operation != "create" {
