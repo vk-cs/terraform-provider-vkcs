@@ -27,7 +27,7 @@ type keyDataSourceModel struct {
 }
 
 func (r *keyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = entityName(req.ProviderTypeName, KeyEntityName)
+	resp.TypeName = typeName(req.ProviderTypeName, KeyEntityName)
 }
 
 func (r *keyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

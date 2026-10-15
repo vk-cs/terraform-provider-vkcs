@@ -30,7 +30,7 @@ type secretDataSourceModel struct {
 }
 
 func (r *secretDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = entityName(req.ProviderTypeName, SecretEntityName)
+	resp.TypeName = typeName(req.ProviderTypeName, SecretEntityName)
 }
 
 func (r *secretDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

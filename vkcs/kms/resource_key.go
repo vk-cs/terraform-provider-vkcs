@@ -33,7 +33,7 @@ type keyResourceModel struct {
 }
 
 func (r *keyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = entityName(req.ProviderTypeName, KeyEntityName)
+	resp.TypeName = typeName(req.ProviderTypeName, KeyEntityName)
 }
 
 func (r *keyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

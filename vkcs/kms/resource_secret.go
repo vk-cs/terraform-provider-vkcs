@@ -35,7 +35,7 @@ type secretResourceModel struct {
 }
 
 func (r *secretResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = entityName(req.ProviderTypeName, SecretEntityName)
+	resp.TypeName = typeName(req.ProviderTypeName, SecretEntityName)
 }
 
 func (r *secretResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

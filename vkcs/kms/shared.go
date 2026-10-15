@@ -15,6 +15,6 @@ const (
 	EntityFieldID = "id"
 )
 
-func entityName(providerTypeName string, entityName string) string {
+func typeName(providerTypeName string, entityName string) string {
 	return fmt.Sprintf("%s_%s", providerTypeName, entityName)
 }

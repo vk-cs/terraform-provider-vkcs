@@ -31,7 +31,7 @@ type keysListDataSourceModel struct {
 }
 
 func (r *keysListDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = entityName(req.ProviderTypeName, KeysListEntityName)
+	resp.TypeName = typeName(req.ProviderTypeName, KeysListEntityName)
 }
 
 func (r *keysListDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

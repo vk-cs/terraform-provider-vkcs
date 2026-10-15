@@ -29,7 +29,7 @@ type keyEncryptDataSourceModel struct {
 }
 
 func (r *keyEncryptDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = entityName(req.ProviderTypeName, KeyEncryptEntityName)
+	resp.TypeName = typeName(req.ProviderTypeName, KeyEncryptEntityName)
 }
 
 func (r *keyEncryptDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

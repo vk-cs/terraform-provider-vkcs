@@ -31,7 +31,7 @@ type secretsListDataSourceModel struct {
 }
 
 func (r *secretsListDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = entityName(req.ProviderTypeName, SecretsListEntityName)
+	resp.TypeName = typeName(req.ProviderTypeName, SecretsListEntityName)
 }
 
 func (r *secretsListDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
