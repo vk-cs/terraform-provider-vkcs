@@ -23,13 +23,17 @@ func typeName(providerTypeName string, entityName string) string {
 	return fmt.Sprintf("%s_%s", providerTypeName, entityName)
 }
 
+func isOperationUnfinished(err error) bool {
+	return errutil.Is(err, 400) && strings.Contains(err.Error(), "unfinished operation")
+}
+
 func waitForKMSOperation(ctx context.Context, check func() (bool, error)) error {
-	for attempt := 0; attempt < retriesCount; attempt++ {
+	for range retriesCount {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
 		done, err := check()
-		if err != nil && !(errutil.Is(err, 400) && strings.Contains(err.Error(), "unfinished operation")) {
+		if err != nil && !isOperationUnfinished(err) {
 			return err
 		}
 		if done && err == nil {
