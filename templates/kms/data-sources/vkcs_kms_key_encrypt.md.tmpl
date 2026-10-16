@@ -1,0 +1,19 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Encrypt data using a KMS key within VKCS.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+The input `plaintext` is marked as sensitive and is stored in Terraform state.
+
+## Example Usage
+
+{{tffile "examples/kms/key_encrypt/main.tf"}}
+
+{{ .SchemaMarkdown }}
