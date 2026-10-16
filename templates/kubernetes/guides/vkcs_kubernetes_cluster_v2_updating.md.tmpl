@@ -65,7 +65,7 @@ output "available_k8s_versions" {
 
 ```shell
 terraform apply
-# available_k8s_versions = ["v1.31.4", "v1.32.1", "v1.33.3", "v1.34.2"]
+# available_k8s_versions = ["v1.32.1", "v1.33.3", "v1.34.2", "v1.35.6"]
 ```
 
 ## Step 2. Tune the worker rollout speed (optional)

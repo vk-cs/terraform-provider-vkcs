@@ -200,22 +200,14 @@ func isDomainValidWithError(domain string) error {
 		return isIPValidWithError(domain)
 	}
 
-	hasDot := false
 	for i, r := range domain {
 		if r == ':' || r == '/' {
 			return fmt.Errorf("Domain cannot contain '%c' - port and path should be separated with proper syntax", r)
 		}
 
-		if r == '.' {
-			hasDot = true
-			if i == 0 || i == len(domain)-1 {
-				return fmt.Errorf("Domain cannot start or end with a dot (.)")
-			}
+		if r == '.' && (i == 0 || i == len(domain)-1) {
+			return fmt.Errorf("Domain cannot start or end with a dot (.)")
 		}
-	}
-
-	if !hasDot {
-		return fmt.Errorf("Domain name must contain at least one dot (e.g., 'example.com')")
 	}
 
 	return nil
