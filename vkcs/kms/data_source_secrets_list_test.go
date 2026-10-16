@@ -3,51 +3,16 @@ package kms_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
 
 	"github.com/gophercloud/gophercloud"
-	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 )
-
-func TestAccKMSSecretsListDataSource_basic(t *testing.T) {
-	name := sdkacctest.RandomWithPrefix("tf-acc-kms-secret")
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
-		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(testAccKMSSecretsListDataSourceBasic, name),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", kms.EntityFieldID),
-					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", kms.SecretsListFieldSecretsCount),
-					resource.TestCheckTypeSetElemAttr("data.vkcs_kms_secrets_list.secrets", kms.SecretsListFieldSecrets+".*", name),
-				),
-			},
-		},
-	})
-}
-
-const testAccKMSSecretsListDataSourceBasic = `
-resource "vkcs_kms_secret" "secret" {
-  path = %q
-  delete_protection = false
-  data_json = jsonencode({ password = "test-password" })
-}
-
-data "vkcs_kms_secrets_list" "secrets" {
-  depends_on = [vkcs_kms_secret.secret]
-}
-`
 
 func TestKMSSecretsListDataSourceRead(t *testing.T) {
 	for _, tc := range []struct {

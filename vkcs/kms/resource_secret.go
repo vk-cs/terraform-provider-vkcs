@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/secrets"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 var _ resource.ResourceWithConfigure = (*secretResource)(nil)
@@ -130,6 +131,18 @@ func (r *secretResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	data.ID = types.StringValue(path)
 
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		protection, err := getSecretDeleteProtection(kmsV1Client, path)
+		if errutil.IsNotFound(err) {
+			return false, nil
+		}
+		return err == nil && protection == deleteProtection, err
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Error waiting for secret delete protection", err.Error())
+		return
+	}
+
 	data.CreatedTime = types.StringValue(secret.Data.CreatedTime.String())
 
 	data.Version = types.Int64Value(int64(secret.Data.Version))
@@ -232,6 +245,18 @@ func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		protection, err := getSecretDeleteProtection(kmsV1Client, path)
+		if errutil.IsNotFound(err) {
+			return false, nil
+		}
+		return err == nil && protection == deleteProtection, err
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Error waiting for secret delete protection", err.Error())
+		return
+	}
+
 	data.CreatedTime = types.StringValue(secret.Data.CreatedTime.String())
 
 	data.Version = types.Int64Value(int64(secret.Data.Version))
@@ -255,19 +280,26 @@ func (r *secretResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	path := data.Path.ValueString()
 
-	err = deleteSecret(kmsV1Client, path)
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		err := deleteSecret(kmsV1Client, path)
+		if errutil.IsNotFound(err) {
+			return true, nil
+		}
+		return err == nil, err
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting secret", err.Error())
 		return
 	}
 
-	// Waiting for the secret to be fully deleted
-	for range retriesCount {
-		var err error
-		_, err = getSecret(kmsV1Client, path)
-		if err != nil {
-			break
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		_, err := getSecret(kmsV1Client, path)
+		if errutil.IsNotFound(err) {
+			return true, nil
 		}
-		time.Sleep(defaultThreshold)
+		return false, err
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Error waiting for secret deletion", err.Error())
 	}
 }

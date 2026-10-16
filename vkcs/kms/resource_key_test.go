@@ -100,6 +100,7 @@ func TestKMSKeyResourceCreate(t *testing.T) {
 				t,
 				kmsResourceRequest{"POST", "transit/keys/test-key", fmt.Sprintf(`{"type":%q}`, tc.keyType), 200, `{"data":{"name":"test-key"}}`},
 				kmsResourceRequest{"POST", "transit/keys/test-key/config", fmt.Sprintf(`{"deletion_allowed":%t}`, tc.allowed), 200, `{"data":{}}`},
+				kmsResourceRequest{"GET", "transit/keys/test-key", "", 200, fmt.Sprintf(`{"data":{"deletion_allowed":%t}}`, tc.allowed)},
 			)
 			diags := r.CreateContext(context.Background(), d, config)
 			require.False(t, diags.HasError(), "%v", diags)
@@ -116,7 +117,7 @@ func TestKMSKeyResourceUpdate(t *testing.T) {
 			r := newFrameworkTestEndpoint(t, kms.NewKeyResource())
 			d := newFrameworkTestData(t, r, map[string]interface{}{kms.KeyFieldName: "test-key", kms.KeyFieldDeletionAllowed: allowed})
 			d.SetId("key /?#%")
-			config := newKMSResourceTestConfig(t, kmsResourceRequest{"POST", "transit/keys/key%20%2F%3F%23%25/config", fmt.Sprintf(`{"deletion_allowed":%t}`, allowed), 200, `{"data":{}}`})
+			config := newKMSResourceTestConfig(t, kmsResourceRequest{"POST", "transit/keys/key%20%2F%3F%23%25/config", fmt.Sprintf(`{"deletion_allowed":%t}`, allowed), 200, `{"data":{}}`}, kmsResourceRequest{"GET", "transit/keys/key%20%2F%3F%23%25", "", 200, fmt.Sprintf(`{"data":{"deletion_allowed":%t}}`, allowed)})
 			diags := r.UpdateContext(context.Background(), d, config)
 			require.False(t, diags.HasError(), "%v", diags)
 			assert.Equal(t, "key /?#%", d.Id())
@@ -195,4 +196,45 @@ func TestKMSKeyResourceWriteErrors(t *testing.T) {
 			})
 		}
 	}
+}
+
+func TestKMSKeyResourceCreate_waitsForConfiguration(t *testing.T) {
+	r := newFrameworkTestEndpoint(t, kms.NewKeyResource())
+	d := newFrameworkTestData(t, r, map[string]interface{}{kms.KeyFieldName: "test-key", kms.KeyFieldDeletionAllowed: true})
+	config := newKMSResourceTestConfig(t,
+		kmsResourceRequest{"POST", "transit/keys/test-key", `{"type":"aes256-gcm96"}`, 200, `{"data":{}}`},
+		kmsResourceRequest{"POST", "transit/keys/test-key/config", `{"deletion_allowed":true}`, 200, `{"data":{}}`},
+		kmsResourceRequest{"GET", "transit/keys/test-key", "", 200, `{"data":{"deletion_allowed":false}}`},
+		kmsResourceRequest{"GET", "transit/keys/test-key", "", 200, `{"data":{"deletion_allowed":true}}`},
+	)
+	diags := r.CreateContext(context.Background(), d, config)
+	require.False(t, diags.HasError(), "%v", diags)
+}
+
+func TestKMSKeyResourceDelete_waitsForOperationAndDeletion(t *testing.T) {
+	r := newFrameworkTestEndpoint(t, kms.NewKeyResource())
+	d := newFrameworkTestData(t, r, map[string]interface{}{kms.KeyFieldName: "test-key"})
+	d.SetId("test-key")
+	config := newKMSResourceTestConfig(t,
+		kmsResourceRequest{"DELETE", "transit/keys/test-key", "", 400, `{"errors":["key test-key has an unfinished operation"]}`},
+		kmsResourceRequest{"DELETE", "transit/keys/test-key", "", 204, ""},
+		kmsResourceRequest{"GET", "transit/keys/test-key", "", 200, `{"data":{"name":"test-key"}}`},
+		kmsResourceRequest{"GET", "transit/keys/test-key", "", 404, `{"errors":["key not found"]}`},
+	)
+	diags := r.DeleteContext(context.Background(), d, config)
+	require.False(t, diags.HasError(), "%v", diags)
+}
+
+func TestKMSKeyResourceDelete_pollError(t *testing.T) {
+	r := newFrameworkTestEndpoint(t, kms.NewKeyResource())
+	d := newFrameworkTestData(t, r, map[string]interface{}{kms.KeyFieldName: "test-key"})
+	d.SetId("test-key")
+	config := newKMSResourceTestConfig(t,
+		kmsResourceRequest{"DELETE", "transit/keys/test-key", "", 204, ""},
+		kmsResourceRequest{"GET", "transit/keys/test-key", "", 403, `{"errors":["permission denied"]}`},
+	)
+	diags := r.DeleteContext(context.Background(), d, config)
+	require.True(t, diags.HasError())
+	assert.Equal(t, "Error waiting for key deletion", diags[0].Summary())
+	assert.Contains(t, diags[0].Detail(), "permission denied")
 }

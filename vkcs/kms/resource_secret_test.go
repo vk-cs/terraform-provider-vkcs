@@ -82,7 +82,7 @@ func TestKMSSecretResourceWrite(t *testing.T) {
 				call = r.UpdateContext
 				d.SetId("secret /?#%")
 			}
-			config := newKMSResourceTestConfig(t, kmsResourceRequest{"POST", "secret/data/secret%20%2F%3F%23%25", `{"data":{"password":"new-value"}}`, 200, `{"data":{"created_time":"2026-09-01T10:00:00Z","version":2}}`}, kmsResourceRequest{"PUT", "secret/metadata/delete-protection/secret%20%2F%3F%23%25", `{"delete_protection":true}`, 200, ""})
+			config := newKMSResourceTestConfig(t, kmsResourceRequest{"POST", "secret/data/secret%20%2F%3F%23%25", `{"data":{"password":"new-value"}}`, 200, `{"data":{"created_time":"2026-09-01T10:00:00Z","version":2}}`}, kmsResourceRequest{"PUT", "secret/metadata/delete-protection/secret%20%2F%3F%23%25", `{"delete_protection":true}`, 200, ""}, kmsResourceRequest{"GET", "secret/metadata/delete-protection/secret%20%2F%3F%23%25", "", 200, `{"delete_protection":true}`})
 			diags := call(context.Background(), d, config)
 			require.False(t, diags.HasError(), "%v", diags)
 			assert.Equal(t, "secret /?#%", d.Id())
@@ -149,4 +149,56 @@ func TestKMSSecretResourceWriteErrors(t *testing.T) {
 			})
 		}
 	}
+}
+
+func TestKMSSecretResourceWrite_waitsForDeleteProtection(t *testing.T) {
+	for _, operation := range []string{"create", "update"} {
+		t.Run(operation, func(t *testing.T) {
+			r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
+			d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{}`, kms.SecretFieldDeleteProtection: false})
+			call := r.CreateContext
+			if operation == "update" {
+				call = r.UpdateContext
+				d.SetId("test-secret")
+			}
+			config := newKMSResourceTestConfig(t,
+				kmsResourceRequest{"POST", "secret/data/test-secret", `{"data":{}}`, 200, `{"data":{"created_time":"2026-09-01T10:00:00Z","version":2}}`},
+				kmsResourceRequest{"PUT", "secret/metadata/delete-protection/test-secret", `{"delete_protection":false}`, 400, `{"errors":["secret has an unfinished operation"]}`},
+				kmsResourceRequest{"PUT", "secret/metadata/delete-protection/test-secret", `{"delete_protection":false}`, 200, ""},
+				kmsResourceRequest{"GET", "secret/metadata/delete-protection/test-secret", "", 200, `{"delete_protection":true}`},
+				kmsResourceRequest{"GET", "secret/metadata/delete-protection/test-secret", "", 200, `{"delete_protection":false}`},
+			)
+			diags := call(context.Background(), d, config)
+			require.False(t, diags.HasError(), "%v", diags)
+			assert.Equal(t, false, d.Get(kms.SecretFieldDeleteProtection))
+		})
+	}
+}
+
+func TestKMSSecretResourceDelete_waitsForOperationAndDeletion(t *testing.T) {
+	r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
+	d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret"})
+	d.SetId("test-secret")
+	config := newKMSResourceTestConfig(t,
+		kmsResourceRequest{"DELETE", "secret/metadata/test-secret", "", 400, `{"errors":["secret has an unfinished operation"]}`},
+		kmsResourceRequest{"DELETE", "secret/metadata/test-secret", "", 204, ""},
+		kmsResourceRequest{"GET", "secret/data/test-secret", "", 200, `{"data":{"data":{},"metadata":{"version":1}}}`},
+		kmsResourceRequest{"GET", "secret/data/test-secret", "", 404, `{"errors":["secret not found"]}`},
+	)
+	diags := r.DeleteContext(context.Background(), d, config)
+	require.False(t, diags.HasError(), "%v", diags)
+}
+
+func TestKMSSecretResourceDelete_pollError(t *testing.T) {
+	r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
+	d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret"})
+	d.SetId("test-secret")
+	config := newKMSResourceTestConfig(t,
+		kmsResourceRequest{"DELETE", "secret/metadata/test-secret", "", 204, ""},
+		kmsResourceRequest{"GET", "secret/data/test-secret", "", 403, `{"errors":["permission denied"]}`},
+	)
+	diags := r.DeleteContext(context.Background(), d, config)
+	require.True(t, diags.HasError())
+	assert.Equal(t, "Error waiting for secret deletion", diags[0].Summary())
+	assert.Contains(t, diags[0].Detail(), "permission denied")
 }
