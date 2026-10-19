@@ -78,7 +78,12 @@ func (r *keyEncryptDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	plaintext := data.Plaintext.ValueString()
 
-	ciphertext, err := encrypt(kmsV1Client, key, plaintext)
+	var ciphertext string
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		var err error
+		ciphertext, err = encrypt(kmsV1Client, key, plaintext)
+		return err == nil, err
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error encrypting", err.Error())
 		return

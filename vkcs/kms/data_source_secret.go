@@ -2,12 +2,13 @@ package kms
 
 import (
 	"context"
-	"encoding/json"
 
+	"encoding/json"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/secrets"
 )
 
 var _ datasource.DataSourceWithConfigure = (*secretDataSource)(nil)
@@ -88,13 +89,23 @@ func (r *secretDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	path := data.Path.ValueString()
 
-	secret, err := getSecret(kmsV1Client, path)
+	var secret secrets.GetSecret
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		var err error
+		secret, err = getSecret(kmsV1Client, path)
+		return err == nil, err
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting secret", err.Error())
 		return
 	}
 
-	deleteProtection, err := getSecretDeleteProtection(kmsV1Client, path)
+	var deleteProtection bool
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		var err error
+		deleteProtection, err = getSecretDeleteProtection(kmsV1Client, path)
+		return err == nil, err
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting secret delete protection", err.Error())
 		return

@@ -74,7 +74,12 @@ func (r *keysListDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	keys, err := listKeys(kmsV1Client)
+	var keys []string
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		var err error
+		keys, err = listKeys(kmsV1Client)
+		return err == nil, err
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error listing keys", err.Error())
 		return

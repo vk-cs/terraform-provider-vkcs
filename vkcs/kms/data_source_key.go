@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/keys"
 )
 
 var _ datasource.DataSourceWithConfigure = (*keyDataSource)(nil)
@@ -75,7 +76,12 @@ func (r *keyDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 
 	name := data.Name.ValueString()
 
-	key, err := getKey(kmsV1Client, name)
+	var key keys.GetKey
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		var err error
+		key, err = getKey(kmsV1Client, name)
+		return err == nil, err
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting key", err.Error())
 		return

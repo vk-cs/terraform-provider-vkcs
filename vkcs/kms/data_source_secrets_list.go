@@ -74,7 +74,12 @@ func (r *secretsListDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	secrets, err := listSecrets(kmsV1Client)
+	var secrets []string
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		var err error
+		secrets, err = listSecrets(kmsV1Client)
+		return err == nil, err
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error listing secrets", err.Error())
 		return

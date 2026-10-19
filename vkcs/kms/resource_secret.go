@@ -166,7 +166,12 @@ func (r *secretResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	path := data.Path.ValueString()
 
-	secret, err := getSecret(kmsV1Client, path)
+	var secret secrets.GetSecret
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		var err error
+		secret, err = getSecret(kmsV1Client, path)
+		return err == nil, err
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting secret", err.Error())
 		return
@@ -178,7 +183,12 @@ func (r *secretResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	deleteProtection, err := getSecretDeleteProtection(kmsV1Client, path)
+	var deleteProtection bool
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		var err error
+		deleteProtection, err = getSecretDeleteProtection(kmsV1Client, path)
+		return err == nil, err
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting secret delete protection", err.Error())
 		return

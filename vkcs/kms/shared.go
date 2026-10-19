@@ -28,6 +28,7 @@ func isOperationUnfinished(err error) bool {
 }
 
 func waitForKMSOperation(ctx context.Context, check func() (bool, error)) error {
+	threshold := defaultThreshold
 	for range retriesCount {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -39,7 +40,8 @@ func waitForKMSOperation(ctx context.Context, check func() (bool, error)) error 
 		if done && err == nil {
 			return nil
 		}
-		timer := time.NewTimer(defaultThreshold)
+		timer := time.NewTimer(threshold)
+		threshold += defaultThreshold
 		select {
 		case <-ctx.Done():
 			timer.Stop()
