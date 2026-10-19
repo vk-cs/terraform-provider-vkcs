@@ -143,6 +143,9 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	err = waitForKMSOperation(ctx, func() (bool, error) {
 		var err error
 		key, err = getKey(kmsV1Client, name)
+		if errutil.IsNotFound(err) {
+			return false, nil
+		}
 		return err == nil, err
 	})
 	if err != nil {

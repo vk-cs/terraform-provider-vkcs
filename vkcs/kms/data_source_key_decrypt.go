@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 var _ datasource.DataSourceWithConfigure = (*keyDecryptDataSource)(nil)
@@ -82,6 +83,9 @@ func (r *keyDecryptDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	err = waitForKMSOperation(ctx, func() (bool, error) {
 		var err error
 		plaintext, err = decrypt(kmsV1Client, key, ciphertext)
+		if errutil.IsNotFound(err) {
+			return false, nil
+		}
 		return err == nil, err
 	})
 	if err != nil {

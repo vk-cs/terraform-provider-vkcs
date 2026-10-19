@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"testing/synctest"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -46,7 +47,6 @@ func TestKMSKeyResourceRead_errors(t *testing.T) {
 		status int
 		body   string
 	}{
-		{name: "not found", status: http.StatusNotFound, body: `{"errors":["key not found"]}`},
 		{name: "forbidden", status: http.StatusForbidden, body: `{"errors":["permission denied"]}`},
 		{name: "invalid JSON", status: http.StatusOK, body: `invalid`},
 		{name: "invalid field type", status: http.StatusOK, body: `{"data":{"deletion_allowed":"yes"}}`},
@@ -148,81 +148,87 @@ func TestKMSKeyResourceWriteErrors(t *testing.T) {
 				continue
 			}
 			t.Run(operation+"/"+failure.name, func(t *testing.T) {
-				r := newFrameworkTestEndpoint(t, kms.NewKeyResource())
-				d := newFrameworkTestData(t, r, map[string]interface{}{kms.KeyFieldName: "test-key"})
-				call := r.CreateContext
-				request := kmsResourceRequest{"POST", "transit/keys/test-key", `{"type":"aes256-gcm96"}`, failure.status, failure.body}
-				prefix := "Error creating key"
-				var requests []kmsResourceRequest
-				switch operation {
-				case "configure after create":
-					requests = append(requests, kmsResourceRequest{"POST", "transit/keys/test-key", request.body, 200, `{"data":{}}`})
-					fallthrough
-				case "update":
-					request.path = "transit/keys/test-key/config"
-					request.body = `{"deletion_allowed":false}`
-					prefix = "Error updating key configuration"
-					if operation == "update" {
-						call = r.UpdateContext
+				synctest.Test(t, func(t *testing.T) {
+					r := newFrameworkTestEndpoint(t, kms.NewKeyResource())
+					d := newFrameworkTestData(t, r, map[string]interface{}{kms.KeyFieldName: "test-key"})
+					call := r.CreateContext
+					request := kmsResourceRequest{"POST", "transit/keys/test-key", `{"type":"aes256-gcm96"}`, failure.status, failure.body}
+					prefix := "Error creating key"
+					var requests []kmsResourceRequest
+					switch operation {
+					case "configure after create":
+						requests = append(requests, kmsResourceRequest{"POST", "transit/keys/test-key", request.body, 200, `{"data":{}}`})
+						fallthrough
+					case "update":
+						request.path = "transit/keys/test-key/config"
+						request.body = `{"deletion_allowed":false}`
+						prefix = "Error updating key configuration"
+						if operation == "update" {
+							call = r.UpdateContext
+							d.SetId("test-key")
+						}
+					case "delete":
+						call = r.DeleteContext
 						d.SetId("test-key")
+						request.method = "DELETE"
+						request.path = "transit/keys/test-key"
+						request.body = ""
+						prefix = "Error deleting key"
 					}
-				case "delete":
-					call = r.DeleteContext
-					d.SetId("test-key")
-					request.method = "DELETE"
-					request.path = "transit/keys/test-key"
-					request.body = ""
-					prefix = "Error deleting key"
-				}
-				if operation == "create" && failure.name == "invalid JSON" {
-					request.status = 200
-				}
-				requests = append(requests, request)
-				if operation == "configure after create" {
-					for range 9 {
-						requests = append(requests, request)
+					if operation == "create" && failure.name == "invalid JSON" {
+						request.status = 200
 					}
-				}
-				config := newKMSResourceTestConfig(t, requests...)
-				diags := call(context.Background(), d, config)
-				require.True(t, diags.HasError())
-				require.Len(t, diags, 1)
-				assert.Contains(t, diags[0].Summary(), prefix)
-				if operation == "create" || operation == "configure after create" {
-					assert.Empty(t, d.Id())
-				} else {
-					assert.Equal(t, "test-key", d.Id())
-				}
+					requests = append(requests, request)
+					if operation == "configure after create" {
+						for range 9 {
+							requests = append(requests, request)
+						}
+					}
+					config := newKMSResourceTestConfig(t, requests...)
+					diags := call(context.Background(), d, config)
+					require.True(t, diags.HasError())
+					require.Len(t, diags, 1)
+					assert.Contains(t, diags[0].Summary(), prefix)
+					if operation == "create" || operation == "configure after create" {
+						assert.Empty(t, d.Id())
+					} else {
+						assert.Equal(t, "test-key", d.Id())
+					}
+				})
 			})
 		}
 	}
 }
 
 func TestKMSKeyResourceCreate_waitsForConfiguration(t *testing.T) {
-	r := newFrameworkTestEndpoint(t, kms.NewKeyResource())
-	d := newFrameworkTestData(t, r, map[string]interface{}{kms.KeyFieldName: "test-key", kms.KeyFieldDeletionAllowed: true})
-	config := newKMSResourceTestConfig(t,
-		kmsResourceRequest{"POST", "transit/keys/test-key", `{"type":"aes256-gcm96"}`, 200, `{"data":{}}`},
-		kmsResourceRequest{"POST", "transit/keys/test-key/config", `{"deletion_allowed":true}`, 200, `{"data":{}}`},
-		kmsResourceRequest{"GET", "transit/keys/test-key", "", 200, `{"data":{"deletion_allowed":false}}`},
-		kmsResourceRequest{"GET", "transit/keys/test-key", "", 200, `{"data":{"deletion_allowed":true}}`},
-	)
-	diags := r.CreateContext(context.Background(), d, config)
-	require.False(t, diags.HasError(), "%v", diags)
+	synctest.Test(t, func(t *testing.T) {
+		r := newFrameworkTestEndpoint(t, kms.NewKeyResource())
+		d := newFrameworkTestData(t, r, map[string]interface{}{kms.KeyFieldName: "test-key", kms.KeyFieldDeletionAllowed: true})
+		config := newKMSResourceTestConfig(t,
+			kmsResourceRequest{"POST", "transit/keys/test-key", `{"type":"aes256-gcm96"}`, 200, `{"data":{}}`},
+			kmsResourceRequest{"POST", "transit/keys/test-key/config", `{"deletion_allowed":true}`, 200, `{"data":{}}`},
+			kmsResourceRequest{"GET", "transit/keys/test-key", "", 200, `{"data":{"deletion_allowed":false}}`},
+			kmsResourceRequest{"GET", "transit/keys/test-key", "", 200, `{"data":{"deletion_allowed":true}}`},
+		)
+		diags := r.CreateContext(context.Background(), d, config)
+		require.False(t, diags.HasError(), "%v", diags)
+	})
 }
 
 func TestKMSKeyResourceDelete_waitsForOperationAndDeletion(t *testing.T) {
-	r := newFrameworkTestEndpoint(t, kms.NewKeyResource())
-	d := newFrameworkTestData(t, r, map[string]interface{}{kms.KeyFieldName: "test-key"})
-	d.SetId("test-key")
-	config := newKMSResourceTestConfig(t,
-		kmsResourceRequest{"DELETE", "transit/keys/test-key", "", 400, `{"errors":["key test-key has an unfinished operation"]}`},
-		kmsResourceRequest{"DELETE", "transit/keys/test-key", "", 204, ""},
-		kmsResourceRequest{"GET", "transit/keys/test-key", "", 200, `{"data":{"name":"test-key"}}`},
-		kmsResourceRequest{"GET", "transit/keys/test-key", "", 404, `{"errors":["key not found"]}`},
-	)
-	diags := r.DeleteContext(context.Background(), d, config)
-	require.False(t, diags.HasError(), "%v", diags)
+	synctest.Test(t, func(t *testing.T) {
+		r := newFrameworkTestEndpoint(t, kms.NewKeyResource())
+		d := newFrameworkTestData(t, r, map[string]interface{}{kms.KeyFieldName: "test-key"})
+		d.SetId("test-key")
+		config := newKMSResourceTestConfig(t,
+			kmsResourceRequest{"DELETE", "transit/keys/test-key", "", 400, `{"errors":["key test-key has an unfinished operation"]}`},
+			kmsResourceRequest{"DELETE", "transit/keys/test-key", "", 204, ""},
+			kmsResourceRequest{"GET", "transit/keys/test-key", "", 200, `{"data":{"name":"test-key"}}`},
+			kmsResourceRequest{"GET", "transit/keys/test-key", "", 404, `{"errors":["key not found"]}`},
+		)
+		diags := r.DeleteContext(context.Background(), d, config)
+		require.False(t, diags.HasError(), "%v", diags)
+	})
 }
 
 func TestKMSKeyResourceDelete_pollError(t *testing.T) {

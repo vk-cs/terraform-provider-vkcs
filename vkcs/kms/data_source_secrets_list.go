@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 var _ datasource.DataSourceWithConfigure = (*secretsListDataSource)(nil)
@@ -78,6 +79,9 @@ func (r *secretsListDataSource) Read(ctx context.Context, req datasource.ReadReq
 	err = waitForKMSOperation(ctx, func() (bool, error) {
 		var err error
 		secrets, err = listSecrets(kmsV1Client)
+		if errutil.IsNotFound(err) {
+			return false, nil
+		}
 		return err == nil, err
 	})
 	if err != nil {

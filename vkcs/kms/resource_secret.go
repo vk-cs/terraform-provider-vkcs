@@ -170,6 +170,9 @@ func (r *secretResource) Read(ctx context.Context, req resource.ReadRequest, res
 	err = waitForKMSOperation(ctx, func() (bool, error) {
 		var err error
 		secret, err = getSecret(kmsV1Client, path)
+		if errutil.IsNotFound(err) {
+			return false, nil
+		}
 		return err == nil, err
 	})
 	if err != nil {
@@ -187,6 +190,9 @@ func (r *secretResource) Read(ctx context.Context, req resource.ReadRequest, res
 	err = waitForKMSOperation(ctx, func() (bool, error) {
 		var err error
 		deleteProtection, err = getSecretDeleteProtection(kmsV1Client, path)
+		if errutil.IsNotFound(err) {
+			return false, nil
+		}
 		return err == nil, err
 	})
 	if err != nil {

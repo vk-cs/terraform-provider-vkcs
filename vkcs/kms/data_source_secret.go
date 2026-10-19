@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/secrets"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 var _ datasource.DataSourceWithConfigure = (*secretDataSource)(nil)
@@ -93,6 +94,9 @@ func (r *secretDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	err = waitForKMSOperation(ctx, func() (bool, error) {
 		var err error
 		secret, err = getSecret(kmsV1Client, path)
+		if errutil.IsNotFound(err) {
+			return false, nil
+		}
 		return err == nil, err
 	})
 	if err != nil {
@@ -104,6 +108,9 @@ func (r *secretDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	err = waitForKMSOperation(ctx, func() (bool, error) {
 		var err error
 		deleteProtection, err = getSecretDeleteProtection(kmsV1Client, path)
+		if errutil.IsNotFound(err) {
+			return false, nil
+		}
 		return err == nil, err
 	})
 	if err != nil {

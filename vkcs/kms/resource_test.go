@@ -34,7 +34,11 @@ func newKMSResourceTestConfig(t *testing.T, requests ...kmsResourceRequest) *sec
 		next++
 		assert.Equal(t, expected.method, r.Method)
 		assert.Equal(t, "/kms/user/v1/"+expected.path, r.URL.EscapedPath())
-		assert.Empty(t, r.URL.RawQuery)
+		if expected.path == "transit/keys" || expected.path == "secret/metadata/" {
+			assert.Equal(t, "list=true", r.URL.RawQuery)
+		} else {
+			assert.Empty(t, r.URL.RawQuery)
+		}
 		var body []byte
 		if r.Body != nil {
 			var err error

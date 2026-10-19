@@ -39,7 +39,6 @@ func TestKMSKeyDecryptDataSourceRead_errors(t *testing.T) {
 		transportErr error
 		wantError    string
 	}{
-		{name: "not found", status: http.StatusNotFound, body: `{"errors":["key not found"]}`, wantError: "key not found"},
 		{name: "forbidden", status: http.StatusForbidden, body: `{"errors":["permission denied"]}`, wantError: "permission denied"},
 		{name: "bad request", status: http.StatusBadRequest, body: `{"errors":["invalid input"]}`, wantError: "invalid input"},
 		{name: "invalid JSON", status: http.StatusOK, body: `invalid`, wantError: "invalid character"},

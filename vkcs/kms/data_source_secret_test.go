@@ -37,7 +37,6 @@ func TestKMSSecretDataSourceRead_errors(t *testing.T) {
 		status int
 		body   string
 	}{
-		{name: "not found", status: http.StatusNotFound, body: `{"errors":["secret not found"]}`},
 		{name: "forbidden", status: http.StatusForbidden, body: `{"errors":["permission denied"]}`},
 		{name: "invalid JSON", status: http.StatusOK, body: `invalid`},
 		{name: "invalid data type", status: http.StatusOK, body: `{"data":{"data":{"count":123}}}`},

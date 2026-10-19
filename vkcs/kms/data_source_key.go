@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/keys"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 var _ datasource.DataSourceWithConfigure = (*keyDataSource)(nil)
@@ -80,6 +81,9 @@ func (r *keyDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	err = waitForKMSOperation(ctx, func() (bool, error) {
 		var err error
 		key, err = getKey(kmsV1Client, name)
+		if errutil.IsNotFound(err) {
+			return false, nil
+		}
 		return err == nil, err
 	})
 	if err != nil {

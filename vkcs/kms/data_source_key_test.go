@@ -50,7 +50,6 @@ func TestKMSKeyDataSourceRead_errors(t *testing.T) {
 		status int
 		body   string
 	}{
-		{name: "not found", status: http.StatusNotFound, body: `{"errors":["key not found"]}`},
 		{name: "forbidden", status: http.StatusForbidden, body: `{"errors":["permission denied"]}`},
 		{name: "invalid JSON", status: http.StatusOK, body: `invalid`},
 		{name: "invalid field type", status: http.StatusOK, body: `{"data":{"deletion_allowed":"yes"}}`},

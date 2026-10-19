@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"testing"
+	"testing/synctest"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,7 +38,6 @@ func TestKMSSecretResourceRead_errors(t *testing.T) {
 		status int
 		body   string
 	}{
-		{name: "not found", status: http.StatusNotFound, body: `{"errors":["secret not found"]}`},
 		{name: "forbidden", status: http.StatusForbidden, body: `{"errors":["permission denied"]}`},
 		{name: "invalid JSON", status: http.StatusOK, body: `invalid`},
 		{name: "invalid data type", status: http.StatusOK, body: `{"data":{"data":{"count":123}}}`},
@@ -117,35 +117,37 @@ func TestKMSSecretResourceWriteErrors(t *testing.T) {
 				continue
 			}
 			t.Run(operation+"/"+failure.name, func(t *testing.T) {
-				r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
-				d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{}`, kms.SecretFieldCreatedTime: "old-time", kms.SecretFieldVersion: 1})
-				call := r.CreateContext
-				request := kmsResourceRequest{"POST", "secret/data/test-secret", `{"data":{}}`, failure.status, failure.body}
-				prefix := "Error creating secret"
-				if operation != "create" {
-					d.SetId("test-secret")
-				}
-				if operation == "update" {
-					call = r.UpdateContext
-				}
-				if operation == "delete" {
-					call = r.DeleteContext
-					request.method = "DELETE"
-					request.path = "secret/metadata/test-secret"
-					request.body = ""
-					prefix = "Error deleting secret"
-				}
-				diags := call(context.Background(), d, newKMSResourceTestConfig(t, request))
-				require.True(t, diags.HasError())
-				require.Len(t, diags, 1)
-				assert.Contains(t, diags[0].Summary(), prefix)
-				if operation == "create" {
-					assert.Empty(t, d.Id())
-				} else {
-					assert.Equal(t, "test-secret", d.Id())
-				}
-				assert.Equal(t, "old-time", d.Get(kms.SecretFieldCreatedTime))
-				assert.Equal(t, 1, d.Get(kms.SecretFieldVersion))
+				synctest.Test(t, func(t *testing.T) {
+					r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
+					d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{}`, kms.SecretFieldCreatedTime: "old-time", kms.SecretFieldVersion: 1})
+					call := r.CreateContext
+					request := kmsResourceRequest{"POST", "secret/data/test-secret", `{"data":{}}`, failure.status, failure.body}
+					prefix := "Error creating secret"
+					if operation != "create" {
+						d.SetId("test-secret")
+					}
+					if operation == "update" {
+						call = r.UpdateContext
+					}
+					if operation == "delete" {
+						call = r.DeleteContext
+						request.method = "DELETE"
+						request.path = "secret/metadata/test-secret"
+						request.body = ""
+						prefix = "Error deleting secret"
+					}
+					diags := call(context.Background(), d, newKMSResourceTestConfig(t, request))
+					require.True(t, diags.HasError())
+					require.Len(t, diags, 1)
+					assert.Contains(t, diags[0].Summary(), prefix)
+					if operation == "create" {
+						assert.Empty(t, d.Id())
+					} else {
+						assert.Equal(t, "test-secret", d.Id())
+					}
+					assert.Equal(t, "old-time", d.Get(kms.SecretFieldCreatedTime))
+					assert.Equal(t, 1, d.Get(kms.SecretFieldVersion))
+				})
 			})
 		}
 	}
@@ -154,39 +156,43 @@ func TestKMSSecretResourceWriteErrors(t *testing.T) {
 func TestKMSSecretResourceWrite_waitsForDeleteProtection(t *testing.T) {
 	for _, operation := range []string{"create", "update"} {
 		t.Run(operation, func(t *testing.T) {
-			r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
-			d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{}`, kms.SecretFieldDeleteProtection: false})
-			call := r.CreateContext
-			if operation == "update" {
-				call = r.UpdateContext
-				d.SetId("test-secret")
-			}
-			config := newKMSResourceTestConfig(t,
-				kmsResourceRequest{"POST", "secret/data/test-secret", `{"data":{}}`, 200, `{"data":{"created_time":"2026-09-01T10:00:00Z","version":2}}`},
-				kmsResourceRequest{"PUT", "secret/metadata/delete-protection/test-secret", `{"delete_protection":false}`, 400, `{"errors":["secret has an unfinished operation"]}`},
-				kmsResourceRequest{"PUT", "secret/metadata/delete-protection/test-secret", `{"delete_protection":false}`, 200, ""},
-				kmsResourceRequest{"GET", "secret/metadata/delete-protection/test-secret", "", 200, `{"delete_protection":true}`},
-				kmsResourceRequest{"GET", "secret/metadata/delete-protection/test-secret", "", 200, `{"delete_protection":false}`},
-			)
-			diags := call(context.Background(), d, config)
-			require.False(t, diags.HasError(), "%v", diags)
-			assert.Equal(t, false, d.Get(kms.SecretFieldDeleteProtection))
+			synctest.Test(t, func(t *testing.T) {
+				r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
+				d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{}`, kms.SecretFieldDeleteProtection: false})
+				call := r.CreateContext
+				if operation == "update" {
+					call = r.UpdateContext
+					d.SetId("test-secret")
+				}
+				config := newKMSResourceTestConfig(t,
+					kmsResourceRequest{"POST", "secret/data/test-secret", `{"data":{}}`, 200, `{"data":{"created_time":"2026-09-01T10:00:00Z","version":2}}`},
+					kmsResourceRequest{"PUT", "secret/metadata/delete-protection/test-secret", `{"delete_protection":false}`, 400, `{"errors":["secret has an unfinished operation"]}`},
+					kmsResourceRequest{"PUT", "secret/metadata/delete-protection/test-secret", `{"delete_protection":false}`, 200, ""},
+					kmsResourceRequest{"GET", "secret/metadata/delete-protection/test-secret", "", 200, `{"delete_protection":true}`},
+					kmsResourceRequest{"GET", "secret/metadata/delete-protection/test-secret", "", 200, `{"delete_protection":false}`},
+				)
+				diags := call(context.Background(), d, config)
+				require.False(t, diags.HasError(), "%v", diags)
+				assert.Equal(t, false, d.Get(kms.SecretFieldDeleteProtection))
+			})
 		})
 	}
 }
 
 func TestKMSSecretResourceDelete_waitsForOperationAndDeletion(t *testing.T) {
-	r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
-	d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret"})
-	d.SetId("test-secret")
-	config := newKMSResourceTestConfig(t,
-		kmsResourceRequest{"DELETE", "secret/metadata/test-secret", "", 400, `{"errors":["secret has an unfinished operation"]}`},
-		kmsResourceRequest{"DELETE", "secret/metadata/test-secret", "", 204, ""},
-		kmsResourceRequest{"GET", "secret/data/test-secret", "", 200, `{"data":{"data":{},"metadata":{"version":1}}}`},
-		kmsResourceRequest{"GET", "secret/data/test-secret", "", 404, `{"errors":["secret not found"]}`},
-	)
-	diags := r.DeleteContext(context.Background(), d, config)
-	require.False(t, diags.HasError(), "%v", diags)
+	synctest.Test(t, func(t *testing.T) {
+		r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
+		d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret"})
+		d.SetId("test-secret")
+		config := newKMSResourceTestConfig(t,
+			kmsResourceRequest{"DELETE", "secret/metadata/test-secret", "", 400, `{"errors":["secret has an unfinished operation"]}`},
+			kmsResourceRequest{"DELETE", "secret/metadata/test-secret", "", 204, ""},
+			kmsResourceRequest{"GET", "secret/data/test-secret", "", 200, `{"data":{"data":{},"metadata":{"version":1}}}`},
+			kmsResourceRequest{"GET", "secret/data/test-secret", "", 404, `{"errors":["secret not found"]}`},
+		)
+		diags := r.DeleteContext(context.Background(), d, config)
+		require.False(t, diags.HasError(), "%v", diags)
+	})
 }
 
 func TestKMSSecretResourceDelete_pollError(t *testing.T) {
