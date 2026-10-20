@@ -40,7 +40,7 @@ func (r *keyDataSource) Configure(_ context.Context, req datasource.ConfigureReq
 
 func (r *keyDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "A data source containing a KMS key",
+		Description: "Data source containing a KMS key",
 		Attributes: map[string]schema.Attribute{
 			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS key"},
 			KeyFieldName: schema.StringAttribute{

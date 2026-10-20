@@ -43,7 +43,7 @@ func (r *secretDataSource) Configure(_ context.Context, req datasource.Configure
 
 func (r *secretDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "A data source containing a KMS secret",
+		Description: "Data source containing a KMS secret",
 		Attributes: map[string]schema.Attribute{
 			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS secret"},
 			SecretFieldPath: schema.StringAttribute{
