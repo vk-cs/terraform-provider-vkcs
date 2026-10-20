@@ -11,7 +11,7 @@ import (
 
 const (
 	retriesCount             = 10
-	defaultThreshold         = time.Second
+	defaultThreshold         = 5 * time.Second
 	maxItemsInListForIDBuild = 10
 )
 
