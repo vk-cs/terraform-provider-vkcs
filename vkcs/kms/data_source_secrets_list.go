@@ -47,12 +47,10 @@ func (r *secretsListDataSource) Schema(ctx context.Context, _ datasource.SchemaR
 		Attributes: map[string]schema.Attribute{
 			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS secrets list"},
 			SecretsListFieldSecretsCount: schema.Int64Attribute{
-				Optional:    true,
 				Computed:    true,
 				Description: "Number of secrets in list",
 			},
 			SecretsListFieldSecrets: schema.ListAttribute{
-				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
 				Description: "List of keys' paths",
