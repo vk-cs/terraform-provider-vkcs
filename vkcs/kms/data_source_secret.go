@@ -51,22 +51,19 @@ func (r *secretDataSource) Schema(ctx context.Context, _ datasource.SchemaReques
 				Description: "Identifier (path) of the secret within the KMS secret store.",
 			},
 			SecretFieldDataJSON: schema.StringAttribute{
-				Optional:    true,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "Secret data as a JSON object, represented as a string and populated from KMS when the data source is read. Use `jsondecode` to access its fields.",
 			},
 			SecretFieldCreatedTime: schema.StringAttribute{
-				Optional:    true,
 				Computed:    true,
 				Description: "Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.",
 			},
 			SecretFieldVersion: schema.Int64Attribute{
-				Optional:    true,
 				Computed:    true,
 				Description: "Current version of the secret returned in its metadata. This field does not select a version to read.",
 			},
 			SecretFieldDeleteProtection: schema.BoolAttribute{
-				Optional:    true,
 				Computed:    true,
 				Description: "Whether the secret is protected from deletion, populated from KMS when the data source is read. This field does not change the deletion policy.",
 			},

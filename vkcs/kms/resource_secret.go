@@ -57,20 +57,18 @@ func (r *secretResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			},
 			SecretFieldDataJSON: schema.StringAttribute{
 				Required:    true,
+				Sensitive:   true,
 				Description: "Data stored in the secret as a JSON object, represented as a string. Use `jsonencode` to encode a Terraform object. Refreshed from KMS when the resource is read.",
 			},
 			SecretFieldCreatedTime: schema.StringAttribute{
-				Optional:    true,
 				Computed:    true,
 				Description: "Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.",
 			},
 			SecretFieldVersion: schema.Int64Attribute{
-				Optional:    true,
 				Computed:    true,
 				Description: "Current version of the secret returned in its metadata.",
 			},
 			SecretFieldDeleteProtection: schema.BoolAttribute{
-				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(true),
 				Description: "Whether the secret is protected from deletion. Defaults to `true`. Set to `false` and apply before destroying the secret.",
