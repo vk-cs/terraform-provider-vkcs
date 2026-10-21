@@ -144,7 +144,7 @@ func TestKMSKeyResourceCreate(t *testing.T) {
 			)
 			r.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
 			response := fwresource.CreateResponse{State: d}
-			r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+			r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan(d)}, &response)
 			d = response.State
 			diags := response.Diagnostics
 			require.False(t, diags.HasError(), "%v", diags)
@@ -172,7 +172,7 @@ func TestKMSKeyResourceUpdate(t *testing.T) {
 			config := newKMSResourceTestConfig(t, kmsResourceRequest{"POST", "transit/keys/key%20%2F%3F%23%25/config", fmt.Sprintf(`{"deletion_allowed":%t}`, allowed), 200, `{"data":{}}`}, kmsResourceRequest{"GET", "transit/keys/key%20%2F%3F%23%25", "", 200, fmt.Sprintf(`{"data":{"deletion_allowed":%t}}`, allowed)})
 			r.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
 			response := fwresource.UpdateResponse{State: d}
-			r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+			r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan(d)}, &response)
 			d = response.State
 			diags := response.Diagnostics
 			require.False(t, diags.HasError(), "%v", diags)
@@ -251,12 +251,12 @@ func TestKMSKeyResourceWriteErrors(t *testing.T) {
 					switch action {
 					case "Create":
 						response := fwresource.CreateResponse{State: d}
-						r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+						r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan(d)}, &response)
 						d = response.State
 						diags = response.Diagnostics
 					case "Update":
 						response := fwresource.UpdateResponse{State: d}
-						r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+						r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan(d)}, &response)
 						d = response.State
 						diags = response.Diagnostics
 					case "Delete":
@@ -297,8 +297,7 @@ func TestKMSKeyResourceCreate_waitsForConfiguration(t *testing.T) {
 		)
 		r.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
 		response := fwresource.CreateResponse{State: d}
-		r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
-		d = response.State
+		r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan(d)}, &response)
 		diags := response.Diagnostics
 		require.False(t, diags.HasError(), "%v", diags)
 	})

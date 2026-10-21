@@ -133,12 +133,12 @@ func TestKMSSecretResourceWrite(t *testing.T) {
 			switch action {
 			case "Create":
 				response := fwresource.CreateResponse{State: d}
-				r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+				r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan(d)}, &response)
 				d = response.State
 				diags = response.Diagnostics
 			case "Update":
 				response := fwresource.UpdateResponse{State: d}
-				r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+				r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan(d)}, &response)
 				d = response.State
 				diags = response.Diagnostics
 			case "Delete":
@@ -220,12 +220,12 @@ func TestKMSSecretResourceWriteErrors(t *testing.T) {
 					switch action {
 					case "Create":
 						response := fwresource.CreateResponse{State: d}
-						r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+						r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan(d)}, &response)
 						d = response.State
 						diags = response.Diagnostics
 					case "Update":
 						response := fwresource.UpdateResponse{State: d}
-						r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+						r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan(d)}, &response)
 						d = response.State
 						diags = response.Diagnostics
 					case "Delete":
@@ -283,12 +283,12 @@ func TestKMSSecretResourceWrite_waitsForDeleteProtection(t *testing.T) {
 				switch action {
 				case "Create":
 					response := fwresource.CreateResponse{State: d}
-					r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+					r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan(d)}, &response)
 					d = response.State
 					diags = response.Diagnostics
 				case "Update":
 					response := fwresource.UpdateResponse{State: d}
-					r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+					r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan(d)}, &response)
 					d = response.State
 					diags = response.Diagnostics
 				case "Delete":

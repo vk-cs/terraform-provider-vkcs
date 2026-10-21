@@ -73,12 +73,12 @@ func TestKMSResourceWriteClientErrors(t *testing.T) {
 				switch operation {
 				case "create":
 					response := resource.CreateResponse{State: state}
-					r.Create(ctx, resource.CreateRequest{Plan: tfsdk.Plan{Schema: state.Schema, Raw: state.Raw}}, &response)
+					r.Create(ctx, resource.CreateRequest{Plan: tfsdk.Plan(state)}, &response)
 					diags = response.Diagnostics
 					state = response.State
 				case "update":
 					response := resource.UpdateResponse{State: state}
-					r.Update(ctx, resource.UpdateRequest{Plan: tfsdk.Plan{Schema: state.Schema, Raw: state.Raw}}, &response)
+					r.Update(ctx, resource.UpdateRequest{Plan: tfsdk.Plan(state)}, &response)
 					diags = response.Diagnostics
 					state = response.State
 				case "delete":
