@@ -5,26 +5,6 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/keys"
 )
 
-const (
-	KeyEntityName        = "kms_key"
-	KeysListEntityName   = "kms_keys_list"
-	KeyEncryptEntityName = "kms_key_encrypt"
-	KeyDecryptEntityName = "kms_key_decrypt"
-)
-
-const (
-	KeyFieldName            = "name"
-	KeyFieldType            = "type"
-	KeyFieldDeletionAllowed = "deletion_allowed"
-
-	KeysListFieldKeysCount = "keys_count"
-	KeysListFieldKeys      = "keys"
-
-	KeyCryptFieldKey        = "key"
-	KeyCryptFieldPlaintext  = "plaintext"
-	KeyCryptFieldCiphertext = "ciphertext"
-)
-
 func listKeys(client *gophercloud.ServiceClient) ([]string, error) {
 	k, err := keys.List(client).Extract()
 	if err != nil {

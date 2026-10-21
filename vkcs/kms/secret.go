@@ -5,22 +5,6 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/secrets"
 )
 
-const (
-	SecretEntityName      = "kms_secret"
-	SecretsListEntityName = "kms_secrets_list"
-)
-
-const (
-	SecretFieldPath             = "path"
-	SecretFieldDataJSON         = "data_json"
-	SecretFieldCreatedTime      = "created_time"
-	SecretFieldVersion          = "version"
-	SecretFieldDeleteProtection = "delete_protection"
-
-	SecretsListFieldSecretsCount = "secrets_count"
-	SecretsListFieldSecrets      = "secrets"
-)
-
 func listSecrets(client *gophercloud.ServiceClient) ([]string, error) {
 	s, err := secrets.List(client).Extract()
 	if err != nil {

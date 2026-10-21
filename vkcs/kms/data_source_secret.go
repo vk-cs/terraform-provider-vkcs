@@ -32,7 +32,7 @@ type secretDataSourceModel struct {
 }
 
 func (r *secretDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = typeName(req.ProviderTypeName, SecretEntityName)
+	resp.TypeName = req.ProviderTypeName + "_kms_secret"
 }
 
 func (r *secretDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -45,25 +45,25 @@ func (r *secretDataSource) Schema(ctx context.Context, _ datasource.SchemaReques
 	resp.Schema = schema.Schema{
 		Description: "Data source containing a KMS secret",
 		Attributes: map[string]schema.Attribute{
-			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS secret"},
-			SecretFieldPath: schema.StringAttribute{
+			"id": schema.StringAttribute{Computed: true, Description: "Identifier of the KMS secret"},
+			"path": schema.StringAttribute{
 				Required:    true,
 				Description: "Identifier (path) of the secret within the KMS secret store.",
 			},
-			SecretFieldDataJSON: schema.StringAttribute{
+			"data_json": schema.StringAttribute{
 				Computed:    true,
 				Sensitive:   true,
 				Description: "Secret data as a JSON object, represented as a string and populated from KMS when the data source is read. Use `jsondecode` to access its fields.",
 			},
-			SecretFieldCreatedTime: schema.StringAttribute{
+			"created_time": schema.StringAttribute{
 				Computed:    true,
 				Description: "Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.",
 			},
-			SecretFieldVersion: schema.Int64Attribute{
+			"version": schema.Int64Attribute{
 				Computed:    true,
 				Description: "Current version of the secret returned in its metadata. This field does not select a version to read.",
 			},
-			SecretFieldDeleteProtection: schema.BoolAttribute{
+			"delete_protection": schema.BoolAttribute{
 				Computed:    true,
 				Description: "Whether the secret is protected from deletion.",
 			},

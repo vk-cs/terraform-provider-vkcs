@@ -30,7 +30,7 @@ type keyEncryptDataSourceModel struct {
 }
 
 func (r *keyEncryptDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = typeName(req.ProviderTypeName, KeyEncryptEntityName)
+	resp.TypeName = req.ProviderTypeName + "_kms_key_encrypt"
 }
 
 func (r *keyEncryptDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -43,16 +43,16 @@ func (r *keyEncryptDataSource) Schema(ctx context.Context, _ datasource.SchemaRe
 	resp.Schema = schema.Schema{
 		Description: "Data source containing encrypt result by KMS key",
 		Attributes: map[string]schema.Attribute{
-			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS key encrypt"},
-			KeyCryptFieldKey: schema.StringAttribute{
+			"id": schema.StringAttribute{Computed: true, Description: "Identifier of the KMS key encrypt"},
+			"key": schema.StringAttribute{
 				Required:    true,
 				Description: "Key used to encrypt data",
 			},
-			KeyCryptFieldCiphertext: schema.StringAttribute{
+			"ciphertext": schema.StringAttribute{
 				Computed:    true,
 				Description: "Resulting encrypted data",
 			},
-			KeyCryptFieldPlaintext: schema.StringAttribute{
+			"plaintext": schema.StringAttribute{
 				Required:    true,
 				Sensitive:   true,
 				Description: "Data to encrypt encoded in base64",

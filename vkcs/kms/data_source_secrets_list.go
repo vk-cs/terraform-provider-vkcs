@@ -32,7 +32,7 @@ type secretsListDataSourceModel struct {
 }
 
 func (r *secretsListDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = typeName(req.ProviderTypeName, SecretsListEntityName)
+	resp.TypeName = req.ProviderTypeName + "_kms_secrets_list"
 }
 
 func (r *secretsListDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -45,12 +45,12 @@ func (r *secretsListDataSource) Schema(ctx context.Context, _ datasource.SchemaR
 	resp.Schema = schema.Schema{
 		Description: "Data source containing list of KMS secrets",
 		Attributes: map[string]schema.Attribute{
-			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS secrets list"},
-			SecretsListFieldSecretsCount: schema.Int64Attribute{
+			"id": schema.StringAttribute{Computed: true, Description: "Identifier of the KMS secrets list"},
+			"secrets_count": schema.Int64Attribute{
 				Computed:    true,
 				Description: "Number of secrets in list",
 			},
-			SecretsListFieldSecrets: schema.ListAttribute{
+			"secrets": schema.ListAttribute{
 				Computed:    true,
 				ElementType: types.StringType,
 				Description: "List of keys' paths",

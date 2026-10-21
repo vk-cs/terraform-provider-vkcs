@@ -54,7 +54,7 @@ func TestKMSKeysListDataSourceRead(t *testing.T) {
 			var schema datasource.SchemaResponse
 			ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
 			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{
-				kms.KeysListFieldKeys: []interface{}{"stale-key"}, kms.KeysListFieldKeysCount: 1,
+				"keys": []interface{}{"stale-key"}, "keys_count": 1,
 			})
 
 			ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
@@ -64,13 +64,13 @@ func TestKMSKeysListDataSourceRead(t *testing.T) {
 			diags := response.Diagnostics
 			require.False(t, diags.HasError(), "%v", diags)
 			var attribute1 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute1).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute1).HasError())
 			assert.Equal(t, tc.wantID, attribute1.ValueString())
 			var attribute2 types.Int64
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeysListFieldKeysCount), &attribute2).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("keys_count"), &attribute2).HasError())
 			assert.Equal(t, len(tc.wantKeys), int(attribute2.ValueInt64()))
 			var attribute3 []string
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeysListFieldKeys), &attribute3).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("keys"), &attribute3).HasError())
 			assert.ElementsMatch(t, tc.wantKeys, attribute3)
 		})
 	}
@@ -102,7 +102,7 @@ func TestKMSKeysListDataSourceRead_errors(t *testing.T) {
 			require.Len(t, diags, 1)
 			assert.Contains(t, diags[0].Summary(), "Error listing keys")
 			var attribute4 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute4).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute4).HasError())
 			assert.Empty(t, attribute4.ValueString())
 		})
 	}
@@ -125,7 +125,7 @@ func TestKMSKeysListDataSourceRead_clientError(t *testing.T) {
 	assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
 	assert.Equal(t, "client unavailable", diags[0].Detail())
 	var attribute5 types.String
-	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute5).HasError())
+	require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute5).HasError())
 	assert.Empty(t, attribute5.ValueString())
 }
 

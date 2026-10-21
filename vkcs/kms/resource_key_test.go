@@ -37,9 +37,9 @@ func TestKMSKeyResourceRead(t *testing.T) {
 			var schema fwresource.SchemaResponse
 			ds.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
 			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{
-				kms.KeyFieldName: tc.name, kms.KeyFieldType: "stale-type", kms.KeyFieldDeletionAllowed: !tc.deletionAllowed,
+				"name": tc.name, "type": "stale-type", "deletion_allowed": !tc.deletionAllowed,
 			})
-			require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "stale-id").HasError())
+			require.False(t, d.SetAttribute(context.Background(), path.Root("id"), "stale-id").HasError())
 
 			ds.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
 			response := fwresource.ReadResponse{State: d}
@@ -48,16 +48,16 @@ func TestKMSKeyResourceRead(t *testing.T) {
 			diags := response.Diagnostics
 			require.False(t, diags.HasError(), "%v", diags)
 			var attribute1 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute1).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute1).HasError())
 			assert.Equal(t, "stale-id", attribute1.ValueString())
 			var attribute2 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyFieldName), &attribute2).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("name"), &attribute2).HasError())
 			assert.Equal(t, tc.name, attribute2.ValueString())
 			var attribute3 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyFieldType), &attribute3).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("type"), &attribute3).HasError())
 			assert.Equal(t, "aes256-gcm96", attribute3.ValueString())
 			var attribute4 types.Bool
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyFieldDeletionAllowed), &attribute4).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("deletion_allowed"), &attribute4).HasError())
 			assert.Equal(t, tc.deletionAllowed, attribute4.ValueBool())
 		})
 	}
@@ -78,8 +78,8 @@ func TestKMSKeyResourceRead_errors(t *testing.T) {
 			ds := kms.NewKeyResource()
 			var schema fwresource.SchemaResponse
 			ds.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
-			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.KeyFieldType: "aes256-gcm96", kms.KeyFieldDeletionAllowed: false, kms.KeyFieldName: "test-key"})
-			require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-key").HasError())
+			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{"type": "aes256-gcm96", "deletion_allowed": false, "name": "test-key"})
+			require.False(t, d.SetAttribute(context.Background(), path.Root("id"), "test-key").HasError())
 
 			ds.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
 			response := fwresource.ReadResponse{State: d}
@@ -90,7 +90,7 @@ func TestKMSKeyResourceRead_errors(t *testing.T) {
 			require.Len(t, diags, 1)
 			assert.Contains(t, diags[0].Summary(), "Error getting key")
 			var attribute5 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute5).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute5).HasError())
 			assert.Equal(t, "test-key", attribute5.ValueString())
 		})
 	}
@@ -100,8 +100,8 @@ func TestKMSKeyResourceRead_clientError(t *testing.T) {
 	ds := kms.NewKeyResource()
 	var schema fwresource.SchemaResponse
 	ds.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
-	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.KeyFieldType: "aes256-gcm96", kms.KeyFieldDeletionAllowed: false, kms.KeyFieldName: "test-key"})
-	require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-key").HasError())
+	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{"type": "aes256-gcm96", "deletion_allowed": false, "name": "test-key"})
+	require.False(t, d.SetAttribute(context.Background(), path.Root("id"), "test-key").HasError())
 	config := &secretDataSourceTestConfig{err: errors.New("client unavailable")}
 
 	ds.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
@@ -114,7 +114,7 @@ func TestKMSKeyResourceRead_clientError(t *testing.T) {
 	assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
 	assert.Equal(t, "client unavailable", diags[0].Detail())
 	var attribute6 types.String
-	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute6).HasError())
+	require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute6).HasError())
 	assert.Equal(t, "test-key", attribute6.ValueString())
 }
 
@@ -130,10 +130,10 @@ func TestKMSKeyResourceCreate(t *testing.T) {
 			r := kms.NewKeyResource()
 			var schema fwresource.SchemaResponse
 			r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
-			input := map[string]interface{}{kms.KeyFieldType: "aes256-gcm96", kms.KeyFieldDeletionAllowed: false, kms.KeyFieldName: "test-key"}
+			input := map[string]interface{}{"type": "aes256-gcm96", "deletion_allowed": false, "name": "test-key"}
 			if tc.allowed {
-				input[kms.KeyFieldType] = tc.keyType
-				input[kms.KeyFieldDeletionAllowed] = true
+				input["type"] = tc.keyType
+				input["deletion_allowed"] = true
 			}
 			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, input)
 			config := newKMSResourceTestConfig(
@@ -149,13 +149,13 @@ func TestKMSKeyResourceCreate(t *testing.T) {
 			diags := response.Diagnostics
 			require.False(t, diags.HasError(), "%v", diags)
 			var attribute7 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute7).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute7).HasError())
 			assert.Equal(t, "test-key", attribute7.ValueString())
 			var attribute8 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyFieldType), &attribute8).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("type"), &attribute8).HasError())
 			assert.Equal(t, tc.keyType, attribute8.ValueString())
 			var attribute9 types.Bool
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyFieldDeletionAllowed), &attribute9).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("deletion_allowed"), &attribute9).HasError())
 			assert.Equal(t, tc.allowed, attribute9.ValueBool())
 		})
 	}
@@ -167,8 +167,8 @@ func TestKMSKeyResourceUpdate(t *testing.T) {
 			r := kms.NewKeyResource()
 			var schema fwresource.SchemaResponse
 			r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
-			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.KeyFieldType: "aes256-gcm96", kms.KeyFieldName: "test-key", kms.KeyFieldDeletionAllowed: allowed})
-			require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "key /?#%").HasError())
+			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{"type": "aes256-gcm96", "name": "test-key", "deletion_allowed": allowed})
+			require.False(t, d.SetAttribute(context.Background(), path.Root("id"), "key /?#%").HasError())
 			config := newKMSResourceTestConfig(t, kmsResourceRequest{"POST", "transit/keys/key%20%2F%3F%23%25/config", fmt.Sprintf(`{"deletion_allowed":%t}`, allowed), 200, `{"data":{}}`}, kmsResourceRequest{"GET", "transit/keys/key%20%2F%3F%23%25", "", 200, fmt.Sprintf(`{"data":{"deletion_allowed":%t}}`, allowed)})
 			r.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
 			response := fwresource.UpdateResponse{State: d}
@@ -177,7 +177,7 @@ func TestKMSKeyResourceUpdate(t *testing.T) {
 			diags := response.Diagnostics
 			require.False(t, diags.HasError(), "%v", diags)
 			var attribute10 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute10).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute10).HasError())
 			assert.Equal(t, "key /?#%", attribute10.ValueString())
 		})
 	}
@@ -187,8 +187,8 @@ func TestKMSKeyResourceDelete(t *testing.T) {
 	r := kms.NewKeyResource()
 	var schema fwresource.SchemaResponse
 	r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
-	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.KeyFieldType: "aes256-gcm96", kms.KeyFieldDeletionAllowed: false, kms.KeyFieldName: "key /?#%"})
-	require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "key /?#%").HasError())
+	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{"type": "aes256-gcm96", "deletion_allowed": false, "name": "key /?#%"})
+	require.False(t, d.SetAttribute(context.Background(), path.Root("id"), "key /?#%").HasError())
 	config := newKMSResourceTestConfig(t, kmsResourceRequest{"DELETE", "transit/keys/key%20%2F%3F%23%25", "", 204, ""}, kmsResourceRequest{"GET", "transit/keys/key%20%2F%3F%23%25", "", 404, `{"errors":["key not found"]}`})
 	r.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
 	response := fwresource.DeleteResponse{State: d}
@@ -216,7 +216,7 @@ func TestKMSKeyResourceWriteErrors(t *testing.T) {
 					r := kms.NewKeyResource()
 					var schema fwresource.SchemaResponse
 					r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
-					d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.KeyFieldType: "aes256-gcm96", kms.KeyFieldDeletionAllowed: false, kms.KeyFieldName: "test-key"})
+					d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{"type": "aes256-gcm96", "deletion_allowed": false, "name": "test-key"})
 					action := "Create"
 					request := kmsResourceRequest{"POST", "transit/keys/test-key", `{"type":"aes256-gcm96"}`, failure.status, failure.body}
 					prefix := "Error creating key"
@@ -231,11 +231,11 @@ func TestKMSKeyResourceWriteErrors(t *testing.T) {
 						prefix = "Error updating key configuration"
 						if operation == "update" {
 							action = "Update"
-							require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-key").HasError())
+							require.False(t, d.SetAttribute(context.Background(), path.Root("id"), "test-key").HasError())
 						}
 					case "delete":
 						action = "Delete"
-						require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-key").HasError())
+						require.False(t, d.SetAttribute(context.Background(), path.Root("id"), "test-key").HasError())
 						request.method = "DELETE"
 						request.path = "transit/keys/test-key"
 						request.body = ""
@@ -275,11 +275,11 @@ func TestKMSKeyResourceWriteErrors(t *testing.T) {
 					assert.Contains(t, diags[0].Summary(), prefix)
 					if operation == "create" || operation == "configure after create" {
 						var attribute11 types.String
-						require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute11).HasError())
+						require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute11).HasError())
 						assert.Empty(t, attribute11.ValueString())
 					} else {
 						var attribute12 types.String
-						require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute12).HasError())
+						require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute12).HasError())
 						assert.Equal(t, "test-key", attribute12.ValueString())
 					}
 				})
@@ -293,7 +293,7 @@ func TestKMSKeyResourceCreate_waitsForConfiguration(t *testing.T) {
 		r := kms.NewKeyResource()
 		var schema fwresource.SchemaResponse
 		r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
-		d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.KeyFieldType: "aes256-gcm96", kms.KeyFieldName: "test-key", kms.KeyFieldDeletionAllowed: true})
+		d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{"type": "aes256-gcm96", "name": "test-key", "deletion_allowed": true})
 		config := newKMSResourceTestConfig(t,
 			kmsResourceRequest{"POST", "transit/keys/test-key", `{"type":"aes256-gcm96"}`, 200, `{"data":{}}`},
 			kmsResourceRequest{"POST", "transit/keys/test-key/config", `{"deletion_allowed":true}`, 200, `{"data":{}}`},
@@ -314,8 +314,8 @@ func TestKMSKeyResourceDelete_waitsForOperationAndDeletion(t *testing.T) {
 		r := kms.NewKeyResource()
 		var schema fwresource.SchemaResponse
 		r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
-		d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.KeyFieldType: "aes256-gcm96", kms.KeyFieldDeletionAllowed: false, kms.KeyFieldName: "test-key"})
-		require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-key").HasError())
+		d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{"type": "aes256-gcm96", "deletion_allowed": false, "name": "test-key"})
+		require.False(t, d.SetAttribute(context.Background(), path.Root("id"), "test-key").HasError())
 		config := newKMSResourceTestConfig(t,
 			kmsResourceRequest{"DELETE", "transit/keys/test-key", "", 400, `{"errors":["key test-key has an unfinished operation"]}`},
 			kmsResourceRequest{"DELETE", "transit/keys/test-key", "", 204, ""},
@@ -335,8 +335,8 @@ func TestKMSKeyResourceDelete_pollError(t *testing.T) {
 	r := kms.NewKeyResource()
 	var schema fwresource.SchemaResponse
 	r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
-	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.KeyFieldType: "aes256-gcm96", kms.KeyFieldDeletionAllowed: false, kms.KeyFieldName: "test-key"})
-	require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-key").HasError())
+	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{"type": "aes256-gcm96", "deletion_allowed": false, "name": "test-key"})
+	require.False(t, d.SetAttribute(context.Background(), path.Root("id"), "test-key").HasError())
 	config := newKMSResourceTestConfig(t,
 		kmsResourceRequest{"DELETE", "transit/keys/test-key", "", 204, ""},
 		kmsResourceRequest{"GET", "transit/keys/test-key", "", 403, `{"errors":["permission denied"]}`},

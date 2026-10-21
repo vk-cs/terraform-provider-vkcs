@@ -36,7 +36,7 @@ type secretResourceModel struct {
 }
 
 func (r *secretResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = typeName(req.ProviderTypeName, SecretEntityName)
+	resp.TypeName = req.ProviderTypeName + "_kms_secret"
 }
 
 func (r *secretResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -49,26 +49,26 @@ func (r *secretResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 	resp.Schema = schema.Schema{
 		Description: "Resource representing KMS secret",
 		Attributes: map[string]schema.Attribute{
-			EntityFieldID: schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, Description: "Identifier of the KMS secret"},
-			SecretFieldPath: schema.StringAttribute{
+			"id": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, Description: "Identifier of the KMS secret"},
+			"path": schema.StringAttribute{
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 				Description:   "Identifier (path) of the secret within the KMS secret store. Changing this forces a new resource.",
 			},
-			SecretFieldDataJSON: schema.StringAttribute{
+			"data_json": schema.StringAttribute{
 				Required:    true,
 				Sensitive:   true,
 				Description: "Data stored in the secret as a JSON object, represented as a string. Use `jsonencode` to encode a Terraform object.",
 			},
-			SecretFieldCreatedTime: schema.StringAttribute{
+			"created_time": schema.StringAttribute{
 				Computed:    true,
 				Description: "Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.",
 			},
-			SecretFieldVersion: schema.Int64Attribute{
+			"version": schema.Int64Attribute{
 				Computed:    true,
 				Description: "Current version of the secret returned in its metadata.",
 			},
-			SecretFieldDeleteProtection: schema.BoolAttribute{
+			"delete_protection": schema.BoolAttribute{
 				Optional:    true,
 				Default:     booldefault.StaticBool(true),
 				Description: "Whether the secret is protected from deletion. Defaults to `true`. Set to `false` and apply before destroying the secret.",

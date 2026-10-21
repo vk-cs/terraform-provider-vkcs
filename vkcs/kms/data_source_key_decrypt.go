@@ -30,7 +30,7 @@ type keyDecryptDataSourceModel struct {
 }
 
 func (r *keyDecryptDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = typeName(req.ProviderTypeName, KeyDecryptEntityName)
+	resp.TypeName = req.ProviderTypeName + "_kms_key_decrypt"
 }
 
 func (r *keyDecryptDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -43,16 +43,16 @@ func (r *keyDecryptDataSource) Schema(ctx context.Context, _ datasource.SchemaRe
 	resp.Schema = schema.Schema{
 		Description: "Data source containing decrypt result by KMS key",
 		Attributes: map[string]schema.Attribute{
-			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS key decrypt"},
-			KeyCryptFieldKey: schema.StringAttribute{
+			"id": schema.StringAttribute{Computed: true, Description: "Identifier of the KMS key decrypt"},
+			"key": schema.StringAttribute{
 				Required:    true,
 				Description: "Key used to decrypt data",
 			},
-			KeyCryptFieldCiphertext: schema.StringAttribute{
+			"ciphertext": schema.StringAttribute{
 				Required:    true,
 				Description: "Encrypted data",
 			},
-			KeyCryptFieldPlaintext: schema.StringAttribute{
+			"plaintext": schema.StringAttribute{
 				Computed:    true,
 				Sensitive:   true,
 				Description: "Resulting decrypted data encoded in base64",

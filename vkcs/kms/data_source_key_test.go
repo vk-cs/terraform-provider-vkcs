@@ -38,9 +38,9 @@ func TestKMSKeyDataSourceRead(t *testing.T) {
 			var schema datasource.SchemaResponse
 			ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
 			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{
-				kms.KeyFieldName: tc.name, kms.KeyFieldType: "stale-type", kms.KeyFieldDeletionAllowed: !tc.deletionAllowed,
+				"name": tc.name, "type": "stale-type", "deletion_allowed": !tc.deletionAllowed,
 			})
-			require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "stale-id").HasError())
+			require.False(t, d.SetAttribute(context.Background(), path.Root("id"), "stale-id").HasError())
 
 			ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
 			response := datasource.ReadResponse{State: d}
@@ -49,16 +49,16 @@ func TestKMSKeyDataSourceRead(t *testing.T) {
 			diags := response.Diagnostics
 			require.False(t, diags.HasError(), "%v", diags)
 			var attribute1 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute1).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute1).HasError())
 			assert.Equal(t, tc.name, attribute1.ValueString())
 			var attribute2 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyFieldName), &attribute2).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("name"), &attribute2).HasError())
 			assert.Equal(t, tc.name, attribute2.ValueString())
 			var attribute3 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyFieldType), &attribute3).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("type"), &attribute3).HasError())
 			assert.Equal(t, "aes256-gcm96", attribute3.ValueString())
 			var attribute4 types.Bool
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyFieldDeletionAllowed), &attribute4).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("deletion_allowed"), &attribute4).HasError())
 			assert.Equal(t, tc.deletionAllowed, attribute4.ValueBool())
 		})
 	}
@@ -79,7 +79,7 @@ func TestKMSKeyDataSourceRead_errors(t *testing.T) {
 			ds := kms.NewKeyDataSource()
 			var schema datasource.SchemaResponse
 			ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
-			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.KeyFieldName: "test-key"})
+			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{"name": "test-key"})
 
 			ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
 			response := datasource.ReadResponse{State: d}
@@ -90,7 +90,7 @@ func TestKMSKeyDataSourceRead_errors(t *testing.T) {
 			require.Len(t, diags, 1)
 			assert.Contains(t, diags[0].Summary(), "Error getting key")
 			var attribute5 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute5).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute5).HasError())
 			assert.Empty(t, attribute5.ValueString())
 		})
 	}
@@ -100,7 +100,7 @@ func TestKMSKeyDataSourceRead_clientError(t *testing.T) {
 	ds := kms.NewKeyDataSource()
 	var schema datasource.SchemaResponse
 	ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
-	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.KeyFieldName: "test-key"})
+	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{"name": "test-key"})
 	config := &secretDataSourceTestConfig{err: errors.New("client unavailable")}
 
 	ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
@@ -113,7 +113,7 @@ func TestKMSKeyDataSourceRead_clientError(t *testing.T) {
 	assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
 	assert.Equal(t, "client unavailable", diags[0].Detail())
 	var attribute6 types.String
-	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute6).HasError())
+	require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute6).HasError())
 	assert.Empty(t, attribute6.ValueString())
 }
 

@@ -32,7 +32,7 @@ type keysListDataSourceModel struct {
 }
 
 func (r *keysListDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = typeName(req.ProviderTypeName, KeysListEntityName)
+	resp.TypeName = req.ProviderTypeName + "_kms_keys_list"
 }
 
 func (r *keysListDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -45,12 +45,12 @@ func (r *keysListDataSource) Schema(ctx context.Context, _ datasource.SchemaRequ
 	resp.Schema = schema.Schema{
 		Description: "Data source containing list of KMS keys",
 		Attributes: map[string]schema.Attribute{
-			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS keys list"},
-			KeysListFieldKeysCount: schema.Int64Attribute{
+			"id": schema.StringAttribute{Computed: true, Description: "Identifier of the KMS keys list"},
+			"keys_count": schema.Int64Attribute{
 				Computed:    true,
 				Description: "Number of keys in list",
 			},
-			KeysListFieldKeys: schema.ListAttribute{
+			"keys": schema.ListAttribute{
 				Computed:    true,
 				ElementType: types.StringType,
 				Description: "List of keys' names",

@@ -65,7 +65,7 @@ func TestKMSResourceWriteClientErrors(t *testing.T) {
 				r.Schema(ctx, resource.SchemaRequest{}, &schema)
 				state := newTestState(t, tfsdk.State{Schema: schema.Schema}, nil)
 				if operation != "create" {
-					require.False(t, state.SetAttribute(ctx, path.Root(kms.EntityFieldID), "existing").HasError())
+					require.False(t, state.SetAttribute(ctx, path.Root("id"), "existing").HasError())
 				}
 				r.(resource.ResourceWithConfigure).Configure(ctx, resource.ConfigureRequest{ProviderData: &secretDataSourceTestConfig{err: errors.New("client unavailable")}}, &resource.ConfigureResponse{})
 				originalState := state.Raw

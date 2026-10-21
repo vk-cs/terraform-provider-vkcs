@@ -35,7 +35,7 @@ type keyResourceModel struct {
 }
 
 func (r *keyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = typeName(req.ProviderTypeName, KeyEntityName)
+	resp.TypeName = req.ProviderTypeName + "_kms_key"
 }
 
 func (r *keyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -48,19 +48,19 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 	resp.Schema = schema.Schema{
 		Description: "Resource representing KMS key",
 		Attributes: map[string]schema.Attribute{
-			EntityFieldID: schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, Description: "Identifier of the KMS key"},
-			KeyFieldName: schema.StringAttribute{
+			"id": schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, Description: "Identifier of the KMS key"},
+			"name": schema.StringAttribute{
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 				Description:   "Name of the KMS key. Changing this forces a new resource.",
 			},
-			KeyFieldType: schema.StringAttribute{
+			"type": schema.StringAttribute{
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 				Default:       stringdefault.StaticString("aes256-gcm96"),
 				Description:   "Type of the KMS key: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, or `xchacha20-poly1305`. Defaults to `aes256-gcm96`. Changing this forces a new resource.",
 			},
-			KeyFieldDeletionAllowed: schema.BoolAttribute{
+			"deletion_allowed": schema.BoolAttribute{
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 				Description: "Whether KMS allows the key to be deleted. Defaults to `false`. Set to `true` and apply before destroying the key.",

@@ -28,9 +28,9 @@ func TestKMSKeyEncryptDataSourceRead(t *testing.T) {
 	var schema datasource.SchemaResponse
 	ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
 	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{
-		kms.KeyCryptFieldKey: "test-key", kms.KeyCryptFieldPlaintext: "aGVsbG8=", kms.KeyCryptFieldCiphertext: "stale-output",
+		"key": "test-key", "plaintext": "aGVsbG8=", "ciphertext": "stale-output",
 	})
-	require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "stale-id").HasError())
+	require.False(t, d.SetAttribute(context.Background(), path.Root("id"), "stale-id").HasError())
 
 	ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
 	response := datasource.ReadResponse{State: d}
@@ -39,16 +39,16 @@ func TestKMSKeyEncryptDataSourceRead(t *testing.T) {
 	diags := response.Diagnostics
 	require.False(t, diags.HasError(), "%v", diags)
 	var attribute1 types.String
-	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute1).HasError())
+	require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute1).HasError())
 	assert.Equal(t, "655d0adeea5986d6235be9f53d707ae305422728b3038d1ab77d397a8cfe69d2", attribute1.ValueString())
 	var attribute2 types.String
-	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyCryptFieldCiphertext), &attribute2).HasError())
+	require.False(t, d.GetAttribute(context.Background(), path.Root("ciphertext"), &attribute2).HasError())
 	assert.Equal(t, "vault:v1:dGVzdA==", attribute2.ValueString())
 	var attribute3 types.String
-	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyCryptFieldKey), &attribute3).HasError())
+	require.False(t, d.GetAttribute(context.Background(), path.Root("key"), &attribute3).HasError())
 	assert.Equal(t, "test-key", attribute3.ValueString())
 	var attribute4 types.String
-	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyCryptFieldPlaintext), &attribute4).HasError())
+	require.False(t, d.GetAttribute(context.Background(), path.Root("plaintext"), &attribute4).HasError())
 	assert.Equal(t, "aGVsbG8=", attribute4.ValueString())
 }
 
@@ -72,7 +72,7 @@ func TestKMSKeyEncryptDataSourceRead_errors(t *testing.T) {
 			var schema datasource.SchemaResponse
 			ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
 			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{
-				kms.KeyCryptFieldKey: "test-key", kms.KeyCryptFieldPlaintext: "aGVsbG8=",
+				"key": "test-key", "plaintext": "aGVsbG8=",
 			})
 
 			ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
@@ -85,10 +85,10 @@ func TestKMSKeyEncryptDataSourceRead_errors(t *testing.T) {
 			assert.Contains(t, diags[0].Summary(), "Error encrypting")
 			assert.Contains(t, diags[0].Detail(), tc.wantError)
 			var attribute5 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute5).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute5).HasError())
 			assert.Empty(t, attribute5.ValueString())
 			var attribute6 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyCryptFieldCiphertext), &attribute6).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("ciphertext"), &attribute6).HasError())
 			assert.Empty(t, attribute6.ValueString())
 		})
 	}
@@ -99,7 +99,7 @@ func TestKMSKeyEncryptDataSourceRead_clientError(t *testing.T) {
 	var schema datasource.SchemaResponse
 	ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
 	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{
-		kms.KeyCryptFieldKey: "test-key", kms.KeyCryptFieldPlaintext: "aGVsbG8=",
+		"key": "test-key", "plaintext": "aGVsbG8=",
 	})
 	config := &secretDataSourceTestConfig{err: errors.New("client unavailable")}
 
@@ -113,10 +113,10 @@ func TestKMSKeyEncryptDataSourceRead_clientError(t *testing.T) {
 	assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
 	assert.Equal(t, "client unavailable", diags[0].Detail())
 	var attribute7 types.String
-	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute7).HasError())
+	require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute7).HasError())
 	assert.Empty(t, attribute7.ValueString())
 	var attribute8 types.String
-	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.KeyCryptFieldCiphertext), &attribute8).HasError())
+	require.False(t, d.GetAttribute(context.Background(), path.Root("ciphertext"), &attribute8).HasError())
 	assert.Empty(t, attribute8.ValueString())
 }
 

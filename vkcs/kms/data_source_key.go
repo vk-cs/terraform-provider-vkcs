@@ -29,7 +29,7 @@ type keyDataSourceModel struct {
 }
 
 func (r *keyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = typeName(req.ProviderTypeName, KeyEntityName)
+	resp.TypeName = req.ProviderTypeName + "_kms_key"
 }
 
 func (r *keyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -42,16 +42,16 @@ func (r *keyDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, 
 	resp.Schema = schema.Schema{
 		Description: "Data source containing a KMS key",
 		Attributes: map[string]schema.Attribute{
-			EntityFieldID: schema.StringAttribute{Computed: true, Description: "Identifier of the KMS key"},
-			KeyFieldName: schema.StringAttribute{
+			"id": schema.StringAttribute{Computed: true, Description: "Identifier of the KMS key"},
+			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "Name of the KMS key to read.",
 			},
-			KeyFieldType: schema.StringAttribute{
+			"type": schema.StringAttribute{
 				Computed:    true,
 				Description: "Type of the key: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, or `xchacha20-poly1305`.",
 			},
-			KeyFieldDeletionAllowed: schema.BoolAttribute{
+			"deletion_allowed": schema.BoolAttribute{
 				Computed:    true,
 				Description: "Whether KMS allows the key to be deleted.",
 			},

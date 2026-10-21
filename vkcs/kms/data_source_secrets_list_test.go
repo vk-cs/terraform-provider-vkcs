@@ -54,7 +54,7 @@ func TestKMSSecretsListDataSourceRead(t *testing.T) {
 			var schema datasource.SchemaResponse
 			ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
 			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{
-				kms.SecretsListFieldSecrets: []interface{}{"stale-secret"}, kms.SecretsListFieldSecretsCount: 1,
+				"secrets": []interface{}{"stale-secret"}, "secrets_count": 1,
 			})
 
 			ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
@@ -64,13 +64,13 @@ func TestKMSSecretsListDataSourceRead(t *testing.T) {
 			diags := response.Diagnostics
 			require.False(t, diags.HasError(), "%v", diags)
 			var attribute1 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute1).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute1).HasError())
 			assert.Equal(t, tc.wantID, attribute1.ValueString())
 			var attribute2 types.Int64
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretsListFieldSecretsCount), &attribute2).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("secrets_count"), &attribute2).HasError())
 			assert.Equal(t, len(tc.wantSecrets), int(attribute2.ValueInt64()))
 			var attribute3 []string
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretsListFieldSecrets), &attribute3).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("secrets"), &attribute3).HasError())
 			assert.ElementsMatch(t, tc.wantSecrets, attribute3)
 		})
 	}
@@ -103,7 +103,7 @@ func TestKMSSecretsListDataSourceRead_errors(t *testing.T) {
 			require.Len(t, diags, 1)
 			assert.Contains(t, diags[0].Summary(), "Error listing secrets")
 			var attribute4 types.String
-			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute4).HasError())
+			require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute4).HasError())
 			assert.Empty(t, attribute4.ValueString())
 		})
 	}
@@ -126,7 +126,7 @@ func TestKMSSecretsListDataSourceRead_clientError(t *testing.T) {
 	assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
 	assert.Equal(t, "client unavailable", diags[0].Detail())
 	var attribute5 types.String
-	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute5).HasError())
+	require.False(t, d.GetAttribute(context.Background(), path.Root("id"), &attribute5).HasError())
 	assert.Empty(t, attribute5.ValueString())
 }
 
@@ -164,9 +164,9 @@ func TestAccKMSSecretsListDataSource_basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccKMSSecretsListDataSourceBasic, name),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", kms.EntityFieldID),
-					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", kms.SecretsListFieldSecretsCount),
-					resource.TestCheckTypeSetElemAttr("data.vkcs_kms_secrets_list.secrets", kms.SecretsListFieldSecrets+".*", name),
+					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", "id"),
+					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", "secrets_count"),
+					resource.TestCheckTypeSetElemAttr("data.vkcs_kms_secrets_list.secrets", "secrets.*", name),
 				),
 			},
 		},

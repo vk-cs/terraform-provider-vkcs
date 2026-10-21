@@ -15,14 +15,6 @@ const (
 	maxItemsInListForIDBuild = 10
 )
 
-const (
-	EntityFieldID = "id"
-)
-
-func typeName(providerTypeName string, entityName string) string {
-	return fmt.Sprintf("%s_%s", providerTypeName, entityName)
-}
-
 func isOperationUnfinished(err error) bool {
 	return errutil.Is(err, 400) && strings.Contains(err.Error(), "unfinished operation")
 }
