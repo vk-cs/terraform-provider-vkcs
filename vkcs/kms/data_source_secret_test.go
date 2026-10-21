@@ -1,10 +1,6 @@
 package kms_test
 
 import (
-	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
-
 	"context"
 	"errors"
 	"fmt"
@@ -12,8 +8,15 @@ import (
 	"testing"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 )
@@ -21,18 +24,36 @@ import (
 func TestKMSSecretDataSourceRead(t *testing.T) {
 	body := `{"data":{"data":{"username":"alice","password":"test-password"},"metadata":{"created_time":"2026-09-01T10:00:00Z","version":3}}}`
 	config := newSecretDataSourceTestConfig(t, http.StatusOK, body, true)
-	ds := newFrameworkTestEndpoint(t, kms.NewSecretDataSource())
-	d := newFrameworkTestData(t, ds, map[string]interface{}{kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{"stale":"value"}`, kms.SecretFieldCreatedTime: "stale-time", kms.SecretFieldVersion: 1})
+	ds := kms.NewSecretDataSource()
+	var schema datasource.SchemaResponse
+	ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
+	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{"stale":"value"}`, kms.SecretFieldCreatedTime: "stale-time", kms.SecretFieldVersion: 1})
 
-	d.SetId("stale-id")
-	diags := ds.ReadContext(context.Background(), d, config)
+	require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "stale-id").HasError())
+	ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
+	response := datasource.ReadResponse{State: d}
+	ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+	d = response.State
+	diags := response.Diagnostics
 	require.False(t, diags.HasError(), "%v", diags)
-	assert.Equal(t, "test-secret", d.Id())
-	assert.Equal(t, "test-secret", d.Get(kms.SecretFieldPath))
-	assert.JSONEq(t, `{"username":"alice","password":"test-password"}`, d.Get(kms.SecretFieldDataJSON).(string))
-	assert.Equal(t, "2026-09-01 10:00:00 +0000 UTC", d.Get(kms.SecretFieldCreatedTime))
-	assert.Equal(t, 3, d.Get(kms.SecretFieldVersion))
-	assert.Equal(t, true, d.Get(kms.SecretFieldDeleteProtection))
+	var attribute1 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute1).HasError())
+	assert.Equal(t, "test-secret", attribute1.ValueString())
+	var attribute2 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldPath), &attribute2).HasError())
+	assert.Equal(t, "test-secret", attribute2.ValueString())
+	var attribute3 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldDataJSON), &attribute3).HasError())
+	assert.JSONEq(t, `{"username":"alice","password":"test-password"}`, attribute3.ValueString())
+	var attribute4 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldCreatedTime), &attribute4).HasError())
+	assert.Equal(t, "2026-09-01 10:00:00 +0000 UTC", attribute4.ValueString())
+	var attribute5 types.Int64
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldVersion), &attribute5).HasError())
+	assert.Equal(t, 3, int(attribute5.ValueInt64()))
+	var attribute6 types.Bool
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldDeleteProtection), &attribute6).HasError())
+	assert.Equal(t, true, attribute6.ValueBool())
 }
 
 func TestKMSSecretDataSourceRead_errors(t *testing.T) {
@@ -49,29 +70,45 @@ func TestKMSSecretDataSourceRead_errors(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			config := newSecretDataSourceTestConfig(t, tc.status, tc.body)
-			ds := newFrameworkTestEndpoint(t, kms.NewSecretDataSource())
-			d := newFrameworkTestData(t, ds, map[string]interface{}{kms.SecretFieldPath: "test-secret"})
+			ds := kms.NewSecretDataSource()
+			var schema datasource.SchemaResponse
+			ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
+			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldPath: "test-secret"})
 
-			diags := ds.ReadContext(context.Background(), d, config)
+			ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
+			response := datasource.ReadResponse{State: d}
+			ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+			d = response.State
+			diags := response.Diagnostics
 			require.True(t, diags.HasError())
 			require.Len(t, diags, 1)
 			assert.Contains(t, diags[0].Summary(), "Error getting secret")
-			assert.Empty(t, d.Id())
+			var attribute7 types.String
+			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute7).HasError())
+			assert.Empty(t, attribute7.ValueString())
 		})
 	}
 }
 
 func TestKMSSecretDataSourceRead_clientError(t *testing.T) {
-	ds := newFrameworkTestEndpoint(t, kms.NewSecretDataSource())
-	d := newFrameworkTestData(t, ds, map[string]interface{}{kms.SecretFieldPath: "test-secret"})
+	ds := kms.NewSecretDataSource()
+	var schema datasource.SchemaResponse
+	ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
+	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldPath: "test-secret"})
 	config := &secretDataSourceTestConfig{err: errors.New("client unavailable")}
 
-	diags := ds.ReadContext(context.Background(), d, config)
+	ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
+	response := datasource.ReadResponse{State: d}
+	ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+	d = response.State
+	diags := response.Diagnostics
 	require.True(t, diags.HasError())
 	require.Len(t, diags, 1)
 	assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
 	assert.Equal(t, "client unavailable", diags[0].Detail())
-	assert.Empty(t, d.Id())
+	var attribute8 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute8).HasError())
+	assert.Empty(t, attribute8.ValueString())
 }
 
 type secretDataSourceTestConfig struct {
@@ -102,19 +139,31 @@ func newSecretDataSourceTestConfig(t *testing.T, status int, body string, protec
 }
 
 func TestKMSSecretDataSourceRead_escapedPath(t *testing.T) {
-	ds := newFrameworkTestEndpoint(t, kms.NewSecretDataSource())
-	d := newFrameworkTestData(t, ds, map[string]interface{}{kms.SecretFieldPath: "secret /?#%"})
+	ds := kms.NewSecretDataSource()
+	var schema datasource.SchemaResponse
+	ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
+	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldPath: "secret /?#%"})
 	config := newKMSResourceTestConfig(t, kmsResourceRequest{
 		method:   http.MethodGet,
 		path:     "secret/data/secret%20%2F%3F%23%25",
 		status:   http.StatusOK,
 		response: `{"data":{"data":{"password":"test-password"},"metadata":{"created_time":"2026-09-01T10:00:00Z","version":1}}}`,
 	}, kmsResourceRequest{"GET", "secret/metadata/delete-protection/secret%20%2F%3F%23%25", "", 200, `{"delete_protection":false}`})
-	diags := ds.ReadContext(context.Background(), d, config)
+	ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
+	response := datasource.ReadResponse{State: d}
+	ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+	d = response.State
+	diags := response.Diagnostics
 	require.False(t, diags.HasError(), "%v", diags)
-	assert.Equal(t, "secret /?#%", d.Id())
-	assert.Equal(t, "secret /?#%", d.Get(kms.SecretFieldPath))
-	assert.JSONEq(t, `{"password":"test-password"}`, d.Get(kms.SecretFieldDataJSON).(string))
+	var attribute9 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute9).HasError())
+	assert.Equal(t, "secret /?#%", attribute9.ValueString())
+	var attribute10 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldPath), &attribute10).HasError())
+	assert.Equal(t, "secret /?#%", attribute10.ValueString())
+	var attribute11 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldDataJSON), &attribute11).HasError())
+	assert.JSONEq(t, `{"password":"test-password"}`, attribute11.ValueString())
 }
 
 func TestAccKMSSecretDataSource_basic(t *testing.T) {

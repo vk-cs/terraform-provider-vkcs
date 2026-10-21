@@ -8,13 +8,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
-
 	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 )
 
 type kmsResourceRequest struct {
@@ -56,20 +57,41 @@ func newKMSResourceTestConfig(t *testing.T, requests ...kmsResourceRequest) *sec
 }
 
 func TestKMSResourceWriteClientErrors(t *testing.T) {
-	for name, r := range map[string]*frameworkTestEndpoint{"key": newFrameworkTestEndpoint(t, kms.NewKeyResource()), "secret": newFrameworkTestEndpoint(t, kms.NewSecretResource())} {
-		for operation, call := range map[string]func(context.Context, *frameworkTestData, interface{}) diag.Diagnostics{"create": r.CreateContext, "update": r.UpdateContext, "delete": r.DeleteContext} {
+	for name, r := range map[string]resource.Resource{"key": kms.NewKeyResource(), "secret": kms.NewSecretResource()} {
+		for _, operation := range []string{"create", "update", "delete"} {
 			t.Run(name+"/"+operation, func(t *testing.T) {
-				d := newFrameworkTestData(t, r, nil)
+				ctx := context.Background()
+				var schema resource.SchemaResponse
+				r.Schema(ctx, resource.SchemaRequest{}, &schema)
+				state := newTestState(t, tfsdk.State{Schema: schema.Schema}, nil)
 				if operation != "create" {
-					d.SetId("existing")
+					require.False(t, state.SetAttribute(ctx, path.Root(kms.EntityFieldID), "existing").HasError())
 				}
-				id := d.Id()
-				diags := call(context.Background(), d, &secretDataSourceTestConfig{err: errors.New("client unavailable")})
+				r.(resource.ResourceWithConfigure).Configure(ctx, resource.ConfigureRequest{ProviderData: &secretDataSourceTestConfig{err: errors.New("client unavailable")}}, &resource.ConfigureResponse{})
+				originalState := state.Raw
+				var diags diag.Diagnostics
+				switch operation {
+				case "create":
+					response := resource.CreateResponse{State: state}
+					r.Create(ctx, resource.CreateRequest{Plan: tfsdk.Plan{Schema: state.Schema, Raw: state.Raw}}, &response)
+					diags = response.Diagnostics
+					state = response.State
+				case "update":
+					response := resource.UpdateResponse{State: state}
+					r.Update(ctx, resource.UpdateRequest{Plan: tfsdk.Plan{Schema: state.Schema, Raw: state.Raw}}, &response)
+					diags = response.Diagnostics
+					state = response.State
+				case "delete":
+					response := resource.DeleteResponse{State: state}
+					r.Delete(ctx, resource.DeleteRequest{State: state}, &response)
+					diags = response.Diagnostics
+					state = response.State
+				}
 				require.True(t, diags.HasError())
 				require.Len(t, diags, 1)
 				assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
 				assert.Equal(t, "client unavailable", diags[0].Detail())
-				assert.Equal(t, id, d.Id())
+				assert.True(t, originalState.Equal(state.Raw), "state must remain unchanged on client errors")
 			})
 		}
 	}

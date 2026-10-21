@@ -49,11 +49,11 @@ func (r *keyDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, 
 			},
 			KeyFieldType: schema.StringAttribute{
 				Computed:    true,
-				Description: "Type of the key: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, or `xchacha20-poly1305`. Populated from KMS when the data source is read. This field does not filter the lookup.",
+				Description: "Type of the key: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, or `xchacha20-poly1305`.",
 			},
 			KeyFieldDeletionAllowed: schema.BoolAttribute{
 				Computed:    true,
-				Description: "Whether KMS allows the key to be deleted, populated from KMS when the data source is read. This field does not change the deletion policy.",
+				Description: "Whether KMS allows the key to be deleted.",
 			},
 		},
 	}

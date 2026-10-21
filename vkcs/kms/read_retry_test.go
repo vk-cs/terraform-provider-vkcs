@@ -5,6 +5,11 @@ import (
 	"testing"
 	"testing/synctest"
 
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/stretchr/testify/require"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 )
@@ -35,10 +40,28 @@ func TestKMSReadRetries(t *testing.T) {
 						retry.response = `{"errors":["unfinished operation"]}`
 						requests = append(requests, retry, success)
 					}
-					endpoint := newFrameworkTestEndpoint(t, tc.endpoint)
-					data := newFrameworkTestData(t, endpoint, tc.input)
-					data.SetId("existing")
-					diags := endpoint.ReadContext(context.Background(), data, newKMSResourceTestConfig(t, requests...))
+					ctx := context.Background()
+					config := newKMSResourceTestConfig(t, requests...)
+					var diags diag.Diagnostics
+					switch endpoint := tc.endpoint.(type) {
+					case resource.ResourceWithConfigure:
+						var schema resource.SchemaResponse
+						endpoint.Schema(ctx, resource.SchemaRequest{}, &schema)
+						state := newTestState(t, tfsdk.State{Schema: schema.Schema}, tc.input)
+						require.False(t, state.SetAttribute(ctx, path.Root(kms.EntityFieldID), "existing").HasError())
+						endpoint.Configure(ctx, resource.ConfigureRequest{ProviderData: config}, &resource.ConfigureResponse{})
+						response := resource.ReadResponse{State: state}
+						endpoint.Read(ctx, resource.ReadRequest{State: state}, &response)
+						diags = response.Diagnostics
+					case datasource.DataSourceWithConfigure:
+						var schema datasource.SchemaResponse
+						endpoint.Schema(ctx, datasource.SchemaRequest{}, &schema)
+						state := newTestState(t, tfsdk.State{Schema: schema.Schema}, tc.input)
+						endpoint.Configure(ctx, datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
+						response := datasource.ReadResponse{State: state}
+						endpoint.Read(ctx, datasource.ReadRequest{Config: tfsdk.Config{Schema: state.Schema, Raw: state.Raw}}, &response)
+						diags = response.Diagnostics
+					}
 					require.False(t, diags.HasError(), "%v", diags)
 				})
 			})

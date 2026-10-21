@@ -1,40 +1,62 @@
 package kms_test
 
 import (
-	"fmt"
-	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
-
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 	"testing/synctest"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 )
 
 func TestKMSSecretResourceRead(t *testing.T) {
 	body := `{"data":{"data":{"username":"alice","password":"test-password"},"metadata":{"created_time":"2026-09-01T10:00:00Z","version":3}}}`
 	config := newSecretDataSourceTestConfig(t, http.StatusOK, body, false)
-	ds := newFrameworkTestEndpoint(t, kms.NewSecretResource())
-	d := newFrameworkTestData(t, ds, map[string]interface{}{
+	ds := kms.NewSecretResource()
+	var schema fwresource.SchemaResponse
+	ds.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
+	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldDeleteProtection: true,
 		kms.SecretFieldPath:     "test-secret",
 		kms.SecretFieldDataJSON: `{"stale":"value"}`, kms.SecretFieldCreatedTime: "stale-time", kms.SecretFieldVersion: 1,
 	})
-	d.SetId("test-secret")
+	require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-secret").HasError())
 
-	diags := ds.ReadContext(context.Background(), d, config)
+	ds.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
+	response := fwresource.ReadResponse{State: d}
+	ds.Read(context.Background(), fwresource.ReadRequest{State: d}, &response)
+	d = response.State
+	diags := response.Diagnostics
 	require.False(t, diags.HasError(), "%v", diags)
-	assert.Equal(t, "test-secret", d.Id())
-	assert.Equal(t, "test-secret", d.Get(kms.SecretFieldPath))
-	assert.JSONEq(t, `{"username":"alice","password":"test-password"}`, d.Get(kms.SecretFieldDataJSON).(string))
-	assert.Equal(t, "2026-09-01 10:00:00 +0000 UTC", d.Get(kms.SecretFieldCreatedTime))
-	assert.Equal(t, 3, d.Get(kms.SecretFieldVersion))
-	assert.Equal(t, false, d.Get(kms.SecretFieldDeleteProtection))
+	var attribute1 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute1).HasError())
+	assert.Equal(t, "test-secret", attribute1.ValueString())
+	var attribute2 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldPath), &attribute2).HasError())
+	assert.Equal(t, "test-secret", attribute2.ValueString())
+	var attribute3 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldDataJSON), &attribute3).HasError())
+	assert.JSONEq(t, `{"username":"alice","password":"test-password"}`, attribute3.ValueString())
+	var attribute4 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldCreatedTime), &attribute4).HasError())
+	assert.Equal(t, "2026-09-01 10:00:00 +0000 UTC", attribute4.ValueString())
+	var attribute5 types.Int64
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldVersion), &attribute5).HasError())
+	assert.Equal(t, 3, int(attribute5.ValueInt64()))
+	var attribute6 types.Bool
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldDeleteProtection), &attribute6).HasError())
+	assert.Equal(t, false, attribute6.ValueBool())
 }
 
 func TestKMSSecretResourceRead_errors(t *testing.T) {
@@ -50,60 +72,110 @@ func TestKMSSecretResourceRead_errors(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			config := newSecretDataSourceTestConfig(t, tc.status, tc.body)
-			ds := newFrameworkTestEndpoint(t, kms.NewSecretResource())
-			d := newFrameworkTestData(t, ds, map[string]interface{}{kms.SecretFieldPath: "test-secret"})
-			d.SetId("test-secret")
+			ds := kms.NewSecretResource()
+			var schema fwresource.SchemaResponse
+			ds.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
+			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldDeleteProtection: true, kms.SecretFieldPath: "test-secret"})
+			require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-secret").HasError())
 
-			diags := ds.ReadContext(context.Background(), d, config)
+			ds.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
+			response := fwresource.ReadResponse{State: d}
+			ds.Read(context.Background(), fwresource.ReadRequest{State: d}, &response)
+			d = response.State
+			diags := response.Diagnostics
 			require.True(t, diags.HasError())
 			require.Len(t, diags, 1)
 			assert.Contains(t, diags[0].Summary(), "Error getting secret")
-			assert.Equal(t, "test-secret", d.Id())
+			var attribute7 types.String
+			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute7).HasError())
+			assert.Equal(t, "test-secret", attribute7.ValueString())
 		})
 	}
 }
 
 func TestKMSSecretResourceRead_clientError(t *testing.T) {
-	ds := newFrameworkTestEndpoint(t, kms.NewSecretResource())
-	d := newFrameworkTestData(t, ds, map[string]interface{}{kms.SecretFieldPath: "test-secret"})
-	d.SetId("test-secret")
+	ds := kms.NewSecretResource()
+	var schema fwresource.SchemaResponse
+	ds.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
+	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldDeleteProtection: true, kms.SecretFieldPath: "test-secret"})
+	require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-secret").HasError())
 	config := &secretDataSourceTestConfig{err: errors.New("client unavailable")}
 
-	diags := ds.ReadContext(context.Background(), d, config)
+	ds.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
+	response := fwresource.ReadResponse{State: d}
+	ds.Read(context.Background(), fwresource.ReadRequest{State: d}, &response)
+	d = response.State
+	diags := response.Diagnostics
 	require.True(t, diags.HasError())
 	require.Len(t, diags, 1)
 	assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
 	assert.Equal(t, "client unavailable", diags[0].Detail())
-	assert.Equal(t, "test-secret", d.Id())
+	var attribute8 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute8).HasError())
+	assert.Equal(t, "test-secret", attribute8.ValueString())
 }
 
 func TestKMSSecretResourceWrite(t *testing.T) {
 	for _, operation := range []string{"create", "update"} {
 		t.Run(operation, func(t *testing.T) {
-			r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
-			d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "secret /?#%", kms.SecretFieldDataJSON: `{"password":"new-value"}`, kms.SecretFieldCreatedTime: "stale-time", kms.SecretFieldVersion: 1})
-			call := r.CreateContext
+			r := kms.NewSecretResource()
+			var schema fwresource.SchemaResponse
+			r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
+			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldDeleteProtection: true, kms.SecretFieldPath: "secret /?#%", kms.SecretFieldDataJSON: `{"password":"new-value"}`, kms.SecretFieldCreatedTime: "stale-time", kms.SecretFieldVersion: 1})
+			action := "Create"
 			if operation == "update" {
-				call = r.UpdateContext
-				d.SetId("secret /?#%")
+				action = "Update"
+				require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "secret /?#%").HasError())
 			}
 			config := newKMSResourceTestConfig(t, kmsResourceRequest{"POST", "secret/data/secret%20%2F%3F%23%25", `{"data":{"password":"new-value"}}`, 200, `{"data":{"created_time":"2026-09-01T10:00:00Z","version":2}}`}, kmsResourceRequest{"PUT", "secret/metadata/delete-protection/secret%20%2F%3F%23%25", `{"delete_protection":true}`, 200, ""}, kmsResourceRequest{"GET", "secret/metadata/delete-protection/secret%20%2F%3F%23%25", "", 200, `{"delete_protection":true}`})
-			diags := call(context.Background(), d, config)
+			r.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
+			var diags diag.Diagnostics
+			switch action {
+			case "Create":
+				response := fwresource.CreateResponse{State: d}
+				r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+				d = response.State
+				diags = response.Diagnostics
+			case "Update":
+				response := fwresource.UpdateResponse{State: d}
+				r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+				d = response.State
+				diags = response.Diagnostics
+			case "Delete":
+				response := fwresource.DeleteResponse{State: d}
+				r.Delete(context.Background(), fwresource.DeleteRequest{State: d}, &response)
+				d = response.State
+				diags = response.Diagnostics
+			}
 			require.False(t, diags.HasError(), "%v", diags)
-			assert.Equal(t, "secret /?#%", d.Id())
-			assert.JSONEq(t, `{"password":"new-value"}`, d.Get(kms.SecretFieldDataJSON).(string))
-			assert.Equal(t, "2026-09-01 10:00:00 +0000 UTC", d.Get(kms.SecretFieldCreatedTime))
-			assert.Equal(t, 2, d.Get(kms.SecretFieldVersion))
+			var attribute9 types.String
+			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute9).HasError())
+			assert.Equal(t, "secret /?#%", attribute9.ValueString())
+			var attribute10 types.String
+			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldDataJSON), &attribute10).HasError())
+			assert.JSONEq(t, `{"password":"new-value"}`, attribute10.ValueString())
+			var attribute11 types.String
+			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldCreatedTime), &attribute11).HasError())
+			assert.Equal(t, "2026-09-01 10:00:00 +0000 UTC", attribute11.ValueString())
+			var attribute12 types.Int64
+			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldVersion), &attribute12).HasError())
+			assert.Equal(t, 2, int(attribute12.ValueInt64()))
 		})
 	}
 }
 
 func TestKMSSecretResourceDelete(t *testing.T) {
-	r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
-	d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "secret /?#%"})
-	d.SetId("secret /?#%")
+	r := kms.NewSecretResource()
+	var schema fwresource.SchemaResponse
+	r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
+	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldDeleteProtection: true, kms.SecretFieldPath: "secret /?#%"})
+	require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "secret /?#%").HasError())
 	config := newKMSResourceTestConfig(t, kmsResourceRequest{"DELETE", "secret/metadata/secret%20%2F%3F%23%25", "", 204, ""}, kmsResourceRequest{"GET", "secret/data/secret%20%2F%3F%23%25", "", 404, `{"errors":["secret not found"]}`})
-	diags := r.DeleteContext(context.Background(), d, config)
+	r.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
+	response := fwresource.DeleteResponse{State: d}
+	r.Delete(context.Background(), fwresource.DeleteRequest{State: d}, &response)
+	d = response.State
+	diags := response.Diagnostics
 	require.False(t, diags.HasError(), "%v", diags)
 }
 
@@ -123,35 +195,63 @@ func TestKMSSecretResourceWriteErrors(t *testing.T) {
 			}
 			t.Run(operation+"/"+failure.name, func(t *testing.T) {
 				synctest.Test(t, func(t *testing.T) {
-					r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
-					d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{}`, kms.SecretFieldCreatedTime: "old-time", kms.SecretFieldVersion: 1})
-					call := r.CreateContext
+					r := kms.NewSecretResource()
+					var schema fwresource.SchemaResponse
+					r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
+					d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldDeleteProtection: true, kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{}`, kms.SecretFieldCreatedTime: "old-time", kms.SecretFieldVersion: 1})
+					action := "Create"
 					request := kmsResourceRequest{"POST", "secret/data/test-secret", `{"data":{}}`, failure.status, failure.body}
 					prefix := "Error creating secret"
 					if operation != "create" {
-						d.SetId("test-secret")
+						require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-secret").HasError())
 					}
 					if operation == "update" {
-						call = r.UpdateContext
+						action = "Update"
 					}
 					if operation == "delete" {
-						call = r.DeleteContext
+						action = "Delete"
 						request.method = "DELETE"
 						request.path = "secret/metadata/test-secret"
 						request.body = ""
 						prefix = "Error deleting secret"
 					}
-					diags := call(context.Background(), d, newKMSResourceTestConfig(t, request))
+					r.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: newKMSResourceTestConfig(t, request)}, &fwresource.ConfigureResponse{})
+					var diags diag.Diagnostics
+					switch action {
+					case "Create":
+						response := fwresource.CreateResponse{State: d}
+						r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+						d = response.State
+						diags = response.Diagnostics
+					case "Update":
+						response := fwresource.UpdateResponse{State: d}
+						r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+						d = response.State
+						diags = response.Diagnostics
+					case "Delete":
+						response := fwresource.DeleteResponse{State: d}
+						r.Delete(context.Background(), fwresource.DeleteRequest{State: d}, &response)
+						d = response.State
+						diags = response.Diagnostics
+					}
 					require.True(t, diags.HasError())
 					require.Len(t, diags, 1)
 					assert.Contains(t, diags[0].Summary(), prefix)
 					if operation == "create" {
-						assert.Empty(t, d.Id())
+						var attribute13 types.String
+						require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute13).HasError())
+						assert.Empty(t, attribute13.ValueString())
 					} else {
-						assert.Equal(t, "test-secret", d.Id())
+						var attribute14 types.String
+						require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute14).HasError())
+						assert.Equal(t, "test-secret", attribute14.ValueString())
 					}
-					assert.Equal(t, "old-time", d.Get(kms.SecretFieldCreatedTime))
-					assert.Equal(t, 1, d.Get(kms.SecretFieldVersion))
+					var attribute15 types.String
+					require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldCreatedTime), &attribute15).HasError())
+					assert.Equal(t, "old-time", attribute15.ValueString())
+					var attribute16 types.Int64
+					require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldVersion), &attribute16).HasError())
+					assert.Equal(t, 1, int(attribute16.ValueInt64()))
 				})
 			})
 		}
@@ -162,12 +262,14 @@ func TestKMSSecretResourceWrite_waitsForDeleteProtection(t *testing.T) {
 	for _, operation := range []string{"create", "update"} {
 		t.Run(operation, func(t *testing.T) {
 			synctest.Test(t, func(t *testing.T) {
-				r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
-				d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{}`, kms.SecretFieldDeleteProtection: false})
-				call := r.CreateContext
+				r := kms.NewSecretResource()
+				var schema fwresource.SchemaResponse
+				r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
+				d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldPath: "test-secret", kms.SecretFieldDataJSON: `{}`, kms.SecretFieldDeleteProtection: false})
+				action := "Create"
 				if operation == "update" {
-					call = r.UpdateContext
-					d.SetId("test-secret")
+					action = "Update"
+					require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-secret").HasError())
 				}
 				config := newKMSResourceTestConfig(t,
 					kmsResourceRequest{"POST", "secret/data/test-secret", `{"data":{}}`, 200, `{"data":{"created_time":"2026-09-01T10:00:00Z","version":2}}`},
@@ -176,9 +278,29 @@ func TestKMSSecretResourceWrite_waitsForDeleteProtection(t *testing.T) {
 					kmsResourceRequest{"GET", "secret/metadata/delete-protection/test-secret", "", 200, `{"delete_protection":true}`},
 					kmsResourceRequest{"GET", "secret/metadata/delete-protection/test-secret", "", 200, `{"delete_protection":false}`},
 				)
-				diags := call(context.Background(), d, config)
+				r.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
+				var diags diag.Diagnostics
+				switch action {
+				case "Create":
+					response := fwresource.CreateResponse{State: d}
+					r.Create(context.Background(), fwresource.CreateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+					d = response.State
+					diags = response.Diagnostics
+				case "Update":
+					response := fwresource.UpdateResponse{State: d}
+					r.Update(context.Background(), fwresource.UpdateRequest{Plan: tfsdk.Plan{Schema: d.Schema, Raw: d.Raw}}, &response)
+					d = response.State
+					diags = response.Diagnostics
+				case "Delete":
+					response := fwresource.DeleteResponse{State: d}
+					r.Delete(context.Background(), fwresource.DeleteRequest{State: d}, &response)
+					d = response.State
+					diags = response.Diagnostics
+				}
 				require.False(t, diags.HasError(), "%v", diags)
-				assert.Equal(t, false, d.Get(kms.SecretFieldDeleteProtection))
+				var attribute17 types.Bool
+				require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretFieldDeleteProtection), &attribute17).HasError())
+				assert.Equal(t, false, attribute17.ValueBool())
 			})
 		})
 	}
@@ -186,29 +308,41 @@ func TestKMSSecretResourceWrite_waitsForDeleteProtection(t *testing.T) {
 
 func TestKMSSecretResourceDelete_waitsForOperationAndDeletion(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
-		d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret"})
-		d.SetId("test-secret")
+		r := kms.NewSecretResource()
+		var schema fwresource.SchemaResponse
+		r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
+		d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldDeleteProtection: true, kms.SecretFieldPath: "test-secret"})
+		require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-secret").HasError())
 		config := newKMSResourceTestConfig(t,
 			kmsResourceRequest{"DELETE", "secret/metadata/test-secret", "", 400, `{"errors":["secret has an unfinished operation"]}`},
 			kmsResourceRequest{"DELETE", "secret/metadata/test-secret", "", 204, ""},
 			kmsResourceRequest{"GET", "secret/data/test-secret", "", 200, `{"data":{"data":{},"metadata":{"version":1}}}`},
 			kmsResourceRequest{"GET", "secret/data/test-secret", "", 404, `{"errors":["secret not found"]}`},
 		)
-		diags := r.DeleteContext(context.Background(), d, config)
+		r.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
+		response := fwresource.DeleteResponse{State: d}
+		r.Delete(context.Background(), fwresource.DeleteRequest{State: d}, &response)
+		d = response.State
+		diags := response.Diagnostics
 		require.False(t, diags.HasError(), "%v", diags)
 	})
 }
 
 func TestKMSSecretResourceDelete_pollError(t *testing.T) {
-	r := newFrameworkTestEndpoint(t, kms.NewSecretResource())
-	d := newFrameworkTestData(t, r, map[string]interface{}{kms.SecretFieldPath: "test-secret"})
-	d.SetId("test-secret")
+	r := kms.NewSecretResource()
+	var schema fwresource.SchemaResponse
+	r.Schema(context.Background(), fwresource.SchemaRequest{}, &schema)
+	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{kms.SecretFieldDeleteProtection: true, kms.SecretFieldPath: "test-secret"})
+	require.False(t, d.SetAttribute(context.Background(), path.Root(kms.EntityFieldID), "test-secret").HasError())
 	config := newKMSResourceTestConfig(t,
 		kmsResourceRequest{"DELETE", "secret/metadata/test-secret", "", 204, ""},
 		kmsResourceRequest{"GET", "secret/data/test-secret", "", 403, `{"errors":["permission denied"]}`},
 	)
-	diags := r.DeleteContext(context.Background(), d, config)
+	r.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
+	response := fwresource.DeleteResponse{State: d}
+	r.Delete(context.Background(), fwresource.DeleteRequest{State: d}, &response)
+	d = response.State
+	diags := response.Diagnostics
 	require.True(t, diags.HasError())
 	assert.Equal(t, "Error waiting for secret deletion", diags[0].Summary())
 	assert.Contains(t, diags[0].Detail(), "permission denied")

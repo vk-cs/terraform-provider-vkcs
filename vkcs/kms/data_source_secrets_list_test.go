@@ -1,21 +1,24 @@
 package kms_test
 
 import (
-	"fmt"
-	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
-
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 )
 
@@ -47,16 +50,28 @@ func TestKMSSecretsListDataSourceRead(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			config := newSecretsListDataSourceTestConfig(t, http.StatusOK, tc.body)
-			ds := newFrameworkTestEndpoint(t, kms.NewSecretsListDataSource())
-			d := newFrameworkTestData(t, ds, map[string]interface{}{
+			ds := kms.NewSecretsListDataSource()
+			var schema datasource.SchemaResponse
+			ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
+			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{
 				kms.SecretsListFieldSecrets: []interface{}{"stale-secret"}, kms.SecretsListFieldSecretsCount: 1,
 			})
 
-			diags := ds.ReadContext(context.Background(), d, config)
+			ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
+			response := datasource.ReadResponse{State: d}
+			ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+			d = response.State
+			diags := response.Diagnostics
 			require.False(t, diags.HasError(), "%v", diags)
-			assert.Equal(t, tc.wantID, d.Id())
-			assert.Equal(t, len(tc.wantSecrets), d.Get(kms.SecretsListFieldSecretsCount))
-			assert.Equal(t, tc.wantSecrets, d.Get(kms.SecretsListFieldSecrets))
+			var attribute1 types.String
+			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute1).HasError())
+			assert.Equal(t, tc.wantID, attribute1.ValueString())
+			var attribute2 types.Int64
+			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretsListFieldSecretsCount), &attribute2).HasError())
+			assert.Equal(t, len(tc.wantSecrets), int(attribute2.ValueInt64()))
+			var attribute3 []string
+			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.SecretsListFieldSecrets), &attribute3).HasError())
+			assert.ElementsMatch(t, tc.wantSecrets, attribute3)
 		})
 	}
 }
@@ -74,29 +89,45 @@ func TestKMSSecretsListDataSourceRead_errors(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			config := newSecretsListDataSourceTestConfig(t, tc.status, tc.body)
-			ds := newFrameworkTestEndpoint(t, kms.NewSecretsListDataSource())
-			d := newFrameworkTestData(t, ds, nil)
+			ds := kms.NewSecretsListDataSource()
+			var schema datasource.SchemaResponse
+			ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
+			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, nil)
 
-			diags := ds.ReadContext(context.Background(), d, config)
+			ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
+			response := datasource.ReadResponse{State: d}
+			ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+			d = response.State
+			diags := response.Diagnostics
 			require.True(t, diags.HasError())
 			require.Len(t, diags, 1)
 			assert.Contains(t, diags[0].Summary(), "Error listing secrets")
-			assert.Empty(t, d.Id())
+			var attribute4 types.String
+			require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute4).HasError())
+			assert.Empty(t, attribute4.ValueString())
 		})
 	}
 }
 
 func TestKMSSecretsListDataSourceRead_clientError(t *testing.T) {
-	ds := newFrameworkTestEndpoint(t, kms.NewSecretsListDataSource())
-	d := newFrameworkTestData(t, ds, nil)
+	ds := kms.NewSecretsListDataSource()
+	var schema datasource.SchemaResponse
+	ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
+	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, nil)
 	config := &secretDataSourceTestConfig{err: errors.New("client unavailable")}
 
-	diags := ds.ReadContext(context.Background(), d, config)
+	ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
+	response := datasource.ReadResponse{State: d}
+	ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+	d = response.State
+	diags := response.Diagnostics
 	require.True(t, diags.HasError())
 	require.Len(t, diags, 1)
 	assert.Equal(t, "Error creating VKCS KMS client", diags[0].Summary())
 	assert.Equal(t, "client unavailable", diags[0].Detail())
-	assert.Empty(t, d.Id())
+	var attribute5 types.String
+	require.False(t, d.GetAttribute(context.Background(), path.Root(kms.EntityFieldID), &attribute5).HasError())
+	assert.Empty(t, attribute5.ValueString())
 }
 
 func newSecretsListDataSourceTestConfig(t *testing.T, status int, body string) *secretDataSourceTestConfig {

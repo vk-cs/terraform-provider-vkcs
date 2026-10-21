@@ -15,12 +15,6 @@ The returned `plaintext` is marked as sensitive and is stored in Terraform state
 ## Example Usage
 
 ```terraform
-resource "vkcs_kms_key" "encrypt_decrypt_key" {
-  name             = "encrypt_decrypt_key"
-  type             = "aes128-gcm96"
-  deletion_allowed = true
-}
-
 data "vkcs_kms_key_encrypt" "encrypted" {
   key       = vkcs_kms_key.encrypt_decrypt_key.id
   plaintext = base64encode("a secret message")

@@ -65,7 +65,7 @@ func (r *secretDataSource) Schema(ctx context.Context, _ datasource.SchemaReques
 			},
 			SecretFieldDeleteProtection: schema.BoolAttribute{
 				Computed:    true,
-				Description: "Whether the secret is protected from deletion, populated from KMS when the data source is read. This field does not change the deletion policy.",
+				Description: "Whether the secret is protected from deletion.",
 			},
 		},
 	}
