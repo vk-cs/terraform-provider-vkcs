@@ -1,6 +1,10 @@
 package kms_test
 
 import (
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
+
 	"context"
 	"errors"
 	"fmt"
@@ -243,4 +247,49 @@ func TestKMSKeyResourceDelete_pollError(t *testing.T) {
 	require.True(t, diags.HasError())
 	assert.Equal(t, "Error waiting for key deletion", diags[0].Summary())
 	assert.Contains(t, diags[0].Detail(), "permission denied")
+}
+
+func testAccKMSKeyConfig(name, keyType string, deletionAllowed bool) string {
+	return fmt.Sprintf(`
+resource "vkcs_kms_key" "key" {
+  name = %q
+  type = %q
+  deletion_allowed = %t
+}
+`, name, keyType, deletionAllowed)
+}
+
+func TestAccKMSKeyResource_basic(t *testing.T) {
+	name := sdkacctest.RandomWithPrefix("tf-acc-kms-key")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccKMSPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccKMSCheckDestroy,
+		Steps: []resource.TestStep{
+			{Config: fmt.Sprintf(`resource "vkcs_kms_key" "key" { name = %q }`, name), Check: resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttr("vkcs_kms_key.key", "id", name),
+				resource.TestCheckResourceAttr("vkcs_kms_key.key", "type", "aes256-gcm96"),
+				resource.TestCheckResourceAttr("vkcs_kms_key.key", "deletion_allowed", "false"),
+			)},
+			{Config: testAccKMSKeyConfig(name, "aes256-gcm96", true), Check: resource.TestCheckResourceAttr("vkcs_kms_key.key", "deletion_allowed", "true")},
+			{Config: testAccKMSKeyConfig(name+"-replacement", "aes128-gcm96", true), Check: resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttr("vkcs_kms_key.key", "id", name+"-replacement"),
+				resource.TestCheckResourceAttr("vkcs_kms_key.key", "type", "aes128-gcm96"),
+			)},
+		},
+	})
+}
+
+func TestAccKMSKeyResource_keyTypes(t *testing.T) {
+	for _, keyType := range []string{"aes128-gcm96", "aes256-gcm96", "chacha20-poly1305", "xchacha20-poly1305"} {
+		t.Run(keyType, func(t *testing.T) {
+			name := sdkacctest.RandomWithPrefix("tf-acc-kms-key")
+			resource.Test(t, resource.TestCase{
+				PreCheck:                 func() { testAccKMSPreCheck(t) },
+				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+				CheckDestroy:             testAccKMSCheckDestroy,
+				Steps:                    []resource.TestStep{{Config: testAccKMSKeyConfig(name, keyType, true), Check: resource.TestCheckResourceAttr("vkcs_kms_key.key", "type", keyType)}},
+			})
+		})
+	}
 }

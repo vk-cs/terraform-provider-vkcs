@@ -1,6 +1,11 @@
 package kms_test
 
 import (
+	"fmt"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
+
 	"context"
 	"errors"
 	"net/http"
@@ -207,4 +212,47 @@ func TestKMSSecretResourceDelete_pollError(t *testing.T) {
 	require.True(t, diags.HasError())
 	assert.Equal(t, "Error waiting for secret deletion", diags[0].Summary())
 	assert.Contains(t, diags[0].Detail(), "permission denied")
+}
+
+func testAccKMSSecretConfig(path, password string, protected bool) string {
+	return fmt.Sprintf(`
+resource "vkcs_kms_secret" "secret" {
+  path = %q
+  data_json = jsonencode({ password = %q })
+  delete_protection = %t
+}
+`, path, password, protected)
+}
+
+func TestAccKMSSecretResource_basic(t *testing.T) {
+	name := sdkacctest.RandomWithPrefix("tf-acc-kms-secret")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccKMSPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccKMSCheckDestroy,
+		Steps: []resource.TestStep{
+			{Config: fmt.Sprintf(`
+resource "vkcs_kms_secret" "secret" {
+  path = %q
+  data_json = jsonencode({ password = "initial" })
+}
+`, name), Check: resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttr("vkcs_kms_secret.secret", "id", name),
+				resource.TestCheckResourceAttr("vkcs_kms_secret.secret", "data_json", `{"password":"initial"}`),
+				resource.TestCheckResourceAttr("vkcs_kms_secret.secret", "delete_protection", "true"),
+				resource.TestCheckResourceAttr("vkcs_kms_secret.secret", "version", "1"),
+				resource.TestCheckResourceAttrSet("vkcs_kms_secret.secret", "created_time"),
+			)},
+			{Config: testAccKMSSecretConfig(name, "updated", false), Check: resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttr("vkcs_kms_secret.secret", "id", name),
+				resource.TestCheckResourceAttr("vkcs_kms_secret.secret", "data_json", `{"password":"updated"}`),
+				resource.TestCheckResourceAttr("vkcs_kms_secret.secret", "delete_protection", "false"),
+				resource.TestCheckResourceAttr("vkcs_kms_secret.secret", "version", "2"),
+			)},
+			{Config: testAccKMSSecretConfig(name+"-replacement", "replacement", false), Check: resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttr("vkcs_kms_secret.secret", "id", name+"-replacement"),
+				resource.TestCheckResourceAttr("vkcs_kms_secret.secret", "version", "1"),
+			)},
+		},
+	})
 }

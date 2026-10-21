@@ -1,6 +1,10 @@
 package kms_test
 
 import (
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
+
 	"context"
 	"errors"
 	"fmt"
@@ -104,4 +108,20 @@ func newKeyDataSourceTestConfig(t *testing.T, name, path string, status int, bod
 		ProviderClient: provider,
 		Endpoint:       "https://kms.example.test/kms/user/v1/",
 	}}
+}
+
+func TestAccKMSKeyDataSource_basic(t *testing.T) {
+	name := sdkacctest.RandomWithPrefix("tf-acc-kms-key")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccKMSPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccKMSCheckDestroy,
+		Steps: []resource.TestStep{{Config: testAccKMSKeyConfig(name, "aes256-gcm96", true) + `
+data "vkcs_kms_key" "key" { name = vkcs_kms_key.key.name }
+`, Check: resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr("data.vkcs_kms_key.key", "id", name),
+			resource.TestCheckResourceAttrPair("data.vkcs_kms_key.key", "type", "vkcs_kms_key.key", "type"),
+			resource.TestCheckResourceAttrPair("data.vkcs_kms_key.key", "deletion_allowed", "vkcs_kms_key.key", "deletion_allowed"),
+		)}},
+	})
 }

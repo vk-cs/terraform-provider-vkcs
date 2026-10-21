@@ -1,6 +1,10 @@
 package kms_test
 
 import (
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
+
 	"context"
 	"errors"
 	"io"
@@ -105,4 +109,30 @@ func newKeyEncryptDataSourceTestConfig(t *testing.T, status int, body string, tr
 		ProviderClient: provider,
 		Endpoint:       "https://kms.example.test/kms/user/v1/",
 	}}
+}
+
+// Both cryptographic data sources are exercised together to verify a real round trip.
+func TestAccKMSKeyEncryptDecryptDataSources_basic(t *testing.T) {
+	name := sdkacctest.RandomWithPrefix("tf-acc-kms-key")
+	config := testAccKMSKeyConfig(name, "aes256-gcm96", true) + `
+data "vkcs_kms_key_encrypt" "encrypted" {
+  key = vkcs_kms_key.key.name
+  plaintext = base64encode("acceptance-test plaintext")
+}
+data "vkcs_kms_key_decrypt" "decrypted" {
+  key = vkcs_kms_key.key.name
+  ciphertext = data.vkcs_kms_key_encrypt.encrypted.ciphertext
+}
+`
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccKMSPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccKMSCheckDestroy,
+		Steps: []resource.TestStep{{Config: config, Check: resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttrSet("data.vkcs_kms_key_encrypt.encrypted", "id"),
+			resource.TestCheckResourceAttrSet("data.vkcs_kms_key_encrypt.encrypted", "ciphertext"),
+			resource.TestCheckResourceAttrSet("data.vkcs_kms_key_decrypt.decrypted", "id"),
+			resource.TestCheckResourceAttrPair("data.vkcs_kms_key_decrypt.decrypted", "plaintext", "data.vkcs_kms_key_encrypt.encrypted", "plaintext"),
+		)}},
+	})
 }

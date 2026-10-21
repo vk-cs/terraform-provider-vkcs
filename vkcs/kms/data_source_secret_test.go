@@ -1,6 +1,10 @@
 package kms_test
 
 import (
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
+
 	"context"
 	"errors"
 	"fmt"
@@ -112,3 +116,36 @@ func TestKMSSecretDataSourceRead_escapedPath(t *testing.T) {
 	assert.Equal(t, "secret /?#%", d.Get(kms.SecretFieldPath))
 	assert.JSONEq(t, `{"password":"test-password"}`, d.Get(kms.SecretFieldDataJSON).(string))
 }
+
+func TestAccKMSSecretDataSource_basic(t *testing.T) {
+	name := sdkacctest.RandomWithPrefix("tf-acc-kms-secret")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccKMSPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccKMSCheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccKMSSecretDataSourceBasic, name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.vkcs_kms_secret.secret", kms.EntityFieldID, name),
+					resource.TestCheckResourceAttr("data.vkcs_kms_secret.secret", kms.SecretFieldPath, name),
+					resource.TestCheckResourceAttrPair("data.vkcs_kms_secret.secret", kms.SecretFieldDataJSON, "vkcs_kms_secret.secret", kms.SecretFieldDataJSON),
+					resource.TestCheckResourceAttrSet("data.vkcs_kms_secret.secret", kms.SecretFieldCreatedTime),
+					resource.TestCheckResourceAttrSet("data.vkcs_kms_secret.secret", kms.SecretFieldVersion),
+				),
+			},
+		},
+	})
+}
+
+const testAccKMSSecretDataSourceBasic = `
+resource "vkcs_kms_secret" "secret" {
+  path = %q
+  delete_protection = false
+  data_json = jsonencode({ password = "test-password" })
+}
+
+data "vkcs_kms_secret" "secret" {
+  path = vkcs_kms_secret.secret.path
+}
+`
