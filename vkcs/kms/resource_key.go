@@ -63,7 +63,7 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 			KeyFieldDeletionAllowed: schema.BoolAttribute{
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
-				Description: "Whether KMS allows the key to be deleted. Defaults to `false`. Set to `true` and apply before destroying the key. Refreshed from KMS when the resource is read.",
+				Description: "Whether KMS allows the key to be deleted. Defaults to `false`. Set to `true` and apply before destroying the key.",
 			},
 		},
 	}

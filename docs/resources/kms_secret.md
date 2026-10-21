@@ -12,7 +12,7 @@ Resource representing KMS secret
 
 Secrets are protected from deletion by default. Before destroying a secret, set `delete_protection = false` and apply the change.
 
-Secret values in `data_json` are stored in Terraform state. This field is not marked as sensitive in the schema.
+Secret values in `data_json` are marked as sensitive and are stored in Terraform state.
 
 ## Example Usage
 
@@ -32,7 +32,7 @@ resource "vkcs_kms_secret" "secret" {
 
 - `path` **required** *string* &rarr; Identifier (path) of the secret within the KMS secret store. Changing this forces a new resource.
 
-- `data_json` **required** *string* &rarr; Data stored in the secret as a JSON object, represented as a string. Use `jsonencode` to encode a Terraform object. Refreshed from KMS when the resource is read.
+- `data_json` **required** *string* &rarr; Data stored in the secret as a JSON object, represented as a string. Use `jsonencode` to encode a Terraform object.
 
 - `created_time` optional computed *string* &rarr; Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.
 

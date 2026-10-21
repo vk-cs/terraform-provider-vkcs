@@ -58,7 +58,7 @@ func (r *secretResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			SecretFieldDataJSON: schema.StringAttribute{
 				Required:    true,
 				Sensitive:   true,
-				Description: "Data stored in the secret as a JSON object, represented as a string. Use `jsonencode` to encode a Terraform object. Refreshed from KMS when the resource is read.",
+				Description: "Data stored in the secret as a JSON object, represented as a string. Use `jsonencode` to encode a Terraform object.",
 			},
 			SecretFieldCreatedTime: schema.StringAttribute{
 				Computed:    true,
