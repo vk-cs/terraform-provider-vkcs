@@ -3,6 +3,7 @@ package kms_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -13,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	acctest_helper "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -152,17 +153,21 @@ func newKeysListDataSourceTestConfig(t *testing.T, status int, body string) *sec
 }
 
 func TestAccKMSKeysListDataSource_basic(t *testing.T) {
-	name := sdkacctest.RandomWithPrefix("tf-acc-kms-key")
+	name := "tfacc-kms-key-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccKMSPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		CheckDestroy:             testAccKMSCheckDestroy,
-		Steps: []resource.TestStep{{Config: testAccKMSKeyConfig(name, "aes256-gcm96", true) + `
-data "vkcs_kms_keys_list" "keys" { depends_on = [vkcs_kms_key.key] }
-`, Check: resource.ComposeTestCheckFunc(
+		Steps: []resource.TestStep{{Config: fmt.Sprintf(testAccKMSKeysListDataSourceBasic, name, "aes256-gcm96", true), Check: resource.ComposeTestCheckFunc(
 			resource.TestCheckResourceAttrSet("data.vkcs_kms_keys_list.keys", "id"),
 			resource.TestCheckResourceAttrSet("data.vkcs_kms_keys_list.keys", "keys_count"),
 			resource.TestCheckTypeSetElemAttr("data.vkcs_kms_keys_list.keys", "keys.*", name),
 		)}},
 	})
 }
+
+const testAccKMSKeysListDataSourceBasic = testAccKMSKeyResourceConfig + `
+data "vkcs_kms_keys_list" "keys" {
+  depends_on = [vkcs_kms_key.key]
+}
+`

@@ -3,6 +3,7 @@ package kms_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -13,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	acctest_helper "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -149,17 +150,8 @@ func newKeyEncryptDataSourceTestConfig(t *testing.T, status int, body string, tr
 
 // Both cryptographic data sources are exercised together to verify a real round trip.
 func TestAccKMSKeyEncryptDecryptDataSources_basic(t *testing.T) {
-	name := sdkacctest.RandomWithPrefix("tf-acc-kms-key")
-	config := testAccKMSKeyConfig(name, "aes256-gcm96", true) + `
-data "vkcs_kms_key_encrypt" "encrypted" {
-  key = vkcs_kms_key.key.name
-  plaintext = base64encode("acceptance-test plaintext")
-}
-data "vkcs_kms_key_decrypt" "decrypted" {
-  key = vkcs_kms_key.key.name
-  ciphertext = data.vkcs_kms_key_encrypt.encrypted.ciphertext
-}
-`
+	name := "tfacc-kms-key-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+	config := fmt.Sprintf(testAccKMSKeyEncryptDecryptDataSourcesBasic, name, "aes256-gcm96", true)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccKMSPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
@@ -172,3 +164,15 @@ data "vkcs_kms_key_decrypt" "decrypted" {
 		)}},
 	})
 }
+
+const testAccKMSKeyEncryptDecryptDataSourcesBasic = testAccKMSKeyResourceConfig + `
+data "vkcs_kms_key_encrypt" "encrypted" {
+  key       = vkcs_kms_key.key.name
+  plaintext = base64encode("acceptance-test plaintext")
+}
+
+data "vkcs_kms_key_decrypt" "decrypted" {
+  key        = vkcs_kms_key.key.name
+  ciphertext = data.vkcs_kms_key_encrypt.encrypted.ciphertext
+}
+`

@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	acctest_helper "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -167,7 +167,7 @@ func TestKMSSecretDataSourceRead_escapedPath(t *testing.T) {
 }
 
 func TestAccKMSSecretDataSource_basic(t *testing.T) {
-	name := sdkacctest.RandomWithPrefix("tf-acc-kms-secret")
+	name := "tfacc-kms-secret-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccKMSPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
@@ -189,9 +189,9 @@ func TestAccKMSSecretDataSource_basic(t *testing.T) {
 
 const testAccKMSSecretDataSourceBasic = `
 resource "vkcs_kms_secret" "secret" {
-  path = %q
+  path              = %q
   delete_protection = false
-  data_json = jsonencode({ password = "test-password" })
+  data_json         = jsonencode({ password = "test-password" })
 }
 
 data "vkcs_kms_secret" "secret" {
