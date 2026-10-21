@@ -59,7 +59,7 @@ func TestKMSSecretsListDataSourceRead(t *testing.T) {
 
 			ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
 			response := datasource.ReadResponse{State: d}
-			ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+			ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config(d)}, &response)
 			d = response.State
 			diags := response.Diagnostics
 			require.False(t, diags.HasError(), "%v", diags)
@@ -96,7 +96,7 @@ func TestKMSSecretsListDataSourceRead_errors(t *testing.T) {
 
 			ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
 			response := datasource.ReadResponse{State: d}
-			ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+			ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config(d)}, &response)
 			d = response.State
 			diags := response.Diagnostics
 			require.True(t, diags.HasError())
@@ -118,7 +118,7 @@ func TestKMSSecretsListDataSourceRead_clientError(t *testing.T) {
 
 	ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
 	response := datasource.ReadResponse{State: d}
-	ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+	ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config(d)}, &response)
 	d = response.State
 	diags := response.Diagnostics
 	require.True(t, diags.HasError())

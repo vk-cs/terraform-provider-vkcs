@@ -32,7 +32,7 @@ func TestKMSSecretDataSourceRead(t *testing.T) {
 	require.False(t, d.SetAttribute(context.Background(), path.Root("id"), "stale-id").HasError())
 	ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
 	response := datasource.ReadResponse{State: d}
-	ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+	ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config(d)}, &response)
 	d = response.State
 	diags := response.Diagnostics
 	require.False(t, diags.HasError(), "%v", diags)
@@ -77,7 +77,7 @@ func TestKMSSecretDataSourceRead_errors(t *testing.T) {
 
 			ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
 			response := datasource.ReadResponse{State: d}
-			ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+			ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config(d)}, &response)
 			d = response.State
 			diags := response.Diagnostics
 			require.True(t, diags.HasError())
@@ -99,7 +99,7 @@ func TestKMSSecretDataSourceRead_clientError(t *testing.T) {
 
 	ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
 	response := datasource.ReadResponse{State: d}
-	ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+	ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config(d)}, &response)
 	d = response.State
 	diags := response.Diagnostics
 	require.True(t, diags.HasError())
@@ -151,7 +151,7 @@ func TestKMSSecretDataSourceRead_escapedPath(t *testing.T) {
 	}, kmsResourceRequest{"GET", "secret/metadata/delete-protection/secret%20%2F%3F%23%25", "", 200, `{"delete_protection":false}`})
 	ds.(datasource.DataSourceWithConfigure).Configure(context.Background(), datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
 	response := datasource.ReadResponse{State: d}
-	ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: d.Schema, Raw: d.Raw}}, &response)
+	ds.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config(d)}, &response)
 	d = response.State
 	diags := response.Diagnostics
 	require.False(t, diags.HasError(), "%v", diags)

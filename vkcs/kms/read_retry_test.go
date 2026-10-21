@@ -59,7 +59,7 @@ func TestKMSReadRetries(t *testing.T) {
 						state := newTestState(t, tfsdk.State{Schema: schema.Schema}, tc.input)
 						endpoint.Configure(ctx, datasource.ConfigureRequest{ProviderData: config}, &datasource.ConfigureResponse{})
 						response := datasource.ReadResponse{State: state}
-						endpoint.Read(ctx, datasource.ReadRequest{Config: tfsdk.Config{Schema: state.Schema, Raw: state.Raw}}, &response)
+						endpoint.Read(ctx, datasource.ReadRequest{Config: tfsdk.Config(state)}, &response)
 						diags = response.Diagnostics
 					}
 					require.False(t, diags.HasError(), "%v", diags)
