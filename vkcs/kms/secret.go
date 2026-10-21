@@ -2,7 +2,9 @@ package kms
 
 import (
 	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/secrets"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func listSecrets(client *gophercloud.ServiceClient) ([]string, error) {
@@ -43,4 +45,40 @@ func setSecretDeleteProtection(client *gophercloud.ServiceClient, path string, o
 
 func deleteSecret(client *gophercloud.ServiceClient, path string) error {
 	return secrets.Delete(client, path).Extract()
+}
+
+// secretStateRefreshFunc polls existence and readiness, including unfinished operations.
+func secretStateRefreshFunc(client *gophercloud.ServiceClient, path string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		secret, err := getSecret(client, path)
+		if isOperationUnfinished(err) {
+			return secret, kmsStatePending, nil
+		}
+		if errutil.IsNotFound(err) {
+			return secret, kmsStateMissing, nil
+		}
+		if err != nil {
+			return nil, "", err
+		}
+		return secret, kmsStateReady, nil
+	}
+}
+
+func secretDeleteProtectionStateRefreshFunc(client *gophercloud.ServiceClient, path string, expected *bool) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		protection, err := getSecretDeleteProtection(client, path)
+		if isOperationUnfinished(err) {
+			return protection, kmsStatePending, nil
+		}
+		if errutil.IsNotFound(err) {
+			return protection, kmsStateMissing, nil
+		}
+		if err != nil {
+			return nil, "", err
+		}
+		if expected != nil && protection != *expected {
+			return protection, kmsStatePending, nil
+		}
+		return protection, kmsStateReady, nil
+	}
 }

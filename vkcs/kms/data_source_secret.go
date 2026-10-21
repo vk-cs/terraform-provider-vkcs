@@ -3,13 +3,13 @@ package kms
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/secrets"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 var _ datasource.DataSourceWithConfigure = (*secretDataSource)(nil)
@@ -87,31 +87,25 @@ func (r *secretDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	path := data.Path.ValueString()
 
-	var secret secrets.GetSecret
-	err = waitForKMSOperation(ctx, func() (bool, error) {
-		var err error
-		secret, err = getSecret(kmsV1Client, path)
-		if errutil.IsNotFound(err) {
-			return false, nil
-		}
-		return err == nil, err
-	})
+	result, err := kmsStateChangeConf(secretStateRefreshFunc(kmsV1Client, path), kmsStateReady).WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting secret", err.Error())
 		return
 	}
+	secret, ok := result.(secrets.GetSecret)
+	if !ok {
+		resp.Diagnostics.AddError("Unexpected KMS response type", fmt.Sprintf("Expected secrets.GetSecret, got %T", result))
+		return
+	}
 
-	var deleteProtection bool
-	err = waitForKMSOperation(ctx, func() (bool, error) {
-		var err error
-		deleteProtection, err = getSecretDeleteProtection(kmsV1Client, path)
-		if errutil.IsNotFound(err) {
-			return false, nil
-		}
-		return err == nil, err
-	})
+	protectionResult, err := kmsStateChangeConf(secretDeleteProtectionStateRefreshFunc(kmsV1Client, path, nil), kmsStateReady).WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting secret delete protection", err.Error())
+		return
+	}
+	deleteProtection, ok := protectionResult.(bool)
+	if !ok {
+		resp.Diagnostics.AddError("Unexpected KMS response type", fmt.Sprintf("Expected bool, got %T", protectionResult))
 		return
 	}
 

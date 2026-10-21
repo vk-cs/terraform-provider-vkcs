@@ -2,7 +2,7 @@ package kms
 
 import (
 	"context"
-	"time"
+	"fmt"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -98,15 +98,12 @@ func (r *keyResource) Create(ctx context.Context, req resource.CreateRequest, re
 	deletionAllowed := data.DeletionAllowed.ValueBool()
 
 	// We need to wait for the key to be ready, then set this flag
-	for range retriesCount {
-		_, err = updateKey(kmsV1Client, name, keys.UpdateOpts{
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		_, err := updateKey(kmsV1Client, name, keys.UpdateOpts{
 			DeletionAllowed: deletionAllowed,
 		})
-		if err == nil {
-			break
-		}
-		time.Sleep(defaultThreshold)
-	}
+		return err == nil, err
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating key configuration", err.Error())
 		return
@@ -137,17 +134,15 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 
 	name := data.Name.ValueString()
 
-	var key keys.GetKey
-	err = waitForKMSOperation(ctx, func() (bool, error) {
-		var err error
-		key, err = getKey(kmsV1Client, name)
-		if errutil.IsNotFound(err) {
-			return false, nil
-		}
-		return err == nil, err
-	})
+	result, err := kmsStateChangeConf(keyStateRefreshFunc(kmsV1Client, name, nil), kmsStateReady).WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting key", err.Error())
+		return
+	}
+
+	key, ok := result.(keys.GetKey)
+	if !ok {
+		resp.Diagnostics.AddError("Unexpected KMS response type", fmt.Sprintf("Expected keys.GetKey, got %T", result))
 		return
 	}
 
@@ -221,13 +216,7 @@ func (r *keyResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	err = waitForKMSOperation(ctx, func() (bool, error) {
-		_, err := getKey(kmsV1Client, name)
-		if errutil.IsNotFound(err) {
-			return true, nil
-		}
-		return false, err
-	})
+	_, err = kmsStateChangeConf(keyStateRefreshFunc(kmsV1Client, name, nil), kmsStateMissing).WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error waiting for key deletion", err.Error())
 	}
@@ -235,11 +224,6 @@ func (r *keyResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 
 // KMS accepts mutations before they become visible to subsequent reads.
 func waitForKey(ctx context.Context, client *gophercloud.ServiceClient, name string, deletionAllowed bool) error {
-	return waitForKMSOperation(ctx, func() (bool, error) {
-		key, err := getKey(client, name)
-		if errutil.IsNotFound(err) {
-			return false, nil
-		}
-		return err == nil && key.Data.DeletionAllowed == deletionAllowed, err
-	})
+	_, err := kmsStateChangeConf(keyStateRefreshFunc(client, name, &deletionAllowed), kmsStateReady).WaitForStateContext(ctx)
+	return err
 }

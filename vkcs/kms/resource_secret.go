@@ -3,7 +3,7 @@ package kms
 import (
 	"context"
 	"encoding/json"
-	"time"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -113,15 +113,12 @@ func (r *secretResource) Create(ctx context.Context, req resource.CreateRequest,
 	deleteProtection := data.DeleteProtection.ValueBool()
 
 	// We need to wait for the secret to be ready, then set this flag
-	for range retriesCount {
-		err = setSecretDeleteProtection(kmsV1Client, path, secrets.SetDeleteProtectionOpts{
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		err := setSecretDeleteProtection(kmsV1Client, path, secrets.SetDeleteProtectionOpts{
 			DeleteProtection: deleteProtection,
 		})
-		if err == nil {
-			break
-		}
-		time.Sleep(defaultThreshold)
-	}
+		return err == nil, err
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating secret delete protection", err.Error())
 		return
@@ -129,13 +126,7 @@ func (r *secretResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	data.ID = types.StringValue(path)
 
-	err = waitForKMSOperation(ctx, func() (bool, error) {
-		protection, err := getSecretDeleteProtection(kmsV1Client, path)
-		if errutil.IsNotFound(err) {
-			return false, nil
-		}
-		return err == nil && protection == deleteProtection, err
-	})
+	_, err = kmsStateChangeConf(secretDeleteProtectionStateRefreshFunc(kmsV1Client, path, &deleteProtection), kmsStateReady).WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error waiting for secret delete protection", err.Error())
 		return
@@ -164,17 +155,15 @@ func (r *secretResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	path := data.Path.ValueString()
 
-	var secret secrets.GetSecret
-	err = waitForKMSOperation(ctx, func() (bool, error) {
-		var err error
-		secret, err = getSecret(kmsV1Client, path)
-		if errutil.IsNotFound(err) {
-			return false, nil
-		}
-		return err == nil, err
-	})
+	result, err := kmsStateChangeConf(secretStateRefreshFunc(kmsV1Client, path), kmsStateReady).WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting secret", err.Error())
+		return
+	}
+
+	secret, ok := result.(secrets.GetSecret)
+	if !ok {
+		resp.Diagnostics.AddError("Unexpected KMS response type", fmt.Sprintf("Expected secrets.GetSecret, got %T", result))
 		return
 	}
 
@@ -184,17 +173,14 @@ func (r *secretResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	var deleteProtection bool
-	err = waitForKMSOperation(ctx, func() (bool, error) {
-		var err error
-		deleteProtection, err = getSecretDeleteProtection(kmsV1Client, path)
-		if errutil.IsNotFound(err) {
-			return false, nil
-		}
-		return err == nil, err
-	})
+	protectionResult, err := kmsStateChangeConf(secretDeleteProtectionStateRefreshFunc(kmsV1Client, path, nil), kmsStateReady).WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting secret delete protection", err.Error())
+		return
+	}
+	deleteProtection, ok := protectionResult.(bool)
+	if !ok {
+		resp.Diagnostics.AddError("Unexpected KMS response type", fmt.Sprintf("Expected bool, got %T", protectionResult))
 		return
 	}
 
@@ -245,27 +231,18 @@ func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest,
 	deleteProtection := data.DeleteProtection.ValueBool()
 
 	// We need to wait for the secret to be ready, then set this flag
-	for range retriesCount {
-		err = setSecretDeleteProtection(kmsV1Client, path, secrets.SetDeleteProtectionOpts{
+	err = waitForKMSOperation(ctx, func() (bool, error) {
+		err := setSecretDeleteProtection(kmsV1Client, path, secrets.SetDeleteProtectionOpts{
 			DeleteProtection: deleteProtection,
 		})
-		if err == nil {
-			break
-		}
-		time.Sleep(defaultThreshold)
-	}
+		return err == nil, err
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating secret delete protection", err.Error())
 		return
 	}
 
-	err = waitForKMSOperation(ctx, func() (bool, error) {
-		protection, err := getSecretDeleteProtection(kmsV1Client, path)
-		if errutil.IsNotFound(err) {
-			return false, nil
-		}
-		return err == nil && protection == deleteProtection, err
-	})
+	_, err = kmsStateChangeConf(secretDeleteProtectionStateRefreshFunc(kmsV1Client, path, &deleteProtection), kmsStateReady).WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error waiting for secret delete protection", err.Error())
 		return
@@ -306,13 +283,7 @@ func (r *secretResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	err = waitForKMSOperation(ctx, func() (bool, error) {
-		_, err := getSecret(kmsV1Client, path)
-		if errutil.IsNotFound(err) {
-			return true, nil
-		}
-		return false, err
-	})
+	_, err = kmsStateChangeConf(secretStateRefreshFunc(kmsV1Client, path), kmsStateMissing).WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error waiting for secret deletion", err.Error())
 	}

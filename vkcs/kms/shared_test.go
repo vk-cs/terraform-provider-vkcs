@@ -5,8 +5,10 @@ import (
 	"errors"
 	"testing"
 	"testing/synctest"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -49,5 +51,17 @@ func TestWaitForKMSOperation(t *testing.T) {
 			})
 			require.ErrorIs(t, err, context.Canceled)
 		})
+	})
+}
+
+func TestKMSStateChangeConfTimeout(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		conf := kmsStateChangeConf(func() (interface{}, string, error) {
+			return false, kmsStatePending, nil
+		}, kmsStateReady)
+		conf.Timeout = 10 * time.Second
+		_, err := conf.WaitForStateContext(context.Background())
+		var timeoutErr *retry.TimeoutError
+		require.ErrorAs(t, err, &timeoutErr)
 	})
 }

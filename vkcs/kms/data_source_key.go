@@ -2,13 +2,13 @@ package kms
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/keys"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 var _ datasource.DataSourceWithConfigure = (*keyDataSource)(nil)
@@ -75,17 +75,14 @@ func (r *keyDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 
 	name := data.Name.ValueString()
 
-	var key keys.GetKey
-	err = waitForKMSOperation(ctx, func() (bool, error) {
-		var err error
-		key, err = getKey(kmsV1Client, name)
-		if errutil.IsNotFound(err) {
-			return false, nil
-		}
-		return err == nil, err
-	})
+	result, err := kmsStateChangeConf(keyStateRefreshFunc(kmsV1Client, name, nil), kmsStateReady).WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error getting key", err.Error())
+		return
+	}
+	key, ok := result.(keys.GetKey)
+	if !ok {
+		resp.Diagnostics.AddError("Unexpected KMS response type", fmt.Sprintf("Expected keys.GetKey, got %T", result))
 		return
 	}
 

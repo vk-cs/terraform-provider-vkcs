@@ -2,7 +2,9 @@ package kms
 
 import (
 	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/keys"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func listKeys(client *gophercloud.ServiceClient) ([]string, error) {
@@ -59,4 +61,24 @@ func decrypt(client *gophercloud.ServiceClient, key string, ciphertext string) (
 		return "", err
 	}
 	return r, nil
+}
+
+// keyStateRefreshFunc polls existence and readiness, including unfinished operations.
+func keyStateRefreshFunc(client *gophercloud.ServiceClient, name string, deletionAllowed *bool) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		key, err := getKey(client, name)
+		if isOperationUnfinished(err) {
+			return key, kmsStatePending, nil
+		}
+		if errutil.IsNotFound(err) {
+			return key, kmsStateMissing, nil
+		}
+		if err != nil {
+			return nil, "", err
+		}
+		if deletionAllowed != nil && key.Data.DeletionAllowed != *deletionAllowed {
+			return key, kmsStatePending, nil
+		}
+		return key, kmsStateReady, nil
+	}
 }

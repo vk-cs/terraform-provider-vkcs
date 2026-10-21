@@ -245,11 +245,6 @@ func TestKMSKeyResourceWriteErrors(t *testing.T) {
 						request.status = 200
 					}
 					requests = append(requests, request)
-					if operation == "configure after create" {
-						for range 9 {
-							requests = append(requests, request)
-						}
-					}
 					config := newKMSResourceTestConfig(t, requests...)
 					r.(fwresource.ResourceWithConfigure).Configure(context.Background(), fwresource.ConfigureRequest{ProviderData: config}, &fwresource.ConfigureResponse{})
 					var diags diag.Diagnostics
