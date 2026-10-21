@@ -55,12 +55,14 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 				Description:   "Name of the KMS key. Changing this forces a new resource.",
 			},
 			"type": schema.StringAttribute{
+				Computed:      true,
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 				Default:       stringdefault.StaticString("aes256-gcm96"),
 				Description:   "Type of the KMS key: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, or `xchacha20-poly1305`. Defaults to `aes256-gcm96`. Changing this forces a new resource.",
 			},
 			"deletion_allowed": schema.BoolAttribute{
+				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 				Description: "Whether KMS allows the key to be deleted. Defaults to `false`. Set to `true` and apply before destroying the key.",

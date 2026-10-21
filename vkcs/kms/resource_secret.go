@@ -69,6 +69,7 @@ func (r *secretResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Description: "Current version of the secret returned in its metadata.",
 			},
 			"delete_protection": schema.BoolAttribute{
+				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(true),
 				Description: "Whether the secret is protected from deletion. Defaults to `true`. Set to `false` and apply before destroying the secret.",
