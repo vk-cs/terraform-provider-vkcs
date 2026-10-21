@@ -12,6 +12,8 @@ Resource representing KMS key
 
 Keys are protected from deletion by default. Before destroying a key, set `deletion_allowed = true` and apply the change.
 
+`type` and `deletion_allowed` are configurable. If omitted, they default to `aes256-gcm96` and `false`, respectively.
+
 ## Example Usage
 
 ```terraform
@@ -26,9 +28,9 @@ resource "vkcs_kms_key" "key" {
 
 - `name` **required** *string* &rarr; Name of the KMS key. Changing this forces a new resource.
 
-- `type` optional *string* &rarr; Type of the KMS key: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, or `xchacha20-poly1305`. Defaults to `aes256-gcm96`. Changing this forces a new resource.
+- `type` optional computed *string* &rarr; Type of the KMS key: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, or `xchacha20-poly1305`. Defaults to `aes256-gcm96`. Changing this forces a new resource.
 
-- `deletion_allowed` optional *boolean* &rarr; Whether KMS allows the key to be deleted. Defaults to `false`. Set to `true` and apply before destroying the key.
+- `deletion_allowed` optional computed *boolean* &rarr; Whether KMS allows the key to be deleted. Defaults to `false`. Set to `true` and apply before destroying the key.
 
 ## Attributes Reference
 

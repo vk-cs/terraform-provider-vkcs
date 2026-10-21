@@ -10,6 +10,8 @@ description: |-
 
 Data source containing list of KMS secrets
 
+This data source has no configurable arguments. `secrets` and `secrets_count` are computed when the data source is read.
+
 ## Example Usage
 
 ```terraform
@@ -24,14 +26,14 @@ output "kms_secrets" {
 
 ## Argument Reference
 
-No arguments are required. The following optional computed fields are populated when the data source is read; they do not filter the results.
-
-- `secrets` optional computed *list of* *string* &rarr; Paths of the secrets returned by KMS. An empty response produces an empty list.
-
-- `secrets_count` optional computed *number* &rarr; Number of secrets in the returned list.
+This data source has no configurable arguments.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
+
+- `secrets` *list of* *string* &rarr; Paths of the secrets returned by KMS. An empty response produces an empty list.
+
+- `secrets_count` *number* &rarr; Number of secrets in the returned list.
 
 - `id` *string* &rarr; Hexadecimal SHA-256 hash derived from the first ten returned entries (or all entries if fewer than ten) and the total entry count.

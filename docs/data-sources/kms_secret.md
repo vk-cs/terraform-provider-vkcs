@@ -10,7 +10,9 @@ description: |-
 
 A data source containing a KMS secret
 
-Secret values in `data_json` are stored in Terraform state. This field is not marked as sensitive in the schema.
+Secret values in `data_json` are marked as sensitive and are stored in Terraform state.
+
+Only `path` is configurable. `data_json`, `created_time`, `version`, and `delete_protection` are computed from KMS when the data source is read.
 
 ## Example Usage
 
@@ -29,16 +31,16 @@ output "password" {
 
 - `path` **required** *string* &rarr; Identifier (path) of the secret within the KMS secret store.
 
-- `data_json` optional *string* &rarr; Secret data as a JSON object, represented as a string and populated from KMS when the data source is read. Use `jsondecode` to access its fields.
-
-- `created_time` optional computed *string* &rarr; Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.
-
-- `version` optional computed *number* &rarr; Current version of the secret returned in its metadata. This field does not select a version to read.
-
-- `delete_protection` optional *boolean* &rarr; Whether the secret is protected from deletion, populated from KMS when the data source is read. This field does not change the deletion policy.
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
+
+- `data_json` sensitive *string* &rarr; Secret data as a JSON object, represented as a string and populated from KMS when the data source is read. Use `jsondecode` to access its fields.
+
+- `created_time` *string* &rarr; Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.
+
+- `version` *number* &rarr; Current version of the secret returned in its metadata. This field does not select a version to read.
+
+- `delete_protection` *boolean* &rarr; Whether the secret is protected from deletion.
 
 - `id` *string* &rarr; Path of the KMS secret.
