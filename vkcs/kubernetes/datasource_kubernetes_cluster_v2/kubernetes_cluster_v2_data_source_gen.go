@@ -109,8 +109,8 @@ func KubernetesClusterV2DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 						"type": schema.StringAttribute{
 							Computed:            true,
-							Description:         "The storage volume type used for this disk (e.g., `ceph-ssd`, `ceph-hdd`). Corresponds to the available volume types in the region.",
-							MarkdownDescription: "The storage volume type used for this disk (e.g., `ceph-ssd`, `ceph-hdd`). Corresponds to the available volume types in the region.",
+							Description:         "The storage volume type used for this disk (e.g., `ceph-ssd`). Corresponds to the available volume types in the region.",
+							MarkdownDescription: "The storage volume type used for this disk (e.g., `ceph-ssd`). Corresponds to the available volume types in the region.",
 						},
 					},
 					CustomType: MasterDisksType{

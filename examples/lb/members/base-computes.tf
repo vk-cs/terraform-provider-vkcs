@@ -7,6 +7,7 @@ resource "vkcs_compute_instance" "front_worker" {
     source_type      = "image"
     uuid             = data.vkcs_images_image.debian.id
     destination_type = "volume"
+    volume_type      = "ceph-ssd"
     volume_size      = 10
     # Must be set to delete volume after instance deletion
     # Otherwise you get "orphaned" volume with terraform
