@@ -46,6 +46,45 @@ func TestAccComputeInstance_basic(t *testing.T) {
 	})
 }
 
+func TestAccComputeInstance_resize(t *testing.T) {
+	var instance servers.Server
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceResizeBase),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					resource.TestCheckResourceAttrPair(
+						"vkcs_compute_instance.instance_1", "flavor_id",
+						"data.vkcs_compute_flavor.base", "id"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceResizeNewFlavor),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					resource.TestCheckResourceAttrPair(
+						"vkcs_compute_instance.instance_1", "flavor_id",
+						"data.vkcs_compute_flavor.base", "id"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceResizeBase),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					resource.TestCheckResourceAttrPair(
+						"vkcs_compute_instance.instance_1", "flavor_id",
+						"data.vkcs_compute_flavor.base", "id"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccComputeInstance_initialStateActive(t *testing.T) {
 	var instance servers.Server
 
@@ -157,6 +196,61 @@ func TestAccComputeInstance_initialShelve(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"vkcs_compute_instance.instance_1", "power_state", "active"),
 					testAccCheckComputeInstanceState(&instance, "active"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccComputeInstance_resizeShelvedOffloaded(t *testing.T) {
+	var instance servers.Server
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { acctest.AccTestPreCheck(t) },
+		ProviderFactories: acctest.AccTestProviders,
+		CheckDestroy:      testAccCheckComputeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceResizeShelvedOffloadedBase),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "power_state", "active"),
+					resource.TestCheckResourceAttrPair(
+						"vkcs_compute_instance.instance_1", "flavor_id",
+						"data.vkcs_compute_flavor.base", "id"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceResizeShelvedOffloaded),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "power_state", "shelved_offloaded"),
+					testAccCheckComputeInstanceState(&instance, "shelved_offloaded"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceResizeShelvedOffloadedNewFlavor),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "power_state", "shelved_offloaded"),
+					testAccCheckComputeInstanceState(&instance, "shelved_offloaded"),
+					resource.TestCheckResourceAttrPair(
+						"vkcs_compute_instance.instance_1", "flavor_id",
+						"data.vkcs_compute_flavor.base", "id"),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccComputeInstanceResizeShelvedOffloadedActive),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckComputeInstanceExists("vkcs_compute_instance.instance_1", &instance),
+					resource.TestCheckResourceAttr(
+						"vkcs_compute_instance.instance_1", "power_state", "active"),
+					resource.TestCheckResourceAttrPair(
+						"vkcs_compute_instance.instance_1", "flavor_id",
+						"data.vkcs_compute_flavor.base", "id"),
 				),
 			},
 		},
@@ -1238,6 +1332,146 @@ resource "vkcs_compute_instance" "instance_1" {
 	image_id = data.vkcs_images_image.base.id
 	flavor_id = data.vkcs_compute_flavor.base.id
   }
+`
+
+const testAccComputeInstanceResizeBase = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
+{{.BaseSecurityGroup}}
+
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_resize"
+  availability_zone = "{{.AvailabilityZone}}"
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
+  depends_on = [vkcs_networking_router_interface.base]
+}
+`
+
+const testAccComputeInstanceResizeNewFlavor = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseNewFlavor}}
+{{.BaseSecurityGroup}}
+
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_resize"
+  availability_zone = "{{.AvailabilityZone}}"
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  image_id = data.vkcs_images_image.base.id
+  flavor_id = data.vkcs_compute_flavor.base.id
+  depends_on = [vkcs_networking_router_interface.base]
+}
+`
+
+const testAccComputeInstanceResizeShelvedOffloadedBase = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
+{{.BaseSecurityGroup}}
+
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_resize_offloaded"
+  availability_zone = "{{.AvailabilityZone}}"
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  block_device {
+    source_type = "image"
+    uuid = data.vkcs_images_image.base.id
+    destination_type = "volume"
+    volume_size = 10
+    volume_type = "ceph-ssd"
+    delete_on_termination = true
+  }
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  depends_on = [vkcs_networking_router_interface.base]
+}
+`
+
+const testAccComputeInstanceResizeShelvedOffloaded = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseFlavor}}
+{{.BaseSecurityGroup}}
+
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_resize_offloaded"
+  availability_zone = "{{.AvailabilityZone}}"
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  block_device {
+    source_type = "image"
+    uuid = data.vkcs_images_image.base.id
+    destination_type = "volume"
+    volume_size = 10
+    volume_type = "ceph-ssd"
+    delete_on_termination = true
+  }
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  power_state = "shelved_offloaded"
+  depends_on = [vkcs_networking_router_interface.base]
+}
+`
+
+const testAccComputeInstanceResizeShelvedOffloadedNewFlavor = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseNewFlavor}}
+{{.BaseSecurityGroup}}
+
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_resize_offloaded"
+  availability_zone = "{{.AvailabilityZone}}"
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  block_device {
+    source_type = "image"
+    uuid = data.vkcs_images_image.base.id
+    destination_type = "volume"
+    volume_size = 10
+    volume_type = "ceph-ssd"
+    delete_on_termination = true
+  }
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  power_state = "shelved_offloaded"
+  depends_on = [vkcs_networking_router_interface.base]
+}
+`
+
+const testAccComputeInstanceResizeShelvedOffloadedActive = `
+{{.BaseNetwork}}
+{{.BaseImage}}
+{{.BaseNewFlavor}}
+{{.BaseSecurityGroup}}
+
+resource "vkcs_compute_instance" "instance_1" {
+  name = "instance_resize_offloaded"
+  availability_zone = "{{.AvailabilityZone}}"
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  block_device {
+    source_type = "image"
+    uuid = data.vkcs_images_image.base.id
+    destination_type = "volume"
+    volume_size = 10
+    volume_type = "ceph-ssd"
+    delete_on_termination = true
+  }
+  network {
+    uuid = vkcs_networking_network.base.id
+  }
+  depends_on = [vkcs_networking_router_interface.base]
+}
 `
 
 const testAccComputeInstanceChangeAZActiveZone0 = `

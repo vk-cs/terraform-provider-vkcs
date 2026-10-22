@@ -372,9 +372,9 @@ output "windows_password" {
 
 - `config_drive` optional *boolean* &rarr;  Whether to use the config_drive feature to configure the instance. Changing this creates a new server.
 
-- `flavor_id` optional *string* &rarr;  The flavor ID of the desired flavor for the server. Required if `flavor_name` is empty. Changing this resizes the existing server.
+- `flavor_id` optional *string* &rarr;  The flavor ID of the desired flavor for the server. Required if `flavor_name` is empty. Changing this resizes the existing server. The resize is considered complete when the server reports the target flavor and is in the ACTIVE, SHUTOFF or SHELVED_OFFLOADED state.
 
-- `flavor_name` optional *string* &rarr;  The name of the desired flavor for the server. Required if `flavor_id` is empty. Changing this resizes the existing server.
+- `flavor_name` optional *string* &rarr;  The name of the desired flavor for the server. Required if `flavor_id` is empty. Changing this resizes the existing server. The resize is considered complete when the server reports the target flavor and is in the ACTIVE, SHUTOFF or SHELVED_OFFLOADED state.
 
 - `force_delete` optional *boolean* &rarr;  Whether to force the compute instance to be forcefully deleted. This is useful for environments that have reclaim / soft deletion enabled.
 
@@ -428,7 +428,7 @@ output "windows_password" {
 
     - `get_password_data` optional *boolean* &rarr;  If true, wait for initial windows admin password to be generated and retrieve it. Use this attribute only for instances running Microsoft Windows. The password data is exported to the `password_data` attribute. The password will be generated only if you specify the instance `key_pair`. The password will be read only once when the instance is created.<br>**New since v0.9.3**.
 
-    - `ignore_resize_confirmation` optional *boolean* &rarr;  Boolean to control whether to ignore manual confirmation of the instance resizing.
+    - `ignore_resize_confirmation` optional *boolean* &rarr;  Boolean to control whether to ignore manual confirmation of the instance resizing. In VK Cloud resizes are confirmed automatically, so this option is not required and is kept for backward compatibility.
 
     - `stop_before_server_group_change` optional *boolean* &rarr;  If true, the provider stops an active instance before changing its server group membership via `server_group_id` and starts it back afterwards.
 
