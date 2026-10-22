@@ -215,21 +215,28 @@ func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	path := data.Path.ValueString()
 
-	dataJSON := data.DataJSON.ValueString()
+	data.CreatedTime = state.CreatedTime
+	data.Version = state.Version
+	if !data.DataJSON.Equal(state.DataJSON) {
+		dataJSON := data.DataJSON.ValueString()
 
-	secretData := make(map[string]any)
-	err = json.Unmarshal([]byte(dataJSON), &secretData)
-	if err != nil {
-		resp.Diagnostics.AddError("Error unmarshalling data", err.Error())
-		return
-	}
+		secretData := make(map[string]any)
+		err = json.Unmarshal([]byte(dataJSON), &secretData)
+		if err != nil {
+			resp.Diagnostics.AddError("Error unmarshalling data", err.Error())
+			return
+		}
 
-	secret, err := createOrUpdateSecret(kmsV1Client, path, secrets.CreateOrUpdateOpts{
-		Data: secretData,
-	})
-	if err != nil {
-		resp.Diagnostics.AddError("Error creating secret", err.Error())
-		return
+		secret, err := createOrUpdateSecret(kmsV1Client, path, secrets.CreateOrUpdateOpts{
+			Data: secretData,
+		})
+		if err != nil {
+			resp.Diagnostics.AddError("Error creating secret", err.Error())
+			return
+		}
+
+		data.CreatedTime = types.StringValue(secret.Data.CreatedTime.String())
+		data.Version = types.Int64Value(int64(secret.Data.Version))
 	}
 
 	deleteProtection := data.DeleteProtection.ValueBool()
@@ -253,10 +260,6 @@ func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest,
 		resp.Diagnostics.AddError("Error waiting for secret delete protection", err.Error())
 		return
 	}
-
-	data.CreatedTime = types.StringValue(secret.Data.CreatedTime.String())
-
-	data.Version = types.Int64Value(int64(secret.Data.Version))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
