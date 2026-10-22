@@ -1,12 +1,12 @@
 ---
 subcategory: "Key Management Service (KMS)"
 layout: "vkcs"
-page_title: "vkcs: vkcs_kms_secrets_list"
+page_title: "vkcs: vkcs_kms_secrets"
 description: |-
   List KMS secrets within VKCS.
 ---
 
-# vkcs_kms_secrets_list
+# vkcs_kms_secrets
 
 Data source containing list of KMS secrets
 
@@ -15,12 +15,12 @@ This data source has no configurable arguments. `secrets` and `secrets_count` ar
 ## Example Usage
 
 ```terraform
-data "vkcs_kms_secrets_list" "secrets" {
-  depends_on = [vkcs_kms_secret.secrets_list_secret_0, vkcs_kms_secret.secrets_list_secret_1]
+data "vkcs_kms_secrets" "secrets" {
+  depends_on = [vkcs_kms_secret.secrets_secret_0, vkcs_kms_secret.secrets_secret_1]
 }
 
 output "kms_secrets" {
-  value = data.vkcs_kms_secrets_list.secrets.secrets
+  value = data.vkcs_kms_secrets.secrets.secrets
 }
 ```
 

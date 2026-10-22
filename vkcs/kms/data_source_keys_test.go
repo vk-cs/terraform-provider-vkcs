@@ -22,7 +22,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 )
 
-func TestKMSKeysListDataSourceRead(t *testing.T) {
+func TestKMSKeysDataSourceRead(t *testing.T) {
 	for _, tc := range []struct {
 		name     string
 		body     string
@@ -49,8 +49,8 @@ func TestKMSKeysListDataSourceRead(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			config := newKeysListDataSourceTestConfig(t, http.StatusOK, tc.body)
-			ds := kms.NewKeysListDataSource()
+			config := newKeysDataSourceTestConfig(t, http.StatusOK, tc.body)
+			ds := kms.NewKeysDataSource()
 			var schema datasource.SchemaResponse
 			ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
 			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{
@@ -76,7 +76,7 @@ func TestKMSKeysListDataSourceRead(t *testing.T) {
 	}
 }
 
-func TestKMSKeysListDataSourceRead_errors(t *testing.T) {
+func TestKMSKeysDataSourceRead_errors(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
 		status int
@@ -87,8 +87,8 @@ func TestKMSKeysListDataSourceRead_errors(t *testing.T) {
 		{name: "invalid keys type", status: http.StatusOK, body: `{"data":{"keys":123}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			config := newKeysListDataSourceTestConfig(t, tc.status, tc.body)
-			ds := kms.NewKeysListDataSource()
+			config := newKeysDataSourceTestConfig(t, tc.status, tc.body)
+			ds := kms.NewKeysDataSource()
 			var schema datasource.SchemaResponse
 			ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
 			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, nil)
@@ -108,8 +108,8 @@ func TestKMSKeysListDataSourceRead_errors(t *testing.T) {
 	}
 }
 
-func TestKMSKeysListDataSourceRead_clientError(t *testing.T) {
-	ds := kms.NewKeysListDataSource()
+func TestKMSKeysDataSourceRead_clientError(t *testing.T) {
+	ds := kms.NewKeysDataSource()
 	var schema datasource.SchemaResponse
 	ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
 	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, nil)
@@ -129,7 +129,7 @@ func TestKMSKeysListDataSourceRead_clientError(t *testing.T) {
 	assert.Empty(t, attribute5.ValueString())
 }
 
-func newKeysListDataSourceTestConfig(t *testing.T, status int, body string) *secretDataSourceTestConfig {
+func newKeysDataSourceTestConfig(t *testing.T, status int, body string) *secretDataSourceTestConfig {
 	t.Helper()
 	calls := 0
 	t.Cleanup(func() { assert.Equal(t, 1, calls) })
@@ -152,22 +152,22 @@ func newKeysListDataSourceTestConfig(t *testing.T, status int, body string) *sec
 	}}
 }
 
-func TestAccKMSKeysListDataSource_basic(t *testing.T) {
+func TestAccKMSKeysDataSource_basic(t *testing.T) {
 	name := "tfacc-kms-key-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccKMSPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		CheckDestroy:             testAccKMSCheckDestroy,
-		Steps: []resource.TestStep{{Config: fmt.Sprintf(testAccKMSKeysListDataSourceBasic, name, "aes256-gcm96", true), Check: resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttrSet("data.vkcs_kms_keys_list.keys", "id"),
-			resource.TestCheckResourceAttrSet("data.vkcs_kms_keys_list.keys", "keys_count"),
-			resource.TestCheckTypeSetElemAttr("data.vkcs_kms_keys_list.keys", "keys.*", name),
+		Steps: []resource.TestStep{{Config: fmt.Sprintf(testAccKMSKeysDataSourceBasic, name, "aes256-gcm96", true), Check: resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttrSet("data.vkcs_kms_keys.keys", "id"),
+			resource.TestCheckResourceAttrSet("data.vkcs_kms_keys.keys", "keys_count"),
+			resource.TestCheckTypeSetElemAttr("data.vkcs_kms_keys.keys", "keys.*", name),
 		)}},
 	})
 }
 
-const testAccKMSKeysListDataSourceBasic = testAccKMSKeyResourceConfig + `
-data "vkcs_kms_keys_list" "keys" {
+const testAccKMSKeysDataSourceBasic = testAccKMSKeyResourceConfig + `
+data "vkcs_kms_keys" "keys" {
   depends_on = [vkcs_kms_key.key]
 }
 `

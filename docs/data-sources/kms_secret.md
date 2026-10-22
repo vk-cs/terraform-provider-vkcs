@@ -39,7 +39,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `created_time` *string* &rarr; Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.
 
-- `version` *number* &rarr; Current version of the secret returned in its metadata. This field does not select a version to read.
+- `version` *number* &rarr; Current version of the secret returned in its metadata.
 
 - `delete_protection` *boolean* &rarr; Whether the secret is protected from deletion.
 

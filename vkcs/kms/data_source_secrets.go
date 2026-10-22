@@ -15,33 +15,33 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
-var _ datasource.DataSourceWithConfigure = (*secretsListDataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*secretsDataSource)(nil)
 
-func NewSecretsListDataSource() datasource.DataSource {
-	return &secretsListDataSource{}
+func NewSecretsDataSource() datasource.DataSource {
+	return &secretsDataSource{}
 }
 
-type secretsListDataSource struct {
+type secretsDataSource struct {
 	config clients.Config
 }
 
-type secretsListDataSourceModel struct {
+type secretsDataSourceModel struct {
 	ID           types.String `tfsdk:"id"`
 	SecretsCount types.Int64  `tfsdk:"secrets_count"`
 	Secrets      types.List   `tfsdk:"secrets"`
 }
 
-func (r *secretsListDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_kms_secrets_list"
+func (r *secretsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_kms_secrets"
 }
 
-func (r *secretsListDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (r *secretsDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData != nil {
 		r.config = req.ProviderData.(clients.Config)
 	}
 }
 
-func (r *secretsListDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (r *secretsDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Data source containing list of KMS secrets",
 		Attributes: map[string]schema.Attribute{
@@ -59,8 +59,8 @@ func (r *secretsListDataSource) Schema(ctx context.Context, _ datasource.SchemaR
 	}
 }
 
-func (r *secretsListDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data secretsListDataSourceModel
+func (r *secretsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data secretsDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return

@@ -25,8 +25,8 @@ func TestKMSReadRetries(t *testing.T) {
 		{"key data source", kms.NewKeyDataSource(), map[string]interface{}{"name": "test-key"}, []kmsResourceRequest{{"GET", "transit/keys/test-key", "", 200, `{"data":{"name":"test-key","type":"aes256-gcm96"}}`}}},
 		{"secret resource", kms.NewSecretResource(), map[string]interface{}{"path": "test-secret"}, secretReadRetryRequests()},
 		{"secret data source", kms.NewSecretDataSource(), map[string]interface{}{"path": "test-secret"}, secretReadRetryRequests()},
-		{"keys list", kms.NewKeysListDataSource(), nil, []kmsResourceRequest{{"GET", "transit/keys", "", 200, `{"data":{"keys":["test-key"]}}`}}},
-		{"secrets list", kms.NewSecretsListDataSource(), nil, []kmsResourceRequest{{"GET", "secret/metadata/", "", 200, `{"data":{"keys":["test-secret"]}}`}}},
+		{"keys list", kms.NewKeysDataSource(), nil, []kmsResourceRequest{{"GET", "transit/keys", "", 200, `{"data":{"keys":["test-key"]}}`}}},
+		{"secrets list", kms.NewSecretsDataSource(), nil, []kmsResourceRequest{{"GET", "secret/metadata/", "", 200, `{"data":{"keys":["test-secret"]}}`}}},
 		{"encrypt", kms.NewKeyEncryptDataSource(), map[string]interface{}{"key": "test-key", "plaintext": "aGVsbG8="}, []kmsResourceRequest{{"POST", "transit/encrypt/test-key", `{"plaintext":"aGVsbG8="}`, 200, `{"data":{"ciphertext":"vault:v1:test"}}`}}},
 		{"decrypt", kms.NewKeyDecryptDataSource(), map[string]interface{}{"key": "test-key", "ciphertext": "vault:v1:test"}, []kmsResourceRequest{{"POST", "transit/decrypt/test-key", `{"ciphertext":"vault:v1:test"}`, 200, `{"data":{"plaintext":"aGVsbG8="}}`}}},
 	} {

@@ -15,33 +15,33 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
-var _ datasource.DataSourceWithConfigure = (*keysListDataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*keysDataSource)(nil)
 
-func NewKeysListDataSource() datasource.DataSource {
-	return &keysListDataSource{}
+func NewKeysDataSource() datasource.DataSource {
+	return &keysDataSource{}
 }
 
-type keysListDataSource struct {
+type keysDataSource struct {
 	config clients.Config
 }
 
-type keysListDataSourceModel struct {
+type keysDataSourceModel struct {
 	ID        types.String `tfsdk:"id"`
 	KeysCount types.Int64  `tfsdk:"keys_count"`
 	Keys      types.List   `tfsdk:"keys"`
 }
 
-func (r *keysListDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_kms_keys_list"
+func (r *keysDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_kms_keys"
 }
 
-func (r *keysListDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (r *keysDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData != nil {
 		r.config = req.ProviderData.(clients.Config)
 	}
 }
 
-func (r *keysListDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (r *keysDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Data source containing list of KMS keys",
 		Attributes: map[string]schema.Attribute{
@@ -59,8 +59,8 @@ func (r *keysListDataSource) Schema(ctx context.Context, _ datasource.SchemaRequ
 	}
 }
 
-func (r *keysListDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data keysListDataSourceModel
+func (r *keysDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data keysDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return

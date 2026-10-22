@@ -61,7 +61,7 @@ func (r *secretDataSource) Schema(ctx context.Context, _ datasource.SchemaReques
 			},
 			"version": schema.Int64Attribute{
 				Computed:    true,
-				Description: "Current version of the secret returned in its metadata. This field does not select a version to read.",
+				Description: "Current version of the secret returned in its metadata.",
 			},
 			"delete_protection": schema.BoolAttribute{
 				Computed:    true,

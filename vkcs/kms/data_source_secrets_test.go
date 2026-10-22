@@ -22,7 +22,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 )
 
-func TestKMSSecretsListDataSourceRead(t *testing.T) {
+func TestKMSSecretsDataSourceRead(t *testing.T) {
 	for _, tc := range []struct {
 		name        string
 		body        string
@@ -49,8 +49,8 @@ func TestKMSSecretsListDataSourceRead(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			config := newSecretsListDataSourceTestConfig(t, http.StatusOK, tc.body)
-			ds := kms.NewSecretsListDataSource()
+			config := newSecretsDataSourceTestConfig(t, http.StatusOK, tc.body)
+			ds := kms.NewSecretsDataSource()
 			var schema datasource.SchemaResponse
 			ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
 			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, map[string]interface{}{
@@ -76,7 +76,7 @@ func TestKMSSecretsListDataSourceRead(t *testing.T) {
 	}
 }
 
-func TestKMSSecretsListDataSourceRead_errors(t *testing.T) {
+func TestKMSSecretsDataSourceRead_errors(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
 		status int
@@ -88,8 +88,8 @@ func TestKMSSecretsListDataSourceRead_errors(t *testing.T) {
 		{name: "invalid key element", status: http.StatusOK, body: `{"data":{"keys":[123]}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			config := newSecretsListDataSourceTestConfig(t, tc.status, tc.body)
-			ds := kms.NewSecretsListDataSource()
+			config := newSecretsDataSourceTestConfig(t, tc.status, tc.body)
+			ds := kms.NewSecretsDataSource()
 			var schema datasource.SchemaResponse
 			ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
 			d := newTestState(t, tfsdk.State{Schema: schema.Schema}, nil)
@@ -109,8 +109,8 @@ func TestKMSSecretsListDataSourceRead_errors(t *testing.T) {
 	}
 }
 
-func TestKMSSecretsListDataSourceRead_clientError(t *testing.T) {
-	ds := kms.NewSecretsListDataSource()
+func TestKMSSecretsDataSourceRead_clientError(t *testing.T) {
+	ds := kms.NewSecretsDataSource()
 	var schema datasource.SchemaResponse
 	ds.Schema(context.Background(), datasource.SchemaRequest{}, &schema)
 	d := newTestState(t, tfsdk.State{Schema: schema.Schema}, nil)
@@ -130,7 +130,7 @@ func TestKMSSecretsListDataSourceRead_clientError(t *testing.T) {
 	assert.Empty(t, attribute5.ValueString())
 }
 
-func newSecretsListDataSourceTestConfig(t *testing.T, status int, body string) *secretDataSourceTestConfig {
+func newSecretsDataSourceTestConfig(t *testing.T, status int, body string) *secretDataSourceTestConfig {
 	t.Helper()
 	calls := 0
 	t.Cleanup(func() { assert.Equal(t, 1, calls, "expected one KMS request") })
@@ -154,7 +154,7 @@ func newSecretsListDataSourceTestConfig(t *testing.T, status int, body string) *
 	}}
 }
 
-func TestAccKMSSecretsListDataSource_basic(t *testing.T) {
+func TestAccKMSSecretsDataSource_basic(t *testing.T) {
 	name := "tfacc-kms-secret-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccKMSPreCheck(t) },
@@ -162,25 +162,25 @@ func TestAccKMSSecretsListDataSource_basic(t *testing.T) {
 		CheckDestroy:             testAccKMSCheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccKMSSecretsListDataSourceBasic, name),
+				Config: fmt.Sprintf(testAccKMSSecretsDataSourceBasic, name),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", "id"),
-					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets_list.secrets", "secrets_count"),
-					resource.TestCheckTypeSetElemAttr("data.vkcs_kms_secrets_list.secrets", "secrets.*", name),
+					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets.secrets", "id"),
+					resource.TestCheckResourceAttrSet("data.vkcs_kms_secrets.secrets", "secrets_count"),
+					resource.TestCheckTypeSetElemAttr("data.vkcs_kms_secrets.secrets", "secrets.*", name),
 				),
 			},
 		},
 	})
 }
 
-const testAccKMSSecretsListDataSourceBasic = `
+const testAccKMSSecretsDataSourceBasic = `
 resource "vkcs_kms_secret" "secret" {
   path              = %q
   delete_protection = false
   data_json         = jsonencode({ password = "test-password" })
 }
 
-data "vkcs_kms_secrets_list" "secrets" {
+data "vkcs_kms_secrets" "secrets" {
   depends_on = [vkcs_kms_secret.secret]
 }
 `

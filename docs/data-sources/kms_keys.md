@@ -1,12 +1,12 @@
 ---
 subcategory: "Key Management Service (KMS)"
 layout: "vkcs"
-page_title: "vkcs: vkcs_kms_keys_list"
+page_title: "vkcs: vkcs_kms_keys"
 description: |-
   List KMS keys within VKCS.
 ---
 
-# vkcs_kms_keys_list
+# vkcs_kms_keys
 
 Data source containing list of KMS keys
 
@@ -15,12 +15,12 @@ This data source has no configurable arguments. `keys` and `keys_count` are comp
 ## Example Usage
 
 ```terraform
-data "vkcs_kms_keys_list" "keys" {
-  depends_on = [vkcs_kms_key.keys_list_key_0, vkcs_kms_key.keys_list_key_1]
+data "vkcs_kms_keys" "keys" {
+  depends_on = [vkcs_kms_key.keys_key_0, vkcs_kms_key.keys_key_1]
 }
 
 output "kms_keys" {
-  value = data.vkcs_kms_keys_list.keys.keys
+  value = data.vkcs_kms_keys.keys.keys
 }
 ```
 

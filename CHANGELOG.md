@@ -16,10 +16,10 @@ description: |-
 - Added KMS data sources:
   - Secrets:
     - `vkcs_kms_secret`: get the secret by path
-    - `vkcs_kms_secrets_list`: get the list of secrets
+    - `vkcs_kms_secrets`: get the list of secrets
   - Keys:
     - `vkcs_kms_key`: get the key by name
-    - `vkcs_kms_keys_list`: get the list of keys
+    - `vkcs_kms_keys`: get the list of keys
     - `vkcs_kms_key_encrypt`: encrypt arbitrary data using a key
     - `vkcs_kms_key_decrypt`: decrypt data encrypted by KMS using a key
 
