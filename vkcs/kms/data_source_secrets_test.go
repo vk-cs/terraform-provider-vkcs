@@ -157,7 +157,7 @@ func newSecretsDataSourceTestConfig(t *testing.T, status int, body string) *secr
 func TestAccKMSSecretsDataSource_basic(t *testing.T) {
 	name := "tfacc-kms-secret-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccKMSPreCheck(t) },
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		CheckDestroy:             testAccKMSCheckDestroy,
 		Steps: []resource.TestStep{

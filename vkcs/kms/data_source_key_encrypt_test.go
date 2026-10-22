@@ -153,7 +153,7 @@ func TestAccKMSKeyEncryptDecryptDataSources_basic(t *testing.T) {
 	name := "tfacc-kms-key-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 	config := fmt.Sprintf(testAccKMSKeyEncryptDecryptDataSourcesBasic, name, "aes256-gcm96", true)
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccKMSPreCheck(t) },
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		CheckDestroy:             testAccKMSCheckDestroy,
 		Steps: []resource.TestStep{{Config: config, Check: resource.ComposeTestCheckFunc(

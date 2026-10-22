@@ -2,8 +2,6 @@ package kms_test
 
 import (
 	"fmt"
-	"os"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
@@ -11,17 +9,6 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/kms/v1/secrets"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
-
-func testAccKMSPreCheck(t *testing.T) {
-	t.Helper()
-	if os.Getenv("OS_PROJECT_ID") == "" {
-		t.Fatal("OS_PROJECT_ID must be set for KMS acceptance tests")
-	}
-	opts := clients.ConfigOpts{}
-	if _, err := opts.LoadAndValidate(); err != nil {
-		t.Fatalf("Invalid KMS acceptance credentials: %v", err)
-	}
-}
 
 // Verify deletion through the API, including resources created by data source tests.
 func testAccKMSCheckDestroy(state *terraform.State) error {

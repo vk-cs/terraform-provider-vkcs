@@ -155,7 +155,7 @@ func newKeysDataSourceTestConfig(t *testing.T, status int, body string) *secretD
 func TestAccKMSKeysDataSource_basic(t *testing.T) {
 	name := "tfacc-kms-key-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccKMSPreCheck(t) },
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		CheckDestroy:             testAccKMSCheckDestroy,
 		Steps: []resource.TestStep{{Config: fmt.Sprintf(testAccKMSKeysDataSourceBasic, name, "aes256-gcm96", true), Check: resource.ComposeTestCheckFunc(

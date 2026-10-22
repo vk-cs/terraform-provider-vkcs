@@ -348,7 +348,7 @@ func TestKMSKeyResourceDelete_pollError(t *testing.T) {
 func TestAccKMSKeyResource_basic(t *testing.T) {
 	name := "tfacc-kms-key-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccKMSPreCheck(t) },
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		CheckDestroy:             testAccKMSCheckDestroy,
 		Steps: []resource.TestStep{
@@ -371,7 +371,7 @@ func TestAccKMSKeyResource_keyTypes(t *testing.T) {
 		t.Run(keyType, func(t *testing.T) {
 			name := "tfacc-kms-key-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 			resource.Test(t, resource.TestCase{
-				PreCheck:                 func() { testAccKMSPreCheck(t) },
+				PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 				CheckDestroy:             testAccKMSCheckDestroy,
 				Steps:                    []resource.TestStep{{Config: fmt.Sprintf(testAccKMSKeyResourceConfig, name, keyType, true), Check: resource.TestCheckResourceAttr("vkcs_kms_key.key", "type", keyType)}},
