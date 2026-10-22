@@ -214,7 +214,6 @@ func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	path := data.Path.ValueString()
-
 	data.CreatedTime = state.CreatedTime
 	data.Version = state.Version
 	if !data.DataJSON.Equal(state.DataJSON) {
@@ -240,7 +239,6 @@ func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	deleteProtection := data.DeleteProtection.ValueBool()
-
 	if !data.DeleteProtection.Equal(state.DeleteProtection) {
 		// We need to wait for the secret to be ready, then set this flag
 		err = waitForKMSOperation(ctx, func() (bool, error) {
