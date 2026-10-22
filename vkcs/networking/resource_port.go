@@ -246,8 +246,8 @@ func ResourceNetworkingPort() *schema.Resource {
 			"port_security_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     true,
-				Description: "Whether to explicitly enable or disable port security on the port. Port Security is usually enabled by default, so omitting argument will usually result in a value of `true`. Setting this explicitly to `false` will disable port security. In order to disable port security, the port must not have any security groups. Valid values are `true` and `false`.",
+				Computed:    true,
+				Description: "Whether to explicitly enable or disable port security on the port. Port Security is usually enabled by default, so omitting argument will usually result in a value of `true`. If omitted, the argument is not sent to the API and the network's default is used. Setting this explicitly to `false` will disable port security. In order to disable port security, the port must not have any security groups. Valid values are `true` and `false`.",
 			},
 
 			"dns_name": {
@@ -334,11 +334,14 @@ func resourceNetworkingPortCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	// Add the port security attribute
-	pse := d.Get("port_security_enabled").(bool)
-	finalCreateOpts = portsecurity.PortCreateOptsExt{
-		CreateOptsBuilder:   finalCreateOpts,
-		PortSecurityEnabled: &pse,
+	// Add the port security attribute only if it was set. Sending it on a port
+	// in a network of another project is denied by the Networking API policy.
+	if v := d.GetRawConfig().GetAttr("port_security_enabled"); !v.IsNull() {
+		pse := v.True()
+		finalCreateOpts = portsecurity.PortCreateOptsExt{
+			CreateOptsBuilder:   finalCreateOpts,
+			PortSecurityEnabled: &pse,
+		}
 	}
 
 	if dnsName := d.Get("dns_name").(string); dnsName != "" {
