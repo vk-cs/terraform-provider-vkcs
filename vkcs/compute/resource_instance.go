@@ -799,8 +799,13 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "server"))
 	}
-	// Set the availability zone
-	d.Set("availability_zone", serverWithAZ.AvailabilityZone)
+	// Set the availability zone. Offloaded instances do not report it, so keep
+	// the value already known from the configuration or the previous read.
+	if serverWithAZ.AvailabilityZone != "" {
+		d.Set("availability_zone", serverWithAZ.AvailabilityZone)
+	} else {
+		log.Printf("[DEBUG] Availability zone is not reported for instance %s, keeping the current value", d.Id())
+	}
 
 	// Set the region
 	d.Set("region", util.GetRegion(d, config))
