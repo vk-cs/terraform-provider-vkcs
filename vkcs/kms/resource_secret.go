@@ -230,7 +230,7 @@ func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest,
 			Data: secretData,
 		})
 		if err != nil {
-			resp.Diagnostics.AddError("Error creating secret", err.Error())
+			resp.Diagnostics.AddError("Error updating secret", err.Error())
 			return
 		}
 
