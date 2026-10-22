@@ -80,7 +80,7 @@ func TestAccBlockStorageVolume_retype(t *testing.T) {
 				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeRetype),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"vkcs_blockstorage_volume.volume_1", "volume_type", "ceph-hdd"),
+						"vkcs_blockstorage_volume.volume_1", "volume_type", "ceph-ssd"),
 				),
 			},
 			{
@@ -121,10 +121,10 @@ func TestAccBlockStorageVolume_online_retype(t *testing.T) {
 		CheckDestroy:      testAccCheckBlockStorageVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeOnlineRetype, map[string]string{"VolumeType": "ceph-hdd"}),
+				Config: acctest.AccTestRenderConfig(testAccBlockStorageVolumeOnlineRetype, map[string]string{"VolumeType": "ceph-ssd"}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"vkcs_blockstorage_volume.bootable", "volume_type", "ceph-hdd"),
+						"vkcs_blockstorage_volume.bootable", "volume_type", "ceph-ssd"),
 				),
 			},
 			{
@@ -326,7 +326,7 @@ resource "vkcs_blockstorage_volume" "volume_1" {
   }
   size = 1
   availability_zone = "{{.AvailabilityZone}}"
-  volume_type = "ceph-hdd"
+  volume_type = "ceph-ssd"
 }
 `
 

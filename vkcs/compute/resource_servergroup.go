@@ -3,6 +3,7 @@ package compute
 import (
 	"context"
 	"log"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -112,7 +113,12 @@ func resourceComputeServerGroupRead(_ context.Context, d *schema.ResourceData, m
 
 	d.Set("name", sg.Name)
 	d.Set("policies", sg.Policies)
-	d.Set("members", sg.Members)
+
+	// The API returns members in a non-deterministic order, sort them to avoid
+	// spurious diffs.
+	members := sg.Members
+	sort.Strings(members)
+	d.Set("members", members)
 
 	d.Set("region", util.GetRegion(d, config))
 

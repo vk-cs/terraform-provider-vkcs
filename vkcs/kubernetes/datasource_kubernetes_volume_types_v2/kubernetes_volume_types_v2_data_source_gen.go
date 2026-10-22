@@ -34,8 +34,8 @@ func KubernetesVolumeTypesV2DataSourceSchema(ctx context.Context) schema.Schema 
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Computed:            true,
-							Description:         "The name of the volume type (e.g., \"ceph-hdd\", \"high-iops\").",
-							MarkdownDescription: "The name of the volume type (e.g., \"ceph-hdd\", \"high-iops\").",
+							Description:         "The name of the volume type (e.g., \"ceph-ssd\", \"high-iops\").",
+							MarkdownDescription: "The name of the volume type (e.g., \"ceph-ssd\", \"high-iops\").",
 						},
 						"zones": schema.SetAttribute{
 							ElementType:         types.StringType,

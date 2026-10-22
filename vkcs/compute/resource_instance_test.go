@@ -1324,7 +1324,7 @@ resource "vkcs_compute_instance" "instance_1" {
     boot_index = 0
     destination_type = "volume"
     delete_on_termination = true
-	volume_type = "ceph-hdd"
+	volume_type = "ceph-ssd"
   }
   network {
     uuid = vkcs_networking_network.base.id
@@ -1384,7 +1384,7 @@ resource "vkcs_compute_instance" "instance_1" {
     boot_index = 0
     destination_type = "volume"
     delete_on_termination = true
-	volume_type = "ceph-hdd"
+	volume_type = "ceph-ssd"
   }
   network {
     uuid = vkcs_networking_network.base.id
@@ -1410,6 +1410,7 @@ resource "vkcs_compute_instance" "instance_1" {
     volume_size = 4
     boot_index = 0
     destination_type = "volume"
+    volume_type = "ceph-ssd"
     delete_on_termination = true
   }
   network {
@@ -1440,6 +1441,7 @@ resource "vkcs_compute_instance" "instance_1" {
   block_device {
     source_type = "blank"
     destination_type = "volume"
+    volume_type = "ceph-ssd"
     volume_size = 1
     boot_index = 1
     delete_on_termination = true
@@ -1475,6 +1477,7 @@ resource "vkcs_compute_instance" "instance_1" {
   block_device {
     source_type = "blank"
     destination_type = "volume"
+    volume_type = "ceph-ssd"
     volume_size = 1
     boot_index = 1
 	delete_on_termination = true
@@ -1588,12 +1591,14 @@ resource "vkcs_compute_instance" "instance_1" {
   block_device {
     source_type = "blank"
     destination_type = "volume"
+    volume_type = "ceph-ssd"
     volume_size = 1
     delete_on_termination = true
   }
   block_device {
     source_type = "blank"
     destination_type = "volume"
+    volume_type = "ceph-ssd"
     volume_size = 1
     delete_on_termination = true
   }

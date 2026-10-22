@@ -171,7 +171,7 @@
                     "name": "type",
                     "string": {
                       "computed_optional_required": "computed",
-                      "description": "The storage volume type used for this disk (e.g., `ceph-ssd`, `ceph-hdd`). Corresponds to the available volume types in the region."
+                      "description": "The storage volume type used for this disk (e.g., `ceph-ssd`). Corresponds to the available volume types in the region."
                     }
                   },
                   {
@@ -508,7 +508,7 @@
                     "name": "name",
                     "string": {
                       "computed_optional_required": "computed",
-                      "description": "The name of the volume type (e.g., \"ceph-hdd\", \"high-iops\")."
+                      "description": "The name of the volume type (e.g., \"ceph-ssd\", \"high-iops\")."
                     }
                   },
                   {

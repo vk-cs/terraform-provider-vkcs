@@ -68,7 +68,7 @@ In addition to all arguments above, the following attributes are exported:
 - `master_disks`  *set* &rarr;  Information about the disks attached to master nodes (root, etcd, etcd-events). Each object contains `type` (disk type) and `size` (GB).
     - `size` *number* &rarr;  The allocated size of the disk in gigabytes (GB).
 
-    - `type` *string* &rarr;  The storage volume type used for this disk (e.g., `ceph-ssd`, `ceph-hdd`). Corresponds to the available volume types in the region.
+    - `type` *string* &rarr;  The storage volume type used for this disk (e.g., `ceph-ssd`). Corresponds to the available volume types in the region.
 
 
 - `master_flavor` *string* &rarr;  The flavor ID (VM type) used for master nodes.
