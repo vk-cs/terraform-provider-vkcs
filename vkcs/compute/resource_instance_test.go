@@ -46,7 +46,7 @@ func TestAccComputeInstance_basic(t *testing.T) {
 	})
 }
 
-func TestAccComputeInstance_resize(t *testing.T) {
+func TestAccComputeInstance_resize_big(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
@@ -202,7 +202,7 @@ func TestAccComputeInstance_initialShelve(t *testing.T) {
 	})
 }
 
-func TestAccComputeInstance_resizeShelvedOffloaded(t *testing.T) {
+func TestAccComputeInstance_resizeShelvedOffloaded_big(t *testing.T) {
 	var instance servers.Server
 
 	resource.Test(t, resource.TestCase{
