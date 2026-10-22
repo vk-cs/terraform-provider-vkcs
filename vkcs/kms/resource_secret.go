@@ -112,17 +112,19 @@ func (r *secretResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	deleteProtection := data.DeleteProtection.ValueBool()
-
-	// We need to wait for the secret to be ready, then set this flag
-	err = waitForKMSOperation(ctx, func() (bool, error) {
-		err := setSecretDeleteProtection(kmsV1Client, path, secrets.SetDeleteProtectionOpts{
-			DeleteProtection: deleteProtection,
+	// Deletion protection is true by default, so we only need to update it if it is false
+	if !deleteProtection {
+		// We need to wait for the secret to be ready, then set this flag
+		err = waitForKMSOperation(ctx, func() (bool, error) {
+			err := setSecretDeleteProtection(kmsV1Client, path, secrets.SetDeleteProtectionOpts{
+				DeleteProtection: deleteProtection,
+			})
+			return err == nil, err
 		})
-		return err == nil, err
-	})
-	if err != nil {
-		resp.Diagnostics.AddError("Error updating secret delete protection", err.Error())
-		return
+		if err != nil {
+			resp.Diagnostics.AddError("Error updating secret delete protection", err.Error())
+			return
+		}
 	}
 
 	data.ID = types.StringValue(path)
@@ -197,8 +199,9 @@ func (r *secretResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data secretResourceModel
+	var data, state secretResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -231,16 +234,18 @@ func (r *secretResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	deleteProtection := data.DeleteProtection.ValueBool()
 
-	// We need to wait for the secret to be ready, then set this flag
-	err = waitForKMSOperation(ctx, func() (bool, error) {
-		err := setSecretDeleteProtection(kmsV1Client, path, secrets.SetDeleteProtectionOpts{
-			DeleteProtection: deleteProtection,
+	if !data.DeleteProtection.Equal(state.DeleteProtection) {
+		// We need to wait for the secret to be ready, then set this flag
+		err = waitForKMSOperation(ctx, func() (bool, error) {
+			err := setSecretDeleteProtection(kmsV1Client, path, secrets.SetDeleteProtectionOpts{
+				DeleteProtection: deleteProtection,
+			})
+			return err == nil, err
 		})
-		return err == nil, err
-	})
-	if err != nil {
-		resp.Diagnostics.AddError("Error updating secret delete protection", err.Error())
-		return
+		if err != nil {
+			resp.Diagnostics.AddError("Error updating secret delete protection", err.Error())
+			return
+		}
 	}
 
 	_, err = kmsStateChangeConf(secretDeleteProtectionStateRefreshFunc(kmsV1Client, path, &deleteProtection), kmsStateReady).WaitForStateContext(ctx)
