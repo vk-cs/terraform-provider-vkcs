@@ -24,7 +24,7 @@ In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  A synthetic identifier set to "volume_types". This data source does not have a natural ID.
 
 - `volume_types`  *set* &rarr;  A set of available volume types with their supported availability zones.
-    - `name` *string* &rarr;  The name of the volume type (e.g., "ceph-hdd", "high-iops").
+    - `name` *string* &rarr;  The name of the volume type (e.g., "ceph-ssd", "high-iops").
 
     - `zones` *set of* *string* &rarr;  A set of availability zones where this volume type is available (e.g., ["PA2", "MS1", "ME1"]).
 

@@ -6,26 +6,12 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-
 #### v0.19.0 (unreleased)
-- Added KMS resources:
-  - Secrets:
-    - `vkcs_kms_secret`: a secret resouce
-  - Keys:
-    - `vkcs_kms_key`: a key resource
-- Added KMS data sources:
-  - Secrets:
-    - `vkcs_kms_secret`: get the secret by path
-    - `vkcs_kms_secrets`: get the list of secrets
-  - Keys:
-    - `vkcs_kms_key`: get the key by name
-    - `vkcs_kms_keys`: get the list of keys
-    - `vkcs_kms_key_encrypt`: encrypt arbitrary data using a key
-    - `vkcs_kms_key_decrypt`: decrypt data encrypted by KMS using a key
-
-#### v0.18.1 (unreleased)
 - Fix: protocol of vkcs_networking_secgroup_rule specified as a number causing recreation of the rule on Sprut SDN.
 - Fix: allow the creation of an insecure registry without dots in the domain name.
+- Add data source `vkcs_compute_servergroup`.
+- Add ability to manage server group membership of `vkcs_compute_instance` via the `server_group_id` argument without recreating the server.
+- Deprecate the `group` argument of `vkcs_compute_instance.scheduler_hints` in favor of `server_group_id`.
 
 #### v0.18.0
 - Add ability to change availability_zone of vkcs_compute_instance without recreating the instance.

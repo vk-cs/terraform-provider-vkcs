@@ -22,6 +22,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/extendedstatus"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/shelveunshelve"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/tags"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
@@ -39,6 +40,7 @@ import (
 	iimages "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/images"
 	isecgroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/secgroups"
 	iserveraz "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/serveraz"
+	iservergroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servergroups"
 	iservers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servers"
 	ishelveunshelve "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/shelveunshelve"
 	istartstop "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/startstop"
@@ -355,12 +357,20 @@ func ResourceComputeInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
-							Description: "A UUID of a Server Group. The instance will be placed into that group.",
+							Deprecated:  "Use the `server_group_id` argument instead.",
+							Description: "A UUID of a Server Group. The instance will be placed into that group. Deprecated, use `server_group_id` instead.",
 						},
 					},
 				},
 				Set:         resourceComputeSchedulerHintsHash,
 				Description: "Provide the Nova scheduler with hints on how the instance should be launched. The available hints are described below.",
+			},
+			"server_group_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"scheduler_hints"},
+				ValidateFunc:  validation.IsUUID,
+				Description:   "The UUID of a Server Group to place the instance into. Unlike `scheduler_hints.group`, this can be changed without recreating the server: the server is added to or removed from the group. Adding a server to a group requires the server to be stopped or shelved; enable `vendor_options.stop_before_server_group_change` to let the provider stop and start an active server automatically. Removing this argument removes the server from the group. Conflicts with `scheduler_hints`.",
 			},
 			"personality": {
 				Type:     schema.TypeSet,
@@ -447,6 +457,12 @@ func ResourceComputeInstance() *schema.Resource {
 							Optional:    true,
 							Default:     false,
 							Description: "If true, wait for initial windows admin password to be generated and retrieve it. Use this attribute only for instances running Microsoft Windows. The password data is exported to the `password_data` attribute. The password will be generated only if you specify the instance `key_pair`. The password will be read only once when the instance is created.",
+						},
+						"stop_before_server_group_change": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "If true, the provider stops an active instance before changing its server group membership via `server_group_id` and starts it back afterwards.",
 						},
 					},
 				},
@@ -594,6 +610,12 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		createOpts = &schedulerhints.CreateOptsExt{
 			CreateOptsBuilder: createOpts,
 			SchedulerHints:    schedulerHints,
+		}
+	} else if groupID := d.Get("server_group_id").(string); groupID != "" {
+		log.Printf("[DEBUG] server group: %s", groupID)
+		createOpts = &schedulerhints.CreateOptsExt{
+			CreateOptsBuilder: createOpts,
+			SchedulerHints:    schedulerhints.SchedulerHints{Group: groupID},
 		}
 	}
 
@@ -795,6 +817,10 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 		ComputeInstanceReadTags(d, instanceTags)
 	}
 
+	if err := resourceComputeInstanceReadServerGroup(computeClient, d); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 
@@ -930,6 +956,10 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 				return diag.Errorf("Error waiting for availability zone of instance (%s) to change: %s", d.Id(), err)
 			}
 		}
+	}
+
+	if diags := resourceComputeInstanceUpdateServerGroup(ctx, d, computeClient); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("metadata") {
@@ -1451,6 +1481,221 @@ func availabilityZoneName(az string) string {
 	}
 
 	return az
+}
+
+// resourceComputeInstanceReadServerGroup resolves the server group the instance
+// currently belongs to and stores it in the `server_group_id` attribute. It is
+// a no-op when the attribute is not set, so refreshing instances that do not
+// manage server group membership does not issue extra requests.
+func resourceComputeInstanceReadServerGroup(client *gophercloud.ServiceClient, d *schema.ResourceData) error {
+	groupID := d.Get("server_group_id").(string)
+	if groupID == "" {
+		return nil
+	}
+
+	sg, err := iservergroups.Get(client, groupID).Extract()
+	switch {
+	case err == nil:
+		if serverGroupHasMember(sg.Members, d.Id()) {
+			return nil
+		}
+	case errutil.IsNotFound(err):
+		// The group is gone; fall through and look the actual membership up.
+	default:
+		return fmt.Errorf("error retrieving server group %s: %w", groupID, err)
+	}
+
+	// The instance is not in the configured group. Find the group it actually
+	// belongs to so the next plan can reconcile the membership.
+	actualGroupID, err := findServerGroupByInstance(client, d.Id())
+	if err != nil {
+		return err
+	}
+
+	return d.Set("server_group_id", actualGroupID)
+}
+
+func findServerGroupByInstance(client *gophercloud.ServiceClient, instanceID string) (string, error) {
+	allPages, err := iservergroups.List(client, servergroups.ListOpts{}).AllPages()
+	if err != nil {
+		return "", fmt.Errorf("error listing server groups: %w", err)
+	}
+
+	groups, err := servergroups.ExtractServerGroups(allPages)
+	if err != nil {
+		return "", fmt.Errorf("error extracting server groups: %w", err)
+	}
+
+	for _, sg := range groups {
+		if serverGroupHasMember(sg.Members, instanceID) {
+			return sg.ID, nil
+		}
+	}
+
+	return "", nil
+}
+
+func serverGroupHasMember(members []string, instanceID string) bool {
+	for _, m := range members {
+		if m == instanceID {
+			return true
+		}
+	}
+
+	return false
+}
+
+func resourceComputeInstanceUpdateServerGroup(ctx context.Context, d *schema.ResourceData, client *gophercloud.ServiceClient) diag.Diagnostics {
+	if !d.HasChange("server_group_id") {
+		return nil
+	}
+
+	oldGroupRaw, newGroupRaw := d.GetChange("server_group_id")
+	oldGroup := oldGroupRaw.(string)
+	newGroup := newGroupRaw.(string)
+
+	if oldGroup == newGroup {
+		return nil
+	}
+
+	log.Printf("[DEBUG] Changing server group of instance %s from %q to %q", d.Id(), oldGroup, newGroup)
+
+	addNeeded := newGroup != ""
+	if addNeeded {
+		// Keep the operation idempotent: the instance may already be a member
+		// of the target group (e.g. it was added outside of Terraform).
+		sg, err := iservergroups.Get(client, newGroup).Extract()
+		if err == nil {
+			addNeeded = !serverGroupHasMember(sg.Members, d.Id())
+		} else if !errutil.IsNotFound(err) {
+			return diag.Errorf("Error retrieving server group %s: %s", newGroup, err)
+		}
+	}
+
+	// Nova only allows adding stopped or shelved servers to a group, so make
+	// sure the instance is in an addable state before mutating membership.
+	var stopAndRestart bool
+	if addNeeded {
+		server, err := iservers.Get(client, d.Id()).Extract()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		switch strings.ToLower(server.Status) {
+		case "shutoff", "shelved", "shelved_offloaded":
+			// already addable, nothing to do
+		case "active":
+			if !shouldStopBeforeServerGroupChange(d.Get("vendor_options").(*schema.Set)) {
+				return diag.Errorf("Cannot add instance %s to server group %s while it is active: stop or shelve the server first, or enable `vendor_options.stop_before_server_group_change`", d.Id(), newGroup)
+			}
+			if err := stopComputeInstance(ctx, d, client); err != nil {
+				return diag.FromErr(err)
+			}
+			stopAndRestart = true
+		default:
+			return diag.Errorf("Cannot add instance %s to server group %s: instance state is %q, but only stopped or shelved servers can be added to a server group", d.Id(), newGroup, server.Status)
+		}
+	}
+
+	// Remove the instance from the old group first: nova rejects adding a
+	// server that still belongs to another group.
+	if oldGroup != "" && oldGroup != newGroup {
+		if err := iservergroups.RemoveMember(client, oldGroup, d.Id()).ExtractErr(); err != nil && !errutil.IsNotFound(err) {
+			if stopAndRestart {
+				restartComputeInstance(ctx, d, client)
+			}
+			return diag.Errorf("Error removing instance %s from server group %s: %s", d.Id(), oldGroup, err)
+		}
+	}
+
+	if addNeeded {
+		if err := iservergroups.AddMember(client, newGroup, d.Id()).ExtractErr(); err != nil {
+			// Best-effort restore of the previous membership so a failed move
+			// does not leave the instance without a group.
+			if oldGroup != "" && oldGroup != newGroup {
+				if rbErr := iservergroups.AddMember(client, oldGroup, d.Id()).ExtractErr(); rbErr != nil {
+					log.Printf("[DEBUG] Failed to restore instance %s membership in server group %s: %s", d.Id(), oldGroup, rbErr)
+				}
+			}
+			if stopAndRestart {
+				restartComputeInstance(ctx, d, client)
+			}
+			return diag.Errorf("Error adding instance %s to server group %s: %s", d.Id(), newGroup, err)
+		}
+	}
+
+	if stopAndRestart {
+		if err := startComputeInstance(ctx, d, client); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return nil
+}
+
+func shouldStopBeforeServerGroupChange(vendorOptionsRaw *schema.Set) bool {
+	if vendorOptionsRaw.Len() == 0 {
+		return false
+	}
+
+	vendorOptions := util.ExpandVendorOptions(vendorOptionsRaw.List())
+	stop, _ := vendorOptions["stop_before_server_group_change"].(bool)
+
+	return stop
+}
+
+func stopComputeInstance(ctx context.Context, d *schema.ResourceData, client *gophercloud.ServiceClient) error {
+	if err := istartstop.Stop(client, d.Id()).ExtractErr(); err != nil {
+		return fmt.Errorf("error stopping VKCS instance: %w", err)
+	}
+
+	stateConf := &retry.StateChangeConf{
+		Target:     []string{"SHUTOFF"},
+		Refresh:    ServerStateRefreshFunc(client, d.Id()),
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+		return fmt.Errorf("error waiting for VKCS instance to become shutoff: %w", err)
+	}
+
+	return nil
+}
+
+// startComputeInstance starts the instance back and waits until it is active,
+// unless the configured power_state is not active.
+func startComputeInstance(ctx context.Context, d *schema.ResourceData, client *gophercloud.ServiceClient) error {
+	switch strings.ToLower(d.Get("power_state").(string)) {
+	case "shutoff", "shelved_offloaded":
+		return nil
+	}
+
+	if err := istartstop.Start(client, d.Id()).ExtractErr(); err != nil {
+		return fmt.Errorf("error starting VKCS instance: %w", err)
+	}
+
+	stateConf := &retry.StateChangeConf{
+		Target:     []string{"ACTIVE"},
+		Refresh:    ServerStateRefreshFunc(client, d.Id()),
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+		return fmt.Errorf("error waiting for VKCS instance to become active: %w", err)
+	}
+
+	return nil
+}
+
+// restartComputeInstance is a best-effort start used on error paths.
+func restartComputeInstance(ctx context.Context, d *schema.ResourceData, client *gophercloud.ServiceClient) {
+	if err := startComputeInstance(ctx, d, client); err != nil {
+		log.Printf("[DEBUG] Failed to start instance %s after a server group change error: %s", d.Id(), err)
+	}
 }
 
 func resourceInstanceSecGroupsV2(d *schema.ResourceData) []string {

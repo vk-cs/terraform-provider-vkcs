@@ -36,6 +36,7 @@ resource "vkcs_compute_instance" "vm_sprut" {
     source_type           = "image"
     uuid                  = data.vkcs_images_image.image.id
     destination_type      = "volume"
+    volume_type           = "ceph-ssd"
     volume_size           = 11
     delete_on_termination = true
   }
