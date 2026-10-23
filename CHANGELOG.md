@@ -12,6 +12,7 @@ description: |-
 - Add data source `vkcs_compute_servergroup`.
 - Add ability to manage server group membership of `vkcs_compute_instance` via the `server_group_id` argument without recreating the server.
 - Deprecate the `group` argument of `vkcs_compute_instance.scheduler_hints` in favor of `server_group_id`.
+- Add support for KMS service (secrets and keys)
 
 #### v0.18.0
 - Add ability to change availability_zone of vkcs_compute_instance without recreating the instance.
