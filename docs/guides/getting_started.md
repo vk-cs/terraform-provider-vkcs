@@ -19,7 +19,7 @@ provider "vkcs" {
     username   = "some_user"
     password   = "s3cr3t"
     project_id = "some_project_id"
-  }
+  
 }
 ```
 
