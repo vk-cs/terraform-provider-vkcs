@@ -85,6 +85,11 @@
               "optional": true,
               "description": "Key Manager API custom endpoint."
             },
+            "kms": {
+              "type": "TypeString",
+              "optional": true,
+              "description": "KMS API custom endpoint."
+            },
             "load_balancer": {
               "type": "TypeString",
               "optional": true,
@@ -751,13 +756,13 @@
           "flavor_id": {
             "type": "TypeString",
             "optional": true,
-            "description": "The flavor ID of the desired flavor for the server. Required if `flavor_name` is empty. Changing this resizes the existing server.",
+            "description": "The flavor ID of the desired flavor for the server. Required if `flavor_name` is empty. Changing this resizes the existing server. The resize is considered complete when the server reports the target flavor and is in the ACTIVE, SHUTOFF or SHELVED_OFFLOADED state.",
             "computed": true
           },
           "flavor_name": {
             "type": "TypeString",
             "optional": true,
-            "description": "The name of the desired flavor for the server. Required if `flavor_id` is empty. Changing this resizes the existing server.",
+            "description": "The name of the desired flavor for the server. Required if `flavor_id` is empty. Changing this resizes the existing server. The resize is considered complete when the server reports the target flavor and is in the ACTIVE, SHUTOFF or SHELVED_OFFLOADED state.",
             "computed": true
           },
           "force_delete": {
@@ -976,7 +981,7 @@
                   "type": "TypeBool",
                   "optional": true,
                   "default": false,
-                  "description": "Boolean to control whether to ignore manual confirmation of the instance resizing."
+                  "description": "Boolean to control whether to ignore manual confirmation of the instance resizing. In VK Cloud resizes are confirmed automatically, so this option is not required and is kept for backward compatibility."
                 },
                 "stop_before_server_group_change": {
                   "type": "TypeBool",
@@ -3933,6 +3938,71 @@
           "update": 30
         },
         "description": "Manages a key secret resource within VKCS.\n\n~\u003e **Important Security Notice** The payload of this resource will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html)."
+      },
+      "vkcs_kms_key": {
+        "schema": {
+          "deletion_allowed": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Whether KMS allows the key to be deleted. Defaults to `false`. Set to `true` and apply before destroying the key.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "Identifier of the KMS key",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Name of the KMS key. Changing this forces a new resource."
+          },
+          "type": {
+            "type": "TypeString",
+            "optional": true,
+            "description": "Type of the KMS key: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, or `xchacha20-poly1305`. Defaults to `aes256-gcm96`. Changing this forces a new resource.",
+            "computed": true
+          }
+        },
+        "description": "Resource representing KMS key",
+        "new_since": "v0.19.0"
+      },
+      "vkcs_kms_secret": {
+        "schema": {
+          "created_time": {
+            "type": "TypeString",
+            "description": "Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.",
+            "computed": true
+          },
+          "data_json": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Data stored in the secret as a JSON object, represented as a string. Use `jsonencode` to encode a Terraform object."
+          },
+          "delete_protection": {
+            "type": "TypeBool",
+            "optional": true,
+            "description": "Whether the secret is protected from deletion. Defaults to `true`. Set to `false` and apply before destroying the secret.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "Identifier of the KMS secret",
+            "computed": true
+          },
+          "path": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Identifier (path) of the secret within the KMS secret store. Changing this forces a new resource."
+          },
+          "version": {
+            "type": "TypeInt",
+            "description": "Current version of the secret returned in its metadata.",
+            "computed": true
+          }
+        },
+        "description": "Resource representing KMS secret",
+        "new_since": "v0.19.0"
       },
       "vkcs_kubernetes_addon": {
         "schema": {
@@ -10151,6 +10221,168 @@
           }
         },
         "description": "Use this data source to get the ID and the payload of an available Key secret\n\n~\u003e **Important Security Notice** The payload of this data source will be stored *unencrypted* in your Terraform state file. **Use of this resource for production deployments is *not* recommended**. [Read more about sensitive data in state](https://www.terraform.io/docs/language/state/sensitive-data.html)."
+      },
+      "vkcs_kms_key": {
+        "schema": {
+          "deletion_allowed": {
+            "type": "TypeBool",
+            "description": "Whether KMS allows the key to be deleted.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "Identifier of the KMS key",
+            "computed": true
+          },
+          "name": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Name of the KMS key to read."
+          },
+          "type": {
+            "type": "TypeString",
+            "description": "Type of the key: `aes128-gcm96`, `aes256-gcm96`, `chacha20-poly1305`, or `xchacha20-poly1305`.",
+            "computed": true
+          }
+        },
+        "description": "Data source containing a KMS key",
+        "new_since": "v0.19.0"
+      },
+      "vkcs_kms_key_decrypt": {
+        "schema": {
+          "ciphertext": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Encrypted data"
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "Identifier of the KMS key decrypt",
+            "computed": true
+          },
+          "key": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Key used to decrypt data"
+          },
+          "plaintext": {
+            "type": "TypeString",
+            "description": "Resulting decrypted data encoded in base64",
+            "computed": true
+          }
+        },
+        "description": "Data source containing decrypt result by KMS key",
+        "new_since": "v0.19.0"
+      },
+      "vkcs_kms_key_encrypt": {
+        "schema": {
+          "ciphertext": {
+            "type": "TypeString",
+            "description": "Resulting encrypted data",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "Identifier of the KMS key encrypt",
+            "computed": true
+          },
+          "key": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Key used to encrypt data"
+          },
+          "plaintext": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Data to encrypt encoded in base64"
+          }
+        },
+        "description": "Data source containing encrypt result by KMS key",
+        "new_since": "v0.19.0"
+      },
+      "vkcs_kms_keys": {
+        "schema": {
+          "id": {
+            "type": "TypeString",
+            "description": "Identifier of the KMS keys list",
+            "computed": true
+          },
+          "keys": {
+            "type": "TypeList",
+            "description": "List of keys' names",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "keys_count": {
+            "type": "TypeInt",
+            "description": "Number of keys in list",
+            "computed": true
+          }
+        },
+        "description": "Data source containing list of KMS keys",
+        "new_since": "v0.19.0"
+      },
+      "vkcs_kms_secret": {
+        "schema": {
+          "created_time": {
+            "type": "TypeString",
+            "description": "Creation time returned in the secret metadata, formatted as a Go time string, for example `2026-09-01 10:00:00 +0000 UTC`.",
+            "computed": true
+          },
+          "data_json": {
+            "type": "TypeString",
+            "description": "Secret data as a JSON object, represented as a string and populated from KMS when the data source is read. Use `jsondecode` to access its fields.",
+            "computed": true
+          },
+          "delete_protection": {
+            "type": "TypeBool",
+            "description": "Whether the secret is protected from deletion.",
+            "computed": true
+          },
+          "id": {
+            "type": "TypeString",
+            "description": "Identifier of the KMS secret",
+            "computed": true
+          },
+          "path": {
+            "type": "TypeString",
+            "required": true,
+            "description": "Identifier (path) of the secret within the KMS secret store."
+          },
+          "version": {
+            "type": "TypeInt",
+            "description": "Current version of the secret returned in its metadata.",
+            "computed": true
+          }
+        },
+        "description": "Data source containing a KMS secret",
+        "new_since": "v0.19.0"
+      },
+      "vkcs_kms_secrets": {
+        "schema": {
+          "id": {
+            "type": "TypeString",
+            "description": "Identifier of the KMS secrets list",
+            "computed": true
+          },
+          "secrets": {
+            "type": "TypeList",
+            "description": "List of keys' paths",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            }
+          },
+          "secrets_count": {
+            "type": "TypeInt",
+            "description": "Number of secrets in list",
+            "computed": true
+          }
+        },
+        "description": "Data source containing list of KMS secrets",
+        "new_since": "v0.19.0"
       },
       "vkcs_kubernetes_addon": {
         "schema": {
