@@ -7,6 +7,7 @@ description: |-
 
 # VKCS Provider's changelog
 #### v0.19.0 (unreleased)
+- Fix: `vkcs_compute_instance` resize with automatic confirmation in VK Cloud, including servers in the `shelved_offloaded` state.
 - Fix: protocol of vkcs_networking_secgroup_rule specified as a number causing recreation of the rule on Sprut SDN.
 - Fix: allow the creation of an insecure registry without dots in the domain name.
 - Add data source `vkcs_compute_servergroup`.

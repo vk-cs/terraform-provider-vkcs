@@ -102,14 +102,14 @@ func ResourceComputeInstance() *schema.Resource {
 				Optional:    true,
 				ForceNew:    false,
 				Computed:    true,
-				Description: "The flavor ID of the desired flavor for the server. Required if `flavor_name` is empty. Changing this resizes the existing server.",
+				Description: "The flavor ID of the desired flavor for the server. Required if `flavor_name` is empty. Changing this resizes the existing server. The resize is considered complete when the server reports the target flavor and is in the ACTIVE, SHUTOFF or SHELVED_OFFLOADED state.",
 			},
 			"flavor_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    false,
 				Computed:    true,
-				Description: "The name of the desired flavor for the server. Required if `flavor_id` is empty. Changing this resizes the existing server.",
+				Description: "The name of the desired flavor for the server. Required if `flavor_id` is empty. Changing this resizes the existing server. The resize is considered complete when the server reports the target flavor and is in the ACTIVE, SHUTOFF or SHELVED_OFFLOADED state.",
 			},
 			"user_data": {
 				Type:     schema.TypeString,
@@ -444,7 +444,7 @@ func ResourceComputeInstance() *schema.Resource {
 							Type:        schema.TypeBool,
 							Default:     false,
 							Optional:    true,
-							Description: "Boolean to control whether to ignore manual confirmation of the instance resizing.",
+							Description: "Boolean to control whether to ignore manual confirmation of the instance resizing. In VK Cloud resizes are confirmed automatically, so this option is not required and is kept for backward compatibility.",
 						},
 						"detach_ports_before_destroy": {
 							Type:        schema.TypeBool,
@@ -799,8 +799,13 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "server"))
 	}
-	// Set the availability zone
-	d.Set("availability_zone", serverWithAZ.AvailabilityZone)
+	// Set the availability zone. Offloaded instances do not report it, so keep
+	// the value already known from the configuration or the previous read.
+	if serverWithAZ.AvailabilityZone != "" {
+		d.Set("availability_zone", serverWithAZ.AvailabilityZone)
+	} else {
+		log.Printf("[DEBUG] Availability zone is not reported for instance %s, keeping the current value", d.Id())
+	}
 
 	// Set the region
 	d.Set("region", util.GetRegion(d, config))
@@ -1065,77 +1070,56 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 
 		var newFlavorID string
 		var err error
-		if d.HasChange("flavor_id") {
+		flavorName, flavorNameConfigured := configuredFlavorName(d)
+		switch {
+		case flavorNameConfigured && d.HasChange("flavor_name"):
+			newFlavorID, err = flavorsutils.IDFromName(computeClient, flavorName)
+		case d.HasChange("flavor_id"):
 			newFlavorID = d.Get("flavor_id").(string)
-		} else {
+		case flavorNameConfigured:
+			newFlavorID, err = flavorsutils.IDFromName(computeClient, flavorName)
+		default:
 			newFlavorName := d.Get("flavor_name").(string)
 			newFlavorID, err = flavorsutils.IDFromName(computeClient, newFlavorName)
-			if err != nil {
-				return diag.FromErr(err)
-			}
 		}
-
-		resizeOpts := &servers.ResizeOpts{
-			FlavorRef: newFlavorID,
-		}
-		log.Printf("[DEBUG] Resize configuration: %#v", resizeOpts)
-		err = iservers.Resize(computeClient, d.Id(), resizeOpts).ExtractErr()
 		if err != nil {
-			return diag.Errorf("Error resizing VKCS server: %s", err)
+			return diag.FromErr(err)
 		}
 
-		// Wait for the instance to finish resizing.
-		log.Printf("[DEBUG] Waiting for instance (%s) to finish resizing", d.Id())
+		server, err := iservers.Get(computeClient, d.Id()).Extract()
+		if err != nil {
+			return diag.Errorf("Error retrieving VKCS server %s: %s", d.Id(), err)
+		}
 
-		// Resize instance without confirmation if specified by user.
-		if ignoreResizeConfirmation {
-			stateConf := &retry.StateChangeConf{
-				Pending:    []string{"RESIZE", "VERIFY_RESIZE"},
-				Target:     []string{"ACTIVE", "SHUTOFF"},
-				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
-				Timeout:    d.Timeout(schema.TimeoutUpdate),
-				Delay:      10 * time.Second,
-				MinTimeout: 3 * time.Second,
+		currentFlavorID, _ := server.Flavor["id"].(string)
+		needsWait := true
+		if currentFlavorID == newFlavorID {
+			switch server.Status {
+			case "ACTIVE", "SHUTOFF", "SHELVED_OFFLOADED":
+				needsWait = false
 			}
+		}
 
-			_, err = stateConf.WaitForStateContext(ctx)
-			if err != nil {
-				return diag.Errorf("Error waiting for instance (%s) to resize: %s", d.Id(), err)
-			}
+		if currentFlavorID == newFlavorID {
+			// The resize may have already completed, for example when a previous
+			// apply failed after the flavor was changed. Do not start another
+			// resize in that case.
+			log.Printf("[DEBUG] Instance %s already has flavor %s, skipping resize", d.Id(), newFlavorID)
 		} else {
-			stateConf := &retry.StateChangeConf{
-				Pending:    []string{"RESIZE"},
-				Target:     []string{"VERIFY_RESIZE"},
-				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
-				Timeout:    d.Timeout(schema.TimeoutUpdate),
-				Delay:      10 * time.Second,
-				MinTimeout: 3 * time.Second,
+			resizeOpts := &servers.ResizeOpts{
+				FlavorRef: newFlavorID,
 			}
-
-			_, err = stateConf.WaitForStateContext(ctx)
+			log.Printf("[DEBUG] Resize configuration: %#v", resizeOpts)
+			err = iservers.Resize(computeClient, d.Id(), resizeOpts).ExtractErr()
 			if err != nil {
+				return diag.Errorf("Error resizing VKCS server: %s", err)
+			}
+		}
+
+		if needsWait {
+			log.Printf("[DEBUG] Waiting for instance (%s) to finish resizing to flavor %s", d.Id(), newFlavorID)
+			if err := waitForInstanceResize(ctx, computeClient, d.Id(), newFlavorID, ignoreResizeConfirmation, d.Timeout(schema.TimeoutUpdate)); err != nil {
 				return diag.Errorf("Error waiting for instance (%s) to resize: %s", d.Id(), err)
-			}
-
-			// Confirm resize.
-			log.Printf("[DEBUG] Confirming resize")
-			err = iservers.ConfirmResize(computeClient, d.Id()).ExtractErr()
-			if err != nil {
-				return diag.Errorf("Error confirming resize of VKCS server: %s", err)
-			}
-
-			stateConf = &retry.StateChangeConf{
-				Pending:    []string{"VERIFY_RESIZE"},
-				Target:     []string{"ACTIVE", "SHUTOFF"},
-				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
-				Timeout:    d.Timeout(schema.TimeoutUpdate),
-				Delay:      10 * time.Second,
-				MinTimeout: 3 * time.Second,
-			}
-
-			_, err = stateConf.WaitForStateContext(ctx)
-			if err != nil {
-				return diag.Errorf("Error waiting for instance (%s) to confirm resize: %s", d.Id(), err)
 			}
 		}
 	}
@@ -1418,6 +1402,142 @@ func ServerStateRefreshFunc(client *gophercloud.ServiceClient, instanceID string
 
 		return s, s.Status, nil
 	}
+}
+
+// configuredFlavorName returns flavor_name from the resource configuration.
+// Unlike d.Get, it does not return the value previously read into the state,
+// so an explicitly configured name can be distinguished from a computed one.
+func configuredFlavorName(d *schema.ResourceData) (string, bool) {
+	raw := d.GetRawConfig()
+	if raw.IsNull() || !raw.IsKnown() || !raw.Type().IsObjectType() ||
+		!raw.Type().HasAttribute("flavor_name") {
+		return "", false
+	}
+
+	value := raw.GetAttr("flavor_name")
+	if value.IsNull() || !value.IsKnown() {
+		return "", false
+	}
+
+	return value.AsString(), true
+}
+
+const (
+	instanceResizeStatePending = "PENDING"
+	instanceResizeStateDone    = "DONE"
+)
+
+// instanceResizeState returns the state of the resize operation. A resize is
+// complete when the server reports the target flavor and is in a stable state.
+// Shelved offloaded servers are resized synchronously by the compute API: they
+// keep the SHELVED_OFFLOADED status, so it is a valid terminal state for them.
+func instanceResizeState(s *servers.Server, targetFlavorID string) (string, error) {
+	switch s.Status {
+	case "ERROR":
+		if s.Fault.Message != "" {
+			return "", errors.New(s.Fault.Message)
+		}
+		return "", errors.New("instance entered ERROR state during resize")
+	case "DELETED", "SOFT_DELETED":
+		return "", errors.New("instance was deleted during resize")
+	case "REVERT_RESIZE":
+		return "", errors.New("resize was reverted")
+	}
+
+	flavorID, _ := s.Flavor["id"].(string)
+	if flavorID != targetFlavorID {
+		return instanceResizeStatePending, nil
+	}
+
+	switch s.Status {
+	case "ACTIVE", "SHUTOFF", "SHELVED_OFFLOADED":
+		return instanceResizeStateDone, nil
+	}
+
+	return instanceResizeStatePending, nil
+}
+
+func isResizeAlreadyConfirmed(err error) bool {
+	return errutil.Is(err, 409)
+}
+
+// waitForInstanceResize waits for a resize to finish. VK Cloud confirms resizes
+// automatically, so the instance may skip VERIFY_RESIZE and go straight to
+// ACTIVE. The confirmation is only sent when VERIFY_RESIZE is observed, and a
+// 409 response means the resize was already confirmed by the compute service.
+func waitForInstanceResize(ctx context.Context, client *gophercloud.ServiceClient, instanceID, targetFlavorID string, ignoreConfirmation bool, timeout time.Duration) error {
+	var confirmed bool
+	var staleFlavorChecks int
+	var lastStatus, lastFlavorID string
+	var lastConfirmErr error
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{instanceResizeStatePending},
+		Target:     []string{instanceResizeStateDone},
+		Timeout:    timeout,
+		Delay:      0,
+		MinTimeout: 3 * time.Second,
+		Refresh: func() (interface{}, string, error) {
+			s, err := iservers.Get(client, instanceID).Extract()
+			if err != nil {
+				if errutil.IsNotFound(err) {
+					return nil, "", fmt.Errorf("instance %s was deleted during resize", instanceID)
+				}
+				return nil, "", err
+			}
+
+			lastStatus = s.Status
+			lastFlavorID, _ = s.Flavor["id"].(string)
+
+			state, err := instanceResizeState(s, targetFlavorID)
+			if err != nil {
+				return nil, "", fmt.Errorf("instance %s: %w", instanceID, err)
+			}
+			if state == instanceResizeStateDone {
+				return s, state, nil
+			}
+
+			switch s.Status {
+			case "RESIZE", "VERIFY_RESIZE":
+				staleFlavorChecks = 0
+			case "ACTIVE", "SHUTOFF":
+				// The waiter is only used when a resize has been requested or is
+				// already in progress. A resize that fails is reverted
+				// automatically in VK Cloud. Require a few consecutive
+				// observations to avoid treating a stale read that still
+				// reports the old flavor as a revert.
+				staleFlavorChecks++
+				if staleFlavorChecks >= 3 {
+					return nil, "", fmt.Errorf("instance %s returned to %s state with the original flavor %s; resize was reverted", instanceID, s.Status, lastFlavorID)
+				}
+			}
+
+			if s.Status == "VERIFY_RESIZE" && lastFlavorID == targetFlavorID && !ignoreConfirmation && !confirmed {
+				confirmed = true
+				log.Printf("[DEBUG] Confirming resize of instance %s", instanceID)
+				lastConfirmErr = iservers.ConfirmResize(client, instanceID).ExtractErr()
+				if lastConfirmErr != nil {
+					if isResizeAlreadyConfirmed(lastConfirmErr) {
+						log.Printf("[WARN] Confirm resize of instance %s returned 409, assuming the resize is already confirmed: %s", instanceID, lastConfirmErr)
+					} else {
+						return nil, "", fmt.Errorf("error confirming resize of instance %s: %w", instanceID, lastConfirmErr)
+					}
+				}
+			}
+
+			return s, instanceResizeStatePending, nil
+		},
+	}
+
+	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+		details := fmt.Sprintf("last status: %s, last flavor: %s", lastStatus, lastFlavorID)
+		if lastConfirmErr != nil {
+			details += fmt.Sprintf(", last confirm error: %s", lastConfirmErr)
+		}
+		return fmt.Errorf("%w (%s)", err, details)
+	}
+
+	return nil
 }
 
 type serverWithAvailabilityZone struct {
