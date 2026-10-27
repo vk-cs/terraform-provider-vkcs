@@ -15,6 +15,10 @@ description: |-
 {{tffile "examples/compute/instance/basic/main.tf"}}
 Use `vkcs_compute_floatingip_associate` to make the instance accessible from Internet.
 
+### Instance in a server group
+The `server_group_id` argument places the instance into a server group at creation time and allows moving it between groups later without recreating the server. An active instance is moved only when `vendor_options.stop_before_server_group_change` is enabled. To remove the instance from the group, remove the argument from the configuration.
+{{tffile "examples/compute/instance/servergroup/main.tf"}}
+
 ### Instance with volume, tags and external IP
 ~> **Attention:** First, you should create the block storage volume and then attach it to the instance. Failing to do so will result in the virtual machine being provisioned with an ephemeral disk instead. Ephemeral disks lack certain capabilities, such as the ability to move or resize them. It's essential to adhere to the correct order of operations to avoid limitations in the management of block storage.
 {{tffile "examples/compute/instance/volumes_tags_externalip/main.tf"}}

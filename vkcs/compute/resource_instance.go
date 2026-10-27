@@ -22,6 +22,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/extendedstatus"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/shelveunshelve"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/tags"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
@@ -39,6 +40,7 @@ import (
 	iimages "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/images"
 	isecgroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/secgroups"
 	iserveraz "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/serveraz"
+	iservergroups "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servergroups"
 	iservers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servers"
 	ishelveunshelve "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/shelveunshelve"
 	istartstop "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/startstop"
@@ -100,14 +102,14 @@ func ResourceComputeInstance() *schema.Resource {
 				Optional:    true,
 				ForceNew:    false,
 				Computed:    true,
-				Description: "The flavor ID of the desired flavor for the server. Required if `flavor_name` is empty. Changing this resizes the existing server.",
+				Description: "The flavor ID of the desired flavor for the server. Required if `flavor_name` is empty. Changing this resizes the existing server. The resize is considered complete when the server reports the target flavor and is in the ACTIVE, SHUTOFF or SHELVED_OFFLOADED state.",
 			},
 			"flavor_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    false,
 				Computed:    true,
-				Description: "The name of the desired flavor for the server. Required if `flavor_id` is empty. Changing this resizes the existing server.",
+				Description: "The name of the desired flavor for the server. Required if `flavor_id` is empty. Changing this resizes the existing server. The resize is considered complete when the server reports the target flavor and is in the ACTIVE, SHUTOFF or SHELVED_OFFLOADED state.",
 			},
 			"user_data": {
 				Type:     schema.TypeString,
@@ -355,12 +357,20 @@ func ResourceComputeInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
-							Description: "A UUID of a Server Group. The instance will be placed into that group.",
+							Deprecated:  "Use the `server_group_id` argument instead.",
+							Description: "A UUID of a Server Group. The instance will be placed into that group. Deprecated, use `server_group_id` instead.",
 						},
 					},
 				},
 				Set:         resourceComputeSchedulerHintsHash,
 				Description: "Provide the Nova scheduler with hints on how the instance should be launched. The available hints are described below.",
+			},
+			"server_group_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"scheduler_hints"},
+				ValidateFunc:  validation.IsUUID,
+				Description:   "The UUID of a Server Group to place the instance into. Unlike `scheduler_hints.group`, this can be changed without recreating the server: the server is added to or removed from the group. Adding a server to a group requires the server to be stopped or shelved; enable `vendor_options.stop_before_server_group_change` to let the provider stop and start an active server automatically. Removing this argument removes the server from the group. Conflicts with `scheduler_hints`.",
 			},
 			"personality": {
 				Type:     schema.TypeSet,
@@ -434,7 +444,7 @@ func ResourceComputeInstance() *schema.Resource {
 							Type:        schema.TypeBool,
 							Default:     false,
 							Optional:    true,
-							Description: "Boolean to control whether to ignore manual confirmation of the instance resizing.",
+							Description: "Boolean to control whether to ignore manual confirmation of the instance resizing. In VK Cloud resizes are confirmed automatically, so this option is not required and is kept for backward compatibility.",
 						},
 						"detach_ports_before_destroy": {
 							Type:        schema.TypeBool,
@@ -447,6 +457,12 @@ func ResourceComputeInstance() *schema.Resource {
 							Optional:    true,
 							Default:     false,
 							Description: "If true, wait for initial windows admin password to be generated and retrieve it. Use this attribute only for instances running Microsoft Windows. The password data is exported to the `password_data` attribute. The password will be generated only if you specify the instance `key_pair`. The password will be read only once when the instance is created.",
+						},
+						"stop_before_server_group_change": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "If true, the provider stops an active instance before changing its server group membership via `server_group_id` and starts it back afterwards.",
 						},
 					},
 				},
@@ -594,6 +610,12 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		createOpts = &schedulerhints.CreateOptsExt{
 			CreateOptsBuilder: createOpts,
 			SchedulerHints:    schedulerHints,
+		}
+	} else if groupID := d.Get("server_group_id").(string); groupID != "" {
+		log.Printf("[DEBUG] server group: %s", groupID)
+		createOpts = &schedulerhints.CreateOptsExt{
+			CreateOptsBuilder: createOpts,
+			SchedulerHints:    schedulerhints.SchedulerHints{Group: groupID},
 		}
 	}
 
@@ -777,8 +799,13 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		return diag.FromErr(util.CheckDeleted(d, err, "server"))
 	}
-	// Set the availability zone
-	d.Set("availability_zone", serverWithAZ.AvailabilityZone)
+	// Set the availability zone. Offloaded instances do not report it, so keep
+	// the value already known from the configuration or the previous read.
+	if serverWithAZ.AvailabilityZone != "" {
+		d.Set("availability_zone", serverWithAZ.AvailabilityZone)
+	} else {
+		log.Printf("[DEBUG] Availability zone is not reported for instance %s, keeping the current value", d.Id())
+	}
 
 	// Set the region
 	d.Set("region", util.GetRegion(d, config))
@@ -793,6 +820,10 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 		log.Printf("[DEBUG] Unable to get tags for vkcs_compute_instance: %s", err)
 	} else {
 		ComputeInstanceReadTags(d, instanceTags)
+	}
+
+	if err := resourceComputeInstanceReadServerGroup(computeClient, d); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
@@ -932,6 +963,10 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
+	if diags := resourceComputeInstanceUpdateServerGroup(ctx, d, computeClient); diags != nil {
+		return diags
+	}
+
 	if d.HasChange("metadata") {
 		oldMetadata, newMetadataRaw := d.GetChange("metadata")
 
@@ -1035,77 +1070,56 @@ func resourceComputeInstanceUpdate(ctx context.Context, d *schema.ResourceData, 
 
 		var newFlavorID string
 		var err error
-		if d.HasChange("flavor_id") {
+		flavorName, flavorNameConfigured := configuredFlavorName(d)
+		switch {
+		case flavorNameConfigured && d.HasChange("flavor_name"):
+			newFlavorID, err = flavorsutils.IDFromName(computeClient, flavorName)
+		case d.HasChange("flavor_id"):
 			newFlavorID = d.Get("flavor_id").(string)
-		} else {
+		case flavorNameConfigured:
+			newFlavorID, err = flavorsutils.IDFromName(computeClient, flavorName)
+		default:
 			newFlavorName := d.Get("flavor_name").(string)
 			newFlavorID, err = flavorsutils.IDFromName(computeClient, newFlavorName)
-			if err != nil {
-				return diag.FromErr(err)
-			}
 		}
-
-		resizeOpts := &servers.ResizeOpts{
-			FlavorRef: newFlavorID,
-		}
-		log.Printf("[DEBUG] Resize configuration: %#v", resizeOpts)
-		err = iservers.Resize(computeClient, d.Id(), resizeOpts).ExtractErr()
 		if err != nil {
-			return diag.Errorf("Error resizing VKCS server: %s", err)
+			return diag.FromErr(err)
 		}
 
-		// Wait for the instance to finish resizing.
-		log.Printf("[DEBUG] Waiting for instance (%s) to finish resizing", d.Id())
+		server, err := iservers.Get(computeClient, d.Id()).Extract()
+		if err != nil {
+			return diag.Errorf("Error retrieving VKCS server %s: %s", d.Id(), err)
+		}
 
-		// Resize instance without confirmation if specified by user.
-		if ignoreResizeConfirmation {
-			stateConf := &retry.StateChangeConf{
-				Pending:    []string{"RESIZE", "VERIFY_RESIZE"},
-				Target:     []string{"ACTIVE", "SHUTOFF"},
-				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
-				Timeout:    d.Timeout(schema.TimeoutUpdate),
-				Delay:      10 * time.Second,
-				MinTimeout: 3 * time.Second,
+		currentFlavorID, _ := server.Flavor["id"].(string)
+		needsWait := true
+		if currentFlavorID == newFlavorID {
+			switch server.Status {
+			case "ACTIVE", "SHUTOFF", "SHELVED_OFFLOADED":
+				needsWait = false
 			}
+		}
 
-			_, err = stateConf.WaitForStateContext(ctx)
-			if err != nil {
-				return diag.Errorf("Error waiting for instance (%s) to resize: %s", d.Id(), err)
-			}
+		if currentFlavorID == newFlavorID {
+			// The resize may have already completed, for example when a previous
+			// apply failed after the flavor was changed. Do not start another
+			// resize in that case.
+			log.Printf("[DEBUG] Instance %s already has flavor %s, skipping resize", d.Id(), newFlavorID)
 		} else {
-			stateConf := &retry.StateChangeConf{
-				Pending:    []string{"RESIZE"},
-				Target:     []string{"VERIFY_RESIZE"},
-				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
-				Timeout:    d.Timeout(schema.TimeoutUpdate),
-				Delay:      10 * time.Second,
-				MinTimeout: 3 * time.Second,
+			resizeOpts := &servers.ResizeOpts{
+				FlavorRef: newFlavorID,
 			}
-
-			_, err = stateConf.WaitForStateContext(ctx)
+			log.Printf("[DEBUG] Resize configuration: %#v", resizeOpts)
+			err = iservers.Resize(computeClient, d.Id(), resizeOpts).ExtractErr()
 			if err != nil {
+				return diag.Errorf("Error resizing VKCS server: %s", err)
+			}
+		}
+
+		if needsWait {
+			log.Printf("[DEBUG] Waiting for instance (%s) to finish resizing to flavor %s", d.Id(), newFlavorID)
+			if err := waitForInstanceResize(ctx, computeClient, d.Id(), newFlavorID, ignoreResizeConfirmation, d.Timeout(schema.TimeoutUpdate)); err != nil {
 				return diag.Errorf("Error waiting for instance (%s) to resize: %s", d.Id(), err)
-			}
-
-			// Confirm resize.
-			log.Printf("[DEBUG] Confirming resize")
-			err = iservers.ConfirmResize(computeClient, d.Id()).ExtractErr()
-			if err != nil {
-				return diag.Errorf("Error confirming resize of VKCS server: %s", err)
-			}
-
-			stateConf = &retry.StateChangeConf{
-				Pending:    []string{"VERIFY_RESIZE"},
-				Target:     []string{"ACTIVE", "SHUTOFF"},
-				Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
-				Timeout:    d.Timeout(schema.TimeoutUpdate),
-				Delay:      10 * time.Second,
-				MinTimeout: 3 * time.Second,
-			}
-
-			_, err = stateConf.WaitForStateContext(ctx)
-			if err != nil {
-				return diag.Errorf("Error waiting for instance (%s) to confirm resize: %s", d.Id(), err)
 			}
 		}
 	}
@@ -1390,6 +1404,142 @@ func ServerStateRefreshFunc(client *gophercloud.ServiceClient, instanceID string
 	}
 }
 
+// configuredFlavorName returns flavor_name from the resource configuration.
+// Unlike d.Get, it does not return the value previously read into the state,
+// so an explicitly configured name can be distinguished from a computed one.
+func configuredFlavorName(d *schema.ResourceData) (string, bool) {
+	raw := d.GetRawConfig()
+	if raw.IsNull() || !raw.IsKnown() || !raw.Type().IsObjectType() ||
+		!raw.Type().HasAttribute("flavor_name") {
+		return "", false
+	}
+
+	value := raw.GetAttr("flavor_name")
+	if value.IsNull() || !value.IsKnown() {
+		return "", false
+	}
+
+	return value.AsString(), true
+}
+
+const (
+	instanceResizeStatePending = "PENDING"
+	instanceResizeStateDone    = "DONE"
+)
+
+// instanceResizeState returns the state of the resize operation. A resize is
+// complete when the server reports the target flavor and is in a stable state.
+// Shelved offloaded servers are resized synchronously by the compute API: they
+// keep the SHELVED_OFFLOADED status, so it is a valid terminal state for them.
+func instanceResizeState(s *servers.Server, targetFlavorID string) (string, error) {
+	switch s.Status {
+	case "ERROR":
+		if s.Fault.Message != "" {
+			return "", errors.New(s.Fault.Message)
+		}
+		return "", errors.New("instance entered ERROR state during resize")
+	case "DELETED", "SOFT_DELETED":
+		return "", errors.New("instance was deleted during resize")
+	case "REVERT_RESIZE":
+		return "", errors.New("resize was reverted")
+	}
+
+	flavorID, _ := s.Flavor["id"].(string)
+	if flavorID != targetFlavorID {
+		return instanceResizeStatePending, nil
+	}
+
+	switch s.Status {
+	case "ACTIVE", "SHUTOFF", "SHELVED_OFFLOADED":
+		return instanceResizeStateDone, nil
+	}
+
+	return instanceResizeStatePending, nil
+}
+
+func isResizeAlreadyConfirmed(err error) bool {
+	return errutil.Is(err, 409)
+}
+
+// waitForInstanceResize waits for a resize to finish. VK Cloud confirms resizes
+// automatically, so the instance may skip VERIFY_RESIZE and go straight to
+// ACTIVE. The confirmation is only sent when VERIFY_RESIZE is observed, and a
+// 409 response means the resize was already confirmed by the compute service.
+func waitForInstanceResize(ctx context.Context, client *gophercloud.ServiceClient, instanceID, targetFlavorID string, ignoreConfirmation bool, timeout time.Duration) error {
+	var confirmed bool
+	var staleFlavorChecks int
+	var lastStatus, lastFlavorID string
+	var lastConfirmErr error
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{instanceResizeStatePending},
+		Target:     []string{instanceResizeStateDone},
+		Timeout:    timeout,
+		Delay:      0,
+		MinTimeout: 3 * time.Second,
+		Refresh: func() (interface{}, string, error) {
+			s, err := iservers.Get(client, instanceID).Extract()
+			if err != nil {
+				if errutil.IsNotFound(err) {
+					return nil, "", fmt.Errorf("instance %s was deleted during resize", instanceID)
+				}
+				return nil, "", err
+			}
+
+			lastStatus = s.Status
+			lastFlavorID, _ = s.Flavor["id"].(string)
+
+			state, err := instanceResizeState(s, targetFlavorID)
+			if err != nil {
+				return nil, "", fmt.Errorf("instance %s: %w", instanceID, err)
+			}
+			if state == instanceResizeStateDone {
+				return s, state, nil
+			}
+
+			switch s.Status {
+			case "RESIZE", "VERIFY_RESIZE":
+				staleFlavorChecks = 0
+			case "ACTIVE", "SHUTOFF":
+				// The waiter is only used when a resize has been requested or is
+				// already in progress. A resize that fails is reverted
+				// automatically in VK Cloud. Require a few consecutive
+				// observations to avoid treating a stale read that still
+				// reports the old flavor as a revert.
+				staleFlavorChecks++
+				if staleFlavorChecks >= 3 {
+					return nil, "", fmt.Errorf("instance %s returned to %s state with the original flavor %s; resize was reverted", instanceID, s.Status, lastFlavorID)
+				}
+			}
+
+			if s.Status == "VERIFY_RESIZE" && lastFlavorID == targetFlavorID && !ignoreConfirmation && !confirmed {
+				confirmed = true
+				log.Printf("[DEBUG] Confirming resize of instance %s", instanceID)
+				lastConfirmErr = iservers.ConfirmResize(client, instanceID).ExtractErr()
+				if lastConfirmErr != nil {
+					if isResizeAlreadyConfirmed(lastConfirmErr) {
+						log.Printf("[WARN] Confirm resize of instance %s returned 409, assuming the resize is already confirmed: %s", instanceID, lastConfirmErr)
+					} else {
+						return nil, "", fmt.Errorf("error confirming resize of instance %s: %w", instanceID, lastConfirmErr)
+					}
+				}
+			}
+
+			return s, instanceResizeStatePending, nil
+		},
+	}
+
+	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+		details := fmt.Sprintf("last status: %s, last flavor: %s", lastStatus, lastFlavorID)
+		if lastConfirmErr != nil {
+			details += fmt.Sprintf(", last confirm error: %s", lastConfirmErr)
+		}
+		return fmt.Errorf("%w (%s)", err, details)
+	}
+
+	return nil
+}
+
 type serverWithAvailabilityZone struct {
 	servers.Server
 	availabilityzones.ServerAvailabilityZoneExt
@@ -1451,6 +1601,221 @@ func availabilityZoneName(az string) string {
 	}
 
 	return az
+}
+
+// resourceComputeInstanceReadServerGroup resolves the server group the instance
+// currently belongs to and stores it in the `server_group_id` attribute. It is
+// a no-op when the attribute is not set, so refreshing instances that do not
+// manage server group membership does not issue extra requests.
+func resourceComputeInstanceReadServerGroup(client *gophercloud.ServiceClient, d *schema.ResourceData) error {
+	groupID := d.Get("server_group_id").(string)
+	if groupID == "" {
+		return nil
+	}
+
+	sg, err := iservergroups.Get(client, groupID).Extract()
+	switch {
+	case err == nil:
+		if serverGroupHasMember(sg.Members, d.Id()) {
+			return nil
+		}
+	case errutil.IsNotFound(err):
+		// The group is gone; fall through and look the actual membership up.
+	default:
+		return fmt.Errorf("error retrieving server group %s: %w", groupID, err)
+	}
+
+	// The instance is not in the configured group. Find the group it actually
+	// belongs to so the next plan can reconcile the membership.
+	actualGroupID, err := findServerGroupByInstance(client, d.Id())
+	if err != nil {
+		return err
+	}
+
+	return d.Set("server_group_id", actualGroupID)
+}
+
+func findServerGroupByInstance(client *gophercloud.ServiceClient, instanceID string) (string, error) {
+	allPages, err := iservergroups.List(client, servergroups.ListOpts{}).AllPages()
+	if err != nil {
+		return "", fmt.Errorf("error listing server groups: %w", err)
+	}
+
+	groups, err := servergroups.ExtractServerGroups(allPages)
+	if err != nil {
+		return "", fmt.Errorf("error extracting server groups: %w", err)
+	}
+
+	for _, sg := range groups {
+		if serverGroupHasMember(sg.Members, instanceID) {
+			return sg.ID, nil
+		}
+	}
+
+	return "", nil
+}
+
+func serverGroupHasMember(members []string, instanceID string) bool {
+	for _, m := range members {
+		if m == instanceID {
+			return true
+		}
+	}
+
+	return false
+}
+
+func resourceComputeInstanceUpdateServerGroup(ctx context.Context, d *schema.ResourceData, client *gophercloud.ServiceClient) diag.Diagnostics {
+	if !d.HasChange("server_group_id") {
+		return nil
+	}
+
+	oldGroupRaw, newGroupRaw := d.GetChange("server_group_id")
+	oldGroup := oldGroupRaw.(string)
+	newGroup := newGroupRaw.(string)
+
+	if oldGroup == newGroup {
+		return nil
+	}
+
+	log.Printf("[DEBUG] Changing server group of instance %s from %q to %q", d.Id(), oldGroup, newGroup)
+
+	addNeeded := newGroup != ""
+	if addNeeded {
+		// Keep the operation idempotent: the instance may already be a member
+		// of the target group (e.g. it was added outside of Terraform).
+		sg, err := iservergroups.Get(client, newGroup).Extract()
+		if err == nil {
+			addNeeded = !serverGroupHasMember(sg.Members, d.Id())
+		} else if !errutil.IsNotFound(err) {
+			return diag.Errorf("Error retrieving server group %s: %s", newGroup, err)
+		}
+	}
+
+	// Nova only allows adding stopped or shelved servers to a group, so make
+	// sure the instance is in an addable state before mutating membership.
+	var stopAndRestart bool
+	if addNeeded {
+		server, err := iservers.Get(client, d.Id()).Extract()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		switch strings.ToLower(server.Status) {
+		case "shutoff", "shelved", "shelved_offloaded":
+			// already addable, nothing to do
+		case "active":
+			if !shouldStopBeforeServerGroupChange(d.Get("vendor_options").(*schema.Set)) {
+				return diag.Errorf("Cannot add instance %s to server group %s while it is active: stop or shelve the server first, or enable `vendor_options.stop_before_server_group_change`", d.Id(), newGroup)
+			}
+			if err := stopComputeInstance(ctx, d, client); err != nil {
+				return diag.FromErr(err)
+			}
+			stopAndRestart = true
+		default:
+			return diag.Errorf("Cannot add instance %s to server group %s: instance state is %q, but only stopped or shelved servers can be added to a server group", d.Id(), newGroup, server.Status)
+		}
+	}
+
+	// Remove the instance from the old group first: nova rejects adding a
+	// server that still belongs to another group.
+	if oldGroup != "" && oldGroup != newGroup {
+		if err := iservergroups.RemoveMember(client, oldGroup, d.Id()).ExtractErr(); err != nil && !errutil.IsNotFound(err) {
+			if stopAndRestart {
+				restartComputeInstance(ctx, d, client)
+			}
+			return diag.Errorf("Error removing instance %s from server group %s: %s", d.Id(), oldGroup, err)
+		}
+	}
+
+	if addNeeded {
+		if err := iservergroups.AddMember(client, newGroup, d.Id()).ExtractErr(); err != nil {
+			// Best-effort restore of the previous membership so a failed move
+			// does not leave the instance without a group.
+			if oldGroup != "" && oldGroup != newGroup {
+				if rbErr := iservergroups.AddMember(client, oldGroup, d.Id()).ExtractErr(); rbErr != nil {
+					log.Printf("[DEBUG] Failed to restore instance %s membership in server group %s: %s", d.Id(), oldGroup, rbErr)
+				}
+			}
+			if stopAndRestart {
+				restartComputeInstance(ctx, d, client)
+			}
+			return diag.Errorf("Error adding instance %s to server group %s: %s", d.Id(), newGroup, err)
+		}
+	}
+
+	if stopAndRestart {
+		if err := startComputeInstance(ctx, d, client); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return nil
+}
+
+func shouldStopBeforeServerGroupChange(vendorOptionsRaw *schema.Set) bool {
+	if vendorOptionsRaw.Len() == 0 {
+		return false
+	}
+
+	vendorOptions := util.ExpandVendorOptions(vendorOptionsRaw.List())
+	stop, _ := vendorOptions["stop_before_server_group_change"].(bool)
+
+	return stop
+}
+
+func stopComputeInstance(ctx context.Context, d *schema.ResourceData, client *gophercloud.ServiceClient) error {
+	if err := istartstop.Stop(client, d.Id()).ExtractErr(); err != nil {
+		return fmt.Errorf("error stopping VKCS instance: %w", err)
+	}
+
+	stateConf := &retry.StateChangeConf{
+		Target:     []string{"SHUTOFF"},
+		Refresh:    ServerStateRefreshFunc(client, d.Id()),
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+		return fmt.Errorf("error waiting for VKCS instance to become shutoff: %w", err)
+	}
+
+	return nil
+}
+
+// startComputeInstance starts the instance back and waits until it is active,
+// unless the configured power_state is not active.
+func startComputeInstance(ctx context.Context, d *schema.ResourceData, client *gophercloud.ServiceClient) error {
+	switch strings.ToLower(d.Get("power_state").(string)) {
+	case "shutoff", "shelved_offloaded":
+		return nil
+	}
+
+	if err := istartstop.Start(client, d.Id()).ExtractErr(); err != nil {
+		return fmt.Errorf("error starting VKCS instance: %w", err)
+	}
+
+	stateConf := &retry.StateChangeConf{
+		Target:     []string{"ACTIVE"},
+		Refresh:    ServerStateRefreshFunc(client, d.Id()),
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
+		return fmt.Errorf("error waiting for VKCS instance to become active: %w", err)
+	}
+
+	return nil
+}
+
+// restartComputeInstance is a best-effort start used on error paths.
+func restartComputeInstance(ctx context.Context, d *schema.ResourceData, client *gophercloud.ServiceClient) {
+	if err := startComputeInstance(ctx, d, client); err != nil {
+		log.Printf("[DEBUG] Failed to start instance %s after a server group change error: %s", d.Id(), err)
+	}
 }
 
 func resourceInstanceSecGroupsV2(d *schema.ResourceData) []string {

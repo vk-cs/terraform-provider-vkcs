@@ -1,3 +1,3 @@
-data "vkcs_kubernetes_clustertemplate" "k8s_31" {
-  version = "1.31"
+data "vkcs_kubernetes_clustertemplate" "k8s_33" {
+  version = "1.33"
 }

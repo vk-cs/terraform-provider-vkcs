@@ -21,8 +21,8 @@ func TestNewInsecureRegistries(t *testing.T) {
 		},
 		{
 			name:  "domain without dot",
-			value: []string{"myregistry"},
-			err:   true,
+			value: []string{"myregistry:5000"},
+			err:   false,
 		},
 		{
 			name:  "ip",

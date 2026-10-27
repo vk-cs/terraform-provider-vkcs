@@ -66,7 +66,7 @@ func TestAccDatabaseClusterWithShards_update_big(t *testing.T) {
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.update", "shard.0.flavor_id",
 						"data.vkcs_compute_flavor.new_flavor", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "shard.0.volume_size", "10"),
-					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "shard.0.volume_type", "ceph-hdd"),
+					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "shard.0.volume_type", "ceph-ssd"),
 				),
 			},
 		},
@@ -107,7 +107,7 @@ func TestAccDatabaseClusterWithShards_resize_big(t *testing.T) {
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.resize", "shard.0.flavor_id",
 						"data.vkcs_compute_flavor.new_flavor", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.volume_size", "10"),
-					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.volume_type", "ceph-hdd"),
+					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.volume_type", "ceph-ssd"),
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.resize", "shard.0.network.0.uuid",
 						"vkcs_networking_network.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.instances.#", "3"),
@@ -273,7 +273,7 @@ resource "vkcs_db_cluster_with_shards" "update" {
     shard_id    = "shard0"
     flavor_id   = data.vkcs_compute_flavor.new_flavor.id
     volume_size = 10
-    volume_type = "ceph-hdd"
+    volume_type = "ceph-ssd"
     network {
       uuid = vkcs_networking_network.base.id
     }
@@ -337,7 +337,7 @@ resource "vkcs_db_cluster_with_shards" "resize" {
 	shard_id = "shard0"
 	flavor_id = data.vkcs_compute_flavor.new_flavor.id
 	volume_size = 10
-	volume_type = "ceph-hdd"
+	volume_type = "ceph-ssd"
 	network {
 	  uuid = vkcs_networking_network.base.id
 	}

@@ -145,7 +145,7 @@ data "vkcs_compute_flavor" "base" {
 }
 
 data "vkcs_kubernetes_clustertemplate" "ct" {
-  version = "1.31"
+  version = "1.33"
 }
 
 resource "vkcs_kubernetes_cluster" "cluster" {

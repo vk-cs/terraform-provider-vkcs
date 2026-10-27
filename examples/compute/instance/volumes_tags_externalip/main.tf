@@ -20,6 +20,7 @@ resource "vkcs_compute_instance" "volumes_tags_externalip" {
   block_device {
     source_type           = "blank"
     destination_type      = "volume"
+    volume_type           = "ceph-ssd"
     volume_size           = 20
     delete_on_termination = true
   }
