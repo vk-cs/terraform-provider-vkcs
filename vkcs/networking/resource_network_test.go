@@ -327,6 +327,12 @@ func TestAccNetworkingNetwork_privateDnsDomain(t *testing.T) {
 		CheckDestroy:      testAccCheckNetworkingNetworkDestroy,
 		Steps: []resource.TestStep{
 			{
+				Config: acctest.AccTestRenderConfig(testAccNetworkingNetworkPrivateDNSDomainUnset),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
+				),
+			},
+			{
 				Config: acctest.AccTestRenderConfig(testAccNetworkingNetworkPrivateDNSDomain),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkingNetworkExists("vkcs_networking_network.network_1", &network),
@@ -572,5 +578,13 @@ resource "vkcs_networking_network" "network_1" {
   description = "my network description"
   admin_state_up = "true"
   private_dns_domain = "test.domain."
+}
+`
+
+const testAccNetworkingNetworkPrivateDNSDomainUnset = `
+resource "vkcs_networking_network" "network_1" {
+  name = "network_1"
+  description = "my network description"
+  admin_state_up = "true"
 }
 `
