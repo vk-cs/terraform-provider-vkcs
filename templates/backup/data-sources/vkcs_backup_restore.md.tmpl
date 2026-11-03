@@ -1,0 +1,18 @@
+---
+subcategory: "Backup"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Reads restore details and per-resource statuses for a VKCS backup restore.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+{{tffile "examples/backup/restore/main.tf"}}
+{{tffile "examples/backup/restore/variables.tf"}}
+
+{{ .SchemaMarkdown }}

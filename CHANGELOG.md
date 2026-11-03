@@ -6,6 +6,12 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.20.0 (unreleased)
+- Add Object Lock retention period and Legal Hold configuration to `vkcs_backup_plan`.
+- Add the `vkcs_backup_checkpoints` data source to read a plan's backup checkpoints and their Object Lock details.
+- Add the create-only `vkcs_backup_restore` resource for restoring VMs from backup checkpoints.
+- Add the `vkcs_backup_restore` data source to read per-resource restore statuses.
+
 #### v0.19.0
 - Add support for KMS service (secrets and keys)
 - Add data source `vkcs_compute_servergroup`.

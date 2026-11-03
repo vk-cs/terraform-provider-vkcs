@@ -1,0 +1,18 @@
+---
+subcategory: "{{.SubCategory}}"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Reads backup checkpoints and their Object Lock settings for a VKCS backup plan.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+## Example Usage
+
+{{tffile "examples/backup/checkpoints/main.tf"}}
+{{tffile "examples/backup/checkpoints/variables.tf"}}
+
+{{ .SchemaMarkdown }}
