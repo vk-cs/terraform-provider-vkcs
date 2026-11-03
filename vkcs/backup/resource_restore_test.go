@@ -104,7 +104,7 @@ func TestFindMatchingRestoreAdoptsEquivalentRequest(t *testing.T) {
 				RestoreName:       "restored-vm",
 				Destination:       "new",
 				EnableFIP:         boolPointer(false),
-				VolumeSize:        int64Pointer(0),
+				VolumeSize:        restoreTestInt64Pointer(0),
 				SecurityGroups:    []string{"sg-b", "sg-a"},
 			},
 		},
@@ -232,7 +232,7 @@ func TestExpandRestoreParametersDefaultsToNewVM(t *testing.T) {
 	}
 }
 
-func int64Pointer(value int64) *int64 {
+func restoreTestInt64Pointer(value int64) *int64 {
 	return &value
 }
 

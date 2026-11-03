@@ -77,6 +77,14 @@ func restoreFailureDetails(statuses, reasons map[string]string) []string {
 	return failures
 }
 
+func restoreOutcomeError(restoreID string, statuses, reasons map[string]string) error {
+	failures := restoreFailureDetails(statuses, reasons)
+	if len(failures) == 0 {
+		return nil
+	}
+	return fmt.Errorf("restore %s completed with errors: %s", restoreID, strings.Join(failures, "; "))
+}
+
 func findMatchingRestore(existing []restores.Restore, desired restores.RestoreCreateOpts) *restores.Restore {
 	for i := range existing {
 		candidate := &existing[i]
