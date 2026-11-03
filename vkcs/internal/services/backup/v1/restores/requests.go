@@ -3,8 +3,8 @@ package restores
 import "github.com/gophercloud/gophercloud"
 
 type ListOpts struct {
-	Limit  int64  `q:"limit"`
-	Offset int64  `q:"offset"`
+	Limit  int    `q:"limit"`
+	Offset int    `q:"offset"`
 	Sort   string `q:"sort"`
 }
 
@@ -83,16 +83,16 @@ func List(client *gophercloud.ServiceClient, opts ListOpts) (result ListResult) 
 
 // ListAll returns all restores in the project, using the API's offset pagination.
 func ListAll(client *gophercloud.ServiceClient) ([]Restore, error) {
-	const pageLimit int64 = 100
+	const pageLimit = 100
 
 	var allRestores []Restore
-	for offset := int64(0); ; offset += pageLimit {
+	for offset := 0; ; offset += pageLimit {
 		page, err := List(client, ListOpts{Limit: pageLimit, Offset: offset, Sort: "desc"}).Extract()
 		if err != nil {
 			return nil, err
 		}
 		allRestores = append(allRestores, page.Restores...)
-		if int64(len(page.Restores)) < pageLimit {
+		if len(page.Restores) < pageLimit {
 			return allRestores, nil
 		}
 	}

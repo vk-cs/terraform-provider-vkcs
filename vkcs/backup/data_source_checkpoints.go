@@ -21,18 +21,18 @@ type CheckpointsDataSource struct {
 }
 
 type CheckpointsDataSourceModel struct {
-	ID        types.String                              `tfsdk:"id"`
-	PlanID    types.String                              `tfsdk:"plan_id"`
-	ProjectID types.String                              `tfsdk:"project_id"`
-	Resources []CheckpointsDataSourceResourceModel      `tfsdk:"resources"`
-	Region    types.String                              `tfsdk:"region"`
+	ID        types.String                         `tfsdk:"id"`
+	PlanID    types.String                         `tfsdk:"plan_id"`
+	ProjectID types.String                         `tfsdk:"project_id"`
+	Resources []CheckpointsDataSourceResourceModel `tfsdk:"resources"`
+	Region    types.String                         `tfsdk:"region"`
 }
 
 type CheckpointsDataSourceResourceModel struct {
-	ID           types.String                         `tfsdk:"id"`
-	Name         types.String                         `tfsdk:"name"`
-	ResourceType types.String                         `tfsdk:"resource_type"`
-	Backups      []CheckpointsDataSourceBackupModel   `tfsdk:"backups"`
+	ID           types.String                       `tfsdk:"id"`
+	Name         types.String                       `tfsdk:"name"`
+	ResourceType types.String                       `tfsdk:"resource_type"`
+	Backups      []CheckpointsDataSourceBackupModel `tfsdk:"backups"`
 }
 
 type CheckpointsDataSourceBackupModel struct {

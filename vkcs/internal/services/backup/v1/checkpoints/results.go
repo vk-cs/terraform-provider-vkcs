@@ -12,13 +12,13 @@ type ListCheckpointsGroupedByPlanIDResponse struct {
 }
 
 type CheckpointResource struct {
-	ID                         string     `json:"id"`
-	Name                       string     `json:"name"`
-	ResourceType               string     `json:"resource_type"`
-	NumberOfFullBackups        int64      `json:"number_of_full_backups"`
-	NumberOfIncrementalBackups int64      `json:"number_of_incremental_backups"`
-	LastCreatedAt              string     `json:"last_created_at"`
-	TotalSize                  int64      `json:"total_size"`
+	ID                         string             `json:"id"`
+	Name                       string             `json:"name"`
+	ResourceType               string             `json:"resource_type"`
+	NumberOfFullBackups        int64              `json:"number_of_full_backups"`
+	NumberOfIncrementalBackups int64              `json:"number_of_incremental_backups"`
+	LastCreatedAt              string             `json:"last_created_at"`
+	TotalSize                  int64              `json:"total_size"`
 	Backups                    []CheckpointBackup `json:"backups"`
 }
 
@@ -41,7 +41,7 @@ type GetCheckpointResponse struct {
 }
 
 type CheckpointDetails struct {
-	ID        string                    `json:"id"`
+	ID        string                     `json:"id"`
 	Resources []CheckpointDetailResource `json:"resources"`
 }
 

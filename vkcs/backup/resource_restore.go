@@ -34,26 +34,26 @@ type RestoreResource struct {
 }
 
 type RestoreResourceModel struct {
-	ID                      types.String  `tfsdk:"id"`
-	Region                  types.String  `tfsdk:"region"`
-	CheckpointID            types.String  `tfsdk:"checkpoint_id"`
-	SourceResourceID        types.String  `tfsdk:"source_resource_id"`
-	ProviderID              types.String  `tfsdk:"provider_id"`
-	RestoreName             types.String  `tfsdk:"restore_name"`
-	RestoreKeypair          types.String  `tfsdk:"restore_keypair"`
-	AvailabilityZone        types.String  `tfsdk:"availability_zone"`
-	RestoreNetID            types.String  `tfsdk:"restore_net_id"`
-	Flavor                  types.String  `tfsdk:"flavor"`
-	VolumeType              types.String  `tfsdk:"volume_type"`
-	VolumeSize              types.Int64   `tfsdk:"volume_size"`
-	EnableFIP               types.Bool    `tfsdk:"enable_fip"`
-	SecurityGroups          types.Set     `tfsdk:"security_groups"`
-	VolumeTargetVMID        types.String  `tfsdk:"volume_target_vm_id"`
-	VolumeAutoresizeEnabled types.Int64   `tfsdk:"volume_autoresize_enabled"`
-	VolumeAutoresizeMaxSize types.Int64   `tfsdk:"volume_autoresize_max_size"`
-	CloudMonitoringEnabled  types.Bool    `tfsdk:"cloud_monitoring_enabled"`
-	ResourcesStatus         types.Map     `tfsdk:"resources_status"`
-	ResourcesReason         types.Map     `tfsdk:"resources_reason"`
+	ID                      types.String   `tfsdk:"id"`
+	Region                  types.String   `tfsdk:"region"`
+	CheckpointID            types.String   `tfsdk:"checkpoint_id"`
+	SourceResourceID        types.String   `tfsdk:"source_resource_id"`
+	ProviderID              types.String   `tfsdk:"provider_id"`
+	RestoreName             types.String   `tfsdk:"restore_name"`
+	RestoreKeypair          types.String   `tfsdk:"restore_keypair"`
+	AvailabilityZone        types.String   `tfsdk:"availability_zone"`
+	RestoreNetID            types.String   `tfsdk:"restore_net_id"`
+	Flavor                  types.String   `tfsdk:"flavor"`
+	VolumeType              types.String   `tfsdk:"volume_type"`
+	VolumeSize              types.Int64    `tfsdk:"volume_size"`
+	EnableFIP               types.Bool     `tfsdk:"enable_fip"`
+	SecurityGroups          types.Set      `tfsdk:"security_groups"`
+	VolumeTargetVMID        types.String   `tfsdk:"volume_target_vm_id"`
+	VolumeAutoresizeEnabled types.Int64    `tfsdk:"volume_autoresize_enabled"`
+	VolumeAutoresizeMaxSize types.Int64    `tfsdk:"volume_autoresize_max_size"`
+	CloudMonitoringEnabled  types.Bool     `tfsdk:"cloud_monitoring_enabled"`
+	ResourcesStatus         types.Map      `tfsdk:"resources_status"`
+	ResourcesReason         types.Map      `tfsdk:"resources_reason"`
 	Timeouts                timeouts.Value `tfsdk:"timeouts"`
 }
 

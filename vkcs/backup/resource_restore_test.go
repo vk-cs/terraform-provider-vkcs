@@ -101,11 +101,11 @@ func TestFindMatchingRestoreAdoptsEquivalentRequest(t *testing.T) {
 		CheckpointID: "checkpoint-id",
 		Parameters: map[string]restores.RestoreParameters{
 			"OS::Nova::Server#server-id": {
-				RestoreName:       "restored-vm",
-				Destination:       "new",
-				EnableFIP:         boolPointer(false),
-				VolumeSize:        restoreTestInt64Pointer(0),
-				SecurityGroups:    []string{"sg-b", "sg-a"},
+				RestoreName:    "restored-vm",
+				Destination:    "new",
+				EnableFIP:      boolPointer(false),
+				VolumeSize:     restoreTestInt64Pointer(0),
+				SecurityGroups: []string{"sg-b", "sg-a"},
 			},
 		},
 	}

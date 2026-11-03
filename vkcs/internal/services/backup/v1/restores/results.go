@@ -11,12 +11,12 @@ type ListRestoreResponse struct {
 }
 
 type Restore struct {
-	ID              string                     `json:"id"`
-	ProviderID      string                     `json:"provider_id"`
-	CheckpointID    string                     `json:"checkpoint_id"`
+	ID              string                       `json:"id"`
+	ProviderID      string                       `json:"provider_id"`
+	CheckpointID    string                       `json:"checkpoint_id"`
 	Parameters      map[string]RestoreParameters `json:"parameters"`
-	ResourcesStatus map[string]string          `json:"resources_status,omitempty"`
-	ResourcesReason map[string]string          `json:"resources_reason,omitempty"`
+	ResourcesStatus map[string]string            `json:"resources_status,omitempty"`
+	ResourcesReason map[string]string            `json:"resources_reason,omitempty"`
 }
 
 type commonResult struct {

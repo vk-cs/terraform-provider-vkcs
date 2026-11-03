@@ -26,9 +26,9 @@ func TestPlanCreateMapsObjectLock(t *testing.T) {
 func TestPlanUpdateMapsLegalHoldWithoutRetention(t *testing.T) {
 	request := PlanUpdate{
 		Plan: &UpdateOpts{
-			Name:       "daily-backup",
-			Status:     "running",
-			Resources:  []*BackupPlanResource{},
+			Name:      "daily-backup",
+			Status:    "running",
+			Resources: []*BackupPlanResource{},
 			ObjectLock: &ObjectLock{
 				Type: "legalhold",
 			},
