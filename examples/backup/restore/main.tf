@@ -1,10 +1,11 @@
 data "vkcs_backup_checkpoints" "source" {
+  count   = var.enable_restore ? 1 : 0
   plan_id = var.backup_plan_id
 }
 
 locals {
   available_vm_backups = flatten([
-    for resource in data.vkcs_backup_checkpoints.source.resources : [
+    for resource in try(data.vkcs_backup_checkpoints.source[0].resources, []) : [
       for backup in resource.backups : {
         checkpoint_id      = backup.checkpoint_id
         source_resource_id = resource.id
@@ -14,17 +15,19 @@ locals {
 }
 
 resource "vkcs_backup_restore" "vm" {
-  checkpoint_id      = local.available_vm_backups[0].checkpoint_id
-  source_resource_id = local.available_vm_backups[0].source_resource_id
+  count              = var.enable_restore ? 1 : 0
+  checkpoint_id      = try(local.available_vm_backups[0].checkpoint_id, "")
+  source_resource_id = try(local.available_vm_backups[0].source_resource_id, "")
   restore_name       = "restored-vm-example"
   restore_net_id     = var.restore_net_id
   restore_keypair    = var.restore_keypair
 }
 
 data "vkcs_backup_restore" "vm" {
-  restore_id = vkcs_backup_restore.vm.id
+  count      = var.enable_restore ? 1 : 0
+  restore_id = try(vkcs_backup_restore.vm[0].id, "")
 }
 
 output "restore_resources_status" {
-  value = data.vkcs_backup_restore.vm.resources_status
+  value = try(data.vkcs_backup_restore.vm[0].resources_status, {})
 }
