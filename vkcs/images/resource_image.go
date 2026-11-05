@@ -87,7 +87,7 @@ func ResourceImagesImage() *schema.Resource {
 				DefaultFunc: func() (interface{}, error) {
 					return fmt.Sprintf("%s/.terraform/image_cache", os.Getenv("HOME")), nil
 				},
-				Description: "This is the directory where the images will be downloaded. Images will be stored with a filename corresponding to the url's md5 hash. Defaults to \"$HOME/.terraform/image_cache\"",
+				Description: "This is the directory where the images will be downloaded. Images will be stored with a filename corresponding to the md5 hash of the url and, if set, `compression_format` and `archiving_format`. Defaults to \"$HOME/.terraform/image_cache\"",
 			},
 
 			"image_source_url": {
