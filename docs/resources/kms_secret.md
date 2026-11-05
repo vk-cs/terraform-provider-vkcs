@@ -48,4 +48,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Import is not currently supported.
+KMS secrets can be imported using their path, e.g.
+
+```shell
+terraform import vkcs_kms_secret.secret some-secret
+```
