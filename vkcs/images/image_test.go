@@ -93,7 +93,7 @@ func TestImageCacheFilename(t *testing.T) {
 		{compressionFormatGZIP, archivingFormatTAR},
 	} {
 		name := imageCacheFilename(dir, url, opts[0], opts[1])
-		assert.Equal(t, dir, filepath.Dir(name))
+		assert.Equal(t, filepath.Clean(dir), filepath.Dir(name))
 		for prev, prevName := range names {
 			assert.NotEqual(t, prevName, name, "options %v collide with %q", opts, prev)
 		}

@@ -238,7 +238,12 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 	archivingFormat := d.Get("archiving_format").(string)
 	filename := imageCacheFilename(dir, furl, compressionFormat, archivingFormat)
 	tmpFilename := filename + ".tmp"
+	var file *os.File
 	delFile := func() {
+		// Windows does not allow removing an open file.
+		if file != nil {
+			_ = file.Close()
+		}
 		if err := os.Remove(tmpFilename); err != nil {
 			log.Printf("[DEBUG] Failed to cleanup the %q file: %s", tmpFilename, err)
 		}
@@ -276,7 +281,7 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 	}
 
 	log.Printf("[DEBUG] File doesn't exists %s. will download from %s", filename, furl)
-	file, err := os.Create(tmpFilename)
+	file, err = os.Create(tmpFilename)
 	if err != nil {
 		return "", fmt.Errorf("error creating file %q: %s", tmpFilename, err)
 	}
