@@ -27,6 +27,7 @@ description: |-
 The `object_lock` block applies protection to backups created after the configuration is applied. For `compliance` or `governance`, specify exactly one retention period: `days` or `retain_until` (a Unix timestamp). For `legalhold`, specify only `type`.
 
 {{tffile "examples/backup/plan/object_lock/main.tf"}}
+{{tffile "examples/backup/plan/object_lock/variables.tf"}}
 
 Object Lock requires a bucket created with Object Lock enabled. The provider forwards these settings to the backup service and reports its validation errors; it does not duplicate cloud-side parameter validation. Protection is not applied retroactively, and removing or changing this block does not modify protection on existing backups. The backup API does not provide a Terraform operation to remove Legal Hold from an existing backup. Shortening an existing retention period is subject to the service's Object Lock enforcement; governance bypass is not provided by this resource.
 
