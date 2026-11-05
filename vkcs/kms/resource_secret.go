@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -16,7 +17,10 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
-var _ resource.ResourceWithConfigure = (*secretResource)(nil)
+var (
+	_ resource.ResourceWithConfigure   = (*secretResource)(nil)
+	_ resource.ResourceWithImportState = (*secretResource)(nil)
+)
 
 func NewSecretResource() resource.Resource {
 	return &secretResource{}
@@ -294,4 +298,8 @@ func (r *secretResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	if err != nil {
 		resp.Diagnostics.AddError("Error waiting for secret deletion", err.Error())
 	}
+}
+
+func (r *secretResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
