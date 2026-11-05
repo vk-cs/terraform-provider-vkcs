@@ -160,7 +160,7 @@ func (r *secretResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	path := data.Path.ValueString()
+	path := data.ID.ValueString()
 
 	result, err := kmsStateChangeConf(secretStateRefreshFunc(kmsV1Client, path), kmsStateReady).WaitForStateContext(ctx)
 	if err != nil {
@@ -190,6 +190,8 @@ func (r *secretResource) Read(ctx context.Context, req resource.ReadRequest, res
 		resp.Diagnostics.AddError("Unexpected KMS response type", fmt.Sprintf("Expected bool, got %T", protectionResult))
 		return
 	}
+
+	data.Path = types.StringValue(path)
 
 	data.DataJSON = types.StringValue(string(secretString))
 

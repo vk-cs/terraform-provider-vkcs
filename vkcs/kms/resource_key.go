@@ -138,7 +138,7 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	name := data.Name.ValueString()
+	name := data.ID.ValueString()
 
 	result, err := kmsStateChangeConf(keyStateRefreshFunc(kmsV1Client, name, nil), kmsStateReady).WaitForStateContext(ctx)
 	if err != nil {
@@ -152,7 +152,7 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	data.Name = types.StringValue(key.Data.Name)
+	data.Name = types.StringValue(name)
 
 	data.Type = types.StringValue(key.Data.Type)
 

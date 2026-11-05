@@ -6,6 +6,9 @@ description: |-
 ---
 
 # VKCS Provider's changelog
+#### v0.19.1
+- Add import for KMS resources
+
 #### v0.19.0
 - Add support for KMS service (secrets and keys)
 - Add data source `vkcs_compute_servergroup`.
