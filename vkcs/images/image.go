@@ -234,10 +234,13 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 		return "", fmt.Errorf("unable to create dir %s: %s", dir, err)
 	}
 
-	filename := filepath.Join(dir, fmt.Sprintf("%x.img", md5.Sum([]byte(furl))))
+	compressionFormat := d.Get("compression_format").(string)
+	archivingFormat := d.Get("archiving_format").(string)
+	filename := imageCacheFilename(dir, furl, compressionFormat, archivingFormat)
+	tmpFilename := filename + ".tmp"
 	delFile := func() {
-		if err := os.Remove(filename); err != nil {
-			log.Printf("[DEBUG] Failed to cleanup the %q file: %s", filename, err)
+		if err := os.Remove(tmpFilename); err != nil {
+			log.Printf("[DEBUG] Failed to cleanup the %q file: %s", tmpFilename, err)
 		}
 	}
 	lockFilename := filename + ".lock"
@@ -267,13 +270,15 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 			return filename, nil
 		}
 		// delete the zero size file
-		delFile()
+		if err := os.Remove(filename); err != nil {
+			log.Printf("[DEBUG] Failed to cleanup the %q file: %s", filename, err)
+		}
 	}
 
 	log.Printf("[DEBUG] File doesn't exists %s. will download from %s", filename, furl)
-	file, err := os.Create(filename)
+	file, err := os.Create(tmpFilename)
 	if err != nil {
-		return "", fmt.Errorf("error creating file %q: %s", filename, err)
+		return "", fmt.Errorf("error creating file %q: %s", tmpFilename, err)
 	}
 	defer file.Close()
 
@@ -305,7 +310,6 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 	defer resp.Body.Close()
 	reader := resp.Body
 
-	compressionFormat := d.Get("compression_format").(string)
 	if compressionFormat == compressionFormatAuto {
 		// If we're here "Content-Encoding" in not filled, we'll read
 		// "Content-Type" to select format
@@ -325,7 +329,6 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 		reader = decompressReader
 	}
 
-	archivingFormat := d.Get("archiving_format").(string)
 	if archivingFormat != "" {
 		unzipReader, err := selectUnzipReader(reader, archivingFormat)
 		if err != nil {
@@ -338,10 +341,30 @@ func resourceImagesImageFile(client *gophercloud.ServiceClient, d *schema.Resour
 
 	if _, err = io.Copy(file, reader); err != nil {
 		delFile()
-		return "", fmt.Errorf("error downloading image %q to file %q: %s", furl, filename, err)
+		return "", fmt.Errorf("error downloading image %q to file %q: %s", furl, tmpFilename, err)
+	}
+
+	if err := file.Close(); err != nil {
+		delFile()
+		return "", fmt.Errorf("error writing image file %q: %s", tmpFilename, err)
+	}
+
+	if err := os.Rename(tmpFilename, filename); err != nil {
+		delFile()
+		return "", fmt.Errorf("error moving image file %q to %q: %s", tmpFilename, filename, err)
 	}
 
 	return filename, nil
+}
+
+// imageCacheFilename keeps the URL-only name for images downloaded without
+// decompression so that existing caches stay valid.
+func imageCacheFilename(dir, url, compressionFormat, archivingFormat string) string {
+	key := url
+	if compressionFormat != "" || archivingFormat != "" {
+		key = strings.Join([]string{url, compressionFormat, archivingFormat}, "\x00")
+	}
+	return filepath.Join(dir, fmt.Sprintf("%x.img", md5.Sum([]byte(key))))
 }
 
 func selectDecompressReader(src io.Reader, format string) (io.ReadCloser, error) {
