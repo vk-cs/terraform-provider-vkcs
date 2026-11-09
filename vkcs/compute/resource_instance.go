@@ -76,6 +76,30 @@ func ResourceComputeInstance() *schema.Resource {
 				ForceNew:    true,
 				Description: "The region in which to create the server instance. If omitted, the `region` argument of the provider is used. Changing this creates a new server.",
 			},
+			"restore_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				ConflictsWith: []string{
+					"image_id",
+					"image_name",
+					"flavor_id",
+					"flavor_name",
+					"availability_zone",
+					"user_data",
+					"cloud_monitoring",
+					"network_mode",
+					"network",
+					"config_drive",
+					"key_pair",
+					"block_device",
+					"security_groups",
+					"security_group_ids",
+					"scheduler_hints",
+					"personality",
+				},
+				Description: "ID of a completed or in-progress VKCS backup restore operation. When set, the resource adopts the restored Nova VM and manages its lifecycle instead of creating a VM from an image. The operation must restore exactly one VM, and `name` should match its `restore_name`. Do not set VM creation options such as image, flavor, network, key pair, security groups, or block devices; those are defined by the restore operation. Changing this ID creates a new resource.",
+			},
 
 			"name": {
 				Type:        schema.TypeString,
@@ -481,6 +505,10 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
+	if restoreID := d.Get("restore_id").(string); restoreID != "" {
+		return resourceComputeInstanceCreateFromRestore(ctx, d, meta, config, computeClient, restoreID, startTime)
+	}
+
 	imageClient, err := config.ImageV2Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS image client: %s", err)
@@ -633,22 +661,49 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.Errorf("Error creating VKCS server: %s", err)
 	}
-	log.Printf("[INFO] Instance ID: %s", server.ID)
+	return finishComputeInstanceCreate(ctx, d, meta, computeClient, server.ID, d.Timeout(schema.TimeoutCreate), false, startTime, diags)
+}
 
-	// Store the ID now
-	d.SetId(server.ID)
+func resourceComputeInstanceCreateFromRestore(ctx context.Context, d *schema.ResourceData, meta interface{}, config clients.Config, computeClient *gophercloud.ServiceClient, restoreID string, startTime time.Time) diag.Diagnostics {
+	backupClient, err := config.BackupV1Client(util.GetRegion(d, config), config.GetProjectID())
+	if err != nil {
+		return diag.Errorf("Error creating VKCS backup client for restore %q: %s", restoreID, err)
+	}
+
+	createTimeout := d.Timeout(schema.TimeoutCreate) - time.Since(startTime)
+	serverID, err := getRestoredComputeInstanceID(ctx, backupClient, restoreID, createTimeout)
+	if err != nil {
+		return diag.Errorf("Error resolving restored VKCS instance from backup restore %q: %s", restoreID, err)
+	}
+
+	createTimeout = d.Timeout(schema.TimeoutCreate) - time.Since(startTime)
+	if createTimeout <= 0 {
+		return diag.Errorf("Timed out waiting for restored VKCS instance %q to become active", serverID)
+	}
+
+	return finishComputeInstanceCreate(ctx, d, meta, computeClient, serverID, createTimeout, true, startTime, nil)
+}
+
+func finishComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}, computeClient *gophercloud.ServiceClient, serverID string, createTimeout time.Duration, restoring bool, startTime time.Time, diags diag.Diagnostics) diag.Diagnostics {
+	var err error
+	log.Printf("[INFO] Instance ID: %s", serverID)
+	d.SetId(serverID)
 
 	// Wait for the instance to become running so we can get some attributes
 	// that aren't available until later.
 	log.Printf(
 		"[DEBUG] Waiting for instance (%s) to become running",
-		server.ID)
+		serverID)
 
+	refreshInstanceState := ServerStateRefreshFunc(computeClient, serverID)
+	if restoring {
+		refreshInstanceState = restoredComputeInstanceStateRefreshFunc(refreshInstanceState, serverID)
+	}
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"BUILD"},
 		Target:     []string{"ACTIVE"},
-		Refresh:    ServerStateRefreshFunc(computeClient, server.ID),
-		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Refresh:    refreshInstanceState,
+		Timeout:    createTimeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
@@ -665,7 +720,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.Errorf(
 			"Error waiting for instance (%s) to become ready: %s",
-			server.ID, err)
+			serverID, err)
 	}
 
 	vmState := d.Get("power_state").(string)
@@ -678,7 +733,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 			// Pending:    []string{"ACTIVE"},
 			Target:     []string{"SHUTOFF"},
 			Refresh:    ServerStateRefreshFunc(computeClient, d.Id()),
-			Timeout:    d.Timeout(schema.TimeoutCreate),
+			Timeout:    createTimeout,
 			Delay:      10 * time.Second,
 			MinTimeout: 3 * time.Second,
 		}
@@ -692,7 +747,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 
 	vendorOptionsRaw := d.Get("vendor_options").(*schema.Set)
 	if shouldGetServerPassword(vendorOptionsRaw) {
-		passwordData, err := getServerPasswordData(ctx, computeClient, server.ID, d.Timeout(schema.TimeoutRead))
+		passwordData, err := getServerPasswordData(ctx, computeClient, serverID, d.Timeout(schema.TimeoutRead))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to get server password: %w", err))
 		}
@@ -700,7 +755,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if password, ok := d.GetOk("admin_pass"); ok {
-		err = setAdminPassword(ctx, computeClient, server.ID, password.(string), d.Timeout(schema.TimeoutCreate)-time.Since(startTime))
+		err = setAdminPassword(ctx, computeClient, serverID, password.(string), d.Timeout(schema.TimeoutCreate)-time.Since(startTime))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to set admin password: %w", err))
 		}

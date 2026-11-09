@@ -50,6 +50,13 @@ script and user_data into one file
 
 {{tffile "examples/compute/instance/cloud_monitoring/main.tf"}}
 
+### Manage a VM restored from backup
+
+Set `restore_id` to the ID of a backup restore operation, such as `vkcs_backup_restore.vm.id` or an operation ID created outside Terraform. The operation must restore exactly one Nova VM, and `name` should match its `restore_name`. Do not set image, flavor, network, key-pair, security-group, or block-device creation arguments; those are defined by the restore operation. Terraform waits for the restore to finish, adopts the resulting Nova instance ID, and manages the VM lifecycle; destroying this resource deletes the restored VM.
+
+{{tffile "examples/compute/instance/restore_id/main.tf"}}
+{{tffile "examples/compute/instance/restore_id/variables.tf"}}
+
 ### Get generated admin password for windows instance
 
 ~> **Attention:** The password will be generated only if you specify the instance `key_pair`. If you change the password after creating the instance, these changes will not be visible in `password_data` field.

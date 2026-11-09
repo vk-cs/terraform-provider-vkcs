@@ -28,6 +28,16 @@ data "vkcs_backup_restore" "vm" {
   restore_id = try(vkcs_backup_restore.vm[0].id, "")
 }
 
+resource "vkcs_compute_instance" "restored_vm" {
+  count      = var.enable_restore ? 1 : 0
+  name       = try(vkcs_backup_restore.vm[0].restore_name, "restored-vm-example")
+  restore_id = try(vkcs_backup_restore.vm[0].id, "")
+}
+
 output "restore_resources_status" {
   value = try(data.vkcs_backup_restore.vm[0].resources_status, {})
+}
+
+output "restored_vm_id" {
+  value = try(vkcs_compute_instance.restored_vm[0].id, "")
 }
