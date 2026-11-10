@@ -58,6 +58,25 @@ func TestAccKMSKeyResource_keyTypes(t *testing.T) {
 	}
 }
 
+func TestAccKMSKey_importBasic(t *testing.T) {
+	name := "tfacc-kms-key-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccKMSCheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccKMSKeyResourceConfig, name, "aes128-gcm96", true),
+			},
+			{
+				ResourceName:      "vkcs_kms_key.key",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 const testAccKMSKeyResourceBasic = `
 resource "vkcs_kms_key" "key" {
   name = %q

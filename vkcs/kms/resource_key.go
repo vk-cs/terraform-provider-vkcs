@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -17,7 +18,10 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
-var _ resource.ResourceWithConfigure = (*keyResource)(nil)
+var (
+	_ resource.ResourceWithConfigure   = (*keyResource)(nil)
+	_ resource.ResourceWithImportState = (*keyResource)(nil)
+)
 
 func NewKeyResource() resource.Resource {
 	return &keyResource{}
@@ -134,7 +138,7 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	name := data.Name.ValueString()
+	name := data.ID.ValueString()
 
 	result, err := kmsStateChangeConf(keyStateRefreshFunc(kmsV1Client, name, nil), kmsStateReady).WaitForStateContext(ctx)
 	if err != nil {
@@ -148,7 +152,7 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	data.Name = types.StringValue(key.Data.Name)
+	data.Name = types.StringValue(name)
 
 	data.Type = types.StringValue(key.Data.Type)
 
@@ -228,4 +232,8 @@ func (r *keyResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 func waitForKey(ctx context.Context, client *gophercloud.ServiceClient, name string, deletionAllowed bool) error {
 	_, err := kmsStateChangeConf(keyStateRefreshFunc(client, name, &deletionAllowed), kmsStateReady).WaitForStateContext(ctx)
 	return err
+}
+
+func (r *keyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
