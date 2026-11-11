@@ -50,12 +50,12 @@ script and user_data into one file
 
 {{tffile "examples/compute/instance/cloud_monitoring/main.tf"}}
 
-### Manage a VM restored from backup
+### Restore a VM from a backup checkpoint
 
-Set `restore_id` to the ID of a backup restore operation, such as `vkcs_backup_restore.vm.id` or an operation ID created outside Terraform. The operation must restore exactly one Nova VM, and `name` should match its `restore_name`. Do not set image, flavor, network, key-pair, security-group, or block-device creation arguments; those are defined by the restore operation. Terraform waits for the restore to finish, adopts the resulting Nova instance ID, and manages the VM lifecycle; destroying this resource deletes the restored VM.
+Set `checkpoint_id` to create a new VM from a backup checkpoint. The restored VM is managed by `vkcs_compute_instance` and is deleted with that resource. If the checkpoint contains multiple VMs, set `source_resource_id` to select one. Set exactly one `network` block and `key_pair` for the new VM; `flavor_id` or `flavor_name` and `availability_zone` can override values from the checkpoint. The disk layout is restored from the checkpoint, so `block_device` cannot be set in this mode. Image, `user_data`, `config_drive`, `personality`, `scheduler_hints`, `network_mode`, deprecated `security_groups`, and cloud monitoring configuration are not supported together with `checkpoint_id`. The operation ID is available as `restore_id` and can be used with the `vkcs_backup_restore` data source to read restore status. Changing `checkpoint_id`, `source_resource_id`, or `name` starts a new restore. If a restore fails, change `name` (or taint the resource) to request another operation.
 
-{{tffile "examples/compute/instance/restore_id/main.tf"}}
-{{tffile "examples/compute/instance/restore_id/variables.tf"}}
+{{tffile "examples/backup/restore/main.tf"}}
+{{tffile "examples/backup/restore/variables.tf"}}
 
 ### Get generated admin password for windows instance
 

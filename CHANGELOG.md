@@ -9,7 +9,7 @@ description: |-
 #### v0.20.0 (unreleased)
 - Add Object Lock retention period and Legal Hold configuration to `vkcs_backup_plan`.
 - Add the `vkcs_backup_checkpoints` data source to read a plan's backup checkpoints and their Object Lock details.
-- Add the `vkcs_backup_restore` resource for starting VM restores and allow `vkcs_compute_instance.restore_id` to manage the restored VM.
+- Add VM restore from backup checkpoints to `vkcs_compute_instance` via `checkpoint_id`.
 - Add the `vkcs_backup_restore` data source to read per-resource restore statuses.
 
 #### v0.19.0

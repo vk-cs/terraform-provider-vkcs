@@ -34,6 +34,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/checkpoints"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/restores"
 	ivolumes "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/blockstorage/v3/volumes"
 	ibootfromvolume "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/bootfromvolume"
 	iflavors "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/flavors"
@@ -76,29 +78,36 @@ func ResourceComputeInstance() *schema.Resource {
 				ForceNew:    true,
 				Description: "The region in which to create the server instance. If omitted, the `region` argument of the provider is used. Changing this creates a new server.",
 			},
-			"restore_id": {
+			"checkpoint_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 				ConflictsWith: []string{
 					"image_id",
 					"image_name",
-					"flavor_id",
-					"flavor_name",
-					"availability_zone",
 					"user_data",
 					"cloud_monitoring",
 					"network_mode",
-					"network",
 					"config_drive",
-					"key_pair",
 					"block_device",
 					"security_groups",
-					"security_group_ids",
 					"scheduler_hints",
 					"personality",
 				},
-				Description: "ID of a completed or in-progress VKCS backup restore operation. When set, the resource adopts the restored Nova VM and manages its lifecycle instead of creating a VM from an image. The operation must restore exactly one VM, and `name` should match its `restore_name`. Do not set VM creation options such as image, flavor, network, key pair, security groups, or block devices; those are defined by the restore operation. Changing this ID creates a new resource.",
+				Description: "ID of the backup checkpoint to restore. When set, this resource creates a new VM from the checkpoint instead of creating it from an image. Set exactly one `network` block and `key_pair` for the restored VM; optional flavor and availability zone values are passed to the backup service. The restored VM is managed and deleted by this resource. Changing this ID, `source_resource_id`, or `name` starts a new restore operation.",
+			},
+			"source_resource_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ForceNew:     true,
+				RequiredWith: []string{"checkpoint_id"},
+				Description:  "ID of the Nova server resource inside the checkpoint. Required only when the checkpoint contains multiple VMs; otherwise the single VM is selected automatically.",
+			},
+			"restore_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the backup restore operation created for checkpoint_id. Use it with the vkcs_backup_restore data source to read per-resource restore status.",
 			},
 
 			"name": {
@@ -505,8 +514,8 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
 	}
 
-	if restoreID := d.Get("restore_id").(string); restoreID != "" {
-		return resourceComputeInstanceCreateFromRestore(ctx, d, meta, config, computeClient, restoreID, startTime)
+	if checkpointID := d.Get("checkpoint_id").(string); checkpointID != "" {
+		return resourceComputeInstanceCreateFromCheckpoint(ctx, d, meta, config, computeClient, checkpointID, startTime)
 	}
 
 	imageClient, err := config.ImageV2Client(util.GetRegion(d, config))
@@ -661,31 +670,114 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.Errorf("Error creating VKCS server: %s", err)
 	}
-	return finishComputeInstanceCreate(ctx, d, meta, computeClient, server.ID, d.Timeout(schema.TimeoutCreate), false, startTime, diags)
+	return finishComputeInstanceCreate(ctx, d, meta, computeClient, server.ID, d.Timeout(schema.TimeoutCreate), false, startTime, "", diags)
 }
 
-func resourceComputeInstanceCreateFromRestore(ctx context.Context, d *schema.ResourceData, meta interface{}, config clients.Config, computeClient *gophercloud.ServiceClient, restoreID string, startTime time.Time) diag.Diagnostics {
+func resourceComputeInstanceCreateFromCheckpoint(ctx context.Context, d *schema.ResourceData, meta interface{}, config clients.Config, computeClient *gophercloud.ServiceClient, checkpointID string, startTime time.Time) diag.Diagnostics {
 	backupClient, err := config.BackupV1Client(util.GetRegion(d, config), config.GetProjectID())
 	if err != nil {
-		return diag.Errorf("Error creating VKCS backup client for restore %q: %s", restoreID, err)
+		return diag.Errorf("Error creating VKCS backup client for checkpoint %q: %s", checkpointID, err)
+	}
+	providerID, err := findNovaBackupProviderID(backupClient)
+	if err != nil {
+		return diag.Errorf("Error finding Nova backup provider: %s", err)
+	}
+	checkpoint, err := checkpoints.Get(backupClient, providerID, checkpointID).Extract()
+	if err != nil {
+		return diag.Errorf("Error retrieving checkpoint %q: %s", checkpointID, err)
+	}
+	sourceResourceID, err := selectCheckpointRestoreSourceID(checkpoint.Resources, d.Get("source_resource_id").(string))
+	if err != nil {
+		return diag.Errorf("Invalid backup checkpoint %q: %s", checkpointID, err)
+	}
+
+	networkID, err := computeRestoreNetworkID(d, meta)
+	if err != nil {
+		return diag.Errorf("Error resolving network for checkpoint restore: %s", err)
+	}
+
+	flavorID := ""
+	if d.Get("flavor_id").(string) != "" || d.Get("flavor_name").(string) != "" || os.Getenv("OS_FLAVOR_ID") != "" || os.Getenv("OS_FLAVOR_NAME") != "" {
+		flavorID, err = getFlavorID(computeClient, d)
+		if err != nil {
+			return diag.Errorf("Error resolving flavor for checkpoint restore: %s", err)
+		}
+	}
+	parameters, err := computeRestoreParameters(d, networkID, flavorID)
+	if err != nil {
+		return diag.Errorf("Invalid compute instance checkpoint restore configuration: %s", err)
+	}
+
+	resourceKey := fmt.Sprintf("%s#%s", novaBackupResourceType, sourceResourceID)
+	restoreOptions := restores.RestoreCreateOpts{
+		ProviderID:   providerID,
+		CheckpointID: checkpointID,
+		Parameters:   map[string]restores.RestoreParameters{resourceKey: parameters},
+	}
+	mutexKey := fmt.Sprintf("compute-backup-restore:%s:%s:%s", checkpointID, sourceResourceID, parameters.RestoreName)
+	mutex := config.GetMutex()
+	mutex.Lock(mutexKey)
+	restoreResponse, err := func() (*restores.Restore, error) {
+		defer mutex.Unlock(mutexKey)
+		existingRestores, err := restores.ListAll(backupClient)
+		if err != nil {
+			return nil, fmt.Errorf("check existing restore operations: %w", err)
+		}
+		return getOrCreateRestore(existingRestores, restoreOptions, func(candidate *restores.Restore) (bool, error) {
+			return canReuseExistingRestore(candidate, func(serverID string) (bool, error) {
+				return waitForRestoredServerVisibility(ctx, serverID, restoreServerVisibilityGrace, restorePollInterval, func(waitCtx context.Context, id string) (bool, error) {
+					select {
+					case <-waitCtx.Done():
+						return false, waitCtx.Err()
+					default:
+					}
+					_, err := iservers.Get(computeClient, id).Extract()
+					if err != nil {
+						if errutil.IsNotFound(err) {
+							return false, nil
+						}
+						return false, err
+					}
+					return true, nil
+				})
+			})
+		}, func() (*restores.Restore, error) {
+			return restores.Create(backupClient, &restores.RestoreCreate{Restore: &restoreOptions}).Extract()
+		})
+	}()
+	if err != nil {
+		return diag.Errorf("Error creating checkpoint restore: %s", err)
+	}
+	if restoreResponse == nil || restoreResponse.ID == "" {
+		return diag.Errorf("Error creating checkpoint restore: backup API returned an empty restore ID")
+	}
+	if err := d.Set("restore_id", restoreResponse.ID); err != nil {
+		return diag.Errorf("Error storing restore operation ID: %s", err)
+	}
+	if err := d.Set("source_resource_id", sourceResourceID); err != nil {
+		return diag.Errorf("Error storing checkpoint source resource ID: %s", err)
 	}
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - time.Since(startTime)
-	serverID, err := getRestoredComputeInstanceID(ctx, backupClient, restoreID, createTimeout)
+	serverID, err := getRestoredComputeInstanceID(ctx, backupClient, restoreResponse.ID, createTimeout)
 	if err != nil {
-		return diag.Errorf("Error resolving restored VKCS instance from backup restore %q: %s", restoreID, err)
+		return diag.Errorf("Error waiting for checkpoint restore %q: %s", restoreResponse.ID, err)
 	}
-
 	createTimeout = d.Timeout(schema.TimeoutCreate) - time.Since(startTime)
 	if createTimeout <= 0 {
 		return diag.Errorf("Timed out waiting for restored VKCS instance %q to become active", serverID)
 	}
 
-	return finishComputeInstanceCreate(ctx, d, meta, computeClient, serverID, createTimeout, true, startTime, nil)
+	return finishComputeInstanceCreate(ctx, d, meta, computeClient, serverID, createTimeout, true, startTime, restoreResponse.ID, nil)
 }
 
-func finishComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}, computeClient *gophercloud.ServiceClient, serverID string, createTimeout time.Duration, restoring bool, startTime time.Time, diags diag.Diagnostics) diag.Diagnostics {
+func finishComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}, computeClient *gophercloud.ServiceClient, serverID string, createTimeout time.Duration, restoring bool, startTime time.Time, restoreID string, diags diag.Diagnostics) diag.Diagnostics {
 	var err error
+	if restoreID != "" {
+		if err = d.Set("restore_id", restoreID); err != nil {
+			return diag.Errorf("Error storing restore operation ID: %s", err)
+		}
+	}
 	log.Printf("[INFO] Instance ID: %s", serverID)
 	d.SetId(serverID)
 
@@ -767,6 +859,9 @@ func finishComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 
 func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(clients.Config)
+	checkpointID := d.Get("checkpoint_id").(string)
+	sourceResourceID := d.Get("source_resource_id").(string)
+	restoreID := d.Get("restore_id").(string)
 	computeClient, err := config.ComputeV2Client(util.GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating VKCS compute client: %s", err)
@@ -879,6 +974,21 @@ func resourceComputeInstanceRead(_ context.Context, d *schema.ResourceData, meta
 
 	if err := resourceComputeInstanceReadServerGroup(computeClient, d); err != nil {
 		return diag.FromErr(err)
+	}
+	if checkpointID != "" {
+		if err := d.Set("checkpoint_id", checkpointID); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if sourceResourceID != "" {
+		if err := d.Set("source_resource_id", sourceResourceID); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if restoreID != "" {
+		if err := d.Set("restore_id", restoreID); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return nil
@@ -1314,6 +1424,10 @@ func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceComputeInstanceCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, v interface{}) error {
+	if !diff.GetRawState().IsNull() && diff.Get("checkpoint_id").(string) != "" && diff.HasChange("name") {
+		return diff.ForceNew("name")
+	}
+
 	bdsRaw := diff.Get("block_device").([]interface{})
 	bds := make([]map[string]interface{}, len(bdsRaw))
 	for i, v := range bdsRaw {

@@ -361,7 +361,6 @@ func (p *vkcsProvider) DataSources(_ context.Context) []func() datasource.DataSo
 // Resources defines the resources implemented in the provider.
 func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		backup.NewRestoreResource,
 		backup.NewPlanResource,
 		cdn.NewOriginGroupResource,
 		cdn.NewResourceResource,

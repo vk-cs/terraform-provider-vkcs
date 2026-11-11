@@ -107,9 +107,24 @@ func (d *RestoreDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	data.Region = types.StringValue(region)
 	data.CheckpointID = types.StringValue(restore.CheckpointID)
 	data.ProviderID = types.StringValue(restore.ProviderID)
-	state := RestoreResourceModel{}
-	setRestoreStatuses(ctx, &state, restore, &resp.Diagnostics)
-	data.ResourcesStatus = state.ResourcesStatus
-	data.ResourcesReason = state.ResourcesReason
+
+	resourcesStatus := restore.ResourcesStatus
+	if resourcesStatus == nil {
+		resourcesStatus = map[string]string{}
+	}
+
+	resourcesReason := restore.ResourcesReason
+	if resourcesReason == nil {
+		resourcesReason = map[string]string{}
+	}
+
+	statusMap, statusDiags := types.MapValueFrom(ctx, types.StringType, resourcesStatus)
+	resp.Diagnostics.Append(statusDiags...)
+
+	data.ResourcesStatus = statusMap
+	reasonMap, reasonDiags := types.MapValueFrom(ctx, types.StringType, resourcesReason)
+	resp.Diagnostics.Append(reasonDiags...)
+
+	data.ResourcesReason = reasonMap
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
