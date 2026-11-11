@@ -40,4 +40,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Import is not currently supported.
+KMS keys can be imported using their name, e.g.
+
+```shell
+terraform import vkcs_kms_key.key some-key
+```

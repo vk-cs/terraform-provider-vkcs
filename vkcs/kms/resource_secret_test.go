@@ -46,6 +46,25 @@ func TestAccKMSSecretResource_basic(t *testing.T) {
 	})
 }
 
+func TestAccKMSSecret_importBasic(t *testing.T) {
+	name := "tfacc-kms-secret-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccKMSCheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccKMSSecretResourceConfig, name, "import", false),
+			},
+			{
+				ResourceName:      "vkcs_kms_secret.secret",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 const testAccKMSSecretResourceBasic = `
 resource "vkcs_kms_secret" "secret" {
   path      = %q

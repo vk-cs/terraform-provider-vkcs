@@ -12,6 +12,9 @@ description: |-
 - Add VM restore from backup checkpoints to `vkcs_compute_instance` via `checkpoint_id`.
 - Add the `vkcs_backup_restore` data source to read per-resource restore statuses.
 
+#### v0.19.1 (unreleased)
+- Add import for KMS resources
+
 #### v0.19.0
 - Add support for KMS service (secrets and keys)
 - Add data source `vkcs_compute_servergroup`.
