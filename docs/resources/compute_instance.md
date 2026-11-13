@@ -295,7 +295,7 @@ Set `checkpoint_id` to create a VM from a backup checkpoint. The restored VM is 
 
 The disk layout is restored from the checkpoint. Image, block devices, user data, config drive, personality, scheduler hints, network mode, metadata, flavor and security group settings, `network.port`, `network.fixed_ip_v4`, and cloud monitoring are not supported in checkpoint restore mode.
 
-The restore operation ID is available in `restore_id` and can be inspected with `vkcs_backup_restore`. Matching restore operations are reused, including failed ones, to avoid creating duplicate or partially restored VMs. Tainting or `-replace` with unchanged configuration does not retry a failed operation; change `name`, `checkpoint_id`, or `source_resource_id` to request a new operation.
+The restore operation ID is available in `restore_id` and can be inspected with `vkcs_backup_restore`. Matching in-progress and failed restores are reused to avoid creating duplicate or partially restored VMs. Tainting or `-replace` with unchanged configuration does not retry a failed operation; change `name`, `checkpoint_id`, or `source_resource_id` to request a new operation. For a completed restore, the provider reuses the operation while its VM is visible in Nova. If the VM remains absent for two minutes, the provider logs a warning and starts a new restore; unusually slow Nova visibility could still result in a duplicate VM.
 
 ### Get generated admin password for windows instance
 

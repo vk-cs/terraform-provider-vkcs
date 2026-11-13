@@ -146,27 +146,35 @@ func TestComputeInstanceCheckpointRestoreSchema(t *testing.T) {
 
 func TestValidateCheckpointRestoreConfigRejectsUnsupportedNetworkAttributes(t *testing.T) {
 	for _, attribute := range []string{"port", "fixed_ip_v4"} {
-		t.Run(attribute, func(t *testing.T) {
-			networkAttributes := map[string]cty.Value{
-				"uuid":           cty.StringVal("network-id"),
-				"name":           cty.NullVal(cty.String),
-				"port":           cty.NullVal(cty.String),
-				"fixed_ip_v4":    cty.NullVal(cty.String),
-				"mac":            cty.NullVal(cty.String),
-				"access_network": cty.BoolVal(false),
-			}
-			networkAttributes[attribute] = cty.StringVal("unsupported-value")
-			network := cty.ObjectVal(networkAttributes)
-			config := cty.ObjectVal(map[string]cty.Value{
-				"checkpoint_id": cty.StringVal("checkpoint-id"),
-				"network":       cty.ListVal([]cty.Value{network}),
-			})
+		for _, value := range []struct {
+			name  string
+			value cty.Value
+		}{
+			{name: "known value", value: cty.StringVal("unsupported-value")},
+			{name: "unknown expression", value: cty.UnknownVal(cty.String)},
+		} {
+			t.Run(attribute+"/"+value.name, func(t *testing.T) {
+				networkAttributes := map[string]cty.Value{
+					"uuid":           cty.StringVal("network-id"),
+					"name":           cty.NullVal(cty.String),
+					"port":           cty.NullVal(cty.String),
+					"fixed_ip_v4":    cty.NullVal(cty.String),
+					"mac":            cty.NullVal(cty.String),
+					"access_network": cty.BoolVal(false),
+				}
+				networkAttributes[attribute] = value.value
+				network := cty.ObjectVal(networkAttributes)
+				config := cty.ObjectVal(map[string]cty.Value{
+					"checkpoint_id": cty.StringVal("checkpoint-id"),
+					"network":       cty.ListVal([]cty.Value{network}),
+				})
 
-			err := validateCheckpointRestoreConfig(config)
-			if err == nil || !strings.Contains(err.Error(), "network."+attribute) {
-				t.Fatalf("validateCheckpointRestoreConfig() error = %v, want unsupported network.%s error", err, attribute)
-			}
-		})
+				err := validateCheckpointRestoreConfig(config)
+				if err == nil || !strings.Contains(err.Error(), "network."+attribute) {
+					t.Fatalf("validateCheckpointRestoreConfig() error = %v, want unsupported network.%s error", err, attribute)
+				}
+			})
+		}
 	}
 }
 
@@ -331,7 +339,9 @@ func TestGetOrCreateRestoreAdoptsMatchingRequest(t *testing.T) {
 	}}
 	createCalls := 0
 
-	got, err := getOrCreateRestore(existing, desired, canReuseExistingRestore, func() (*restores.Restore, error) {
+	got, err := getOrCreateRestore(existing, desired, func(candidate *restores.Restore) (bool, error) {
+		return canReuseExistingRestore(candidate, nil)
+	}, func() (*restores.Restore, error) {
 		createCalls++
 		return &restores.Restore{ID: "new-restore-id"}, nil
 	})
@@ -343,7 +353,7 @@ func TestGetOrCreateRestoreAdoptsMatchingRequest(t *testing.T) {
 	}
 }
 
-func TestGetOrCreateRestoreReusesCompletedRestoreToAvoidDuplicateVM(t *testing.T) {
+func TestGetOrCreateRestoreCreatesAgainWhenPreviousVMWasDeleted(t *testing.T) {
 	desired := restores.RestoreCreateOpts{
 		ProviderID:   "nova-provider",
 		CheckpointID: "checkpoint-id",
@@ -360,23 +370,27 @@ func TestGetOrCreateRestoreReusesCompletedRestoreToAvoidDuplicateVM(t *testing.T
 	}}
 	createCalls := 0
 
-	got, err := getOrCreateRestore(existing, desired, canReuseExistingRestore, func() (*restores.Restore, error) {
+	got, err := getOrCreateRestore(existing, desired, func(candidate *restores.Restore) (bool, error) {
+		return canReuseExistingRestore(candidate, func(string) (bool, error) { return false, nil })
+	}, func() (*restores.Restore, error) {
 		createCalls++
 		return &restores.Restore{ID: "new-restore-id"}, nil
 	})
 	if err != nil {
 		t.Fatalf("getOrCreateRestore() error = %v", err)
 	}
-	if got.ID != "old-restore-id" || createCalls != 0 {
-		t.Fatalf("getOrCreateRestore() = %#v with %d create calls, want existing restore and no duplicate", got, createCalls)
+	if got.ID != "new-restore-id" || createCalls != 1 {
+		t.Fatalf("getOrCreateRestore() = %#v with %d create calls, want a new restore after the prior VM was deleted", got, createCalls)
 	}
 }
 
 func TestCanReuseExistingRestore(t *testing.T) {
 	tests := []struct {
-		name      string
-		restore   *restores.Restore
-		wantReuse bool
+		name           string
+		restore        *restores.Restore
+		serverExists   bool
+		wantReuse      bool
+		wantServerCall bool
 	}{
 		{
 			name:      "reuses an in-progress restore",
@@ -384,9 +398,18 @@ func TestCanReuseExistingRestore(t *testing.T) {
 			wantReuse: true,
 		},
 		{
-			name:      "reuses a completed restore",
-			restore:   &restores.Restore{ResourcesStatus: map[string]string{"OS::Nova::Server#vm": "available"}},
-			wantReuse: true,
+			name:           "reuses a completed restore while the VM exists",
+			restore:        &restores.Restore{ResourcesStatus: map[string]string{"OS::Nova::Server#vm": "available"}},
+			serverExists:   true,
+			wantReuse:      true,
+			wantServerCall: true,
+		},
+		{
+			name:           "does not reuse a completed restore after its VM was deleted",
+			restore:        &restores.Restore{ResourcesStatus: map[string]string{"OS::Nova::Server#vm": "available"}},
+			serverExists:   false,
+			wantReuse:      false,
+			wantServerCall: true,
 		},
 		{
 			name:      "adopts a failed restore so an identical request cannot create a duplicate",
@@ -397,12 +420,22 @@ func TestCanReuseExistingRestore(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got, err := canReuseExistingRestore(test.restore)
+			serverCalls := 0
+			got, err := canReuseExistingRestore(test.restore, func(serverID string) (bool, error) {
+				serverCalls++
+				if serverID != "vm" {
+					t.Fatalf("server ID = %q, want vm", serverID)
+				}
+				return test.serverExists, nil
+			})
 			if err != nil {
 				t.Fatalf("canReuseExistingRestore() error = %v", err)
 			}
 			if got != test.wantReuse {
 				t.Errorf("canReuseExistingRestore() = %t, want %t", got, test.wantReuse)
+			}
+			if (serverCalls > 0) != test.wantServerCall {
+				t.Errorf("server existence checks = %d, want call=%t", serverCalls, test.wantServerCall)
 			}
 		})
 	}

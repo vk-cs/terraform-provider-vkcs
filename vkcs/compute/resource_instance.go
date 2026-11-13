@@ -724,7 +724,25 @@ func resourceComputeInstanceCreateFromCheckpoint(ctx context.Context, d *schema.
 		if err != nil {
 			return nil, fmt.Errorf("check existing restore operations: %w", err)
 		}
-		return getOrCreateRestore(existingRestores, restoreOptions, canReuseExistingRestore, func() (*restores.Restore, error) {
+		return getOrCreateRestore(existingRestores, restoreOptions, func(candidate *restores.Restore) (bool, error) {
+			return canReuseExistingRestore(candidate, func(serverID string) (bool, error) {
+				return waitForRestoredServerVisibility(ctx, serverID, restoreServerVisibilityGrace, restorePollInterval, func(waitCtx context.Context, id string) (bool, error) {
+					select {
+					case <-waitCtx.Done():
+						return false, waitCtx.Err()
+					default:
+					}
+					_, err := iservers.Get(computeClient, id).Extract()
+					if err != nil {
+						if errutil.IsNotFound(err) {
+							return false, nil
+						}
+						return false, err
+					}
+					return true, nil
+				})
+			})
+		}, func() (*restores.Restore, error) {
 			return restores.Create(backupClient, &restores.RestoreCreate{Restore: &restoreOptions}).Extract()
 		})
 	}()
@@ -1476,7 +1494,10 @@ func validateCheckpointRestoreConfig(config cty.Value) error {
 				continue
 			}
 			value := network.GetAttr(attribute)
-			if !value.IsNull() && value.IsKnown() && value.AsString() != "" {
+			if value.IsNull() {
+				continue
+			}
+			if !value.IsKnown() || value.AsString() != "" {
 				return fmt.Errorf("network.%s is not supported when checkpoint_id is set", attribute)
 			}
 		}

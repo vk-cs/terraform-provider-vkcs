@@ -3,6 +3,7 @@ package compute
 import (
 	"context"
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 	"time"
@@ -21,9 +22,11 @@ const (
 	novaBackupProviderType         = "OS::Nova"
 	novaBackupResourceType         = "OS::Nova::Server"
 	restorePollInterval            = 5 * time.Second
+	restoreServerVisibilityGrace   = 2 * time.Minute
 )
 
 type restoreGetter func(context.Context, string) (*restores.Restore, error)
+type restoredServerExistsGetter func(context.Context, string) (bool, error)
 
 func findNovaBackupProviderID(client *gophercloud.ServiceClient) (string, error) {
 	allProviders, err := providers.List(client).Extract()
@@ -144,7 +147,7 @@ func getOrCreateRestore(
 	return create()
 }
 
-func canReuseExistingRestore(restore *restores.Restore) (bool, error) {
+func canReuseExistingRestore(restore *restores.Restore, serverExists func(string) (bool, error)) (bool, error) {
 	if restore == nil || !restoreStatusesComplete(restore.ResourcesStatus) {
 		return true, nil
 	}
@@ -156,10 +159,69 @@ func canReuseExistingRestore(restore *restores.Restore) (bool, error) {
 
 	// Keep adopting a completed restore even if Nova has not exposed its server
 	// yet. Creating another restore for the same request can create a duplicate VM.
-	if _, _, err := restoredComputeInstanceID(restore); err != nil {
+	serverID, ready, err := restoredComputeInstanceID(restore)
+	if err != nil {
 		return false, err
 	}
-	return true, nil
+	if !ready {
+		return true, nil
+	}
+	if serverExists == nil {
+		return false, fmt.Errorf("server existence checker must not be nil")
+	}
+	exists, err := serverExists(serverID)
+	if err != nil {
+		return false, err
+	}
+	if !exists {
+		log.Printf("[WARN] Existing backup restore %q reports VM %q, but it was not visible in Nova after %s; starting another restore may create a duplicate if Nova visibility is delayed", restore.ID, serverID, restoreServerVisibilityGrace)
+	}
+	return exists, nil
+}
+
+func waitForRestoredServerVisibility(ctx context.Context, serverID string, timeout, pollInterval time.Duration, getServer restoredServerExistsGetter) (bool, error) {
+	if serverID == "" {
+		return false, fmt.Errorf("restored server ID must not be empty")
+	}
+	if getServer == nil {
+		return false, fmt.Errorf("server existence checker must not be nil")
+	}
+	if timeout <= 0 {
+		return false, nil
+	}
+	if pollInterval <= 0 {
+		pollInterval = restorePollInterval
+	}
+
+	waitCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	ticker := time.NewTicker(pollInterval)
+	defer ticker.Stop()
+
+	for {
+		if err := waitCtx.Err(); err != nil {
+			if ctx.Err() != nil {
+				return false, ctx.Err()
+			}
+			return false, nil
+		}
+		exists, err := getServer(waitCtx, serverID)
+		if err != nil {
+			return false, err
+		}
+		if exists {
+			return true, nil
+		}
+
+		select {
+		case <-waitCtx.Done():
+			if ctx.Err() != nil {
+				return false, ctx.Err()
+			}
+			return false, nil
+		case <-ticker.C:
+		}
+	}
 }
 
 func restoreStatusesComplete(statuses map[string]string) bool {
