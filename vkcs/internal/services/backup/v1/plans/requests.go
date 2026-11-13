@@ -24,6 +24,7 @@ type CreateOpts struct {
 	FullDay       *int                  `json:"full_day,omitempty"`
 	RetentionType string                `json:"retention_type,omitempty"`
 	GFS           *BackupPlanGFS        `json:"gfs,omitempty"`
+	ObjectLock    *ObjectLock           `json:"object_lock,omitempty"`
 }
 
 type PlanUpdate struct {
@@ -37,6 +38,14 @@ type UpdateOpts struct {
 	FullDay       int                   `json:"full_day,omitempty"`
 	RetentionType string                `json:"retention_type,omitempty"`
 	GFS           *BackupPlanGFS        `json:"gfs,omitempty"`
+	ObjectLock    *ObjectLock           `json:"object_lock,omitempty"`
+}
+
+// ObjectLock represents a backup plan's object lock configuration.
+type ObjectLock struct {
+	Type        string `json:"type" required:"true"`
+	Days        *int64 `json:"days,omitempty"`
+	RetainUntil *int64 `json:"retain_until,omitempty"`
 }
 
 // Map converts opts to a map (for a request body)

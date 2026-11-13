@@ -1,0 +1,20 @@
+---
+subcategory: "Backup"
+layout: "vkcs"
+page_title: "vkcs: {{.Name}}"
+description: |-
+  Reads restore details and per-resource statuses for a VKCS backup restore.
+---
+
+# {{.Name}}
+
+{{ .Description }}
+
+Use the computed `restore_id` from `vkcs_compute_instance` to inspect the operation created from `checkpoint_id`.
+
+## Example Usage
+
+{{tffile "examples/backup/restore/main.tf"}}
+{{tffile "examples/backup/restore/variables.tf"}}
+
+{{ .SchemaMarkdown }}
