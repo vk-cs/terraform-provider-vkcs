@@ -3,7 +3,6 @@ package compute
 import (
 	"context"
 	"fmt"
-	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -22,11 +21,9 @@ const (
 	novaBackupProviderType         = "OS::Nova"
 	novaBackupResourceType         = "OS::Nova::Server"
 	restorePollInterval            = 5 * time.Second
-	restoreServerVisibilityGrace   = 30 * time.Second
 )
 
 type restoreGetter func(context.Context, string) (*restores.Restore, error)
-type restoredServerExistsGetter func(context.Context, string) (bool, error)
 
 func findNovaBackupProviderID(client *gophercloud.ServiceClient) (string, error) {
 	allProviders, err := providers.List(client).Extract()
@@ -90,7 +87,7 @@ func singleCheckpointRestoreNetworkID(networks []InstanceNetwork) (string, error
 	return networks[0].UUID, nil
 }
 
-func computeRestoreParameters(d *schema.ResourceData, networkID, flavorID string) (restores.RestoreParameters, error) {
+func computeRestoreParameters(d *schema.ResourceData, networkID string) (restores.RestoreParameters, error) {
 	name := d.Get("name").(string)
 	if name == "" {
 		return restores.RestoreParameters{}, fmt.Errorf("name must be set when restoring a checkpoint")
@@ -108,22 +105,11 @@ func computeRestoreParameters(d *schema.ResourceData, networkID, flavorID string
 		Destination:    "new",
 		RestoreKeypair: keyPair,
 		RestoreNetID:   networkID,
-		Flavor:         flavorID,
-		SecurityGroups: resourceInstanceRestoreSecurityGroupIDs(d),
 	}
 	if availabilityZone := d.Get("availability_zone").(string); availabilityZone != "" {
 		parameters.AvailabilityZone = availabilityZone
 	}
 	return parameters, nil
-}
-
-func resourceInstanceRestoreSecurityGroupIDs(d *schema.ResourceData) []string {
-	securityGroups := d.Get("security_group_ids").(*schema.Set).List()
-	ids := make([]string, 0, len(securityGroups))
-	for _, securityGroup := range securityGroups {
-		ids = append(ids, securityGroup.(string))
-	}
-	return ids
 }
 
 func findMatchingRestore(existing []restores.Restore, desired restores.RestoreCreateOpts) []*restores.Restore {
@@ -158,7 +144,7 @@ func getOrCreateRestore(
 	return create()
 }
 
-func canReuseExistingRestore(restore *restores.Restore, serverExists func(string) (bool, error)) (bool, error) {
+func canReuseExistingRestore(restore *restores.Restore) (bool, error) {
 	if restore == nil || !restoreStatusesComplete(restore.ResourcesStatus) {
 		return true, nil
 	}
@@ -168,62 +154,12 @@ func canReuseExistingRestore(restore *restores.Restore, serverExists func(string
 		}
 	}
 
-	serverID, ready, err := restoredComputeInstanceID(restore)
-	if err != nil {
+	// Keep adopting a completed restore even if Nova has not exposed its server
+	// yet. Creating another restore for the same request can create a duplicate VM.
+	if _, _, err := restoredComputeInstanceID(restore); err != nil {
 		return false, err
 	}
-	if !ready {
-		return true, nil
-	}
-	if serverExists == nil {
-		return false, fmt.Errorf("server existence checker must not be nil")
-	}
-	return serverExists(serverID)
-}
-
-func waitForRestoredServerVisibility(ctx context.Context, serverID string, timeout, pollInterval time.Duration, getServer restoredServerExistsGetter) (bool, error) {
-	if serverID == "" {
-		return false, fmt.Errorf("restored server ID must not be empty")
-	}
-	if getServer == nil {
-		return false, fmt.Errorf("server existence checker must not be nil")
-	}
-	if timeout <= 0 {
-		return false, nil
-	}
-	if pollInterval <= 0 {
-		pollInterval = restorePollInterval
-	}
-
-	waitCtx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-	ticker := time.NewTicker(pollInterval)
-	defer ticker.Stop()
-
-	for {
-		if err := waitCtx.Err(); err != nil {
-			if ctx.Err() != nil {
-				return false, ctx.Err()
-			}
-			return false, nil
-		}
-		exists, err := getServer(waitCtx, serverID)
-		if err != nil {
-			return false, err
-		}
-		if exists {
-			return true, nil
-		}
-
-		select {
-		case <-waitCtx.Done():
-			if ctx.Err() != nil {
-				return false, ctx.Err()
-			}
-			return false, nil
-		case <-ticker.C:
-		}
-	}
+	return true, nil
 }
 
 func restoreStatusesComplete(statuses map[string]string) bool {
@@ -260,11 +196,9 @@ func sameRestoreParameterValues(left, right restores.RestoreParameters) bool {
 		left.VolumeType == right.VolumeType &&
 		int64PointerValue(left.VolumeSize) == int64PointerValue(right.VolumeSize) &&
 		boolPointerValue(left.EnableFIP) == boolPointerValue(right.EnableFIP) &&
-		left.Flavor == right.Flavor &&
 		left.VolumeTargetVMID == right.VolumeTargetVMID &&
 		int64PointerValue(left.VolumeAutoresizeEnabled) == int64PointerValue(right.VolumeAutoresizeEnabled) &&
 		int64PointerValue(left.VolumeAutoresizeMaxSize) == int64PointerValue(right.VolumeAutoresizeMaxSize) &&
-		sameRestoreStrings(left.SecurityGroups, right.SecurityGroups) &&
 		boolPointerValue(left.CloudMonitoringEnabled) == boolPointerValue(right.CloudMonitoringEnabled)
 }
 
@@ -277,17 +211,6 @@ func int64PointerValue(value *int64) int64 {
 
 func boolPointerValue(value *bool) bool {
 	return value != nil && *value
-}
-
-func sameRestoreStrings(left, right []string) bool {
-	if len(left) != len(right) {
-		return false
-	}
-	leftCopy := slices.Clone(left)
-	rightCopy := slices.Clone(right)
-	sort.Strings(leftCopy)
-	sort.Strings(rightCopy)
-	return slices.Equal(leftCopy, rightCopy)
 }
 
 func restoredComputeInstanceWaitState(state string, instanceFound bool) (string, error) {

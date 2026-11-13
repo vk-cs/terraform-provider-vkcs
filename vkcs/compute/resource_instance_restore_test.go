@@ -3,12 +3,12 @@ package compute
 import (
 	"context"
 	"errors"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/checkpoints"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/restores"
@@ -107,7 +107,8 @@ func TestRestoredComputeInstanceID(t *testing.T) {
 }
 
 func TestComputeInstanceCheckpointRestoreSchema(t *testing.T) {
-	resourceSchema := ResourceComputeInstance().Schema
+	resource := ResourceComputeInstance()
+	resourceSchema := resource.Schema
 	checkpointID := resourceSchema["checkpoint_id"]
 	if checkpointID == nil {
 		t.Fatal("checkpoint_id schema attribute is missing")
@@ -128,7 +129,10 @@ func TestComputeInstanceCheckpointRestoreSchema(t *testing.T) {
 	for _, attribute := range checkpointID.ConflictsWith {
 		conflicts[attribute] = true
 	}
-	for _, attribute := range []string{"image_id", "image_name", "block_device", "user_data", "network_mode", "config_drive", "personality"} {
+	for _, attribute := range []string{
+		"image_id", "image_name", "block_device", "user_data", "network_mode", "config_drive", "personality",
+		"security_group_ids", "flavor_id", "flavor_name", "metadata",
+	} {
 		if !conflicts[attribute] {
 			t.Errorf("checkpoint_id must conflict with %q", attribute)
 		}
@@ -137,6 +141,32 @@ func TestComputeInstanceCheckpointRestoreSchema(t *testing.T) {
 	restoreID := resourceSchema["restore_id"]
 	if restoreID == nil || !restoreID.Computed || restoreID.Optional {
 		t.Fatalf("restore_id must be computed and not user-configurable: %#v", restoreID)
+	}
+}
+
+func TestValidateCheckpointRestoreConfigRejectsUnsupportedNetworkAttributes(t *testing.T) {
+	for _, attribute := range []string{"port", "fixed_ip_v4"} {
+		t.Run(attribute, func(t *testing.T) {
+			networkAttributes := map[string]cty.Value{
+				"uuid":           cty.StringVal("network-id"),
+				"name":           cty.NullVal(cty.String),
+				"port":           cty.NullVal(cty.String),
+				"fixed_ip_v4":    cty.NullVal(cty.String),
+				"mac":            cty.NullVal(cty.String),
+				"access_network": cty.BoolVal(false),
+			}
+			networkAttributes[attribute] = cty.StringVal("unsupported-value")
+			network := cty.ObjectVal(networkAttributes)
+			config := cty.ObjectVal(map[string]cty.Value{
+				"checkpoint_id": cty.StringVal("checkpoint-id"),
+				"network":       cty.ListVal([]cty.Value{network}),
+			})
+
+			err := validateCheckpointRestoreConfig(config)
+			if err == nil || !strings.Contains(err.Error(), "network."+attribute) {
+				t.Fatalf("validateCheckpointRestoreConfig() error = %v, want unsupported network.%s error", err, attribute)
+			}
+		})
 	}
 }
 
@@ -209,30 +239,29 @@ func TestSelectCheckpointRestoreSourceID(t *testing.T) {
 
 func TestComputeRestoreParametersUsesComputeInstanceConfiguration(t *testing.T) {
 	data := schema.TestResourceDataRaw(t, ResourceComputeInstance().Schema, map[string]interface{}{
-		"name":               "restored-server",
-		"key_pair":           "ssh-key",
-		"availability_zone":  "MS1",
-		"security_group_ids": []interface{}{"sg-two", "sg-one"},
+		"name":              "restored-server",
+		"key_pair":          "ssh-key",
+		"availability_zone": "MS1",
 	})
 
-	got, err := computeRestoreParameters(data, "network-id", "flavor-id")
+	got, err := computeRestoreParameters(data, "network-id")
 	if err != nil {
 		t.Fatalf("computeRestoreParameters() error = %v", err)
 	}
-	if got.RestoreName != "restored-server" || got.Destination != "new" || got.RestoreKeypair != "ssh-key" || got.AvailabilityZone != "MS1" || got.RestoreNetID != "network-id" || got.Flavor != "flavor-id" {
+	if got.RestoreName != "restored-server" || got.Destination != "new" || got.RestoreKeypair != "ssh-key" || got.AvailabilityZone != "MS1" || got.RestoreNetID != "network-id" {
 		t.Fatalf("unexpected compute restore parameters: %#v", got)
 	}
-	if !reflect.DeepEqual(got.SecurityGroups, []string{"sg-two", "sg-one"}) {
-		t.Fatalf("security groups = %#v, want configured IDs", got.SecurityGroups)
+	if got.Flavor != "" || len(got.SecurityGroups) != 0 {
+		t.Fatalf("restore must not send unsupported flavor/security group overrides: %#v", got)
 	}
 }
 
 func TestComputeRestoreParametersRequiresTargetNetworkAndKeyPair(t *testing.T) {
 	data := schema.TestResourceDataRaw(t, ResourceComputeInstance().Schema, map[string]interface{}{"name": "restored-server"})
-	if _, err := computeRestoreParameters(data, "", "flavor-id"); err == nil || !strings.Contains(err.Error(), "network") {
+	if _, err := computeRestoreParameters(data, ""); err == nil || !strings.Contains(err.Error(), "network") {
 		t.Fatalf("computeRestoreParameters() error = %v, want missing network error", err)
 	}
-	if _, err := computeRestoreParameters(data, "network-id", "flavor-id"); err == nil || !strings.Contains(err.Error(), "key_pair") {
+	if _, err := computeRestoreParameters(data, "network-id"); err == nil || !strings.Contains(err.Error(), "key_pair") {
 		t.Fatalf("computeRestoreParameters() error = %v, want missing key_pair error", err)
 	}
 }
@@ -289,7 +318,7 @@ func TestGetOrCreateRestoreAdoptsMatchingRequest(t *testing.T) {
 		ProviderID:   "nova-provider",
 		CheckpointID: "checkpoint-id",
 		Parameters: map[string]restores.RestoreParameters{
-			"OS::Nova::Server#server-id": {RestoreName: "restored-server", Destination: "new", SecurityGroups: []string{"sg-two", "sg-one"}},
+			"OS::Nova::Server#server-id": {RestoreName: "restored-server", Destination: "new"},
 		},
 	}
 	existing := []restores.Restore{{
@@ -297,14 +326,12 @@ func TestGetOrCreateRestoreAdoptsMatchingRequest(t *testing.T) {
 		ProviderID:   desired.ProviderID,
 		CheckpointID: desired.CheckpointID,
 		Parameters: map[string]restores.RestoreParameters{
-			"OS::Nova::Server#server-id": {RestoreName: "restored-server", Destination: "new", SecurityGroups: []string{"sg-one", "sg-two"}},
+			"OS::Nova::Server#server-id": {RestoreName: "restored-server", Destination: "new", Flavor: "ignored-flavor", SecurityGroups: []string{"ignored-group"}},
 		},
 	}}
 	createCalls := 0
 
-	got, err := getOrCreateRestore(existing, desired, func(*restores.Restore) (bool, error) {
-		return true, nil
-	}, func() (*restores.Restore, error) {
+	got, err := getOrCreateRestore(existing, desired, canReuseExistingRestore, func() (*restores.Restore, error) {
 		createCalls++
 		return &restores.Restore{ID: "new-restore-id"}, nil
 	})
@@ -316,7 +343,7 @@ func TestGetOrCreateRestoreAdoptsMatchingRequest(t *testing.T) {
 	}
 }
 
-func TestGetOrCreateRestoreCreatesAgainWhenPreviousVMWasDeleted(t *testing.T) {
+func TestGetOrCreateRestoreReusesCompletedRestoreToAvoidDuplicateVM(t *testing.T) {
 	desired := restores.RestoreCreateOpts{
 		ProviderID:   "nova-provider",
 		CheckpointID: "checkpoint-id",
@@ -333,27 +360,23 @@ func TestGetOrCreateRestoreCreatesAgainWhenPreviousVMWasDeleted(t *testing.T) {
 	}}
 	createCalls := 0
 
-	got, err := getOrCreateRestore(existing, desired, func(*restores.Restore) (bool, error) {
-		return false, nil
-	}, func() (*restores.Restore, error) {
+	got, err := getOrCreateRestore(existing, desired, canReuseExistingRestore, func() (*restores.Restore, error) {
 		createCalls++
 		return &restores.Restore{ID: "new-restore-id"}, nil
 	})
 	if err != nil {
 		t.Fatalf("getOrCreateRestore() error = %v", err)
 	}
-	if got.ID != "new-restore-id" || createCalls != 1 {
-		t.Fatalf("getOrCreateRestore() = %#v with %d create calls, want a new restore", got, createCalls)
+	if got.ID != "old-restore-id" || createCalls != 0 {
+		t.Fatalf("getOrCreateRestore() = %#v with %d create calls, want existing restore and no duplicate", got, createCalls)
 	}
 }
 
 func TestCanReuseExistingRestore(t *testing.T) {
 	tests := []struct {
-		name         string
-		restore      *restores.Restore
-		exists       bool
-		wantReuse    bool
-		wantGetCalls int
+		name      string
+		restore   *restores.Restore
+		wantReuse bool
 	}{
 		{
 			name:      "reuses an in-progress restore",
@@ -361,38 +384,25 @@ func TestCanReuseExistingRestore(t *testing.T) {
 			wantReuse: true,
 		},
 		{
-			name:         "reuses an existing restored VM",
-			restore:      &restores.Restore{ResourcesStatus: map[string]string{"OS::Nova::Server#vm": "available"}},
-			exists:       true,
-			wantReuse:    true,
-			wantGetCalls: 1,
+			name:      "reuses a completed restore",
+			restore:   &restores.Restore{ResourcesStatus: map[string]string{"OS::Nova::Server#vm": "available"}},
+			wantReuse: true,
 		},
 		{
-			name:         "recreates a VM after Terraform previously deleted it",
-			restore:      &restores.Restore{ResourcesStatus: map[string]string{"OS::Nova::Server#vm": "available"}},
-			wantReuse:    false,
-			wantGetCalls: 1,
+			name:      "adopts a failed restore so an identical request cannot create a duplicate",
+			restore:   &restores.Restore{ResourcesStatus: map[string]string{"OS::Nova::Server#vm": "error"}},
+			wantReuse: true,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			getCalls := 0
-			got, err := canReuseExistingRestore(test.restore, func(serverID string) (bool, error) {
-				getCalls++
-				if serverID != "vm" {
-					t.Fatalf("server ID = %q, want %q", serverID, "vm")
-				}
-				return test.exists, nil
-			})
+			got, err := canReuseExistingRestore(test.restore)
 			if err != nil {
 				t.Fatalf("canReuseExistingRestore() error = %v", err)
 			}
 			if got != test.wantReuse {
 				t.Errorf("canReuseExistingRestore() = %t, want %t", got, test.wantReuse)
-			}
-			if getCalls != test.wantGetCalls {
-				t.Errorf("server existence checks = %d, want %d", getCalls, test.wantGetCalls)
 			}
 		})
 	}

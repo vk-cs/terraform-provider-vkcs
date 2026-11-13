@@ -57,6 +57,16 @@ func TestPlanUpdateMapsRetentionEndTimestamp(t *testing.T) {
 	})
 }
 
+func TestPlanResponseExtractsObjectLock(t *testing.T) {
+	var response PlanResp
+	if err := json.Unmarshal([]byte(`{"plan":{"id":"plan-id","name":"daily-backup","resources":[],"provider_id":"provider-id","status":"running","object_lock":{"type":"governance","retain_until":1900000000}}}`), &response); err != nil {
+		t.Fatalf("unmarshal plan response: %v", err)
+	}
+	if response.Plan.ObjectLock == nil || response.Plan.ObjectLock.Type != "governance" || response.Plan.ObjectLock.RetainUntil == nil || *response.Plan.ObjectLock.RetainUntil != 1900000000 {
+		t.Fatalf("unexpected object lock in plan response: %#v", response.Plan.ObjectLock)
+	}
+}
+
 func assertObjectLockRequest(t *testing.T, mapRequest func() (map[string]interface{}, error), want map[string]interface{}) {
 	t.Helper()
 

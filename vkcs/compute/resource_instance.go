@@ -91,10 +91,14 @@ func ResourceComputeInstance() *schema.Resource {
 					"config_drive",
 					"block_device",
 					"security_groups",
+					"security_group_ids",
+					"flavor_id",
+					"flavor_name",
+					"metadata",
 					"scheduler_hints",
 					"personality",
 				},
-				Description: "ID of the backup checkpoint to restore. When set, this resource creates a new VM from the checkpoint instead of creating it from an image. Set exactly one `network` block and `key_pair` for the restored VM; optional flavor and availability zone values are passed to the backup service. The restored VM is managed and deleted by this resource. Changing this ID, `source_resource_id`, or `name` starts a new restore operation.",
+				Description: "ID of the backup checkpoint to restore. When set, this resource creates a new VM from the checkpoint instead of creating it from an image. Set exactly one `network` block and `key_pair` for the restored VM. The flavor and security groups are restored from the checkpoint; `availability_zone` can override the checkpoint value. The restored VM is managed and deleted by this resource. Changing this ID, `source_resource_id`, or `name` starts a new restore operation.",
 			},
 			"source_resource_id": {
 				Type:         schema.TypeString,
@@ -674,6 +678,10 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceComputeInstanceCreateFromCheckpoint(ctx context.Context, d *schema.ResourceData, meta interface{}, config clients.Config, computeClient *gophercloud.ServiceClient, checkpointID string, startTime time.Time) diag.Diagnostics {
+	if err := validateCheckpointRestoreConfig(d.GetRawConfig()); err != nil {
+		return diag.Errorf("Invalid compute instance checkpoint restore configuration: %s", err)
+	}
+
 	backupClient, err := config.BackupV1Client(util.GetRegion(d, config), config.GetProjectID())
 	if err != nil {
 		return diag.Errorf("Error creating VKCS backup client for checkpoint %q: %s", checkpointID, err)
@@ -696,14 +704,7 @@ func resourceComputeInstanceCreateFromCheckpoint(ctx context.Context, d *schema.
 		return diag.Errorf("Error resolving network for checkpoint restore: %s", err)
 	}
 
-	flavorID := ""
-	if d.Get("flavor_id").(string) != "" || d.Get("flavor_name").(string) != "" || os.Getenv("OS_FLAVOR_ID") != "" || os.Getenv("OS_FLAVOR_NAME") != "" {
-		flavorID, err = getFlavorID(computeClient, d)
-		if err != nil {
-			return diag.Errorf("Error resolving flavor for checkpoint restore: %s", err)
-		}
-	}
-	parameters, err := computeRestoreParameters(d, networkID, flavorID)
+	parameters, err := computeRestoreParameters(d, networkID)
 	if err != nil {
 		return diag.Errorf("Invalid compute instance checkpoint restore configuration: %s", err)
 	}
@@ -723,25 +724,7 @@ func resourceComputeInstanceCreateFromCheckpoint(ctx context.Context, d *schema.
 		if err != nil {
 			return nil, fmt.Errorf("check existing restore operations: %w", err)
 		}
-		return getOrCreateRestore(existingRestores, restoreOptions, func(candidate *restores.Restore) (bool, error) {
-			return canReuseExistingRestore(candidate, func(serverID string) (bool, error) {
-				return waitForRestoredServerVisibility(ctx, serverID, restoreServerVisibilityGrace, restorePollInterval, func(waitCtx context.Context, id string) (bool, error) {
-					select {
-					case <-waitCtx.Done():
-						return false, waitCtx.Err()
-					default:
-					}
-					_, err := iservers.Get(computeClient, id).Extract()
-					if err != nil {
-						if errutil.IsNotFound(err) {
-							return false, nil
-						}
-						return false, err
-					}
-					return true, nil
-				})
-			})
-		}, func() (*restores.Restore, error) {
+		return getOrCreateRestore(existingRestores, restoreOptions, canReuseExistingRestore, func() (*restores.Restore, error) {
 			return restores.Create(backupClient, &restores.RestoreCreate{Restore: &restoreOptions}).Extract()
 		})
 	}()
@@ -1424,6 +1407,10 @@ func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceComputeInstanceCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, v interface{}) error {
+	if err := validateCheckpointRestoreConfig(diff.GetRawConfig()); err != nil {
+		return err
+	}
+
 	if !diff.GetRawState().IsNull() && diff.Get("checkpoint_id").(string) != "" && diff.HasChange("name") {
 		return diff.ForceNew("name")
 	}
@@ -1455,6 +1442,42 @@ func resourceComputeInstanceCustomizeDiff(ctx context.Context, diff *schema.Reso
 			}
 			if _, ok := diff.GetOk("admin_pass"); ok {
 				return errors.New("admin_pass must not be set if you would to get password of the server")
+			}
+		}
+	}
+
+	return nil
+}
+
+func validateCheckpointRestoreConfig(config cty.Value) error {
+	if config.IsNull() || !config.IsKnown() || !config.Type().IsObjectType() || !config.Type().HasAttribute("checkpoint_id") {
+		return nil
+	}
+
+	checkpointID := config.GetAttr("checkpoint_id")
+	if checkpointID.IsNull() || !checkpointID.IsKnown() || checkpointID.AsString() == "" {
+		return nil
+	}
+
+	if !config.Type().HasAttribute("network") {
+		return nil
+	}
+	networks := config.GetAttr("network")
+	if networks.IsNull() || !networks.IsKnown() {
+		return nil
+	}
+
+	for _, network := range networks.AsValueSlice() {
+		if network.IsNull() || !network.IsKnown() || !network.Type().IsObjectType() {
+			continue
+		}
+		for _, attribute := range []string{"port", "fixed_ip_v4"} {
+			if !network.Type().HasAttribute(attribute) {
+				continue
+			}
+			value := network.GetAttr(attribute)
+			if !value.IsNull() && value.IsKnown() && value.AsString() != "" {
+				return fmt.Errorf("network.%s is not supported when checkpoint_id is set", attribute)
 			}
 		}
 	}

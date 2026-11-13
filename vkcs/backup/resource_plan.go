@@ -484,6 +484,7 @@ func (r *PlanResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	plan.ProviderName = types.StringValue(providerInfo.Name)
 
 	plan.Name = types.StringValue(planResp.Name)
+	plan.ObjectLock = flattenObjectLock(planResp.ObjectLock)
 
 	if !plan.BackupTargets.IsNull() && !plan.BackupTargets.IsUnknown() {
 		resources := make([]PlanResourceBackupTargetModel, len(planResp.Resources))

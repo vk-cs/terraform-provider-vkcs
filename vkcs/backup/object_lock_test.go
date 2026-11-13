@@ -28,6 +28,17 @@ func TestExpandObjectLock(t *testing.T) {
 	}
 }
 
+func TestFlattenObjectLock(t *testing.T) {
+	days := int64(30)
+	got := flattenObjectLock(&plans.ObjectLock{Type: "compliance", Days: &days})
+	if got == nil || got.Type.ValueString() != "compliance" || got.Days.ValueInt64() != days || !got.RetainUntil.IsNull() {
+		t.Fatalf("flattenObjectLock() = %#v, want compliance lock for 30 days", got)
+	}
+	if got := flattenObjectLock(nil); got != nil {
+		t.Fatalf("flattenObjectLock(nil) = %#v, want nil", got)
+	}
+}
+
 func TestFlattenCheckpointResourcesKeepsLegalHold(t *testing.T) {
 	resources := []checkpoints.CheckpointResource{
 		{
