@@ -11,6 +11,7 @@ description: |-
 - Add the `vkcs_backup_checkpoints` data source to read a plan's backup checkpoints and their Object Lock details.
 - Add VM restore from backup checkpoints to `vkcs_compute_instance` via `checkpoint_id`.
 - Add the `vkcs_backup_restore` data source to read per-resource restore statuses.
+- Fix checkpoint restore retry/adoption, reject unsupported instance overrides, and read back backup plan Object Lock settings.
 
 #### v0.19.1 (unreleased)
 - Add import for KMS resources
