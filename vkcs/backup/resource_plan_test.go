@@ -1,11 +1,53 @@
 package backup_test
 
 import (
+	"os"
 	"testing"
 
+	acctest_helper "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
+
+func TestAccBackupPlan_objectLock(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("set TF_ACC=1 to run acceptance tests")
+	}
+	if os.Getenv("VKCS_TEST_BACKUP_OBJECT_LOCK_ENABLED") != "true" {
+		t.Skip("set VKCS_TEST_BACKUP_OBJECT_LOCK_ENABLED=true for a project with an Object Lock-enabled backup bucket")
+	}
+
+	planName := "tfacc-backup-plan-lock-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+	config := acctest.AccTestRenderConfig(testAccBackupPlanObjectLock, map[string]string{
+		"TestAccBackupPlanBase": acctest.AccTestRenderConfig(testAccBackupPlanBase),
+		"PlanName":              planName,
+	})
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_backup_plan.object_lock", "object_lock.type", "compliance"),
+					resource.TestCheckResourceAttr("vkcs_backup_plan.object_lock", "object_lock.days", "30"),
+				),
+			},
+			{
+				Config:             config,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				ResourceName:            "vkcs_backup_plan.object_lock",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"schedule.time"},
+			},
+		},
+	})
+}
 
 func TestAccBackupPlan_basic_retention_full(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -441,5 +483,26 @@ resource "vkcs_backup_plan" "basic" {
       instance_id = vkcs_compute_instance.instance_2.id
     }
   ]
+}
+`
+
+const testAccBackupPlanObjectLock = `
+{{ .TestAccBackupPlanBase }}
+
+resource "vkcs_backup_plan" "object_lock" {
+  name               = "{{.PlanName}}"
+  provider_name      = "cloud_servers"
+  schedule = {
+    every_hours = 24
+  }
+  full_retention = {
+    max_full_backup = 30
+  }
+  incremental_backup = false
+  instance_ids       = [vkcs_compute_instance.base_instance.id]
+  object_lock = {
+    type = "compliance"
+    days = 30
+  }
 }
 `

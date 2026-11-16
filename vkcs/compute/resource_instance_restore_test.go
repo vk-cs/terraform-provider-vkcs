@@ -142,6 +142,9 @@ func TestComputeInstanceCheckpointRestoreSchema(t *testing.T) {
 	if restoreID == nil || !restoreID.Computed || restoreID.Optional {
 		t.Fatalf("restore_id must be computed and not user-configurable: %#v", restoreID)
 	}
+	if len(resource.ValidateRawResourceConfigFuncs) == 0 {
+		t.Fatal("compute instance must validate checkpoint restore network configuration before planning")
+	}
 }
 
 func TestValidateCheckpointRestoreConfigRejectsUnsupportedNetworkAttributes(t *testing.T) {
@@ -169,9 +172,10 @@ func TestValidateCheckpointRestoreConfigRejectsUnsupportedNetworkAttributes(t *t
 					"network":       cty.ListVal([]cty.Value{network}),
 				})
 
-				err := validateCheckpointRestoreConfig(config)
-				if err == nil || !strings.Contains(err.Error(), "network."+attribute) {
-					t.Fatalf("validateCheckpointRestoreConfig() error = %v, want unsupported network.%s error", err, attribute)
+				response := &schema.ValidateResourceConfigFuncResponse{}
+				validateCheckpointRestoreRawConfig(context.Background(), schema.ValidateResourceConfigFuncRequest{RawConfig: config}, response)
+				if !response.Diagnostics.HasError() || !strings.Contains(response.Diagnostics[0].Detail, "network."+attribute) {
+					t.Fatalf("validateCheckpointRestoreRawConfig() diagnostics = %v, want unsupported network.%s error", response.Diagnostics, attribute)
 				}
 			})
 		}

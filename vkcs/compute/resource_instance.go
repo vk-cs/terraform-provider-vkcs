@@ -55,6 +55,9 @@ import (
 func ResourceComputeInstance() *schema.Resource {
 	return &schema.Resource{
 		CustomizeDiff: resourceComputeInstanceCustomizeDiff,
+		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
+			validateCheckpointRestoreRawConfig,
+		},
 
 		CreateContext: resourceComputeInstanceCreate,
 		ReadContext:   resourceComputeInstanceRead,
@@ -678,7 +681,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceComputeInstanceCreateFromCheckpoint(ctx context.Context, d *schema.ResourceData, meta interface{}, config clients.Config, computeClient *gophercloud.ServiceClient, checkpointID string, startTime time.Time) diag.Diagnostics {
-	if err := validateCheckpointRestoreConfig(d.GetRawConfig()); err != nil {
+	if err := validateCheckpointRestoreNetworkConfig(d.GetRawConfig()); err != nil {
 		return diag.Errorf("Invalid compute instance checkpoint restore configuration: %s", err)
 	}
 
@@ -1425,10 +1428,6 @@ func resourceComputeInstanceDelete(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceComputeInstanceCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, v interface{}) error {
-	if err := validateCheckpointRestoreConfig(diff.GetRawConfig()); err != nil {
-		return err
-	}
-
 	if !diff.GetRawState().IsNull() && diff.Get("checkpoint_id").(string) != "" && diff.HasChange("name") {
 		return diff.ForceNew("name")
 	}
@@ -1467,6 +1466,16 @@ func resourceComputeInstanceCustomizeDiff(ctx context.Context, diff *schema.Reso
 	return nil
 }
 
+func validateCheckpointRestoreRawConfig(_ context.Context, req schema.ValidateResourceConfigFuncRequest, resp *schema.ValidateResourceConfigFuncResponse) {
+	if err := validateCheckpointRestoreConfig(req.RawConfig); err != nil {
+		resp.Diagnostics = append(resp.Diagnostics, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Invalid checkpoint restore network configuration",
+			Detail:   err.Error(),
+		})
+	}
+}
+
 func validateCheckpointRestoreConfig(config cty.Value) error {
 	if config.IsNull() || !config.IsKnown() || !config.Type().IsObjectType() || !config.Type().HasAttribute("checkpoint_id") {
 		return nil
@@ -1476,17 +1485,32 @@ func validateCheckpointRestoreConfig(config cty.Value) error {
 	if checkpointID.IsNull() || !checkpointID.IsKnown() || checkpointID.AsString() == "" {
 		return nil
 	}
+	return validateCheckpointRestoreNetworkConfig(config)
+}
 
+func validateCheckpointRestoreNetworkConfig(config cty.Value) error {
+	if config.IsNull() || !config.IsKnown() || !config.Type().IsObjectType() {
+		return nil
+	}
 	if !config.Type().HasAttribute("network") {
 		return nil
 	}
 	networks := config.GetAttr("network")
-	if networks.IsNull() || !networks.IsKnown() {
+	if networks.IsNull() {
 		return nil
+	}
+	if !networks.IsKnown() {
+		return fmt.Errorf("network configuration must be known when restoring a checkpoint")
 	}
 
 	for _, network := range networks.AsValueSlice() {
-		if network.IsNull() || !network.IsKnown() || !network.Type().IsObjectType() {
+		if network.IsNull() {
+			continue
+		}
+		if !network.IsKnown() {
+			return fmt.Errorf("network block configuration must be known when restoring a checkpoint")
+		}
+		if !network.Type().IsObjectType() {
 			continue
 		}
 		for _, attribute := range []string{"port", "fixed_ip_v4"} {

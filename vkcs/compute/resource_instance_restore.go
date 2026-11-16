@@ -2,6 +2,7 @@ package compute
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"sort"
@@ -195,33 +196,36 @@ func waitForRestoredServerVisibility(ctx context.Context, serverID string, timeo
 
 	waitCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	ticker := time.NewTicker(pollInterval)
-	defer ticker.Stop()
 
-	for {
-		if err := waitCtx.Err(); err != nil {
-			if ctx.Err() != nil {
-				return false, ctx.Err()
+	stateConf := &retry.StateChangeConf{
+		Pending: []string{"NOT_FOUND"},
+		Target:  []string{"VISIBLE"},
+		Refresh: func() (interface{}, string, error) {
+			exists, err := getServer(waitCtx, serverID)
+			if err != nil {
+				return nil, "", err
 			}
-			return false, nil
-		}
-		exists, err := getServer(waitCtx, serverID)
-		if err != nil {
-			return false, err
-		}
-		if exists {
-			return true, nil
-		}
-
-		select {
-		case <-waitCtx.Done():
-			if ctx.Err() != nil {
-				return false, ctx.Err()
+			if exists {
+				return true, "VISIBLE", nil
 			}
-			return false, nil
-		case <-ticker.C:
-		}
+			return false, "NOT_FOUND", nil
+		},
+		Timeout:      timeout + time.Second,
+		MinTimeout:   pollInterval,
+		PollInterval: pollInterval,
 	}
+
+	_, err := stateConf.WaitForStateContext(waitCtx)
+	if err == nil {
+		return true, nil
+	}
+	if ctx.Err() != nil {
+		return false, ctx.Err()
+	}
+	if waitCtx.Err() != nil && errors.Is(err, context.DeadlineExceeded) {
+		return false, nil
+	}
+	return false, err
 }
 
 func restoreStatusesComplete(statuses map[string]string) bool {

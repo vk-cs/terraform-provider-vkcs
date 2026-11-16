@@ -203,10 +203,16 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 
 			"object_lock": schema.SingleNestedAttribute{
 				Optional: true,
+				Validators: []validator.Object{
+					objectLockConfigValidator{},
+				},
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
 						Required:    true,
 						Description: "Object Lock mode: compliance, governance, or legalhold.",
+						Validators: []validator.String{
+							stringvalidator.OneOf("compliance", "governance", "legalhold"),
+						},
 					},
 					"days": schema.Int64Attribute{
 						Optional:    true,

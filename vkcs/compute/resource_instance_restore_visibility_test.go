@@ -45,4 +45,13 @@ func TestWaitForRestoredServerVisibility(t *testing.T) {
 			t.Fatalf("waitForRestoredServerVisibility() error = %v, want wrapped %v", err, wantErr)
 		}
 	})
+
+	t.Run("does not treat a Nova deadline error as the visibility timeout", func(t *testing.T) {
+		getServer := func(context.Context, string) (bool, error) { return false, context.DeadlineExceeded }
+
+		_, err := waitForRestoredServerVisibility(context.Background(), "server-id", time.Second, time.Millisecond, getServer)
+		if !errors.Is(err, context.DeadlineExceeded) {
+			t.Fatalf("waitForRestoredServerVisibility() error = %v, want API deadline error", err)
+		}
+	})
 }

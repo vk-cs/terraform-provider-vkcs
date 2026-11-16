@@ -15,11 +15,3 @@ data "vkcs_backup_restore" "status" {
   count      = var.enable_restore ? 1 : 0
   restore_id = try(vkcs_compute_instance.restored_vm[0].restore_id, "")
 }
-
-output "restored_vm_id" {
-  value = try(vkcs_compute_instance.restored_vm[0].id, "")
-}
-
-output "restore_resources_status" {
-  value = try(data.vkcs_backup_restore.status[0].resources_status, {})
-}
