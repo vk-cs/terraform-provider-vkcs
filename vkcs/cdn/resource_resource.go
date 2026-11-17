@@ -268,6 +268,52 @@ func responseHeaderOptionsForAPIRequest(
 	return options, diags
 }
 
+func mergeResourceOptions(planned, prior *resources.ResourceOptions) *resources.ResourceOptions {
+	if planned == nil {
+		return prior
+	}
+	if prior == nil {
+		return planned
+	}
+
+	return &resources.ResourceOptions{
+		AllowedHttpMethods:    preferResourceOption(planned.AllowedHttpMethods, prior.AllowedHttpMethods),
+		BrotliCompression:     preferResourceOption(planned.BrotliCompression, prior.BrotliCompression),
+		BrowserCacheSettings:  preferResourceOption(planned.BrowserCacheSettings, prior.BrowserCacheSettings),
+		CORS:                  preferResourceOption(planned.CORS, prior.CORS),
+		EdgeCacheSettings:     preferResourceOption(planned.EdgeCacheSettings, prior.EdgeCacheSettings),
+		FetchCompressed:       preferResourceOption(planned.FetchCompressed, prior.FetchCompressed),
+		ForceReturn:           preferResourceOption(planned.ForceReturn, prior.ForceReturn),
+		ForwardHostHeader:     preferResourceOption(planned.ForwardHostHeader, prior.ForwardHostHeader),
+		GzipOn:                preferResourceOption(planned.GzipOn, prior.GzipOn),
+		GzipCompression:       preferResourceOption(planned.GzipCompression, prior.GzipCompression),
+		HostHeader:            preferResourceOption(planned.HostHeader, prior.HostHeader),
+		IgnoreQueryString:     preferResourceOption(planned.IgnoreQueryString, prior.IgnoreQueryString),
+		IgnoreCookie:          preferResourceOption(planned.IgnoreCookie, prior.IgnoreCookie),
+		QueryParamsBlacklist:  preferResourceOption(planned.QueryParamsBlacklist, prior.QueryParamsBlacklist),
+		QueryParamsWhitelist:  preferResourceOption(planned.QueryParamsWhitelist, prior.QueryParamsWhitelist),
+		CountryACL:            preferResourceOption(planned.CountryACL, prior.CountryACL),
+		ReferrerACL:           preferResourceOption(planned.ReferrerACL, prior.ReferrerACL),
+		IpAddressACL:          preferResourceOption(planned.IpAddressACL, prior.IpAddressACL),
+		UserAgentACL:          preferResourceOption(planned.UserAgentACL, prior.UserAgentACL),
+		Slice:                 preferResourceOption(planned.Slice, prior.Slice),
+		Stale:                 preferResourceOption(planned.Stale, prior.Stale),
+		StaticHeaders:         preferResourceOption(planned.StaticHeaders, prior.StaticHeaders),
+		StaticRequestHeaders:  preferResourceOption(planned.StaticRequestHeaders, prior.StaticRequestHeaders),
+		StaticResponseHeaders: preferResourceOption(planned.StaticResponseHeaders, prior.StaticResponseHeaders),
+		TlsVersions:           preferResourceOption(planned.TlsVersions, prior.TlsVersions),
+		Websockets:            preferResourceOption(planned.Websockets, prior.Websockets),
+		SecureKey:             preferResourceOption(planned.SecureKey, prior.SecureKey),
+	}
+}
+
+func preferResourceOption[T any](planned, prior *T) *T {
+	if planned != nil {
+		return planned
+	}
+	return prior
+}
+
 func validateStaticResponseHeaders(ctx context.Context, value types.Object) diag.Diagnostics {
 	var diags diag.Diagnostics
 	if value.IsNull() || value.IsUnknown() {
@@ -627,25 +673,26 @@ func (r *resourceResource) Update(ctx context.Context, req resource.UpdateReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	opts, diags := requestOptions.ToResourceOptions(ctx)
+	plannedOptions, diags := requestOptions.ToResourceOptions(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// We have to specify options in update even if they are not changed
-	if opts == nil {
-		requestOptions, diags = responseHeaderOptionsForAPIRequest(ctx, data.Options, config.Options)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		opts, diags = requestOptions.ToResourceOptions(ctx)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// The CDN update API requires unchanged options too. Optional+computed
+	// attributes can be unknown in the plan (for example beside a nested list),
+	// so fill only missing planned options from prior state.
+	priorRequestOptions, diags := responseHeaderOptionsForAPIRequest(ctx, data.Options, config.Options)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+	priorOptions, diags := priorRequestOptions.ToResourceOptions(ctx)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	opts := mergeResourceOptions(plannedOptions, priorOptions)
 
 	updateOpts := resources.UpdateOpts{
 		Active:             plan.Active.ValueBoolPointer(),

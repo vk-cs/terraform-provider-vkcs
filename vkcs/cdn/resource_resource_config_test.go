@@ -257,6 +257,42 @@ func TestResponseHeaderAPIRequestOmitsCanonicalOptionForLegacyConfig(t *testing.
 	}
 }
 
+func TestMergeResourceOptionsPreservesUnplannedOptionsAndPrefersPlan(t *testing.T) {
+	prior := &resources.ResourceOptions{
+		AllowedHttpMethods: &resources.ResourceOptionsAllowedHttpMethodsOption{
+			Enabled: true,
+			Value:   []resources.ResourceAllowedHttpMethod{resources.ResourceAllowedHttpMethodGet},
+		},
+		StaticHeaders: &resources.ResourceOptionsStringMapOption{
+			Enabled: true,
+			Value:   map[string]string{"X-Old": "old"},
+		},
+	}
+	planned := &resources.ResourceOptions{
+		StaticHeaders: &resources.ResourceOptionsStringMapOption{
+			Enabled: false,
+			Value:   map[string]string{},
+		},
+		StaticResponseHeaders: &resources.ResourceOptionsStaticResponseHeadersOption{
+			Enabled: true,
+			Value: []resources.StaticResponseHeaderValue{
+				{Name: "X-New", Value: []string{"new"}, Always: true},
+			},
+		},
+	}
+
+	merged := mergeResourceOptions(planned, prior)
+	if merged.AllowedHttpMethods == nil || !merged.AllowedHttpMethods.Enabled || len(merged.AllowedHttpMethods.Value) != 1 || merged.AllowedHttpMethods.Value[0] != resources.ResourceAllowedHttpMethodGet {
+		t.Fatalf("AllowedHttpMethods = %#v, want prior value retained", merged.AllowedHttpMethods)
+	}
+	if merged.StaticHeaders == nil || merged.StaticHeaders.Enabled || len(merged.StaticHeaders.Value) != 0 {
+		t.Fatalf("StaticHeaders = %#v, want the disabled planned value to replace prior state", merged.StaticHeaders)
+	}
+	if merged.StaticResponseHeaders == nil || !merged.StaticResponseHeaders.Enabled || len(merged.StaticResponseHeaders.Value) != 1 || merged.StaticResponseHeaders.Value[0].Name != "X-New" {
+		t.Fatalf("StaticResponseHeaders = %#v, want planned value", merged.StaticResponseHeaders)
+	}
+}
+
 func TestSelectConfiguredLegacyOptionOnCreatePlansCanonicalOptionUnknown(t *testing.T) {
 	ctx := context.Background()
 	plan, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
