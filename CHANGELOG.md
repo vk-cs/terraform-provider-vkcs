@@ -10,6 +10,7 @@ description: |-
 - Add import for KMS resources
 - Fix: reuse of the cached image file of vkcs_images_image when compression_format or archiving_format is changed.
 - Fix: partially downloaded image file of vkcs_images_image could be reused from the cache after the provider was interrupted.
+- Fix: vkcs_networking_port no longer sends port_security_enabled when it is not set in configuration, which allows creating ports in a shared network of another project.
 
 #### v0.19.0
 - Add support for KMS service (secrets and keys)
@@ -19,7 +20,6 @@ description: |-
 - Fix: `vkcs_compute_instance` resize with automatic confirmation in VK Cloud, including servers in the `shelved_offloaded` state.
 - Fix: protocol of vkcs_networking_secgroup_rule specified as a number causing recreation of the rule on Sprut SDN.
 - Fix: allow the creation of an insecure registry without dots in the domain name.
-- Fix: vkcs_networking_port no longer sends port_security_enabled when it is not set in configuration, which allows creating ports in a shared network of another project.
 
 #### v0.18.0
 - Add ability to change availability_zone of vkcs_compute_instance without recreating the instance.
