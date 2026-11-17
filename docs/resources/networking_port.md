@@ -75,7 +75,7 @@ resource "vkcs_networking_port" "persistent_etcd" {
 
 - `no_security_groups` optional deprecated *boolean* &rarr;  If set to `true`, then no security groups are applied to the port. If set to `false` and no `security_group_ids` are specified, then the port will yield to the default behavior of the Networking service, which is to usually apply the "default" security group. **Deprecated** Configure `full_security_groups_control = true` and `security_group_ids = []` instead.
 
-- `port_security_enabled` optional *boolean* &rarr;  Whether to explicitly enable or disable port security on the port. Port Security is usually enabled by default, so omitting argument will usually result in a value of `true`. Setting this explicitly to `false` will disable port security. In order to disable port security, the port must not have any security groups. Valid values are `true` and `false`.
+- `port_security_enabled` optional *boolean* &rarr;  Whether to explicitly enable or disable port security on the port. Port Security is usually enabled by default, so omitting argument will usually result in a value of `true`. If omitted, the argument is not sent to the API and the network's default is used. Setting this explicitly to `false` will disable port security. In order to disable port security, the port must not have any security groups. Valid values are `true` and `false`.
 
 - `region` optional *string* &rarr;  The region in which to obtain the Networking client. A Networking client is needed to create a port. If omitted, the `region` argument of the provider is used. Changing this creates a new port.
 
