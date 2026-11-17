@@ -164,10 +164,21 @@ Specify HTTP-code you need and text or URL if you're going to set up redirection
         - `value` optional *string* &rarr;  The list of errors to which the option is applied.
 
 
-    - `static_headers` optional &rarr;  Custom HTTP Headers that a CDN server adds to a response.
+    - `static_headers` optional &rarr;  Deprecated. Use `static_response_headers` instead. Retained for compatibility with existing configurations.
         - `enabled` optional *boolean* &rarr;  Controls the option state.
 
         - `value` optional *map of* *string* &rarr;  A map of static headers in the format "header_name": "header_value".
+
+
+    - `static_response_headers` optional &rarr;  Manage custom HTTP response headers added by the CDN to responses for end users. Up to 50 headers can be specified.
+        - `enabled` optional *boolean* &rarr;  Controls whether the response headers option is enabled.
+
+        - `value` optional *object* &rarr;  List of custom HTTP response headers.
+            - `always` optional *boolean* &rarr;  Required for each header. `true` adds it regardless of the HTTP response status code; `false` adds it only for HTTP 200, 201, 204, 206, 301, 302, 303, 304, 307, or 308 responses. The API defines no default.
+
+            - `name` optional *string* &rarr;  Header name.
+
+            - `value` optional *string* &rarr;  List of values for this header.
 
 
     - `static_request_headers` optional &rarr;  Custom HTTP Headers for a CDN server to add to a request.

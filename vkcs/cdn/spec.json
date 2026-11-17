@@ -1203,6 +1203,7 @@
                                 {
                                     "name": "static_headers",
                                     "single_nested": {
+                                        "deprecation_message": "static_headers is deprecated. Use static_response_headers instead.",
                                         "computed_optional_required": "computed_optional",
                                         "description": "Custom HTTP Headers that a CDN server adds to a response.",
                                         "attributes": [
@@ -1234,6 +1235,70 @@
                                                         }
                                                     ],
                                                     "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "static_response_headers",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Custom HTTP response headers that the CDN adds to responses for end users.",
+                                        "attributes": [
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls whether the response headers option is enabled."
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "list_nested": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Up to 50 custom HTTP response headers.",
+                                                    "nested_object": {
+                                                        "attributes": [
+                                                            {
+                                                                "name": "name",
+                                                                "string": {
+                                                                    "computed_optional_required": "computed_optional",
+                                                                    "description": "Header name."
+                                                                }
+                                                            },
+                                                            {
+                                                                "name": "value",
+                                                                "list": {
+                                                                    "computed_optional_required": "computed_optional",
+                                                                    "element_type": {
+                                                                        "string": {}
+                                                                    },
+                                                                    "description": "Header values."
+                                                                }
+                                                            },
+                                                            {
+                                                                "name": "always",
+                                                                "bool": {
+                                                                    "computed_optional_required": "computed_optional",
+                                                                    "description": "Whether to add the header regardless of the HTTP response status code."
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOptionWithState()"
                                                 }
                                             }
                                         ]

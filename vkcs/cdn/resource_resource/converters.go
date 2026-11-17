@@ -2,6 +2,7 @@ package resource_resource
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -354,6 +355,30 @@ func (v OptionsValue) ToResourceOptions(ctx context.Context) (*resources.Resourc
 
 		result.StaticHeaders = &resources.ResourceOptionsStringMapOption{
 			Enabled: staticHeaders.Enabled.ValueBool(),
+			Value:   value,
+		}
+	}
+
+	if o := v.StaticResponseHeaders; !o.IsUnknown() && !o.IsNull() {
+		staticResponseHeadersObjV, d := StaticResponseHeadersType{}.ValueFromObject(ctx, o)
+		diags.Append(d...)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		staticResponseHeaders := staticResponseHeadersObjV.(StaticResponseHeadersValue)
+		if staticResponseHeaders.Enabled.IsNull() || staticResponseHeaders.Enabled.IsUnknown() {
+			diags.AddError("Invalid static_response_headers option", "The enabled value must be known before sending the option to the CDN API.")
+			return nil, diags
+		}
+		value, d := expandStaticResponseHeaders(ctx, staticResponseHeaders.Value, staticResponseHeaders.Enabled.ValueBool())
+		diags.Append(d...)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		result.StaticResponseHeaders = &resources.ResourceOptionsStaticResponseHeadersOption{
+			Enabled: staticResponseHeaders.Enabled.ValueBool(),
 			Value:   value,
 		}
 	}
@@ -776,6 +801,31 @@ func (v OptionsValue) FromResourceOptions(ctx context.Context, opts *resources.R
 		}
 	}
 
+	var staticResponseHeaders types.Object
+	if o := opts.StaticResponseHeaders; o != nil {
+		value, d := flattenStaticResponseHeaders(ctx, o.Value)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+
+		staticResponseHeaders, d = StaticResponseHeadersValue{
+			Enabled: types.BoolValue(o.Enabled),
+			Value:   value,
+			state:   attr.ValueStateKnown,
+		}.ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+	} else {
+		staticResponseHeaders, d = NewStaticResponseHeadersValueNull().ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return NewOptionsValueUnknown(), diags
+		}
+	}
+
 	var staticRequestHeaders types.Object
 	if o := opts.StaticRequestHeaders; o != nil {
 		value, d := types.MapValueFrom(ctx, types.StringType, o.Value)
@@ -870,32 +920,114 @@ func (v OptionsValue) FromResourceOptions(ctx context.Context, opts *resources.R
 	}
 
 	return OptionsValue{
-		AllowedHttpMethods:   allowedHttpMethods,
-		BrotliCompression:    brotliCompression,
-		BrowserCacheSettings: browserCacheSettings,
-		Cors:                 cors,
-		CountryAcl:           countryAcl,
-		EdgeCacheSettings:    edgeCacheSettings,
-		FetchCompressed:      flattenBoolOption(opts.FetchCompressed),
-		ForceReturn:          forceReturn,
-		ForwardHostHeader:    flattenBoolOption(opts.ForwardHostHeader),
-		GzipOn:               flattenBoolOption(opts.GzipOn),
-		GzipCompression:      gzipCompression,
-		HostHeader:           hostHeader,
-		IgnoreCookie:         flattenBoolOption(opts.IgnoreCookie),
-		IgnoreQueryString:    flattenBoolOption(opts.IgnoreQueryString),
-		IpAddressAcl:         ipAddressAcl,
-		QueryParamsBlacklist: queryParamsBlacklist,
-		QueryParamsWhitelist: queryParamsWhitelist,
-		ReferrerAcl:          referrerAcl,
-		Slice:                flattenBoolOption(opts.Slice),
-		Stale:                stale,
-		StaticHeaders:        staticHeaders,
-		StaticRequestHeaders: staticRequestHeaders,
-		SecureKey:            secureKey,
-		TlsVersions:          tlsVersions,
-		state:                attr.ValueStateKnown,
+		AllowedHttpMethods:    allowedHttpMethods,
+		BrotliCompression:     brotliCompression,
+		BrowserCacheSettings:  browserCacheSettings,
+		Cors:                  cors,
+		CountryAcl:            countryAcl,
+		EdgeCacheSettings:     edgeCacheSettings,
+		FetchCompressed:       flattenBoolOption(opts.FetchCompressed),
+		ForceReturn:           forceReturn,
+		ForwardHostHeader:     flattenBoolOption(opts.ForwardHostHeader),
+		GzipOn:                flattenBoolOption(opts.GzipOn),
+		GzipCompression:       gzipCompression,
+		HostHeader:            hostHeader,
+		IgnoreCookie:          flattenBoolOption(opts.IgnoreCookie),
+		IgnoreQueryString:     flattenBoolOption(opts.IgnoreQueryString),
+		IpAddressAcl:          ipAddressAcl,
+		QueryParamsBlacklist:  queryParamsBlacklist,
+		QueryParamsWhitelist:  queryParamsWhitelist,
+		ReferrerAcl:           referrerAcl,
+		Slice:                 flattenBoolOption(opts.Slice),
+		Stale:                 stale,
+		StaticHeaders:         staticHeaders,
+		StaticRequestHeaders:  staticRequestHeaders,
+		StaticResponseHeaders: staticResponseHeaders,
+		SecureKey:             secureKey,
+		TlsVersions:           tlsVersions,
+		state:                 attr.ValueStateKnown,
 	}, diags
+}
+
+func expandStaticResponseHeaders(ctx context.Context, headers types.List, enabled bool) ([]resources.StaticResponseHeaderValue, diag.Diagnostics) {
+	if headers.IsNull() {
+		if enabled {
+			var diags diag.Diagnostics
+			diags.AddError("Invalid static_response_headers option", "Set the value list or explicitly disable the option.")
+			return nil, diags
+		}
+		return []resources.StaticResponseHeaderValue{}, nil
+	}
+	if headers.IsUnknown() {
+		if !enabled {
+			return []resources.StaticResponseHeaderValue{}, nil
+		}
+		var diags diag.Diagnostics
+		diags.AddError("Invalid static_response_headers option", "The value list must be known before sending the option to the CDN API.")
+		return nil, diags
+	}
+
+	var values []ValueValue
+	var diags diag.Diagnostics
+	diags.Append(headers.ElementsAs(ctx, &values, true)...)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	result := make([]resources.StaticResponseHeaderValue, 0, len(values))
+	for i, header := range values {
+		if header.Name.IsNull() || header.Name.IsUnknown() {
+			diags.AddError("Invalid static_response_headers value", fmt.Sprintf("Header at index %d must have a known name.", i))
+			continue
+		}
+		if header.Always.IsNull() || header.Always.IsUnknown() {
+			diags.AddError("Invalid static_response_headers value", fmt.Sprintf("Header at index %d must have a known always value.", i))
+			continue
+		}
+		if header.Value.IsNull() || header.Value.IsUnknown() {
+			diags.AddError("Invalid static_response_headers value", fmt.Sprintf("Header at index %d must have a known value list.", i))
+			continue
+		}
+
+		values := make([]string, 0, len(header.Value.Elements()))
+		diags.Append(header.Value.ElementsAs(ctx, &values, true)...)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		result = append(result, resources.StaticResponseHeaderValue{
+			Name:   header.Name.ValueString(),
+			Value:  values,
+			Always: header.Always.ValueBool(),
+		})
+	}
+
+	return result, diags
+}
+
+func flattenStaticResponseHeaders(ctx context.Context, headers []resources.StaticResponseHeaderValue) (types.List, diag.Diagnostics) {
+	valueType := ValueValue{}.Type(ctx)
+	result := make([]attr.Value, 0, len(headers))
+	var diags diag.Diagnostics
+
+	for _, header := range headers {
+		values, d := types.ListValueFrom(ctx, types.StringType, header.Value)
+		diags.Append(d...)
+		if diags.HasError() {
+			return types.ListUnknown(valueType), diags
+		}
+
+		result = append(result, ValueValue{
+			Always: types.BoolValue(header.Always),
+			Name:   types.StringValue(header.Name),
+			Value:  values,
+			state:  attr.ValueStateKnown,
+		})
+	}
+
+	value, d := types.ListValue(valueType, result)
+	diags.Append(d...)
+	return value, diags
 }
 
 func (v ShieldingValue) FromResourceShielding(resourceShielding *resources.ResourceShielding) ShieldingValue {

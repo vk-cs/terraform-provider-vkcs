@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -88,6 +89,11 @@ func (r *resourceResource) ValidateConfig(ctx context.Context, req resource.Vali
 		return
 	}
 
+	if !config.Options.IsNull() && !config.Options.IsUnknown() {
+		resp.Diagnostics.Append(validateStaticHeadersConflict(config.Options.StaticHeaders, config.Options.StaticResponseHeaders)...)
+		resp.Diagnostics.Append(validateStaticResponseHeaders(ctx, config.Options.StaticResponseHeaders)...)
+	}
+
 	sslCertType := config.SslCertificate.SslCertificateType.ValueString()
 	if sslCertType == string(resource_resource.SslCertificateProviderTypeOwn) && config.SslCertificate.Id.IsNull() {
 		resp.Diagnostics.AddAttributeError(
@@ -107,6 +113,193 @@ func (r *resourceResource) ValidateConfig(ctx context.Context, req resource.Vali
 	}
 }
 
+func validateStaticHeadersConflict(legacy, current types.Object) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if legacy.IsNull() || current.IsNull() {
+		return diags
+	}
+
+	diags.AddAttributeError(
+		path.Root("options").AtName("static_response_headers"),
+		"Conflicting CDN response header options",
+		"Configure either `options.static_headers` or `options.static_response_headers`, not both.",
+	)
+	return diags
+}
+
+func selectConfiguredResponseHeaderOption(
+	ctx context.Context,
+	plan *resource_resource.OptionsValue,
+	config resource_resource.OptionsValue,
+	previous *resource_resource.OptionsValue,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if plan == nil || plan.IsNull() || plan.IsUnknown() || config.IsNull() {
+		return diags
+	}
+	if config.IsUnknown() {
+		if isKnownOption(plan.StaticHeaders) && isKnownOption(plan.StaticResponseHeaders) {
+			diags.AddError(
+				"Conflicting CDN response header options",
+				"The planned state contains both `options.static_headers` and `options.static_response_headers`, but the options configuration is unknown.",
+			)
+		}
+		return diags
+	}
+
+	legacyConfigured := !config.StaticHeaders.IsNull()
+	responseConfigured := !config.StaticResponseHeaders.IsNull()
+	if legacyConfigured && responseConfigured {
+		diags.AddError(
+			"Conflicting CDN response header options",
+			"Configure either `options.static_headers` or `options.static_response_headers`, not both.",
+		)
+		return diags
+	}
+
+	legacyInState := isKnownOption(plan.StaticHeaders)
+	responseInState := isKnownOption(plan.StaticResponseHeaders)
+	if previous != nil {
+		legacyInState = legacyInState || isKnownOption(previous.StaticHeaders)
+		responseInState = responseInState || isKnownOption(previous.StaticResponseHeaders)
+	}
+
+	if responseConfigured {
+		if legacyInState {
+			legacy, d := disabledStaticHeadersValue(ctx)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
+			plan.StaticHeaders = legacy
+		} else {
+			legacy, d := resource_resource.NewStaticHeadersValueNull().ToObjectValue(ctx)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
+			plan.StaticHeaders = legacy
+		}
+	}
+
+	if legacyConfigured {
+		if responseInState {
+			response, d := disabledStaticResponseHeadersValue(ctx)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
+			plan.StaticResponseHeaders = response
+		} else {
+			response, d := resource_resource.NewStaticResponseHeadersValueNull().ToObjectValue(ctx)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
+			plan.StaticResponseHeaders = response
+		}
+	}
+
+	return diags
+}
+
+func isKnownOption(value types.Object) bool {
+	return !value.IsNull() && !value.IsUnknown()
+}
+
+func disabledStaticHeadersValue(ctx context.Context) (types.Object, diag.Diagnostics) {
+	value := types.MapValueMust(types.StringType, map[string]attr.Value{})
+	option, diags := resource_resource.NewStaticHeadersValue(
+		resource_resource.StaticHeadersValue{}.AttributeTypes(ctx),
+		map[string]attr.Value{
+			"enabled": types.BoolValue(false),
+			"value":   value,
+		},
+	)
+	if diags.HasError() {
+		return types.ObjectUnknown(resource_resource.StaticHeadersValue{}.AttributeTypes(ctx)), diags
+	}
+	return option.ToObjectValue(ctx)
+}
+
+func disabledStaticResponseHeadersValue(ctx context.Context) (types.Object, diag.Diagnostics) {
+	value := types.ListValueMust(resource_resource.ValueValue{}.Type(ctx), []attr.Value{})
+	option, diags := resource_resource.NewStaticResponseHeadersValue(
+		resource_resource.StaticResponseHeadersValue{}.AttributeTypes(ctx),
+		map[string]attr.Value{
+			"enabled": types.BoolValue(false),
+			"value":   value,
+		},
+	)
+	if diags.HasError() {
+		return types.ObjectUnknown(resource_resource.StaticResponseHeadersValue{}.AttributeTypes(ctx)), diags
+	}
+	return option.ToObjectValue(ctx)
+}
+
+func validateStaticResponseHeaders(ctx context.Context, value types.Object) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if value.IsNull() || value.IsUnknown() {
+		return diags
+	}
+
+	optionValuable, d := resource_resource.StaticResponseHeadersType{}.ValueFromObject(ctx, value)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+	option := optionValuable.(resource_resource.StaticResponseHeadersValue)
+	if option.Value.IsUnknown() {
+		return diags
+	}
+	if option.Value.IsNull() {
+		if option.Enabled.IsUnknown() {
+			return diags
+		}
+		if !option.Enabled.IsNull() && !option.Enabled.IsUnknown() && !option.Enabled.ValueBool() {
+			return diags
+		}
+		diags.AddAttributeError(
+			path.Root("options").AtName("static_response_headers").AtName("value"),
+			"Missing Attribute Value",
+			"Set `value` (an empty list is allowed) or explicitly disable `static_response_headers`.",
+		)
+		return diags
+	}
+
+	var headers []resource_resource.ValueValue
+	diags.Append(option.Value.ElementsAs(ctx, &headers, true)...)
+	if diags.HasError() {
+		return diags
+	}
+
+	for i, header := range headers {
+		if header.Name.IsNull() {
+			diags.AddAttributeError(
+				path.Root("options").AtName("static_response_headers").AtName("value").AtListIndex(i).AtName("name"),
+				"Missing Attribute Value",
+				"Each response header must have a `name`.",
+			)
+		}
+		if header.Value.IsNull() {
+			diags.AddAttributeError(
+				path.Root("options").AtName("static_response_headers").AtName("value").AtListIndex(i).AtName("value"),
+				"Missing Attribute Value",
+				"Each response header must have a `value` list.",
+			)
+		}
+		if header.Always.IsNull() {
+			diags.AddAttributeError(
+				path.Root("options").AtName("static_response_headers").AtName("value").AtListIndex(i).AtName("always"),
+				"Missing Attribute Value",
+				"Each response header must set `always`; the CDN API does not define a default.",
+			)
+		}
+	}
+
+	return diags
+}
+
 func (r *resourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		return
@@ -114,6 +307,27 @@ func (r *resourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 
 	var plan *resource_resource.ResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var config resource_resource.ResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var previousOptions *resource_resource.OptionsValue
+	if !req.State.Raw.IsNull() {
+		var state resource_resource.ResourceModel
+		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		previousOptions = &state.Options
+	}
+
+	resp.Diagnostics.Append(selectConfiguredResponseHeaderOption(ctx, &plan.Options, config.Options, previousOptions)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

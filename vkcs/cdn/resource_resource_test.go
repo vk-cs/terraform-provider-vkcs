@@ -101,6 +101,81 @@ func TestAccCDNResourceResource_full(t *testing.T) {
 	})
 }
 
+func TestAccCDNResourceResource_staticResponseHeaders(t *testing.T) {
+	nameSuffix := acctest.GenerateNameSuffix()
+	baseName := "tfacc-resource-static-response-headers-" + nameSuffix
+	cname := "tfacc-static-response-headers-" + nameSuffix + ".vk.com"
+	originGroupConfig := acctest.AccTestRenderConfig(testAccCDNResourceResourceOriginGroupBase, map[string]string{"Name": baseName})
+	initialHeaders := `[
+    { name = "X-Multi", value = ["first", "second"], always = false },
+    { name = "X-Always", value = ["third"], always = true }
+  ]`
+	updatedHeaders := `[
+    { name = "X-Multi", value = ["updated"], always = true },
+    { name = "X-New", value = ["fourth", "fifth"], always = false }
+  ]`
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccCDNResourceResourceLegacyStaticHeaders, map[string]string{
+					"Cname": cname, "TestAccCDNResourceResourceOriginGroupBase": originGroupConfig,
+				}),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.headers", "options.static_headers.enabled", "true"),
+					acctest.TestCheckResourceMapAttr("vkcs_cdn_resource.headers", "options.static_headers.value", map[string]string{"X-Multi": "first"}),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccCDNResourceResourceStaticResponseHeaders, map[string]string{
+					"Cname": cname, "Headers": initialHeaders, "TestAccCDNResourceResourceOriginGroupBase": originGroupConfig,
+				}),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectResourceAction("vkcs_cdn_resource.headers", plancheck.ResourceActionUpdate)},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.headers", "options.static_headers.enabled", "false"),
+					acctest.TestCheckResourceAttrDeepEqual("vkcs_cdn_resource.headers", "options.static_response_headers.value", []map[string]any{
+						{"name": "X-Multi", "value": []string{"first", "second"}, "always": false},
+						{"name": "X-Always", "value": []string{"third"}, "always": true},
+					}),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccCDNResourceResourceStaticResponseHeaders, map[string]string{
+					"Cname": cname, "Headers": updatedHeaders, "TestAccCDNResourceResourceOriginGroupBase": originGroupConfig,
+				}),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectResourceAction("vkcs_cdn_resource.headers", plancheck.ResourceActionUpdate)},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Check: acctest.TestCheckResourceAttrDeepEqual("vkcs_cdn_resource.headers", "options.static_response_headers.value", []map[string]any{
+					{"name": "X-Multi", "value": []string{"updated"}, "always": true},
+					{"name": "X-New", "value": []string{"fourth", "fifth"}, "always": false},
+				}),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccCDNResourceResourceStaticResponseHeadersOmitted, map[string]string{
+					"Cname": cname, "TestAccCDNResourceResourceOriginGroupBase": originGroupConfig,
+				}),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Check: acctest.TestCheckResourceAttrDeepEqual("vkcs_cdn_resource.headers", "options.static_response_headers.value", []map[string]any{
+					{"name": "X-Multi", "value": []string{"updated"}, "always": true},
+					{"name": "X-New", "value": []string{"fourth", "fifth"}, "always": false},
+				}),
+			},
+		},
+	})
+}
+
 func TestAccCDNResourceResource_update(t *testing.T) {
 	nameSuffix := acctest.GenerateNameSuffix()
 	ogOldName := "tfacc-resource-update-old" + nameSuffix
@@ -324,6 +399,46 @@ const testAccCDNResourceResourceBasic = `
 {{ .TestAccCDNResourceResourceOriginGroupBase }}
 
 resource "vkcs_cdn_resource" "basic" {
+  cname        = "{{ .Cname }}"
+  origin_group = vkcs_cdn_origin_group.base.id
+}
+`
+
+const testAccCDNResourceResourceStaticResponseHeaders = `
+{{ .TestAccCDNResourceResourceOriginGroupBase }}
+
+resource "vkcs_cdn_resource" "headers" {
+  cname        = "{{ .Cname }}"
+  origin_group = vkcs_cdn_origin_group.base.id
+  options = {
+    static_response_headers = {
+      enabled = true
+      value   = {{ .Headers }}
+    }
+  }
+}
+`
+
+const testAccCDNResourceResourceLegacyStaticHeaders = `
+{{ .TestAccCDNResourceResourceOriginGroupBase }}
+
+resource "vkcs_cdn_resource" "headers" {
+  cname        = "{{ .Cname }}"
+  origin_group = vkcs_cdn_origin_group.base.id
+  options = {
+    static_headers = {
+      value = {
+        "X-Multi" = "first"
+      }
+    }
+  }
+}
+`
+
+const testAccCDNResourceResourceStaticResponseHeadersOmitted = `
+{{ .TestAccCDNResourceResourceOriginGroupBase }}
+
+resource "vkcs_cdn_resource" "headers" {
   cname        = "{{ .Cname }}"
   origin_group = vkcs_cdn_origin_group.base.id
 }
