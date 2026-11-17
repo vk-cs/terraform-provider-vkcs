@@ -131,7 +131,50 @@ func TestSelectConfiguredResponseHeaderOptionClearsPreviousOption(t *testing.T) 
 	}
 }
 
-func TestSelectConfiguredResponseHeaderOptionClearsPreviousNewOption(t *testing.T) {
+func TestSelectConfiguredLegacyOptionAllowsCanonicalAPIReadBack(t *testing.T) {
+	ctx := context.Background()
+	legacyOnly, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
+		StaticHeaders: &resources.ResourceOptionsStringMapOption{
+			Enabled: true,
+			Value:   map[string]string{"X-Legacy": "legacy"},
+		},
+	})
+	if diags.HasError() {
+		t.Fatalf("creating legacy-only options returned diagnostics: %v", diags)
+	}
+	plan := legacyOnly
+	if diags := selectConfiguredResponseHeaderOption(ctx, &plan, legacyOnly, nil); diags.HasError() {
+		t.Fatalf("selectConfiguredResponseHeaderOption returned diagnostics: %v", diags)
+	}
+	if !plan.StaticResponseHeaders.IsUnknown() {
+		t.Fatalf("create plan static_response_headers = %s, want unknown for API canonicalization", plan.StaticResponseHeaders)
+	}
+
+	readBack, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
+		StaticHeaders: &resources.ResourceOptionsStringMapOption{
+			Enabled: true,
+			Value:   map[string]string{"X-Legacy": "legacy"},
+		},
+		StaticResponseHeaders: &resources.ResourceOptionsStaticResponseHeadersOption{
+			Enabled: true,
+			Value: []resources.StaticResponseHeaderValue{
+				{Name: "X-Legacy", Value: []string{"legacy"}, Always: true},
+			},
+		},
+	})
+	if diags.HasError() {
+		t.Fatalf("creating API read-back returned diagnostics: %v", diags)
+	}
+	noOpPlan := readBack
+	if diags := selectConfiguredResponseHeaderOption(ctx, &noOpPlan, legacyOnly, &readBack); diags.HasError() {
+		t.Fatalf("selectConfiguredResponseHeaderOption on no-op returned diagnostics: %v", diags)
+	}
+	if !noOpPlan.StaticResponseHeaders.Equal(readBack.StaticResponseHeaders) {
+		t.Fatalf("no-op plan static_response_headers = %s, want retained API read-back %s", noOpPlan.StaticResponseHeaders, readBack.StaticResponseHeaders)
+	}
+}
+
+func TestSelectConfiguredResponseHeaderOptionMakesChangedComputedOptionUnknown(t *testing.T) {
 	ctx := context.Background()
 	newState, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
 		StaticResponseHeaders: &resources.ResourceOptionsStaticResponseHeadersOption{
@@ -160,15 +203,79 @@ func TestSelectConfiguredResponseHeaderOptionClearsPreviousNewOption(t *testing.
 	if diags.HasError() {
 		t.Fatalf("selectConfiguredResponseHeaderOption returned diagnostics: %v", diags)
 	}
+	if !plan.StaticResponseHeaders.IsUnknown() {
+		t.Fatalf("planned static_response_headers = %s, want unknown during legacy option change", plan.StaticResponseHeaders)
+	}
 	apiOptions, diags := plan.ToResourceOptions(ctx)
 	if diags.HasError() {
 		t.Fatalf("ToResourceOptions returned diagnostics: %v", diags)
 	}
-	if apiOptions.StaticResponseHeaders == nil || apiOptions.StaticResponseHeaders.Enabled || len(apiOptions.StaticResponseHeaders.Value) != 0 {
-		t.Fatalf("new API option = %#v, want disabled and empty", apiOptions.StaticResponseHeaders)
+	if apiOptions.StaticResponseHeaders != nil {
+		t.Fatalf("new API option = %#v, want omitted while its value is unknown", apiOptions.StaticResponseHeaders)
 	}
 	if apiOptions.StaticHeaders == nil || !apiOptions.StaticHeaders.Enabled || apiOptions.StaticHeaders.Value["X-New"] != "new" {
 		t.Fatalf("legacy API option = %#v, want configured X-New header", apiOptions.StaticHeaders)
+	}
+}
+
+func TestResponseHeaderAPIRequestOmitsCanonicalOptionForLegacyConfig(t *testing.T) {
+	ctx := context.Background()
+	plan, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
+		StaticHeaders: &resources.ResourceOptionsStringMapOption{
+			Enabled: true,
+			Value:   map[string]string{"X-Legacy": "configured"},
+		},
+		StaticResponseHeaders: &resources.ResourceOptionsStaticResponseHeadersOption{
+			Enabled: true,
+			Value: []resources.StaticResponseHeaderValue{
+				{Name: "X-Legacy", Value: []string{"configured"}, Always: true},
+			},
+		},
+	})
+	if diags.HasError() {
+		t.Fatalf("creating plan returned diagnostics: %v", diags)
+	}
+	legacyConfig := plan
+	legacyConfig.StaticResponseHeaders, diags = resource_resource.NewStaticResponseHeadersValueNull().ToObjectValue(ctx)
+	if diags.HasError() {
+		t.Fatalf("creating legacy-only configuration returned diagnostics: %v", diags)
+	}
+
+	requestOptions, diags := responseHeaderOptionsForAPIRequest(ctx, plan, legacyConfig)
+	if diags.HasError() {
+		t.Fatalf("responseHeaderOptionsForAPIRequest returned diagnostics: %v", diags)
+	}
+	apiOptions, diags := requestOptions.ToResourceOptions(ctx)
+	if diags.HasError() {
+		t.Fatalf("ToResourceOptions returned diagnostics: %v", diags)
+	}
+	if apiOptions.StaticHeaders == nil || !apiOptions.StaticHeaders.Enabled {
+		t.Fatalf("legacy API option = %#v, want enabled", apiOptions.StaticHeaders)
+	}
+	if apiOptions.StaticResponseHeaders != nil {
+		t.Fatalf("canonical API option = %#v, want omitted when legacy is configured", apiOptions.StaticResponseHeaders)
+	}
+}
+
+func TestSelectConfiguredLegacyOptionOnCreatePlansCanonicalOptionUnknown(t *testing.T) {
+	ctx := context.Background()
+	plan, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
+		StaticHeaders: &resources.ResourceOptionsStringMapOption{
+			Enabled: true,
+			Value:   map[string]string{"X-Legacy": "legacy"},
+		},
+	})
+	if diags.HasError() {
+		t.Fatalf("creating legacy plan returned diagnostics: %v", diags)
+	}
+	config := plan
+
+	diags = selectConfiguredResponseHeaderOption(ctx, &plan, config, nil)
+	if diags.HasError() {
+		t.Fatalf("selectConfiguredResponseHeaderOption returned diagnostics: %v", diags)
+	}
+	if !plan.StaticResponseHeaders.IsUnknown() {
+		t.Fatalf("static_response_headers plan = %s, want unknown for API canonicalization", plan.StaticResponseHeaders)
 	}
 }
 

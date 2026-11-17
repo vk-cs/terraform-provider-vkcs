@@ -158,10 +158,8 @@ func selectConfiguredResponseHeaderOption(
 	}
 
 	legacyInState := isKnownOption(plan.StaticHeaders)
-	responseInState := isKnownOption(plan.StaticResponseHeaders)
 	if previous != nil {
 		legacyInState = legacyInState || isKnownOption(previous.StaticHeaders)
-		responseInState = responseInState || isKnownOption(previous.StaticResponseHeaders)
 	}
 
 	if responseConfigured {
@@ -183,15 +181,14 @@ func selectConfiguredResponseHeaderOption(
 	}
 
 	if legacyConfigured {
-		if responseInState {
-			response, d := disabledStaticResponseHeadersValue(ctx)
-			diags.Append(d...)
-			if diags.HasError() {
-				return diags
-			}
-			plan.StaticResponseHeaders = response
-		} else {
-			response, d := resource_resource.NewStaticResponseHeadersValueNull().ToObjectValue(ctx)
+		legacyOptionChanged := previous == nil || !isKnownOption(previous.StaticHeaders) ||
+			!isKnownOption(plan.StaticHeaders) || !plan.StaticHeaders.Equal(previous.StaticHeaders)
+		if legacyOptionChanged {
+			// The CDN API can return the canonical static_response_headers form
+			// after receiving the deprecated staticHeaders field. Keep the plan
+			// unknown when that legacy setting changes so the API's read-back is
+			// consistent with the plan, while preserving known state on no-op plans.
+			response, d := resource_resource.NewStaticResponseHeadersValueUnknown().ToObjectValue(ctx)
 			diags.Append(d...)
 			if diags.HasError() {
 				return diags
@@ -222,19 +219,53 @@ func disabledStaticHeadersValue(ctx context.Context) (types.Object, diag.Diagnos
 	return option.ToObjectValue(ctx)
 }
 
-func disabledStaticResponseHeadersValue(ctx context.Context) (types.Object, diag.Diagnostics) {
-	value := types.ListValueMust(resource_resource.ValueValue{}.Type(ctx), []attr.Value{})
-	option, diags := resource_resource.NewStaticResponseHeadersValue(
-		resource_resource.StaticResponseHeadersValue{}.AttributeTypes(ctx),
-		map[string]attr.Value{
-			"enabled": types.BoolValue(false),
-			"value":   value,
-		},
-	)
-	if diags.HasError() {
-		return types.ObjectUnknown(resource_resource.StaticResponseHeadersValue{}.AttributeTypes(ctx)), diags
+func responseHeaderOptionsForAPIRequest(
+	ctx context.Context,
+	options resource_resource.OptionsValue,
+	config resource_resource.OptionsValue,
+) (resource_resource.OptionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	if options.IsNull() || options.IsUnknown() || config.IsNull() {
+		return options, diags
 	}
-	return option.ToObjectValue(ctx)
+
+	if config.IsUnknown() {
+		if isKnownOption(options.StaticHeaders) && isKnownOption(options.StaticResponseHeaders) {
+			diags.AddError(
+				"Conflicting CDN response header options",
+				"The planned state contains both response header options, but their configuration is unknown.",
+			)
+		}
+		return options, diags
+	}
+
+	legacyConfigured := !config.StaticHeaders.IsNull()
+	responseConfigured := !config.StaticResponseHeaders.IsNull()
+	if legacyConfigured && responseConfigured {
+		diags.AddError(
+			"Conflicting CDN response header options",
+			"Configure either `options.static_headers` or `options.static_response_headers`, not both.",
+		)
+		return options, diags
+	}
+
+	if legacyConfigured {
+		response, d := resource_resource.NewStaticResponseHeadersValueNull().ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return options, diags
+		}
+		options.StaticResponseHeaders = response
+	} else if !responseConfigured && isKnownOption(options.StaticResponseHeaders) {
+		legacy, d := resource_resource.NewStaticHeadersValueNull().ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return options, diags
+		}
+		options.StaticHeaders = legacy
+	}
+
+	return options, diags
 }
 
 func validateStaticResponseHeaders(ctx context.Context, value types.Object) diag.Diagnostics {
@@ -349,8 +380,10 @@ func (r *resourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 
 func (r *resourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data resource_resource.ResourceModel
+	var config resource_resource.ResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -384,7 +417,12 @@ func (r *resourceResource) Create(ctx context.Context, req resource.CreateReques
 		}
 	}
 
-	opts, diags := data.Options.ToResourceOptions(ctx)
+	requestOptions, diags := responseHeaderOptionsForAPIRequest(ctx, data.Options, config.Options)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	opts, diags := requestOptions.ToResourceOptions(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -539,8 +577,10 @@ func (r *resourceResource) Read(ctx context.Context, req resource.ReadRequest, r
 func (r *resourceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan resource_resource.ResourceModel
 	var data resource_resource.ResourceModel
+	var config resource_resource.ResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -582,7 +622,12 @@ func (r *resourceResource) Update(ctx context.Context, req resource.UpdateReques
 		}
 	}
 
-	opts, diags := plan.Options.ToResourceOptions(ctx)
+	requestOptions, diags := responseHeaderOptionsForAPIRequest(ctx, plan.Options, config.Options)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	opts, diags := requestOptions.ToResourceOptions(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -590,7 +635,12 @@ func (r *resourceResource) Update(ctx context.Context, req resource.UpdateReques
 
 	// We have to specify options in update even if they are not changed
 	if opts == nil {
-		opts, diags = data.Options.ToResourceOptions(ctx)
+		requestOptions, diags = responseHeaderOptionsForAPIRequest(ctx, data.Options, config.Options)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		opts, diags = requestOptions.ToResourceOptions(ctx)
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
 			return
