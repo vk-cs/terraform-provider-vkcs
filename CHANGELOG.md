@@ -17,6 +17,7 @@ description: |-
 - Add import for KMS resources
 - Fix: reuse of the cached image file of vkcs_images_image when compression_format or archiving_format is changed.
 - Fix: partially downloaded image file of vkcs_images_image could be reused from the cache after the provider was interrupted.
+- Fix: vkcs_networking_port no longer sends port_security_enabled when it is not set in configuration, which allows creating ports in a shared network of another project.
 
 #### v0.19.0
 - Add support for KMS service (secrets and keys)
