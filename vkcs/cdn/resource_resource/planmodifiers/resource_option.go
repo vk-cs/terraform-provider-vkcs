@@ -15,6 +15,33 @@ func ResourceOption() planmodifier.Object {
 	return resourceOptionPlanModifier{}
 }
 
+// ResourceOptionWithState preserves prior state when an omitted optional+computed
+// object is marked unknown by the framework. This is needed for nested list
+// attributes, which can otherwise cause a non-empty plan after apply (framework
+// issue #898). The resource option behavior is then applied to known plans.
+func ResourceOptionWithState() planmodifier.Object {
+	return resourceOptionWithStatePlanModifier{}
+}
+
+type resourceOptionWithStatePlanModifier struct{}
+
+func (m resourceOptionWithStatePlanModifier) Description(ctx context.Context) string {
+	return "Preserves the prior state for an omitted CDN resource option."
+}
+
+func (m resourceOptionWithStatePlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (m resourceOptionWithStatePlanModifier) PlanModifyObject(ctx context.Context, req planmodifier.ObjectRequest, resp *planmodifier.ObjectResponse) {
+	if req.ConfigValue.IsNull() && req.PlanValue.IsUnknown() {
+		resp.PlanValue = req.StateValue
+		return
+	}
+
+	resourceOptionPlanModifier{}.PlanModifyObject(ctx, req, resp)
+}
+
 type resourceOptionPlanModifier struct{}
 
 func (m resourceOptionPlanModifier) Description(_ context.Context) string {
