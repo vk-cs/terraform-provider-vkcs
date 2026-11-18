@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -157,21 +156,14 @@ func selectConfiguredResponseHeaderOption(
 		return diags
 	}
 
-	legacyInState := isKnownOption(plan.StaticHeaders)
-	if previous != nil {
-		legacyInState = legacyInState || isKnownOption(previous.StaticHeaders)
-	}
-
 	if responseConfigured {
-		if legacyInState {
-			legacy, d := disabledStaticHeadersValue(ctx)
-			diags.Append(d...)
-			if diags.HasError() {
-				return diags
-			}
-			plan.StaticHeaders = legacy
-		} else {
-			legacy, d := resource_resource.NewStaticHeadersValueNull().ToObjectValue(ctx)
+		responseOptionChanged := previous == nil || !isKnownOption(previous.StaticResponseHeaders) ||
+			!isKnownOption(plan.StaticResponseHeaders) || !plan.StaticResponseHeaders.Equal(previous.StaticResponseHeaders)
+		if responseOptionChanged {
+			// The CDN API can return the deprecated staticHeaders alias after
+			// receiving static_response_headers. Keep that alias unknown when
+			// the canonical option changes so the API read-back is consistent.
+			legacy, d := resource_resource.NewStaticHeadersValueUnknown().ToObjectValue(ctx)
 			diags.Append(d...)
 			if diags.HasError() {
 				return diags
@@ -202,21 +194,6 @@ func selectConfiguredResponseHeaderOption(
 
 func isKnownOption(value types.Object) bool {
 	return !value.IsNull() && !value.IsUnknown()
-}
-
-func disabledStaticHeadersValue(ctx context.Context) (types.Object, diag.Diagnostics) {
-	value := types.MapValueMust(types.StringType, map[string]attr.Value{})
-	option, diags := resource_resource.NewStaticHeadersValue(
-		resource_resource.StaticHeadersValue{}.AttributeTypes(ctx),
-		map[string]attr.Value{
-			"enabled": types.BoolValue(false),
-			"value":   value,
-		},
-	)
-	if diags.HasError() {
-		return types.ObjectUnknown(resource_resource.StaticHeadersValue{}.AttributeTypes(ctx)), diags
-	}
-	return option.ToObjectValue(ctx)
 }
 
 func responseHeaderOptionsForAPIRequest(
@@ -256,7 +233,7 @@ func responseHeaderOptionsForAPIRequest(
 			return options, diags
 		}
 		options.StaticResponseHeaders = response
-	} else if !responseConfigured && isKnownOption(options.StaticResponseHeaders) {
+	} else if responseConfigured || isKnownOption(options.StaticResponseHeaders) {
 		legacy, d := resource_resource.NewStaticHeadersValueNull().ToObjectValue(ctx)
 		diags.Append(d...)
 		if diags.HasError() {

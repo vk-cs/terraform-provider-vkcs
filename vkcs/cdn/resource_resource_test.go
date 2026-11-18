@@ -140,7 +140,6 @@ func TestAccCDNResourceResource_staticResponseHeaders(t *testing.T) {
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.headers", "options.static_headers.enabled", "false"),
 					acctest.TestCheckResourceAttrDeepEqual("vkcs_cdn_resource.headers", "options.static_response_headers.value", []map[string]any{
 						{"name": "X-Multi", "value": []string{"first", "second"}, "always": false},
 						{"name": "X-Always", "value": []string{"third"}, "always": true},
@@ -411,6 +410,10 @@ resource "vkcs_cdn_resource" "headers" {
   cname        = "{{ .Cname }}"
   origin_group = vkcs_cdn_origin_group.base.id
   options = {
+    allowed_http_methods = {
+      enabled = true
+      value   = ["GET", "HEAD"]
+    }
     static_response_headers = {
       enabled = true
       value   = {{ .Headers }}
@@ -426,6 +429,10 @@ resource "vkcs_cdn_resource" "headers" {
   cname        = "{{ .Cname }}"
   origin_group = vkcs_cdn_origin_group.base.id
   options = {
+    allowed_http_methods = {
+      enabled = true
+      value   = ["GET", "HEAD"]
+    }
     static_headers = {
       value = {
         "X-Multi" = "first"
