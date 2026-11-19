@@ -1,41 +1,64 @@
 package backup_test
 
 import (
-	"os"
+	"fmt"
+	"strconv"
 	"testing"
+	"time"
 
 	acctest_helper "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/checkpoints"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/providers"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 func TestAccBackupPlan_objectLock(t *testing.T) {
-	if os.Getenv("TF_ACC") == "" {
-		t.Skip("set TF_ACC=1 to run acceptance tests")
-	}
-	if os.Getenv("VKCS_TEST_BACKUP_OBJECT_LOCK_ENABLED") != "true" {
-		t.Skip("set VKCS_TEST_BACKUP_OBJECT_LOCK_ENABLED=true for a project with an Object Lock-enabled backup bucket")
-	}
-
 	planName := "tfacc-backup-plan-lock-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
-	config := acctest.AccTestRenderConfig(testAccBackupPlanObjectLock, map[string]string{
+	retainUntil := strconv.FormatInt(time.Now().Add(365*24*time.Hour).Unix(), 10)
+	baseConfig := map[string]string{
 		"TestAccBackupPlanBase": acctest.AccTestRenderConfig(testAccBackupPlanBase),
 		"PlanName":              planName,
-	})
+	}
+	daysConfig := acctest.AccTestRenderConfig(testAccBackupPlanObjectLock, baseConfig)
+	baseConfig["RetainUntil"] = retainUntil
+	retainUntilConfig := acctest.AccTestRenderConfig(testAccBackupPlanObjectLockRetainUntil, baseConfig)
+	removedConfig := acctest.AccTestRenderConfig(testAccBackupPlanObjectLockRemoved, baseConfig)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: config,
+				Config: daysConfig,
+				Check:  resource.TestCheckResourceAttr("vkcs_backup_plan.object_lock", "object_lock.type", "compliance"),
+			},
+			{
+				Config:             daysConfig,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				Config: retainUntilConfig,
+				Check:  resource.TestCheckResourceAttr("vkcs_backup_plan.object_lock", "object_lock.type", "compliance"),
+			},
+			{
+				Config:             retainUntilConfig,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				Config: removedConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("vkcs_backup_plan.object_lock", "object_lock.type", "compliance"),
-					resource.TestCheckResourceAttr("vkcs_backup_plan.object_lock", "object_lock.days", "30"),
+					resource.TestCheckNoResourceAttr("vkcs_backup_plan.object_lock", "object_lock.type"),
+					testAccCheckNextNovaCheckpointHasNoObjectLock(t, 30*time.Minute),
 				),
 			},
 			{
-				Config:             config,
+				Config:             removedConfig,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
@@ -47,6 +70,102 @@ func TestAccBackupPlan_objectLock(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccCheckNextNovaCheckpointHasNoObjectLock(t *testing.T, timeout time.Duration) resource.TestCheckFunc {
+	return func(state *terraform.State) (result error) {
+		plan, ok := state.RootModule().Resources["vkcs_backup_plan.object_lock"]
+		if !ok || plan.Primary == nil || plan.Primary.ID == "" {
+			return fmt.Errorf("Object Lock test plan was not found in state")
+		}
+
+		config, err := (&clients.ConfigOpts{}).LoadAndValidate()
+		if err != nil {
+			return fmt.Errorf("load acceptance provider config: %w", err)
+		}
+		backupClient, err := config.BackupV1Client(config.GetRegion(), config.GetProjectID())
+		if err != nil {
+			return fmt.Errorf("create acceptance backup client: %w", err)
+		}
+		allProviders, err := providers.List(backupClient).Extract()
+		if err != nil {
+			return fmt.Errorf("list acceptance backup providers: %w", err)
+		}
+		providerID := ""
+		for _, backupProvider := range allProviders {
+			if backupProvider.Name == "OS::Nova" {
+				providerID = backupProvider.ID
+				break
+			}
+		}
+		if providerID == "" {
+			return fmt.Errorf("Nova backup provider was not found")
+		}
+
+		created, err := checkpoints.CreateForPlan(backupClient, providerID, &checkpoints.PlanCheckpointCreate{
+			PlanCheckpoints: &checkpoints.PlanCheckpointCreateOpts{PlanID: plan.Primary.ID},
+		}).Extract()
+		if err != nil {
+			return fmt.Errorf("start checkpoint after removing Object Lock from plan %q: %w", plan.Primary.ID, err)
+		}
+		if len(created.Checkpoints) == 0 {
+			return fmt.Errorf("on-demand checkpoint API returned no checkpoints for plan %q", plan.Primary.ID)
+		}
+		checkpointIDs := make(map[string]struct{}, len(created.Checkpoints))
+		for _, checkpoint := range created.Checkpoints {
+			if checkpoint.ID != "" {
+				checkpointIDs[checkpoint.ID] = struct{}{}
+			}
+		}
+		if len(checkpointIDs) == 0 {
+			return fmt.Errorf("on-demand checkpoint API returned checkpoints without IDs for plan %q", plan.Primary.ID)
+		}
+		t.Cleanup(func() {
+			for checkpointID := range checkpointIDs {
+				if err := checkpoints.Delete(backupClient, providerID, checkpointID).ExtractErr(); err != nil && !errutil.IsNotFound(err) {
+					t.Errorf("delete acceptance checkpoint %q: %v", checkpointID, err)
+				}
+			}
+		})
+
+		deadline := time.Now().Add(timeout)
+		for {
+			response, err := checkpoints.ListGroupedByPlanID(backupClient, checkpoints.ListOpts{PlanID: plan.Primary.ID}).Extract()
+			if err != nil {
+				return fmt.Errorf("read checkpoint status for plan %q: %w", plan.Primary.ID, err)
+			}
+			foundNovaCheckpoint := false
+			allNovaCheckpointsAvailable := true
+			for _, protectedResource := range response.Resources {
+				if protectedResource.ResourceType != "OS::Nova::Server" {
+					continue
+				}
+				for _, backup := range protectedResource.Backups {
+					if _, requested := checkpointIDs[backup.CheckpointID]; !requested {
+						continue
+					}
+					foundNovaCheckpoint = true
+					if backup.Status == "error" {
+						return fmt.Errorf("on-demand Nova checkpoint %q failed", backup.CheckpointID)
+					}
+					if backup.Status != "available" {
+						allNovaCheckpointsAvailable = false
+						continue
+					}
+					if backup.ObjectLock != nil && backup.ObjectLock.Type != "" {
+						return fmt.Errorf("checkpoint %q still has Object Lock %q after it was removed from the plan", backup.CheckpointID, backup.ObjectLock.Type)
+					}
+				}
+			}
+			if foundNovaCheckpoint && allNovaCheckpointsAvailable {
+				return nil
+			}
+			if time.Now().After(deadline) {
+				return fmt.Errorf("timed out waiting for a Nova checkpoint without Object Lock for plan %q", plan.Primary.ID)
+			}
+			time.Sleep(15 * time.Second)
+		}
+	}
 }
 
 func TestAccBackupPlan_basic_retention_full(t *testing.T) {
@@ -503,6 +622,44 @@ resource "vkcs_backup_plan" "object_lock" {
   object_lock = {
     type = "compliance"
     days = 30
+  }
+}
+`
+
+const testAccBackupPlanObjectLockRemoved = `
+{{ .TestAccBackupPlanBase }}
+
+resource "vkcs_backup_plan" "object_lock" {
+  name               = "{{.PlanName}}"
+  provider_name      = "cloud_servers"
+  schedule = {
+    every_hours = 24
+  }
+  full_retention = {
+    max_full_backup = 30
+  }
+  incremental_backup = false
+  instance_ids       = [vkcs_compute_instance.base_instance.id]
+}
+`
+
+const testAccBackupPlanObjectLockRetainUntil = `
+{{ .TestAccBackupPlanBase }}
+
+resource "vkcs_backup_plan" "object_lock" {
+  name               = "{{.PlanName}}"
+  provider_name      = "cloud_servers"
+  schedule = {
+    every_hours = 24
+  }
+  full_retention = {
+    max_full_backup = 30
+  }
+  incremental_backup = false
+  instance_ids       = [vkcs_compute_instance.base_instance.id]
+  object_lock = {
+    type         = "compliance"
+    retain_until = {{.RetainUntil}}
   }
 }
 `

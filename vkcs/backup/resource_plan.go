@@ -490,7 +490,9 @@ func (r *PlanResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	plan.ProviderName = types.StringValue(providerInfo.Name)
 
 	plan.Name = types.StringValue(planResp.Name)
-	plan.ObjectLock = flattenObjectLock(planResp.ObjectLock)
+	// The backup API may omit object_lock or return an empty object from GET.
+	// Preserve the last known value instead of replacing configured state with null.
+	plan.ObjectLock = objectLockFromResponse(plan.ObjectLock, planResp.ObjectLock)
 
 	if !plan.BackupTargets.IsNull() && !plan.BackupTargets.IsUnknown() {
 		resources := make([]PlanResourceBackupTargetModel, len(planResp.Resources))
@@ -655,11 +657,11 @@ func (r *PlanResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	planUpdateOpts := plans.UpdateOpts{
-		Name:       plan.Name.ValueString(),
-		Status:     "running",
-		Resources:  resourcesInfo,
-		ObjectLock: expandObjectLock(plan.ObjectLock),
+		Name:      plan.Name.ValueString(),
+		Status:    "running",
+		Resources: resourcesInfo,
 	}
+	planUpdateOpts.ObjectLock = expandObjectLockUpdate(plan.ObjectLock, state.ObjectLock)
 
 	incrementalBackups := plan.IncrementalBackup.ValueBool()
 	if incrementalBackups {

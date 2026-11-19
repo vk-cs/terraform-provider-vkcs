@@ -33,9 +33,3 @@ variable "key_pair" {
   default     = ""
   description = "Keypair name for the restored VM."
 }
-
-variable "flavor_id" {
-  type        = string
-  default     = ""
-  description = "Optional flavor ID for the restored VM; defaults to the flavor in the checkpoint."
-}

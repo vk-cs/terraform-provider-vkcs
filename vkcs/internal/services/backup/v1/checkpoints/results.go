@@ -72,6 +72,35 @@ type GetResult struct {
 	commonResult
 }
 
+// DeleteResult is the result of deleting a checkpoint.
+type DeleteResult struct {
+	gophercloud.ErrResult
+}
+
+// CreatePlanCheckpointResponse contains checkpoints started for a plan.
+type CreatePlanCheckpointResponse struct {
+	Checkpoints []CreatedCheckpoint `json:"checkpoints"`
+}
+
+// CreatedCheckpoint contains the ID and initial status of an on-demand checkpoint.
+type CreatedCheckpoint struct {
+	ID     string `json:"id"`
+	Status string `json:"status"`
+}
+
+// CreatePlanCheckpointResult is the result of creating checkpoints from a plan.
+type CreatePlanCheckpointResult struct {
+	gophercloud.Result
+}
+
+func (result CreatePlanCheckpointResult) Extract() (*CreatePlanCheckpointResponse, error) {
+	var response *CreatePlanCheckpointResponse
+	if err := result.ExtractInto(&response); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
 func (result GetResult) Extract() (*CheckpointDetails, error) {
 	var response *GetCheckpointResponse
 	if err := result.ExtractInto(&response); err != nil {

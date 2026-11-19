@@ -3,7 +3,6 @@ resource "vkcs_compute_instance" "restored_vm" {
   name               = var.instance_name
   checkpoint_id      = var.checkpoint_id
   source_resource_id = var.source_resource_id != "" ? var.source_resource_id : null
-  flavor_id          = var.flavor_id
   key_pair           = var.key_pair
 
   network {

@@ -291,11 +291,63 @@ resource "vkcs_compute_instance" "cloud_monitoring" {
 
 ### Restore a VM from a backup checkpoint
 
-Set `checkpoint_id` to create a VM from a backup checkpoint. The restored VM is managed and deleted by this resource. If a checkpoint contains multiple VMs, set `source_resource_id`. Configure exactly one `network` block and `key_pair`; `availability_zone` can override the checkpoint value. Flavor and security groups are restored from the checkpoint.
+Set `checkpoint_id` to create a new VM from a backup checkpoint. The restored VM is managed by `vkcs_compute_instance` and is deleted with that resource. If the checkpoint contains multiple VMs, set `source_resource_id` to select one. Set exactly one `network` block and `key_pair` for the new VM; `availability_zone` can override the checkpoint value. The flavor and security groups are restored from the checkpoint. The disk layout is restored from the checkpoint, so `block_device` cannot be set in this mode. Image, `user_data`, `config_drive`, `personality`, `scheduler_hints`, `network_mode`, `metadata`, flavor settings, security group settings, `network.port`, `network.fixed_ip_v4`, and cloud monitoring configuration are not supported together with `checkpoint_id`. The operation ID is available as `restore_id` and can be used with the `vkcs_backup_restore` data source to read restore status. Matching in-progress and failed restores are reused to avoid creating duplicate or partially restored VMs; tainting or `-replace` with the same configuration does not retry a failed operation. For a completed restore, the provider reuses the operation while its VM is visible in Nova. If the VM remains absent for two minutes, the provider logs a warning and starts a new restore; unusually slow Nova visibility could still result in a duplicate VM. To request a new operation after a failed restore, change `name` (or choose another checkpoint/source resource).
 
-The disk layout is restored from the checkpoint. Image, block devices, user data, config drive, personality, scheduler hints, network mode, metadata, flavor and security group settings, `network.port`, `network.fixed_ip_v4`, and cloud monitoring are not supported in checkpoint restore mode.
+```terraform
+resource "vkcs_compute_instance" "restored_vm" {
+  count              = var.enable_restore ? 1 : 0
+  name               = var.instance_name
+  checkpoint_id      = var.checkpoint_id
+  source_resource_id = var.source_resource_id != "" ? var.source_resource_id : null
+  key_pair           = var.key_pair
 
-The restore operation ID is available in `restore_id` and can be inspected with `vkcs_backup_restore`. Matching in-progress and failed restores are reused to avoid creating duplicate or partially restored VMs. Tainting or `-replace` with unchanged configuration does not retry a failed operation; change `name`, `checkpoint_id`, or `source_resource_id` to request a new operation. For a completed restore, the provider reuses the operation while its VM is visible in Nova. If the VM remains absent for two minutes, the provider logs a warning and starts a new restore; unusually slow Nova visibility could still result in a duplicate VM.
+  network {
+    uuid = var.network_id
+  }
+}
+
+data "vkcs_backup_restore" "status" {
+  count      = var.enable_restore ? 1 : 0
+  restore_id = try(vkcs_compute_instance.restored_vm[0].restore_id, "")
+}
+```
+```terraform
+variable "enable_restore" {
+  type        = bool
+  default     = false
+  description = "Set to true to restore a VM from the selected checkpoint."
+}
+
+variable "instance_name" {
+  type        = string
+  default     = "restored-vm-example"
+  description = "Name for the restored VM."
+}
+
+variable "checkpoint_id" {
+  type        = string
+  default     = ""
+  description = "ID of the backup checkpoint to restore."
+}
+
+variable "source_resource_id" {
+  type        = string
+  default     = ""
+  description = "Nova server resource ID within the checkpoint when it contains multiple VMs."
+}
+
+variable "network_id" {
+  type        = string
+  default     = ""
+  description = "Network ID for the restored VM."
+}
+
+variable "key_pair" {
+  type        = string
+  default     = ""
+  description = "Keypair name for the restored VM."
+}
+```
 
 ### Get generated admin password for windows instance
 
@@ -373,6 +425,8 @@ output "windows_password" {
 
     - `volume_type` optional *string* &rarr;  The volume type that will be used. Changing this creates a new server.
 
+- `checkpoint_id` optional *string* &rarr;  ID of the backup checkpoint to restore. When set, this resource creates a new VM from the checkpoint instead of creating it from an image. Set exactly one `network` block and `key_pair` for the restored VM. The flavor and security groups are restored from the checkpoint; `availability_zone` can override the checkpoint value. The restored VM is managed and deleted by this resource. Changing this ID, `source_resource_id`, or `name` starts a new restore operation.
+
 - `cloud_monitoring` optional &rarr;  The settings of the cloud monitoring, it is recommended to set this field with the values of `vkcs_cloud_monitoring` resource fields. Changing this creates a new server.<br>**New since v0.9.0**.
     - `script` **required** sensitive *string* &rarr;  The script of the cloud monitoring.
 
@@ -425,6 +479,8 @@ output "windows_password" {
 
 - `server_group_id` optional *string* &rarr;  The UUID of a Server Group to place the instance into. Unlike `scheduler_hints.group`, this can be changed without recreating the server: the server is added to or removed from the group. Adding a server to a group requires the server to be stopped or shelved; enable `vendor_options.stop_before_server_group_change` to let the provider stop and start an active server automatically. Removing this argument removes the server from the group. Conflicts with `scheduler_hints`.
 
+- `source_resource_id` optional *string* &rarr;  ID of the Nova server resource inside the checkpoint. Required only when the checkpoint contains multiple VMs; otherwise the single VM is selected automatically.
+
 - `stop_before_destroy` optional *boolean* &rarr;  Whether to try stop instance gracefully before destroying it, thus giving chance for guest OS daemons to stop correctly. If instance doesn't stop within timeout, it will be destroyed anyway.
 
 - `tags` optional *set of* *string* &rarr;  A set of string tags for the instance. Changing this updates the existing instance tags.
@@ -454,6 +510,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `password_data` *string* &rarr;  Base-64 encoded encrypted password data for the instance. Use this attribute only for instances running Microsoft Windows. This attribute is only exported if `get_password_data` is true. If you change the password after creating the instance, these changes will not be visible in this field.<br>**New since v0.9.3**.
 
+
+- `restore_id` *string* &rarr;  ID of the backup restore operation created for checkpoint_id. Use it with the vkcs_backup_restore data source to read per-resource restore status.
 
 
 ## Notes

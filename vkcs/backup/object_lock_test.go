@@ -41,6 +41,74 @@ func TestFlattenObjectLock(t *testing.T) {
 	if got := flattenObjectLock(nil); got != nil {
 		t.Fatalf("flattenObjectLock(nil) = %#v, want nil", got)
 	}
+	if got := flattenObjectLock(&plans.ObjectLock{}); got != nil {
+		t.Fatalf("flattenObjectLock(empty object) = %#v, want nil", got)
+	}
+	retainUntil := int64(1900000000)
+	got = flattenObjectLock(&plans.ObjectLock{Type: "governance", RetainUntil: &retainUntil})
+	if got == nil {
+		t.Fatal("flattenObjectLock(retain_until) returned nil")
+	}
+
+	hasGovernanceType := got.Type.ValueString() == "governance"
+	hasExpectedRetainUntil := !got.RetainUntil.IsNull() && got.RetainUntil.ValueInt64() == retainUntil
+	hasNoRetentionDays := got.Days.IsNull()
+	if !hasGovernanceType || !hasExpectedRetainUntil || !hasNoRetentionDays {
+		t.Fatalf("flattenObjectLock(retain_until) = %#v, want original API value", got)
+	}
+}
+
+func TestObjectLockFromResponsePreservesStateWhenAPIOmitsLock(t *testing.T) {
+	days := int64(30)
+	previous := &PlanResourceObjectLockModel{
+		Type:        types.StringValue("compliance"),
+		Days:        types.Int64Value(days),
+		RetainUntil: types.Int64Null(),
+	}
+
+	for _, response := range []*plans.ObjectLock{nil, {}} {
+		if got := objectLockFromResponse(previous, response); got != previous {
+			t.Fatalf("objectLockFromResponse() = %#v, want previous value %#v", got, previous)
+		}
+	}
+}
+
+func TestObjectLockFromResponseUsesAPIValuesWhenReturned(t *testing.T) {
+	previous := &PlanResourceObjectLockModel{
+		Type:        types.StringValue("compliance"),
+		Days:        types.Int64Value(30),
+		RetainUntil: types.Int64Null(),
+	}
+	retainUntil := int64(1900000000)
+	response := &plans.ObjectLock{Type: "compliance", RetainUntil: &retainUntil}
+
+	got := objectLockFromResponse(previous, response)
+	if got == previous || got == nil || got.RetainUntil.ValueInt64() != retainUntil || !got.Days.IsNull() {
+		t.Fatalf("objectLockFromResponse() = %#v, want API-returned retain_until value", got)
+	}
+}
+
+func TestExpandObjectLockUpdateDistinguishesOmittedAndClearedLock(t *testing.T) {
+	previous := &PlanResourceObjectLockModel{
+		Type:        types.StringValue("compliance"),
+		Days:        types.Int64Value(30),
+		RetainUntil: types.Int64Null(),
+	}
+
+	if got := expandObjectLockUpdate(nil, nil); got != nil {
+		t.Fatalf("expandObjectLockUpdate(nil, nil) = %#v, want field omitted", got)
+	}
+	if got := expandObjectLockUpdate(nil, previous); got == nil || *got != nil {
+		t.Fatalf("expandObjectLockUpdate(nil, previous) = %#v, want explicit null to clear", got)
+	}
+	updated := &PlanResourceObjectLockModel{
+		Type:        types.StringValue("governance"),
+		Days:        types.Int64Null(),
+		RetainUntil: types.Int64Value(1900000000),
+	}
+	if got := expandObjectLockUpdate(updated, previous); got == nil || *got == nil || (*got).Type != "governance" {
+		t.Fatalf("expandObjectLockUpdate(updated, previous) = %#v, want governance lock", got)
+	}
 }
 
 func TestValidateObjectLockSettings(t *testing.T) {

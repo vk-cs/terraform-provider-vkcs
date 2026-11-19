@@ -36,6 +36,20 @@ func TestWaitForRestoredServerVisibility(t *testing.T) {
 		}
 	})
 
+	t.Run("returns external context cancellation", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		getServer := func(ctx context.Context, _ string) (bool, error) {
+			cancel()
+			return false, ctx.Err()
+		}
+
+		_, err := waitForRestoredServerVisibility(ctx, "server-id", time.Second, time.Millisecond, getServer)
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("waitForRestoredServerVisibility() error = %v, want context.Canceled", err)
+		}
+	})
+
 	t.Run("returns Nova API errors", func(t *testing.T) {
 		wantErr := errors.New("Nova unavailable")
 		getServer := func(context.Context, string) (bool, error) { return false, wantErr }

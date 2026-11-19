@@ -104,6 +104,14 @@ resource "vkcs_backup_plan" "backup_plan" {
 
 - `instance_ids` optional *set of* *string* &rarr;  Set of ids of instances to make backup for. Either backup_targets or instance_ids must be specified, but not both.
 
+- `object_lock` optional &rarr;  Object Lock for backups created after the plan is applied. For compliance and governance, set exactly one of days or retain_until. For legalhold, do not set a retention period. Removing this block only affects future backups; protection on existing backups is not changed by the backup API.
+    - `type` **required** *string* &rarr;  Object Lock mode: compliance, governance, or legalhold.
+
+    - `days` optional *number* &rarr;  Retention period in days. Required for compliance or governance when retain_until is not set; must not be set for legalhold.
+
+    - `retain_until` optional *number* &rarr;  Retention end date as a Unix timestamp. Required for compliance or governance when days is not set; must not be set for legalhold.
+
+
 - `provider_id` optional *string* &rarr;  ID of backup provider
 
 - `provider_name` optional *string* &rarr;  Name of backup provider, must be one of: cloud_servers, dbaas
@@ -116,6 +124,47 @@ In addition to all arguments above, the following attributes are exported:
 - `id` *string* &rarr;  ID of the resource
 
 
+
+## Object Lock
+
+The `object_lock` block applies protection to backups created after the configuration is applied. For `compliance` or `governance`, specify exactly one retention period: `days` or `retain_until` (a Unix timestamp). For `legalhold`, specify only `type`.
+
+```terraform
+resource "vkcs_backup_plan" "protected" {
+  count              = var.enable_object_lock ? 1 : 0
+  name               = "backup-plan-object-lock-example"
+  provider_name      = "cloud_servers"
+  incremental_backup = false
+  schedule = {
+    every_hours = 24
+  }
+  full_retention = {
+    max_full_backup = 30
+  }
+  instance_ids = [var.instance_id]
+  object_lock = {
+    type = "compliance"
+    days = 30
+  }
+}
+```
+```terraform
+variable "enable_object_lock" {
+  type        = bool
+  default     = false
+  description = "Set to true to create a protected backup plan."
+}
+
+variable "instance_id" {
+  type        = string
+  default     = ""
+  description = "ID of a VM that supports backup protection; required when enable_object_lock is true."
+}
+```
+
+Object Lock requires a bucket created with Object Lock enabled. The provider forwards these settings to the backup service and reports its validation errors; it does not duplicate cloud-side parameter validation. Protection is not applied retroactively, and removing or changing this block does not modify protection on existing backups. The backup API does not provide a Terraform operation to remove Legal Hold from an existing backup. Shortening an existing retention period is subject to the service's Object Lock enforcement; governance bypass is not provided by this resource.
+
+Use the [`vkcs_backup_checkpoints` data source](../data-sources/backup_checkpoints) to read Object Lock details for checkpoints created by a plan.
 
 ## Import
 

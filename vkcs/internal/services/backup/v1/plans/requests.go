@@ -38,7 +38,8 @@ type UpdateOpts struct {
 	FullDay       int                   `json:"full_day,omitempty"`
 	RetentionType string                `json:"retention_type,omitempty"`
 	GFS           *BackupPlanGFS        `json:"gfs,omitempty"`
-	ObjectLock    *ObjectLock           `json:"object_lock,omitempty"`
+	// A nil outer pointer omits the field. A nil inner pointer clears the lock.
+	ObjectLock **ObjectLock `json:"object_lock,omitempty"`
 }
 
 // ObjectLock represents a backup plan's object lock configuration.

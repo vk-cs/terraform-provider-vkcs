@@ -681,6 +681,7 @@ func resourceComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceComputeInstanceCreateFromCheckpoint(ctx context.Context, d *schema.ResourceData, meta interface{}, config clients.Config, computeClient *gophercloud.ServiceClient, checkpointID string, startTime time.Time) diag.Diagnostics {
+	// Schema validation defers this check if checkpoint_id is unknown during planning.
 	if err := validateCheckpointRestoreNetworkConfig(d.GetRawConfig()); err != nil {
 		return diag.Errorf("Invalid compute instance checkpoint restore configuration: %s", err)
 	}
@@ -728,22 +729,8 @@ func resourceComputeInstanceCreateFromCheckpoint(ctx context.Context, d *schema.
 			return nil, fmt.Errorf("check existing restore operations: %w", err)
 		}
 		return getOrCreateRestore(existingRestores, restoreOptions, func(candidate *restores.Restore) (bool, error) {
-			return canReuseExistingRestore(candidate, func(serverID string) (bool, error) {
-				return waitForRestoredServerVisibility(ctx, serverID, restoreServerVisibilityGrace, restorePollInterval, func(waitCtx context.Context, id string) (bool, error) {
-					select {
-					case <-waitCtx.Done():
-						return false, waitCtx.Err()
-					default:
-					}
-					_, err := iservers.Get(computeClient, id).Extract()
-					if err != nil {
-						if errutil.IsNotFound(err) {
-							return false, nil
-						}
-						return false, err
-					}
-					return true, nil
-				})
+			return canReuseExistingRestore(candidate, sourceResourceID, func(serverID string) (bool, error) {
+				return waitForRestoredServerVisibility(ctx, serverID, restoreServerVisibilityGrace, restorePollInterval, restoredServerExists(computeClient))
 			})
 		}, func() (*restores.Restore, error) {
 			return restores.Create(backupClient, &restores.RestoreCreate{Restore: &restoreOptions}).Extract()
@@ -763,7 +750,7 @@ func resourceComputeInstanceCreateFromCheckpoint(ctx context.Context, d *schema.
 	}
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - time.Since(startTime)
-	serverID, err := getRestoredComputeInstanceID(ctx, backupClient, restoreResponse.ID, createTimeout)
+	serverID, err := getRestoredComputeInstanceID(ctx, backupClient, restoreResponse.ID, sourceResourceID, createTimeout)
 	if err != nil {
 		return diag.Errorf("Error waiting for checkpoint restore %q: %s", restoreResponse.ID, err)
 	}

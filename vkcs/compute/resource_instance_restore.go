@@ -16,6 +16,8 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/checkpoints"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/providers"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/restores"
+	iservers "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/compute/v2/servers"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
 const (
@@ -148,7 +150,7 @@ func getOrCreateRestore(
 	return create()
 }
 
-func canReuseExistingRestore(restore *restores.Restore, serverExists func(string) (bool, error)) (bool, error) {
+func canReuseExistingRestore(restore *restores.Restore, sourceResourceID string, serverExists func(string) (bool, error)) (bool, error) {
 	if restore == nil || !restoreStatusesComplete(restore.ResourcesStatus) {
 		return true, nil
 	}
@@ -160,7 +162,7 @@ func canReuseExistingRestore(restore *restores.Restore, serverExists func(string
 
 	// Keep adopting a completed restore even if Nova has not exposed its server
 	// yet. Creating another restore for the same request can create a duplicate VM.
-	serverID, ready, err := restoredComputeInstanceID(restore)
+	serverID, ready, err := restoredComputeInstanceID(restore, sourceResourceID)
 	if err != nil {
 		return false, err
 	}
@@ -198,34 +200,55 @@ func waitForRestoredServerVisibility(ctx context.Context, serverID string, timeo
 	defer cancel()
 
 	stateConf := &retry.StateChangeConf{
-		Pending: []string{"NOT_FOUND"},
-		Target:  []string{"VISIBLE"},
-		Refresh: func() (interface{}, string, error) {
-			exists, err := getServer(waitCtx, serverID)
-			if err != nil {
-				return nil, "", err
-			}
-			if exists {
-				return true, "VISIBLE", nil
-			}
-			return false, "NOT_FOUND", nil
-		},
-		Timeout:      timeout + time.Second,
+		Pending:      []string{"NOT_FOUND"},
+		Target:       []string{"VISIBLE"},
+		Refresh:      restoredServerVisibilityRefreshFunc(waitCtx, serverID, getServer),
+		Timeout:      timeout,
 		MinTimeout:   pollInterval,
 		PollInterval: pollInterval,
 	}
 
 	_, err := stateConf.WaitForStateContext(waitCtx)
+	if ctx.Err() != nil {
+		return false, ctx.Err()
+	}
 	if err == nil {
 		return true, nil
 	}
-	if ctx.Err() != nil {
-		return false, ctx.Err()
+	var timeoutErr *retry.TimeoutError
+	if errors.As(err, &timeoutErr) && timeoutErr.LastError == nil {
+		return false, nil
 	}
 	if waitCtx.Err() != nil && errors.Is(err, context.DeadlineExceeded) {
 		return false, nil
 	}
 	return false, err
+}
+
+func restoredServerVisibilityRefreshFunc(ctx context.Context, serverID string, getServer restoredServerExistsGetter) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		exists, err := getServer(ctx, serverID)
+		if err != nil {
+			return nil, "", err
+		}
+		if exists {
+			return true, "VISIBLE", nil
+		}
+		return false, "NOT_FOUND", nil
+	}
+}
+
+func restoredServerExists(computeClient *gophercloud.ServiceClient) restoredServerExistsGetter {
+	return func(ctx context.Context, id string) (bool, error) {
+		if err := ctx.Err(); err != nil {
+			return false, err
+		}
+		_, err := iservers.Get(computeClient, id).Extract()
+		if errutil.IsNotFound(err) {
+			return false, nil
+		}
+		return err == nil, err
+	}
 }
 
 func restoreStatusesComplete(statuses map[string]string) bool {
@@ -307,8 +330,8 @@ func restoredComputeInstanceStateRefreshFunc(refresh retry.StateRefreshFunc, ins
 	}
 }
 
-func getRestoredComputeInstanceID(ctx context.Context, backupClient *gophercloud.ServiceClient, restoreID string, timeout time.Duration) (string, error) {
-	return waitForRestoredComputeInstanceID(ctx, restoreID, timeout, restorePollInterval, func(ctx context.Context, id string) (*restores.Restore, error) {
+func getRestoredComputeInstanceID(ctx context.Context, backupClient *gophercloud.ServiceClient, restoreID, sourceResourceID string, timeout time.Duration) (string, error) {
+	return waitForRestoredComputeInstanceID(ctx, restoreID, sourceResourceID, timeout, restorePollInterval, func(ctx context.Context, id string) (*restores.Restore, error) {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
@@ -318,7 +341,7 @@ func getRestoredComputeInstanceID(ctx context.Context, backupClient *gophercloud
 	})
 }
 
-func restoredComputeInstanceID(restore *restores.Restore) (string, bool, error) {
+func restoredComputeInstanceID(restore *restores.Restore, sourceResourceID string) (string, bool, error) {
 	if restore == nil {
 		return "", false, fmt.Errorf("backup API returned an empty restore")
 	}
@@ -362,11 +385,14 @@ func restoredComputeInstanceID(restore *restores.Restore) (string, bool, error) 
 	if len(serverIDs) == 0 {
 		return "", false, fmt.Errorf("restore %q completed without a restored Nova server", restore.ID)
 	}
+	if serverIDs[0] == sourceResourceID {
+		return "", false, fmt.Errorf("restore %q returned the source Nova server ID %q as the restored server ID", restore.ID, sourceResourceID)
+	}
 
 	return serverIDs[0], true, nil
 }
 
-func waitForRestoredComputeInstanceID(ctx context.Context, restoreID string, timeout, pollInterval time.Duration, getRestore restoreGetter) (string, error) {
+func waitForRestoredComputeInstanceID(ctx context.Context, restoreID, sourceResourceID string, timeout, pollInterval time.Duration, getRestore restoreGetter) (string, error) {
 	if restoreID == "" {
 		return "", fmt.Errorf("restore ID must not be empty")
 	}
@@ -392,7 +418,7 @@ func waitForRestoredComputeInstanceID(ctx context.Context, restoreID string, tim
 			return "", fmt.Errorf("read backup restore %q: %w", restoreID, err)
 		}
 
-		serverID, ready, err := restoredComputeInstanceID(restore)
+		serverID, ready, err := restoredComputeInstanceID(restore, sourceResourceID)
 		if err != nil {
 			return "", err
 		}

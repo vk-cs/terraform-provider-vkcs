@@ -1,28 +1,19 @@
 package backup_test
 
 import (
-	"fmt"
-	"os"
 	"testing"
 
+	acctest_helper "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 )
 
 func TestAccBackupCheckpoints_dataSource(t *testing.T) {
-	if os.Getenv("TF_ACC") == "" {
-		t.Skip("set TF_ACC=1 to run acceptance tests")
-	}
-	planID := os.Getenv("VKCS_TEST_BACKUP_PLAN_ID")
-	if planID == "" {
-		t.Skip("set VKCS_TEST_BACKUP_PLAN_ID to an existing backup plan")
-	}
-
-	config := fmt.Sprintf(`
-data "vkcs_backup_checkpoints" "plan" {
-  plan_id = %q
-}
-`, planID)
+	planName := "tfacc-checkpoints-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
+	config := acctest.AccTestRenderConfig(testAccBackupCheckpointsDataSource, map[string]string{
+		"TestAccBackupPlanBase": acctest.AccTestRenderConfig(testAccBackupPlanBase),
+		"PlanName":              planName,
+	})
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
@@ -31,10 +22,31 @@ data "vkcs_backup_checkpoints" "plan" {
 			{
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.vkcs_backup_checkpoints.plan", "id", planID),
-					resource.TestCheckResourceAttr("data.vkcs_backup_checkpoints.plan", "plan_id", planID),
+					resource.TestCheckResourceAttrPair("data.vkcs_backup_checkpoints.plan", "id", "vkcs_backup_plan.checkpoints", "id"),
+					resource.TestCheckResourceAttrPair("data.vkcs_backup_checkpoints.plan", "plan_id", "vkcs_backup_plan.checkpoints", "id"),
 				),
 			},
 		},
 	})
 }
+
+const testAccBackupCheckpointsDataSource = `
+{{ .TestAccBackupPlanBase }}
+
+resource "vkcs_backup_plan" "checkpoints" {
+  name               = "{{.PlanName}}"
+  provider_name      = "cloud_servers"
+  schedule = {
+    every_hours = 24
+  }
+  full_retention = {
+    max_full_backup = 30
+  }
+  incremental_backup = false
+  instance_ids       = [vkcs_compute_instance.base_instance.id]
+}
+
+data "vkcs_backup_checkpoints" "plan" {
+  plan_id = vkcs_backup_plan.checkpoints.id
+}
+`

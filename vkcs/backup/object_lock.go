@@ -24,7 +24,7 @@ func expandObjectLock(config *PlanResourceObjectLockModel) *plans.ObjectLock {
 }
 
 func flattenObjectLock(objectLock *plans.ObjectLock) *PlanResourceObjectLockModel {
-	if objectLock == nil {
+	if objectLock == nil || objectLock.Type == "" {
 		return nil
 	}
 
@@ -41,4 +41,21 @@ func flattenObjectLock(objectLock *plans.ObjectLock) *PlanResourceObjectLockMode
 	}
 
 	return config
+}
+
+func objectLockFromResponse(previous *PlanResourceObjectLockModel, response *plans.ObjectLock) *PlanResourceObjectLockModel {
+	if flattened := flattenObjectLock(response); flattened != nil {
+		return flattened
+	}
+
+	return previous
+}
+
+func expandObjectLockUpdate(config, previous *PlanResourceObjectLockModel) **plans.ObjectLock {
+	objectLock := expandObjectLock(config)
+	if objectLock == nil && previous == nil {
+		return nil
+	}
+
+	return &objectLock
 }

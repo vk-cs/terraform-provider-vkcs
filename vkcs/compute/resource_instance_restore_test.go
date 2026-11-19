@@ -39,6 +39,14 @@ func TestRestoredComputeInstanceID(t *testing.T) {
 			wantReady: true,
 		},
 		{
+			name: "rejects adoption of the source VM",
+			restore: &restores.Restore{
+				ID:              "restore-source-id",
+				ResourcesStatus: map[string]string{"OS::Nova::Server#source-id": "available"},
+			},
+			wantErrSubstr: "returned the source Nova server ID",
+		},
+		{
 			name: "reports a failed restore reason",
 			restore: &restores.Restore{
 				ID:              "restore-3",
@@ -86,7 +94,7 @@ func TestRestoredComputeInstanceID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gotID, gotReady, err := restoredComputeInstanceID(test.restore)
+			gotID, gotReady, err := restoredComputeInstanceID(test.restore, "source-id")
 			if test.wantErrSubstr != "" {
 				if err == nil || !strings.Contains(err.Error(), test.wantErrSubstr) {
 					t.Fatalf("restoredComputeInstanceID() error = %v, want substring %q", err, test.wantErrSubstr)
@@ -179,6 +187,32 @@ func TestValidateCheckpointRestoreConfigRejectsUnsupportedNetworkAttributes(t *t
 				}
 			})
 		}
+	}
+}
+
+func TestValidateCheckpointRestoreConfigDefersUnknownCheckpointIDToCreateGuard(t *testing.T) {
+	network := cty.ObjectVal(map[string]cty.Value{
+		"uuid":           cty.StringVal("network-id"),
+		"name":           cty.NullVal(cty.String),
+		"port":           cty.StringVal("unsupported-port"),
+		"fixed_ip_v4":    cty.NullVal(cty.String),
+		"mac":            cty.NullVal(cty.String),
+		"access_network": cty.BoolVal(false),
+	})
+	deferredConfig := cty.ObjectVal(map[string]cty.Value{
+		"checkpoint_id": cty.UnknownVal(cty.String),
+		"network":       cty.ListVal([]cty.Value{network}),
+	})
+
+	if err := validateCheckpointRestoreConfig(deferredConfig); err != nil {
+		t.Fatalf("schema-level raw-config validation should defer an unknown checkpoint_id, got %v", err)
+	}
+	resolvedConfig := cty.ObjectVal(map[string]cty.Value{
+		"checkpoint_id": cty.StringVal("checkpoint-id"),
+		"network":       cty.ListVal([]cty.Value{network}),
+	})
+	if err := validateCheckpointRestoreNetworkConfig(resolvedConfig); err == nil || !strings.Contains(err.Error(), "network.port") {
+		t.Fatalf("create-time network validation error = %v, want unsupported network.port error", err)
 	}
 }
 
@@ -344,7 +378,7 @@ func TestGetOrCreateRestoreAdoptsMatchingRequest(t *testing.T) {
 	createCalls := 0
 
 	got, err := getOrCreateRestore(existing, desired, func(candidate *restores.Restore) (bool, error) {
-		return canReuseExistingRestore(candidate, nil)
+		return canReuseExistingRestore(candidate, "source-id", nil)
 	}, func() (*restores.Restore, error) {
 		createCalls++
 		return &restores.Restore{ID: "new-restore-id"}, nil
@@ -375,7 +409,7 @@ func TestGetOrCreateRestoreCreatesAgainWhenPreviousVMWasDeleted(t *testing.T) {
 	createCalls := 0
 
 	got, err := getOrCreateRestore(existing, desired, func(candidate *restores.Restore) (bool, error) {
-		return canReuseExistingRestore(candidate, func(string) (bool, error) { return false, nil })
+		return canReuseExistingRestore(candidate, "source-id", func(string) (bool, error) { return false, nil })
 	}, func() (*restores.Restore, error) {
 		createCalls++
 		return &restores.Restore{ID: "new-restore-id"}, nil
@@ -425,7 +459,7 @@ func TestCanReuseExistingRestore(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			serverCalls := 0
-			got, err := canReuseExistingRestore(test.restore, func(serverID string) (bool, error) {
+			got, err := canReuseExistingRestore(test.restore, "source-id", func(serverID string) (bool, error) {
 				serverCalls++
 				if serverID != "vm" {
 					t.Fatalf("server ID = %q, want vm", serverID)
@@ -533,7 +567,7 @@ func TestWaitForRestoredComputeInstanceID(t *testing.T) {
 			return responses[responseIndex], nil
 		}
 
-		gotID, err := waitForRestoredComputeInstanceID(context.Background(), "restore-1", time.Second, time.Millisecond, getter)
+		gotID, err := waitForRestoredComputeInstanceID(context.Background(), "restore-1", "source-id", time.Second, time.Millisecond, getter)
 		if err != nil {
 			t.Fatalf("waitForRestoredComputeInstanceID() error = %v", err)
 		}
@@ -551,7 +585,7 @@ func TestWaitForRestoredComputeInstanceID(t *testing.T) {
 			return nil, wantErr
 		}
 
-		_, err := waitForRestoredComputeInstanceID(context.Background(), "restore-2", time.Second, time.Millisecond, getter)
+		_, err := waitForRestoredComputeInstanceID(context.Background(), "restore-2", "source-id", time.Second, time.Millisecond, getter)
 		if !errors.Is(err, wantErr) {
 			t.Fatalf("waitForRestoredComputeInstanceID() error = %v, want wrapped %v", err, wantErr)
 		}
@@ -565,7 +599,7 @@ func TestWaitForRestoredComputeInstanceID(t *testing.T) {
 			}, nil
 		}
 
-		_, err := waitForRestoredComputeInstanceID(context.Background(), "restore-3", time.Millisecond, time.Hour, getter)
+		_, err := waitForRestoredComputeInstanceID(context.Background(), "restore-3", "source-id", time.Millisecond, time.Hour, getter)
 		if err == nil || !strings.Contains(err.Error(), "restore-3") {
 			t.Fatalf("waitForRestoredComputeInstanceID() error = %v, want timeout mentioning restore ID", err)
 		}
