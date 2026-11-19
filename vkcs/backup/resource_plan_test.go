@@ -17,6 +17,7 @@ import (
 )
 
 func TestAccBackupPlan_objectLock(t *testing.T) {
+	// Requires an acceptance project with Object Lock enabled on its backup bucket.
 	planName := "tfacc-backup-plan-lock-" + acctest_helper.RandStringFromCharSet(5, acctest_helper.CharSetAlphaNum)
 	retainUntil := strconv.FormatInt(time.Now().Add(365*24*time.Hour).Unix(), 10)
 	baseConfig := map[string]string{
@@ -54,7 +55,7 @@ func TestAccBackupPlan_objectLock(t *testing.T) {
 				Config: removedConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr("vkcs_backup_plan.object_lock", "object_lock.type"),
-					testAccCheckNextNovaCheckpointHasNoObjectLock(t, 30*time.Minute),
+					testAccCheckNextNovaCheckpointHasNoObjectLock(t, 10*time.Minute),
 				),
 			},
 			{

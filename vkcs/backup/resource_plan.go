@@ -223,7 +223,7 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 						Description: "Retention end date as a Unix timestamp. Required for compliance or governance when days is not set; must not be set for legalhold.",
 					},
 				},
-				Description: "Object Lock for backups created after the plan is applied. For compliance and governance, set exactly one of days or retain_until. For legalhold, do not set a retention period. Removing this block only affects future backups; protection on existing backups is not changed by the backup API.",
+				Description: "Object Lock for backups created after the plan is applied. For compliance and governance, set exactly one of days or retain_until. For legalhold, do not set a retention period. Removing this block only affects future backups; protection on existing backups is not changed by the backup API. When importing a plan with Object Lock enabled, include this block in the configuration to preserve the plan setting; omitting it makes the next update remove Object Lock from the plan for future backups.",
 			},
 
 			"incremental_backup": schema.BoolAttribute{

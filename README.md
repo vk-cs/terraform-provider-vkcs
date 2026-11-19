@@ -49,6 +49,10 @@ $ terraform init
 
 When submitting PR make sure that if golang code has been changed, PR has updates to CHANGELOG.md. Add description of changes under last version with "(unreleased)" mark.
 
+Backup acceptance tests
+-----------------------
+Acceptance tests require `TF_ACC=1` and the standard `OS_*` test-project settings checked by `AccTestPreCheck`. The tests create their own backup plans and restore fixtures; no `VKCS_TEST_BACKUP_*` fixture IDs are required. `TestAccBackupPlan_objectLock` additionally requires a project whose backup bucket has Object Lock enabled.
+
 Documenting provider
 --------------------
 To update documentation contents, please, update "description" field of necessary resource/data_source schema and create/modify documentation templates.

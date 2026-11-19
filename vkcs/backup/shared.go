@@ -306,12 +306,16 @@ func flattenGFS(planResp *plans.PlanResponse) *PlanResourceGFSRetentionModel {
 func flattenSchedule(planResp *plans.PlanResponse, triggerResp *triggers.TriggerResponse, location *time.Location) *PlanResourceScheduleModel {
 	planSchedule := PlanResourceScheduleModel{}
 	scheduleParts := strings.Split(triggerResp.Properties.Pattern, " ")
-	if strings.HasPrefix(scheduleParts[1], "*/") {
+	dailyEveryHours := planResp.FullDay == nil && triggerResp.Properties.Pattern == "0 0 * * *"
+	if strings.HasPrefix(scheduleParts[1], "*/") || dailyEveryHours {
 		planSchedule.Date = nil
 		planSchedule.Time = types.StringNull()
 
-		everyHoursParts := strings.Split(scheduleParts[1], "/")
-		everyHours, _ := strconv.Atoi(everyHoursParts[1])
+		everyHours := 24
+		if !dailyEveryHours {
+			everyHoursParts := strings.Split(scheduleParts[1], "/")
+			everyHours, _ = strconv.Atoi(everyHoursParts[1])
+		}
 		planSchedule.EveryHours = types.Int64Value(int64(everyHours))
 	} else {
 		timeString := fmt.Sprintf("%02s:%02s", scheduleParts[1], scheduleParts[0])
