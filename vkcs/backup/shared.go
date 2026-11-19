@@ -251,7 +251,11 @@ func expandTriggerSchedule(plan PlanResourceModel) (string, error) {
 	var triggerSchedule string
 	if !plan.Schedule.EveryHours.IsNull() {
 		everyHours := plan.Schedule.EveryHours.ValueInt64()
-		triggerSchedule = fmt.Sprintf("0 */%d * * *", everyHours)
+		if everyHours == 24 {
+			triggerSchedule = "0 0 * * *"
+		} else {
+			triggerSchedule = fmt.Sprintf("0 */%d * * *", everyHours)
+		}
 	} else {
 		incrementalBackups := plan.IncrementalBackup.ValueBool()
 		parsedTime, err := parseTime(plan.Schedule.Time.ValueString())
