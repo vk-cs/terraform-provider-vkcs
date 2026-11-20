@@ -18,6 +18,7 @@ type PlanResponse struct {
 	FullDay       *int                  `json:"full_day,omitempty"`
 	RetentionType string                `json:"retention_type,omitempty"`
 	GFS           *BackupPlanGFS        `json:"gfs,omitempty"`
+	ObjectLock    *ObjectLock           `json:"object_lock,omitempty"`
 }
 
 // BackupPlanResource represents a backup plan resource info

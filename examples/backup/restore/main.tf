@@ -1,0 +1,16 @@
+resource "vkcs_compute_instance" "restored_vm" {
+  count              = var.enable_restore ? 1 : 0
+  name               = var.instance_name
+  checkpoint_id      = var.checkpoint_id
+  source_resource_id = var.source_resource_id != "" ? var.source_resource_id : null
+  key_pair           = var.key_pair
+
+  network {
+    uuid = var.network_id
+  }
+}
+
+data "vkcs_backup_restore" "status" {
+  count      = var.enable_restore ? 1 : 0
+  restore_id = try(vkcs_compute_instance.restored_vm[0].restore_id, "")
+}
