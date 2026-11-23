@@ -360,6 +360,19 @@ func (r *kubernetesNodeGroupV2Resource) Update(ctx context.Context, req resource
 		}
 	}
 
+	// Update extra security groups if changed
+	if !plan.ExtraSecurityGroups.Equal(state.ExtraSecurityGroups) {
+		hasChanged = true
+		extraSecurityGroups := make([]string, 0, len(plan.ExtraSecurityGroups.Elements()))
+		if !plan.ExtraSecurityGroups.IsNull() {
+			resp.Diagnostics.Append(plan.ExtraSecurityGroups.ElementsAs(ctx, &extraSecurityGroups, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		}
+		updateOpts.ExtraSecurityGroups = &extraSecurityGroups
+	}
+
 	if !hasChanged {
 		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 		return

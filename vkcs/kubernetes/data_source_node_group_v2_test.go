@@ -58,6 +58,8 @@ func TestAccKubernetesNodeGroupV2DataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_node_group_v2.node_group", "labels.environment", "vkcs_kubernetes_node_group_v2.base", "labels.environment"),
 					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_node_group_v2.node_group", "labels.foo", "vkcs_kubernetes_node_group_v2.base", "labels.foo"),
 					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_node_group_v2.node_group", "taints.#", "vkcs_kubernetes_node_group_v2.base", "taints.#"),
+					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_node_group_v2.node_group", "extra_security_groups.#", "vkcs_kubernetes_node_group_v2.base", "extra_security_groups.#"),
+					resource.TestCheckResourceAttrPair("data.vkcs_kubernetes_node_group_v2.node_group", "extra_security_groups.0", "vkcs_networking_secgroup.extra_sg", "id"),
 					resource.TestCheckResourceAttrSet("data.vkcs_kubernetes_node_group_v2.node_group", "uuid"),
 					resource.TestCheckResourceAttrSet("data.vkcs_kubernetes_node_group_v2.node_group", "created_at"),
 					resource.TestCheckResourceAttrSet("data.vkcs_kubernetes_node_group_v2.node_group", "region"),
@@ -116,6 +118,10 @@ data "vkcs_compute_flavor" "node_flavor" {
   name = "Standard-6-12"
 }
 
+resource "vkcs_networking_secgroup" "extra_sg" {
+  name = "tfacc-ds-full-v2-extra-sg"
+}
+
 resource "vkcs_kubernetes_node_group_v2" "base" {
   cluster_id               = vkcs_kubernetes_cluster_v2.base.id
   name                     = "tfacc-ds-full-v2"
@@ -127,6 +133,8 @@ resource "vkcs_kubernetes_node_group_v2" "base" {
   auto_scale_min_size      = 1
   auto_scale_max_size      = 3
   parallel_upgrade_chunk   = 30
+
+  extra_security_groups = [vkcs_networking_secgroup.extra_sg.id]
 
   labels = {
     environment = "test"

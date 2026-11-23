@@ -13,6 +13,10 @@ resource "vkcs_kubernetes_node_group_v2" "k8s_node_group" {
   disk_type = "high-iops"
   disk_size = 20
 
+  # Optional: additional security groups attached to the nodes,
+  # in addition to the default security groups.
+  # extra_security_groups = ["c906d669-b9ab-4e37-b34b-a2a96b5ed626"]
+
   depends_on = [
     vkcs_kubernetes_cluster_v2.k8s_cluster,
   ]

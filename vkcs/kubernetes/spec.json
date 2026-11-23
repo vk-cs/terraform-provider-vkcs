@@ -442,6 +442,16 @@
               "computed_optional_required": "computed",
               "description": "The creation timestamp of the node group (ISO 8601 format)."
             }
+          },
+          {
+            "name": "extra_security_groups",
+            "set": {
+              "computed_optional_required": "computed",
+              "element_type": {
+                "string": {}
+              },
+              "description": "A set of IDs of additional security groups attached to the nodes in this group, in addition to the default security groups."
+            }
           }
         ]
       }
@@ -2427,6 +2437,47 @@
                       }
                     ],
                     "schema_definition": "int64planmodifier.RequiresReplace()"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "extra_security_groups",
+            "set": {
+              "computed_optional_required": "computed_optional",
+              "description": "A set of additional security group IDs (UUIDs) attached to the nodes in this group, in addition to the default security groups.",
+              "element_type": {
+                "string": {}
+              },
+              "default": {
+                "custom": {
+                  "imports": [
+                    {
+                      "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/schemadefaults/setdefault"
+                    },
+                    {
+                      "path": "github.com/hashicorp/terraform-plugin-framework/types"
+                    },
+                    {
+                      "path": "github.com/hashicorp/terraform-plugin-framework/attr"
+                    }
+                  ],
+                  "schema_definition": "setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{}))"
+                }
+              },
+              "validators": [
+                {
+                  "custom": {
+                    "imports": [
+                      {
+                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+                      },
+                      {
+                        "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/framework/validators"
+                      }
+                    ],
+                    "schema_definition": "setvalidator.ValueStringsAre(validators.UUIDValidator{})"
                   }
                 }
               ]

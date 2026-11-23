@@ -1,6 +1,6 @@
 {
   "provider_name": "vkcs",
-  "provider_version": "v0.19.0",
+  "provider_version": "v0.19.1",
   "schema_version": "1",
   "provider_schema": {
     "schema": {
@@ -3523,7 +3523,7 @@
           "image_cache_path": {
             "type": "TypeString",
             "optional": true,
-            "description": "This is the directory where the images will be downloaded. Images will be stored with a filename corresponding to the url's md5 hash. Defaults to \"$HOME/.terraform/image_cache\""
+            "description": "This is the directory where the images will be downloaded. Images will be stored with a filename corresponding to the md5 hash of the url and, if set, `compression_format` and `archiving_format`. Defaults to \"$HOME/.terraform/image_cache\""
           },
           "image_source_password": {
             "type": "TypeString",
@@ -4758,6 +4758,16 @@
             "type": "TypeString",
             "required": true,
             "description": "The root volume type. For example: `ceph-ssd`. Use the `vkcs_kubernetes_volume_types_v2` data source to list available types for the selected availability zone. **Forces replacement** on change."
+          },
+          "extra_security_groups": {
+            "type": "TypeSet",
+            "optional": true,
+            "description": "A set of additional security group IDs (UUIDs) attached to the nodes in this group, in addition to the default security groups.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            },
+            "new_since": "v0.19.1"
           },
           "fixed_scale_node_count": {
             "type": "TypeInt",
@@ -6554,8 +6564,8 @@
           "port_security_enabled": {
             "type": "TypeBool",
             "optional": true,
-            "default": true,
-            "description": "Whether to explicitly enable or disable port security on the port. Port Security is usually enabled by default, so omitting argument will usually result in a value of `true`. Setting this explicitly to `false` will disable port security. In order to disable port security, the port must not have any security groups. Valid values are `true` and `false`."
+            "description": "Whether to explicitly enable or disable port security on the port. Port Security is usually enabled by default, so omitting argument will usually result in a value of `true`. If omitted, the argument is not sent to the API and the network's default is used. Setting this explicitly to `false` will disable port security. In order to disable port security, the port must not have any security groups. Valid values are `true` and `false`.",
+            "computed": true
           },
           "region": {
             "type": "TypeString",
@@ -11435,6 +11445,15 @@
             "type": "TypeString",
             "description": "The type of root volume attached to each node (e.g., `ceph-ssd`).",
             "computed": true
+          },
+          "extra_security_groups": {
+            "type": "TypeSet",
+            "description": "A set of IDs of additional security groups attached to the nodes in this group, in addition to the default security groups.",
+            "computed": true,
+            "elem": {
+              "type": "TypeString"
+            },
+            "new_since": "v0.19.1"
           },
           "fixed_scale_node_count": {
             "type": "TypeInt",

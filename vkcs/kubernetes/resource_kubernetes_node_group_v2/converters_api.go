@@ -60,6 +60,15 @@ func ToCreateOpts(ctx context.Context, model *KubernetesNodeGroupV2Model, cluste
 		}
 	}
 
+	// Build extra security groups
+	extraSecurityGroups := make([]string, 0, len(model.ExtraSecurityGroups.Elements()))
+	if !model.ExtraSecurityGroups.IsNull() {
+		diags.Append(model.ExtraSecurityGroups.ElementsAs(ctx, &extraSecurityGroups, false)...)
+		if diags.HasError() {
+			return nil, diags
+		}
+	}
+
 	diskTypeConfig := nodegroups.DiskType{
 		CinderVolumeType: nodegroups.CinderVolumeType{
 			Type: model.DiskType.ValueString(),
@@ -76,6 +85,7 @@ func ToCreateOpts(ctx context.Context, model *KubernetesNodeGroupV2Model, cluste
 		Taints:               taints,
 		ParallelUpgradeChunk: int(model.ParallelUpgradeChunk.ValueInt64()),
 		DiskType:             diskTypeConfig,
+		ExtraSecurityGroups:  extraSecurityGroups,
 	}
 
 	// Build create options
