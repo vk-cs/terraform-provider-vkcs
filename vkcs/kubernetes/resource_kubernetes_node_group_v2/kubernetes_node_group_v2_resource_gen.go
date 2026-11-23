@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -110,6 +111,17 @@ func KubernetesNodeGroupV2ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+			},
+			"extra_security_groups": schema.SetAttribute{
+				ElementType:         types.StringType,
+				Optional:            true,
+				Computed:            true,
+				Description:         "A set of additional security group IDs (UUIDs) attached to the nodes in this group, in addition to the default security groups.",
+				MarkdownDescription: "A set of additional security group IDs (UUIDs) attached to the nodes in this group, in addition to the default security groups.",
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(validators.UUIDValidator{}),
+				},
+				Default: setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
 			},
 			"fixed_scale_node_count": schema.Int64Attribute{
 				Optional:            true,
@@ -275,6 +287,7 @@ type KubernetesNodeGroupV2Model struct {
 	CreatedAt            types.String   `tfsdk:"created_at"`
 	DiskSize             types.Int64    `tfsdk:"disk_size"`
 	DiskType             types.String   `tfsdk:"disk_type"`
+	ExtraSecurityGroups  types.Set      `tfsdk:"extra_security_groups"`
 	FixedScaleNodeCount  types.Int64    `tfsdk:"fixed_scale_node_count"`
 	Id                   types.String   `tfsdk:"id"`
 	Labels               types.Map      `tfsdk:"labels"`

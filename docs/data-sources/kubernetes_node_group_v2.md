@@ -53,6 +53,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `disk_type` *string* &rarr;  The type of root volume attached to each node (e.g., `ceph-ssd`).
 
+- `extra_security_groups` *set of* *string* &rarr;  A set of IDs of additional security groups attached to the nodes in this group, in addition to the default security groups.
+
 - `fixed_scale_node_count` *number* &rarr;  The desired number of nodes when `scale_type` is `fixed_scale`.
 
 - `labels` *map of* *string* &rarr;  Kubernetes labels applied to the nodes in this group.

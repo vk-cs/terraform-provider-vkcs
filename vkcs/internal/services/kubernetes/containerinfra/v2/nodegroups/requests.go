@@ -19,6 +19,7 @@ type UpdateOpts struct {
 	Labels               *map[string]string `json:"labels,omitempty"`
 	Taints               *[]Taint           `json:"taints,omitempty"`
 	ParallelUpgradeChunk *int               `json:"parallel_upgrade_chunk,omitempty"`
+	ExtraSecurityGroups  *[]string          `json:"extra_security_groups,omitempty"`
 }
 
 // NodeGroupSpec represents node group specification
@@ -31,6 +32,7 @@ type NodeGroupSpec struct {
 	Taints               []Taint           `json:"taints,omitempty"`
 	ParallelUpgradeChunk int               `json:"parallel_upgrade_chunk,omitempty"`
 	DiskType             DiskType          `json:"disk_type,omitempty"`
+	ExtraSecurityGroups  []string          `json:"extra_security_groups,omitempty"`
 }
 
 // VMEngine represents virtual machine engine configuration

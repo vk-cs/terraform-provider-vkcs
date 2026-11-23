@@ -59,6 +59,12 @@ func KubernetesNodeGroupV2DataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The type of root volume attached to each node (e.g., `ceph-ssd`).",
 				MarkdownDescription: "The type of root volume attached to each node (e.g., `ceph-ssd`).",
 			},
+			"extra_security_groups": schema.SetAttribute{
+				ElementType:         types.StringType,
+				Computed:            true,
+				Description:         "A set of IDs of additional security groups attached to the nodes in this group, in addition to the default security groups.",
+				MarkdownDescription: "A set of IDs of additional security groups attached to the nodes in this group, in addition to the default security groups.",
+			},
 			"fixed_scale_node_count": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "The desired number of nodes when `scale_type` is `fixed_scale`.",
@@ -152,6 +158,7 @@ type KubernetesNodeGroupV2Model struct {
 	CreatedAt            types.String `tfsdk:"created_at"`
 	DiskSize             types.Int64  `tfsdk:"disk_size"`
 	DiskType             types.String `tfsdk:"disk_type"`
+	ExtraSecurityGroups  types.Set    `tfsdk:"extra_security_groups"`
 	FixedScaleNodeCount  types.Int64  `tfsdk:"fixed_scale_node_count"`
 	Id                   types.String `tfsdk:"id"`
 	Labels               types.Map    `tfsdk:"labels"`

@@ -22,6 +22,7 @@ type (
 		ClusterID            string            `json:"cluster_id"`
 		DiskType             DiskType          `json:"disk_type,omitempty"`
 		UUID                 string            `json:"uuid"`
+		ExtraSecurityGroups  []string          `json:"extra_security_groups,omitempty"`
 	}
 
 	ListVolumeTypes struct {

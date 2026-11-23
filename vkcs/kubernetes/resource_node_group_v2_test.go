@@ -43,6 +43,7 @@ func TestAccKubernetesNodeGroupV2_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.base", "parallel_upgrade_chunk", "20"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.base", "labels.%", "0"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.base", "taints.#", "0"),
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.base", "extra_security_groups.#", "0"),
 
 					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group_v2.base", "node_flavor", "data.vkcs_compute_flavor.worker", "id"),
 
@@ -105,6 +106,9 @@ func TestAccKubernetesNodeGroupV2_full(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.full", "taints.1.value", "value2"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.full", "taints.1.effect", "PreferNoSchedule"),
 
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.full", "extra_security_groups.#", "1"),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group_v2.full", "extra_security_groups.0", "vkcs_networking_secgroup.extra_sg", "id"),
+
 					resource.TestCheckResourceAttrSet("vkcs_kubernetes_node_group_v2.full", "id"),
 					resource.TestCheckResourceAttrSet("vkcs_kubernetes_node_group_v2.full", "uuid"),
 					resource.TestCheckResourceAttrSet("vkcs_kubernetes_node_group_v2.full", "created_at"),
@@ -155,6 +159,9 @@ func TestAccKubernetesNodeGroupV2_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.update", "taints.0.key", "key1"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.update", "taints.0.value", "value1"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.update", "taints.0.effect", "NoSchedule"),
+
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.update", "extra_security_groups.#", "1"),
+					resource.TestCheckResourceAttrPair("vkcs_kubernetes_node_group_v2.update", "extra_security_groups.0", "vkcs_networking_secgroup.extra_sg_1", "id"),
 				),
 			},
 			{
@@ -188,6 +195,8 @@ func TestAccKubernetesNodeGroupV2_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.update", "taints.1.key", "key3"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.update", "taints.1.value", "value3"),
 					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.update", "taints.1.effect", "PreferNoSchedule"),
+
+					resource.TestCheckResourceAttr("vkcs_kubernetes_node_group_v2.update", "extra_security_groups.#", "2"),
 				),
 			},
 			acctest.ImportStep("vkcs_kubernetes_node_group_v2.update"),
@@ -256,6 +265,10 @@ data "vkcs_compute_flavor" "worker" {
   name = "Standard-6-12"
 }
 
+resource "vkcs_networking_secgroup" "extra_sg" {
+  name = "tfacc-full-v2-extra-sg"
+}
+
 resource "vkcs_kubernetes_node_group_v2" "full" {
   cluster_id               = vkcs_kubernetes_cluster_v2.base.id
   name                     = "tfacc-full-v2"
@@ -267,6 +280,8 @@ resource "vkcs_kubernetes_node_group_v2" "full" {
   auto_scale_min_size      = 1
   auto_scale_max_size      = 3
   parallel_upgrade_chunk   = 30
+
+  extra_security_groups = [vkcs_networking_secgroup.extra_sg.id]
 
   labels = {
     environment = "test"
@@ -295,6 +310,10 @@ data "vkcs_compute_flavor" "worker" {
   name = "Standard-6-12"
 }
 
+resource "vkcs_networking_secgroup" "extra_sg_1" {
+  name = "tfacc-update-v2-extra-sg-1"
+}
+
 resource "vkcs_kubernetes_node_group_v2" "update" {
   cluster_id               = vkcs_kubernetes_cluster_v2.base.id
   name                     = "tfacc-update-v2"
@@ -305,6 +324,8 @@ resource "vkcs_kubernetes_node_group_v2" "update" {
   scale_type               = "fixed_scale"
   fixed_scale_node_count   = 1
   parallel_upgrade_chunk   = 20
+
+  extra_security_groups = [vkcs_networking_secgroup.extra_sg_1.id]
 
   labels = {
     environment = "test"
@@ -327,6 +348,14 @@ data "vkcs_compute_flavor" "worker" {
   name = "Standard-6-18"
 }
 
+resource "vkcs_networking_secgroup" "extra_sg_1" {
+  name = "tfacc-update-v2-extra-sg-1"
+}
+
+resource "vkcs_networking_secgroup" "extra_sg_2" {
+  name = "tfacc-update-v2-extra-sg-2"
+}
+
 resource "vkcs_kubernetes_node_group_v2" "update" {
   cluster_id               = vkcs_kubernetes_cluster_v2.base.id
   name                     = "tfacc-update-v2"
@@ -338,6 +367,11 @@ resource "vkcs_kubernetes_node_group_v2" "update" {
   auto_scale_min_size      = 2
   auto_scale_max_size      = 5
   parallel_upgrade_chunk   = 25
+
+  extra_security_groups = [
+    vkcs_networking_secgroup.extra_sg_1.id,
+    vkcs_networking_secgroup.extra_sg_2.id
+  ]
 
   labels = {
     environment = "production"

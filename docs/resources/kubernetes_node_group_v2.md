@@ -41,6 +41,8 @@ resource "vkcs_kubernetes_node_group_v2" "k8s_node_group" {
 
 - `disk_type` **required** *string* &rarr;  The root volume type. For example: `ceph-ssd`. Use the `vkcs_kubernetes_volume_types_v2` data source to list available types for the selected availability zone. **Forces replacement** on change.
 
+- `extra_security_groups` optional *set of* *string* &rarr;  A set of additional security group IDs (UUIDs) attached to the nodes in this group, in addition to the default security groups.
+
 - `name` **required** *string* &rarr;  A unique name for the node group within the cluster. Must be 3-25 characters, lowercase alphanumeric and hyphens only. **Forces replacement** on change.
 
 - `node_flavor` **required** *string* &rarr;  The flavor ID used for worker nodes. Use STD3-* flavor for clusters in PA2 availability zone. Changing this triggers a rolling upgrade of the nodes.

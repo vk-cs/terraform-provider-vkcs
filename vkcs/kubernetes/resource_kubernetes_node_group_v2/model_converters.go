@@ -37,6 +37,12 @@ func (m *KubernetesNodeGroupV2Model) UpdateFromNodeGroup(ctx context.Context, no
 	// Set parallel upgrade chunk
 	m.ParallelUpgradeChunk = types.Int64Value(int64(nodeGroup.ParallelUpgradeChunk))
 
+	// Set extra security groups
+	m.ExtraSecurityGroups, diags = mshared.FlattenStringSet(nodeGroup.ExtraSecurityGroups)
+	if diags.HasError() {
+		return diags
+	}
+
 	// Set node flavor
 	m.NodeFlavor = types.StringValue(nodeGroup.VMEngine.NovaEngine.FlavorID)
 
