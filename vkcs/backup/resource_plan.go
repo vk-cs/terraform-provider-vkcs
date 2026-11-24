@@ -54,6 +54,7 @@ type PlanResourceModel struct {
 	Schedule          *PlanResourceScheduleModel      `tfsdk:"schedule"`
 	FullRetention     *PlanResourceFullRetentionModel `tfsdk:"full_retention"`
 	GFSRetention      *PlanResourceGFSRetentionModel  `tfsdk:"gfs_retention"`
+	ObjectLock        *PlanResourceObjectLockModel    `tfsdk:"object_lock"`
 	IncrementalBackup types.Bool                      `tfsdk:"incremental_backup"`
 	ProviderID        types.String                    `tfsdk:"provider_id"`
 	ProviderName      types.String                    `tfsdk:"provider_name"`
@@ -76,6 +77,12 @@ type PlanResourceGFSRetentionModel struct {
 	GFSWeekly  types.Int64 `tfsdk:"gfs_weekly"`
 	GFSMonthly types.Int64 `tfsdk:"gfs_monthly"`
 	GFSYearly  types.Int64 `tfsdk:"gfs_yearly"`
+}
+
+type PlanResourceObjectLockModel struct {
+	Type        types.String `tfsdk:"type"`
+	Days        types.Int64  `tfsdk:"days"`
+	RetainUntil types.Int64  `tfsdk:"retain_until"`
 }
 
 type PlanResourceBackupTargetModel struct {
@@ -192,6 +199,31 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 					}...),
 				},
 				Description: "Parameters for gfs retention policy. Specifies number of full backups stored. Incremental backups (if enabled) are not counted as full. Incompatible with full_retention",
+			},
+
+			"object_lock": schema.SingleNestedAttribute{
+				Optional: true,
+				Validators: []validator.Object{
+					objectLockConfigValidator{},
+				},
+				Attributes: map[string]schema.Attribute{
+					"type": schema.StringAttribute{
+						Required:    true,
+						Description: "Object Lock mode: compliance, governance, or legalhold.",
+						Validators: []validator.String{
+							stringvalidator.OneOf("compliance", "governance", "legalhold"),
+						},
+					},
+					"days": schema.Int64Attribute{
+						Optional:    true,
+						Description: "Retention period in days. Required for compliance or governance when retain_until is not set; must not be set for legalhold.",
+					},
+					"retain_until": schema.Int64Attribute{
+						Optional:    true,
+						Description: "Retention end date as a Unix timestamp. Required for compliance or governance when days is not set; must not be set for legalhold.",
+					},
+				},
+				Description: "Object Lock for backups created after the plan is applied. For compliance and governance, set exactly one of days or retain_until. For legalhold, do not set a retention period. Removing this block only affects future backups; protection on existing backups is not changed by the backup API. When importing a plan with Object Lock enabled, include this block in the configuration to preserve the plan setting; omitting it makes the next update remove Object Lock from the plan for future backups.",
 			},
 
 			"incremental_backup": schema.BoolAttribute{
@@ -343,6 +375,7 @@ func (r *PlanResource) Create(ctx context.Context, req resource.CreateRequest, r
 		Name:       plan.Name.ValueString(),
 		Resources:  resourcesInfo,
 		ProviderID: providerInfo.ID,
+		ObjectLock: expandObjectLock(plan.ObjectLock),
 	}
 
 	incrementalBackups := plan.IncrementalBackup.ValueBool()
@@ -457,6 +490,9 @@ func (r *PlanResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	plan.ProviderName = types.StringValue(providerInfo.Name)
 
 	plan.Name = types.StringValue(planResp.Name)
+	// The backup API may omit object_lock or return an empty object from GET.
+	// Preserve the last known value instead of replacing configured state with null.
+	plan.ObjectLock = objectLockFromResponse(plan.ObjectLock, planResp.ObjectLock)
 
 	if !plan.BackupTargets.IsNull() && !plan.BackupTargets.IsUnknown() {
 		resources := make([]PlanResourceBackupTargetModel, len(planResp.Resources))
@@ -625,6 +661,7 @@ func (r *PlanResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		Status:    "running",
 		Resources: resourcesInfo,
 	}
+	planUpdateOpts.ObjectLock = expandObjectLockUpdate(plan.ObjectLock, state.ObjectLock)
 
 	incrementalBackups := plan.IncrementalBackup.ValueBool()
 	if incrementalBackups {
