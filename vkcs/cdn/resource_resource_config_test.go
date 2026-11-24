@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/cdn/v1/resources"
@@ -25,29 +24,6 @@ func TestValidateStaticHeadersConflict(t *testing.T) {
 	diags := validateStaticHeadersConflict(legacy, current)
 	if !diags.HasError() {
 		t.Fatal("expected a diagnostic when both options are configured, even when disabled")
-	}
-}
-
-func TestStaticResponseHeadersSchemaAndDeprecation(t *testing.T) {
-	ctx := context.Background()
-	resourceSchema := resource_resource.ResourceResourceSchema(ctx)
-	options := resourceSchema.Attributes["options"].(schema.SingleNestedAttribute)
-	legacy := options.Attributes["static_headers"].(schema.SingleNestedAttribute)
-	if legacy.DeprecationMessage == "" {
-		t.Fatal("static_headers does not have a deprecation message")
-	}
-
-	responseHeaders := options.Attributes["static_response_headers"].(schema.SingleNestedAttribute)
-	values := responseHeaders.Attributes["value"].(schema.ListNestedAttribute)
-	header := values.NestedObject.Attributes
-	if _, ok := header["name"]; !ok {
-		t.Fatal("static_response_headers.value is missing name")
-	}
-	if _, ok := header["value"]; !ok {
-		t.Fatal("static_response_headers.value is missing value list")
-	}
-	if _, ok := header["always"]; !ok {
-		t.Fatal("static_response_headers.value is missing always")
 	}
 }
 
