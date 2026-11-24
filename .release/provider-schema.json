@@ -5330,9 +5330,13 @@
       },
       "vkcs_lb_members": {
         "schema": {
+          "id": {
+            "type": "TypeString",
+            "description": "ID of the resource.",
+            "computed": true
+          },
           "member": {
             "type": "TypeSet",
-            "optional": true,
             "description": "A set of dictionaries containing member parameters. The structure is described below.",
             "elem": {
               "schema": {
@@ -5344,13 +5348,14 @@
                 "admin_state_up": {
                   "type": "TypeBool",
                   "optional": true,
-                  "default": true,
-                  "description": "The administrative state of the member. A valid value is true (UP) or false (DOWN). Defaults to true."
+                  "description": "The administrative state of the member. A valid value is true (UP) or false (DOWN). Defaults to true.",
+                  "computed": true
                 },
                 "backup": {
                   "type": "TypeBool",
                   "optional": true,
-                  "description": "A bool that indicates whether the member is backup."
+                  "description": "A bool that indicates whether the member is backup.",
+                  "computed": true
                 },
                 "id": {
                   "type": "TypeString",
@@ -5360,7 +5365,8 @@
                 "name": {
                   "type": "TypeString",
                   "optional": true,
-                  "description": "Human-readable name for the member."
+                  "description": "Human-readable name for the member.",
+                  "computed": true
                 },
                 "protocol_port": {
                   "type": "TypeInt",
@@ -5370,13 +5376,14 @@
                 "subnet_id": {
                   "type": "TypeString",
                   "optional": true,
-                  "description": "The subnet in which to access the member."
+                  "description": "The subnet in which to access the member.",
+                  "computed": true
                 },
                 "weight": {
                   "type": "TypeInt",
                   "optional": true,
-                  "default": 1,
-                  "description": "A positive integer value that indicates the relative portion of traffic that this members should receive from the pool. For example, a member with a weight of 10 receives five times as much traffic as a member with a weight of 2. Defaults to 1."
+                  "description": "A positive integer value that indicates the relative portion of traffic that this members should receive from the pool. For example, a member with a weight of 10 receives five times as much traffic as a member with a weight of 2. Defaults to 1.",
+                  "computed": true
                 }
               }
             }
@@ -5384,21 +5391,38 @@
           "pool_id": {
             "type": "TypeString",
             "required": true,
-            "description": "The id of the pool that members will be assigned to. Changing this creates a new members resource.",
-            "force_new": true
+            "description": "The id of the pool that members will be assigned to. Changing this creates a new members resource."
           },
           "region": {
             "type": "TypeString",
             "optional": true,
             "description": "The region in which to obtain the Loadbalancer client. If omitted, the `region` argument of the provider is used. Changing this creates a new members resource.",
-            "computed": true,
-            "force_new": true
+            "computed": true
+          },
+          "timeouts": {
+            "type": "TypeList",
+            "elem": {
+              "schema": {
+                "create": {
+                  "type": "TypeString",
+                  "optional": true,
+                  "description": "A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as \"30s\" or \"2h45m\". Valid time units are \"s\" (seconds), \"m\" (minutes), \"h\" (hours)."
+                },
+                "delete": {
+                  "type": "TypeString",
+                  "optional": true,
+                  "description": "A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as \"30s\" or \"2h45m\". Valid time units are \"s\" (seconds), \"m\" (minutes), \"h\" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs."
+                },
+                "update": {
+                  "type": "TypeString",
+                  "optional": true,
+                  "description": "A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as \"30s\" or \"2h45m\". Valid time units are \"s\" (seconds), \"m\" (minutes), \"h\" (hours)."
+                }
+              }
+            },
+            "max_items": 1,
+            "new_since": "v0.19.1"
           }
-        },
-        "timeouts": {
-          "create": 10,
-          "delete": 10,
-          "update": 10
         }
       },
       "vkcs_lb_monitor": {

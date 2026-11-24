@@ -11,17 +11,18 @@ func TestAccLBMembers_importBasic(t *testing.T) {
 	membersResourceName := "vkcs_lb_members.members_1"
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccCheckLBMembersDestroy,
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckLBMembersDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: TestAccLbMembersConfigBasic,
 			},
 
 			{
-				ResourceName:      membersResourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            membersResourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"timeouts"},
 			},
 		},
 	})
