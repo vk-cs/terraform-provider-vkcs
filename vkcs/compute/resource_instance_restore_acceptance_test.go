@@ -30,12 +30,20 @@ func TestAccComputeInstance_checkpointRestore(t *testing.T) {
 		"SourceName": sourceName,
 		"PlanName":   planName,
 	})
+	restorePrerequisitesConfig := acctest.AccTestRenderConfig(
+		testAccComputeInstanceCheckpointRestorePrerequisites,
+		map[string]string{
+			"TestAccComputeInstanceCheckpointFixture": fixtureConfig,
+			"KeyPairName": keyPairName,
+			"PublicKey":   testAccGenerateEd25519PublicKey(t),
+		},
+	)
 	config := acctest.AccTestRenderConfig(testAccComputeInstanceCheckpointRestore, map[string]string{
-		"TestAccComputeInstanceCheckpointFixture": fixtureConfig,
+		"TestAccComputeInstanceCheckpointRestorePrerequisites": restorePrerequisitesConfig,
 		"RestoredName": restoredName,
-		"KeyPairName":  keyPairName,
-		"PublicKey":    testAccGenerateEd25519PublicKey(t),
 	})
+	var firstRestoredInstanceID string
+	var firstRestoreID string
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
@@ -46,6 +54,7 @@ func TestAccComputeInstance_checkpointRestore(t *testing.T) {
 				Config: fixtureConfig,
 				Check:  testAccCreateAndWaitForNovaBackupCheckpoint(t, 10*time.Minute),
 			},
+
 			{
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
@@ -55,19 +64,41 @@ func TestAccComputeInstance_checkpointRestore(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.vkcs_backup_restore.status", "id"),
 					testAccCheckRestoredInstanceIsDistinctFromSource("vkcs_compute_instance.checkpoint_source"),
 					testAccCheckBackupRestoreStatusHasEntries,
+					testAccRecordRestoredInstanceIDs(&firstRestoredInstanceID, &firstRestoreID),
+				),
+			},
+
+			{
+				Config: restorePrerequisitesConfig,
+			},
+
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_compute_instance.restored", "name", restoredName),
+					resource.TestCheckResourceAttrSet("vkcs_compute_instance.restored", "id"),
+					resource.TestCheckResourceAttrSet("vkcs_compute_instance.restored", "restore_id"),
+					resource.TestCheckResourceAttrSet("data.vkcs_backup_restore.status", "id"),
+					testAccCheckRestoredInstanceIsDistinctFromSource("vkcs_compute_instance.checkpoint_source"),
+					testAccCheckBackupRestoreStatusHasEntries,
+					testAccCheckRestoredInstanceWasRecreated(firstRestoredInstanceID, firstRestoreID),
 				),
 			},
 		},
 	})
 }
 
-const testAccComputeInstanceCheckpointRestore = `
+const testAccComputeInstanceCheckpointRestorePrerequisites = `
 {{.TestAccComputeInstanceCheckpointFixture}}
 
 resource "vkcs_compute_keypair" "restore_fixture" {
   name       = "{{.KeyPairName}}"
   public_key = "{{.PublicKey}}"
 }
+`
+
+const testAccComputeInstanceCheckpointRestore = `
+{{.TestAccComputeInstanceCheckpointRestorePrerequisites}}
 
 data "vkcs_backup_checkpoints" "source" {
   plan_id = vkcs_backup_plan.checkpoint_source.id
@@ -251,6 +282,44 @@ func testAccCheckRestoredInstanceIsDistinctFromSource(sourceResource string) res
 		}
 		if instance.Primary.ID == source.Primary.ID {
 			return fmt.Errorf("restored VM ID %q matches the source VM ID", instance.Primary.ID)
+		}
+		return nil
+	}
+}
+
+func testAccRecordRestoredInstanceIDs(instanceID, restoreID *string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		instance, ok := state.RootModule().Resources["vkcs_compute_instance.restored"]
+		if !ok || instance.Primary == nil {
+			return fmt.Errorf("restored compute instance was not found in state")
+		}
+		if instance.Primary.ID == "" {
+			return fmt.Errorf("restored compute instance ID is empty")
+		}
+		currentRestoreID := instance.Primary.Attributes["restore_id"]
+		if currentRestoreID == "" {
+			return fmt.Errorf("restore ID is empty")
+		}
+		*instanceID = instance.Primary.ID
+		*restoreID = currentRestoreID
+		return nil
+	}
+}
+
+func testAccCheckRestoredInstanceWasRecreated(previousInstanceID, previousRestoreID string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		if previousInstanceID == "" || previousRestoreID == "" {
+			return fmt.Errorf("previous restored VM and restore IDs must be set")
+		}
+		instance, ok := state.RootModule().Resources["vkcs_compute_instance.restored"]
+		if !ok || instance.Primary == nil {
+			return fmt.Errorf("restored compute instance was not found in state")
+		}
+		if instance.Primary.ID == previousInstanceID {
+			return fmt.Errorf("restored VM ID %q was reused after its deletion", previousInstanceID)
+		}
+		if instance.Primary.Attributes["restore_id"] == previousRestoreID {
+			return fmt.Errorf("restore ID %q was reused after its VM was deleted", previousRestoreID)
 		}
 		return nil
 	}

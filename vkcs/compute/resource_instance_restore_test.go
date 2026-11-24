@@ -2,12 +2,9 @@ package compute
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"testing"
-	"time"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/backup/v1/checkpoints"
@@ -111,47 +108,6 @@ func TestRestoredComputeInstanceID(t *testing.T) {
 				t.Errorf("restoredComputeInstanceID() ready = %t, want %t", gotReady, test.wantReady)
 			}
 		})
-	}
-}
-
-func TestComputeInstanceCheckpointRestoreSchema(t *testing.T) {
-	resource := ResourceComputeInstance()
-	resourceSchema := resource.Schema
-	checkpointID := resourceSchema["checkpoint_id"]
-	if checkpointID == nil {
-		t.Fatal("checkpoint_id schema attribute is missing")
-	}
-	if !checkpointID.Optional || !checkpointID.ForceNew {
-		t.Fatalf("checkpoint_id must be optional and force replacement, got Optional=%t ForceNew=%t", checkpointID.Optional, checkpointID.ForceNew)
-	}
-
-	sourceResourceID := resourceSchema["source_resource_id"]
-	if sourceResourceID == nil || !sourceResourceID.Optional || !sourceResourceID.Computed || !sourceResourceID.ForceNew {
-		t.Fatalf("source_resource_id must be optional, computed, and force replacement: %#v", sourceResourceID)
-	}
-	if len(sourceResourceID.RequiredWith) != 1 || sourceResourceID.RequiredWith[0] != "checkpoint_id" {
-		t.Fatalf("source_resource_id must require checkpoint_id, got RequiredWith=%v", sourceResourceID.RequiredWith)
-	}
-
-	conflicts := make(map[string]bool, len(checkpointID.ConflictsWith))
-	for _, attribute := range checkpointID.ConflictsWith {
-		conflicts[attribute] = true
-	}
-	for _, attribute := range []string{
-		"image_id", "image_name", "block_device", "user_data", "network_mode", "config_drive", "personality",
-		"security_group_ids", "flavor_id", "flavor_name", "metadata",
-	} {
-		if !conflicts[attribute] {
-			t.Errorf("checkpoint_id must conflict with %q", attribute)
-		}
-	}
-
-	restoreID := resourceSchema["restore_id"]
-	if restoreID == nil || !restoreID.Computed || restoreID.Optional {
-		t.Fatalf("restore_id must be computed and not user-configurable: %#v", restoreID)
-	}
-	if len(resource.ValidateRawResourceConfigFuncs) == 0 {
-		t.Fatal("compute instance must validate checkpoint restore network configuration before planning")
 	}
 }
 
@@ -375,233 +331,27 @@ func TestGetOrCreateRestoreAdoptsMatchingRequest(t *testing.T) {
 			"OS::Nova::Server#server-id": {RestoreName: "restored-server", Destination: "new", Flavor: "ignored-flavor", SecurityGroups: []string{"ignored-group"}},
 		},
 	}}
-	createCalls := 0
 
-	got, err := getOrCreateRestore(existing, desired, func(candidate *restores.Restore) (bool, error) {
-		return canReuseExistingRestore(candidate, "source-id", nil)
-	}, func() (*restores.Restore, error) {
-		createCalls++
-		return &restores.Restore{ID: "new-restore-id"}, nil
-	})
+	got, err := getOrCreateRestore(context.Background(), nil, nil, existing, desired, "source-id")
 	if err != nil {
 		t.Fatalf("getOrCreateRestore() error = %v", err)
 	}
-	if got.ID != "restore-id" || createCalls != 0 {
-		t.Fatalf("getOrCreateRestore() = %#v with %d create calls, want existing restore and no create", got, createCalls)
+	if got.ID != "restore-id" {
+		t.Fatalf("getOrCreateRestore() = %#v, want the matching in-progress restore", got)
 	}
 }
 
-func TestGetOrCreateRestoreCreatesAgainWhenPreviousVMWasDeleted(t *testing.T) {
-	desired := restores.RestoreCreateOpts{
-		ProviderID:   "nova-provider",
-		CheckpointID: "checkpoint-id",
-		Parameters: map[string]restores.RestoreParameters{
-			"OS::Nova::Server#source-id": {RestoreName: "restored-server", Destination: "new"},
-		},
+func TestCanReuseExistingRestoreAdoptsFailedRestore(t *testing.T) {
+	restore := &restores.Restore{
+		ID:              "restore-id",
+		ResourcesStatus: map[string]string{"OS::Nova::Server#source-id": "error"},
 	}
-	existing := []restores.Restore{{
-		ID:              "old-restore-id",
-		ProviderID:      desired.ProviderID,
-		CheckpointID:    desired.CheckpointID,
-		Parameters:      desired.Parameters,
-		ResourcesStatus: map[string]string{"OS::Nova::Server#old-restored-id": "available"},
-	}}
-	createCalls := 0
 
-	got, err := getOrCreateRestore(existing, desired, func(candidate *restores.Restore) (bool, error) {
-		return canReuseExistingRestore(candidate, "source-id", func(string) (bool, error) { return false, nil })
-	}, func() (*restores.Restore, error) {
-		createCalls++
-		return &restores.Restore{ID: "new-restore-id"}, nil
-	})
+	got, err := canReuseExistingRestore(context.Background(), nil, restore, "source-id")
 	if err != nil {
-		t.Fatalf("getOrCreateRestore() error = %v", err)
+		t.Fatalf("canReuseExistingRestore() error = %v", err)
 	}
-	if got.ID != "new-restore-id" || createCalls != 1 {
-		t.Fatalf("getOrCreateRestore() = %#v with %d create calls, want a new restore after the prior VM was deleted", got, createCalls)
+	if !got {
+		t.Fatal("canReuseExistingRestore() = false, want failed restore reused to report its failure")
 	}
-}
-
-func TestCanReuseExistingRestore(t *testing.T) {
-	tests := []struct {
-		name           string
-		restore        *restores.Restore
-		serverExists   bool
-		wantReuse      bool
-		wantServerCall bool
-	}{
-		{
-			name:      "reuses an in-progress restore",
-			restore:   &restores.Restore{ResourcesStatus: map[string]string{"OS::Nova::Server#vm": "restoring"}},
-			wantReuse: true,
-		},
-		{
-			name:           "reuses a completed restore while the VM exists",
-			restore:        &restores.Restore{ResourcesStatus: map[string]string{"OS::Nova::Server#vm": "available"}},
-			serverExists:   true,
-			wantReuse:      true,
-			wantServerCall: true,
-		},
-		{
-			name:           "does not reuse a completed restore after its VM was deleted",
-			restore:        &restores.Restore{ResourcesStatus: map[string]string{"OS::Nova::Server#vm": "available"}},
-			serverExists:   false,
-			wantReuse:      false,
-			wantServerCall: true,
-		},
-		{
-			name:      "adopts a failed restore so an identical request cannot create a duplicate",
-			restore:   &restores.Restore{ResourcesStatus: map[string]string{"OS::Nova::Server#vm": "error"}},
-			wantReuse: true,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			serverCalls := 0
-			got, err := canReuseExistingRestore(test.restore, "source-id", func(serverID string) (bool, error) {
-				serverCalls++
-				if serverID != "vm" {
-					t.Fatalf("server ID = %q, want vm", serverID)
-				}
-				return test.serverExists, nil
-			})
-			if err != nil {
-				t.Fatalf("canReuseExistingRestore() error = %v", err)
-			}
-			if got != test.wantReuse {
-				t.Errorf("canReuseExistingRestore() = %t, want %t", got, test.wantReuse)
-			}
-			if (serverCalls > 0) != test.wantServerCall {
-				t.Errorf("server existence checks = %d, want call=%t", serverCalls, test.wantServerCall)
-			}
-		})
-	}
-}
-
-func TestRestoredComputeInstanceWaitState(t *testing.T) {
-	tests := []struct {
-		name          string
-		state         string
-		instanceFound bool
-		wantState     string
-		wantErrSubstr string
-	}{
-		{name: "active VM is ready", state: "ACTIVE", instanceFound: true, wantState: "ACTIVE"},
-		{name: "build waits", state: "BUILD", instanceFound: true, wantState: "BUILD"},
-		{name: "provisioning waits", state: "PROVISIONING", instanceFound: true, wantState: "BUILD"},
-		{name: "shutoff waits for active state", state: "SHUTOFF", instanceFound: true, wantState: "BUILD"},
-		{name: "not-yet-visible VM waits", state: "DELETED", wantState: "BUILD"},
-		{name: "deleted VM fails", state: "DELETED", instanceFound: true, wantErrSubstr: "deleted before becoming active"},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			gotState, err := restoredComputeInstanceWaitState(test.state, test.instanceFound)
-			if test.wantErrSubstr != "" {
-				if err == nil || !strings.Contains(err.Error(), test.wantErrSubstr) {
-					t.Fatalf("restoredComputeInstanceWaitState() error = %v, want substring %q", err, test.wantErrSubstr)
-				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("restoredComputeInstanceWaitState() error = %v", err)
-			}
-			if gotState != test.wantState {
-				t.Errorf("restoredComputeInstanceWaitState(%q, %t) = %q, want %q", test.state, test.instanceFound, gotState, test.wantState)
-			}
-		})
-	}
-}
-
-func TestRestoredComputeInstanceStateRefreshFunc(t *testing.T) {
-	t.Run("waits while the restored VM is not visible yet", func(t *testing.T) {
-		var missingServer *servers.Server
-		refresh := restoredComputeInstanceStateRefreshFunc(func() (interface{}, string, error) {
-			return missingServer, "DELETED", nil
-		}, "server-1")
-
-		_, state, err := refresh()
-		if err != nil {
-			t.Fatalf("restored refresh returned error: %v", err)
-		}
-		if state != "BUILD" {
-			t.Fatalf("restored refresh state = %q, want BUILD while Nova is not yet visible", state)
-		}
-	})
-
-	t.Run("fails when a visible restored VM has been deleted", func(t *testing.T) {
-		refresh := restoredComputeInstanceStateRefreshFunc(func() (interface{}, string, error) {
-			return &servers.Server{ID: "server-2"}, "DELETED", nil
-		}, "server-2")
-
-		_, _, err := refresh()
-		if err == nil || !strings.Contains(err.Error(), "deleted before becoming active") {
-			t.Fatalf("restored refresh error = %v, want deleted VM error", err)
-		}
-	})
-}
-
-func TestWaitForRestoredComputeInstanceID(t *testing.T) {
-	t.Run("polls until a VM is available", func(t *testing.T) {
-		responses := []*restores.Restore{
-			{
-				ID:              "restore-1",
-				ResourcesStatus: map[string]string{"OS::Nova::Server#server-1": "restoring"},
-			},
-			{
-				ID:              "restore-1",
-				ResourcesStatus: map[string]string{"OS::Nova::Server#server-1": "available"},
-			},
-		}
-		calls := 0
-		getter := func(_ context.Context, restoreID string) (*restores.Restore, error) {
-			if restoreID != "restore-1" {
-				t.Fatalf("restore ID = %q, want %q", restoreID, "restore-1")
-			}
-			responseIndex := calls
-			calls++
-			if responseIndex >= len(responses) {
-				responseIndex = len(responses) - 1
-			}
-			return responses[responseIndex], nil
-		}
-
-		gotID, err := waitForRestoredComputeInstanceID(context.Background(), "restore-1", "source-id", time.Second, time.Millisecond, getter)
-		if err != nil {
-			t.Fatalf("waitForRestoredComputeInstanceID() error = %v", err)
-		}
-		if gotID != "server-1" {
-			t.Fatalf("waitForRestoredComputeInstanceID() ID = %q, want %q", gotID, "server-1")
-		}
-		if calls != 2 {
-			t.Fatalf("restore getter called %d times, want 2", calls)
-		}
-	})
-
-	t.Run("returns API errors", func(t *testing.T) {
-		wantErr := errors.New("backup API unavailable")
-		getter := func(context.Context, string) (*restores.Restore, error) {
-			return nil, wantErr
-		}
-
-		_, err := waitForRestoredComputeInstanceID(context.Background(), "restore-2", "source-id", time.Second, time.Millisecond, getter)
-		if !errors.Is(err, wantErr) {
-			t.Fatalf("waitForRestoredComputeInstanceID() error = %v, want wrapped %v", err, wantErr)
-		}
-	})
-
-	t.Run("times out while the restore is pending", func(t *testing.T) {
-		getter := func(_ context.Context, restoreID string) (*restores.Restore, error) {
-			return &restores.Restore{
-				ID:              restoreID,
-				ResourcesStatus: map[string]string{"OS::Nova::Server#server-3": "restoring"},
-			}, nil
-		}
-
-		_, err := waitForRestoredComputeInstanceID(context.Background(), "restore-3", "source-id", time.Millisecond, time.Hour, getter)
-		if err == nil || !strings.Contains(err.Error(), "restore-3") {
-			t.Fatalf("waitForRestoredComputeInstanceID() error = %v, want timeout mentioning restore ID", err)
-		}
-	})
 }

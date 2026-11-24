@@ -728,13 +728,7 @@ func resourceComputeInstanceCreateFromCheckpoint(ctx context.Context, d *schema.
 		if err != nil {
 			return nil, fmt.Errorf("check existing restore operations: %w", err)
 		}
-		return getOrCreateRestore(existingRestores, restoreOptions, func(candidate *restores.Restore) (bool, error) {
-			return canReuseExistingRestore(candidate, sourceResourceID, func(serverID string) (bool, error) {
-				return waitForRestoredServerVisibility(ctx, serverID, restoreServerVisibilityGrace, restorePollInterval, restoredServerExists(computeClient))
-			})
-		}, func() (*restores.Restore, error) {
-			return restores.Create(backupClient, &restores.RestoreCreate{Restore: &restoreOptions}).Extract()
-		})
+		return getOrCreateRestore(ctx, backupClient, computeClient, existingRestores, restoreOptions, sourceResourceID)
 	}()
 	if err != nil {
 		return diag.Errorf("Error creating checkpoint restore: %s", err)
@@ -780,7 +774,21 @@ func finishComputeInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 
 	refreshInstanceState := ServerStateRefreshFunc(computeClient, serverID)
 	if restoring {
-		refreshInstanceState = restoredComputeInstanceStateRefreshFunc(refreshInstanceState, serverID)
+		serverStateRefresh := refreshInstanceState
+		refreshInstanceState = func() (interface{}, string, error) {
+			result, state, err := serverStateRefresh()
+			if err != nil {
+				return result, state, err
+			}
+			if state == "DELETED" {
+				server, found := result.(*servers.Server)
+				if !found || server == nil {
+					return nil, "BUILD", nil
+				}
+				return server, "", fmt.Errorf("restored VKCS instance %q: VM was deleted before becoming active", serverID)
+			}
+			return result, state, nil
+		}
 	}
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"BUILD"},
