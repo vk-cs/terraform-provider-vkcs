@@ -223,6 +223,54 @@ func TestStaticHeadersRemainsSupported(t *testing.T) {
 	}
 }
 
+func TestTlsVersionsUseCanonicalAPIOrderInBothDirections(t *testing.T) {
+	ctx := context.Background()
+	configuredValues, diags := types.ListValueFrom(ctx, types.StringType, []string{"TLSv1.1", "TLSv1.2"})
+	if diags.HasError() {
+		t.Fatalf("types.ListValueFrom returned diagnostics: %v", diags)
+	}
+	tlsVersions, diags := (TlsVersionsValue{
+		Value:   configuredValues,
+		Enabled: types.BoolValue(true),
+		state:   attr.ValueStateKnown,
+	}).ToObjectValue(ctx)
+	if diags.HasError() {
+		t.Fatalf("TlsVersionsValue.ToObjectValue returned diagnostics: %v", diags)
+	}
+	options := optionsWithAttribute(t, ctx, "tls_versions", tlsVersions)
+	apiOptions, diags := options.ToResourceOptions(ctx)
+	if diags.HasError() {
+		t.Fatalf("ToResourceOptions returned diagnostics: %v", diags)
+	}
+	if got := apiTlsVersionStrings(apiOptions.TlsVersions.Value); !equalStrings(got, []string{"TLSv1.2", "TLSv1.1"}) {
+		t.Fatalf("request TLS versions = %v, want canonical API order [TLSv1.2 TLSv1.1]", got)
+	}
+
+	readOptions, diags := OptionsValue{}.FromResourceOptions(ctx, &resources.ResourceOptions{
+		TlsVersions: &resources.ResourceOptionsTlsVersionsOption{
+			Enabled: true,
+			Value: []resources.ResourceTlsVersion{
+				resources.ResourceTlsVersionTLSv1_1,
+				resources.ResourceTlsVersionTLSv1_2,
+			},
+		},
+	})
+	if diags.HasError() {
+		t.Fatalf("FromResourceOptions returned diagnostics: %v", diags)
+	}
+	tlsObject, diags := TlsVersionsType{}.ValueFromObject(ctx, readOptions.TlsVersions)
+	if diags.HasError() {
+		t.Fatalf("TlsVersionsType.ValueFromObject returned diagnostics: %v", diags)
+	}
+	var readValues []string
+	if diags := tlsObject.(TlsVersionsValue).Value.ElementsAs(ctx, &readValues, true); diags.HasError() {
+		t.Fatalf("reading TLS versions returned diagnostics: %v", diags)
+	}
+	if !equalStrings(readValues, []string{"TLSv1.2", "TLSv1.1"}) {
+		t.Fatalf("state TLS versions = %v, want canonical API order [TLSv1.2 TLSv1.1]", readValues)
+	}
+}
+
 func newStaticResponseHeadersOption(t *testing.T, ctx context.Context, enabled bool, headers []ValueValue) types.Object {
 	t.Helper()
 	values := make([]attr.Value, 0, len(headers))
@@ -300,4 +348,12 @@ func equalStrings(left, right []string) bool {
 		}
 	}
 	return true
+}
+
+func apiTlsVersionStrings(values []resources.ResourceTlsVersion) []string {
+	result := make([]string, len(values))
+	for i, value := range values {
+		result[i] = string(value)
+	}
+	return result
 }

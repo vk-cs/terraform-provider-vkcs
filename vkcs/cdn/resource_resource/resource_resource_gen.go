@@ -738,8 +738,8 @@ func ResourceResourceSchema(ctx context.Context) schema.Schema {
 								ElementType:         types.StringType,
 								Optional:            true,
 								Computed:            true,
-								Description:         "List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`.",
-								MarkdownDescription: "List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`.",
+								Description:         "List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`. The provider normalizes the list to the CDN API order (newest first).",
+								MarkdownDescription: "List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`. The provider normalizes the list to the CDN API order (newest first).",
 								Validators: []validator.List{
 									listvalidator.ValueStringsAre(stringvalidator.OneOf(resources.ResourceTlsVersionValues()...)),
 								},

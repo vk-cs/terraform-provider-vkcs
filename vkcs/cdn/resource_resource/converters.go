@@ -3,6 +3,7 @@ package resource_resource
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -448,6 +449,11 @@ func (v OptionsValue) ToResourceOptions(ctx context.Context) (*resources.Resourc
 		}
 
 		tlsVersions := tlsVersionsObjV.(TlsVersionsValue)
+		tlsVersions, d = tlsVersions.Canonicalize(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return nil, diags
+		}
 
 		value := make([]resources.ResourceTlsVersion, 0, len(tlsVersions.Value.Elements()))
 		if optV := tlsVersions.Value; !optV.IsUnknown() && !optV.IsNull() {
@@ -896,7 +902,11 @@ func (v OptionsValue) FromResourceOptions(ctx context.Context, opts *resources.R
 
 	var tlsVersions types.Object
 	if o := opts.TlsVersions; o != nil {
-		value, d := types.ListValueFrom(ctx, types.StringType, o.Value)
+		values := make([]string, len(o.Value))
+		for i, version := range o.Value {
+			values[i] = string(version)
+		}
+		value, d := types.ListValueFrom(ctx, types.StringType, canonicalTLSVersionOrder(values))
 		diags.Append(d...)
 		if diags.HasError() {
 			return NewOptionsValueUnknown(), diags
@@ -1028,6 +1038,49 @@ func flattenStaticResponseHeaders(ctx context.Context, headers []resources.Stati
 	value, d := types.ListValue(valueType, result)
 	diags.Append(d...)
 	return value, diags
+}
+
+func (v TlsVersionsValue) Canonicalize(ctx context.Context) (TlsVersionsValue, diag.Diagnostics) {
+	if v.Value.IsNull() || v.Value.IsUnknown() {
+		return v, nil
+	}
+
+	var values []string
+	var diags diag.Diagnostics
+	diags.Append(v.Value.ElementsAs(ctx, &values, true)...)
+	if diags.HasError() {
+		return NewTlsVersionsValueUnknown(), diags
+	}
+
+	value, d := types.ListValueFrom(ctx, types.StringType, canonicalTLSVersionOrder(values))
+	diags.Append(d...)
+	if diags.HasError() {
+		return NewTlsVersionsValueUnknown(), diags
+	}
+
+	v.Value = value
+	return v, diags
+}
+
+func canonicalTLSVersionOrder(values []string) []string {
+	order := make(map[string]int, len(resources.ResourceTlsVersionValues()))
+	for index, version := range resources.ResourceTlsVersionValues() {
+		order[version] = index
+	}
+
+	canonical := append([]string(nil), values...)
+	sort.SliceStable(canonical, func(i, j int) bool {
+		left, leftKnown := order[canonical[i]]
+		right, rightKnown := order[canonical[j]]
+		if leftKnown != rightKnown {
+			return leftKnown
+		}
+		if !leftKnown {
+			return canonical[i] < canonical[j]
+		}
+		return left > right
+	})
+	return canonical
 }
 
 func (v ShieldingValue) FromResourceShielding(resourceShielding *resources.ResourceShielding) ShieldingValue {

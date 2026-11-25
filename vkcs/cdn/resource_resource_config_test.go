@@ -421,3 +421,40 @@ func TestValidateStaticResponseHeadersAllowsNullAndUnknown(t *testing.T) {
 		}
 	}
 }
+
+func TestCanonicalizeTlsVersionsInPlanMatchesAPIOrder(t *testing.T) {
+	ctx := context.Background()
+	options, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
+		TlsVersions: nil,
+	})
+	if diags.HasError() {
+		t.Fatalf("FromResourceOptions returned diagnostics: %v", diags)
+	}
+	values, diags := types.ListValueFrom(ctx, types.StringType, []string{"TLSv1.1", "TLSv1.2"})
+	if diags.HasError() {
+		t.Fatalf("types.ListValueFrom returned diagnostics: %v", diags)
+	}
+	tlsVersions, diags := types.ObjectValue(resource_resource.TlsVersionsValue{}.AttributeTypes(ctx), map[string]attr.Value{
+		"value":   values,
+		"enabled": types.BoolValue(true),
+	})
+	if diags.HasError() {
+		t.Fatalf("TlsVersionsValue.ToObjectValue returned diagnostics: %v", diags)
+	}
+	options.TlsVersions = tlsVersions
+
+	if diags := canonicalizeTlsVersionsInPlan(ctx, &options); diags.HasError() {
+		t.Fatalf("canonicalizeTlsVersionsInPlan returned diagnostics: %v", diags)
+	}
+	tlsVersionsObj, diags := resource_resource.TlsVersionsType{}.ValueFromObject(ctx, options.TlsVersions)
+	if diags.HasError() {
+		t.Fatalf("TlsVersionsType.ValueFromObject returned diagnostics: %v", diags)
+	}
+	var got []string
+	if diags := tlsVersionsObj.(resource_resource.TlsVersionsValue).Value.ElementsAs(ctx, &got, true); diags.HasError() {
+		t.Fatalf("ElementsAs returned diagnostics: %v", diags)
+	}
+	if len(got) != 2 || got[0] != "TLSv1.2" || got[1] != "TLSv1.1" {
+		t.Fatalf("planned TLS versions = %v, want API order [TLSv1.2 TLSv1.1]", got)
+	}
+}

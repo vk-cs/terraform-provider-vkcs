@@ -1413,7 +1413,7 @@
                                                     "element_type": {
                                                         "string": {}
                                                     },
-                                                    "description": "List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`.",
+                                                    "description": "List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`. The provider normalizes the list to the CDN API order (newest first).",
                                                     "computed_optional_required": "computed_optional",
                                                     "validators": [
                                                         {
