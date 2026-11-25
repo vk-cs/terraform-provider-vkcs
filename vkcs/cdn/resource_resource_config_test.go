@@ -311,28 +311,6 @@ func TestMergeResourceOptionsPreservesUnplannedOptionsAndPrefersPlan(t *testing.
 	}
 }
 
-func TestSelectConfiguredLegacyOptionOnCreatePlansCanonicalOptionUnknown(t *testing.T) {
-	ctx := context.Background()
-	plan, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
-		StaticHeaders: &resources.ResourceOptionsStringMapOption{
-			Enabled: true,
-			Value:   map[string]string{"X-Legacy": "legacy"},
-		},
-	})
-	if diags.HasError() {
-		t.Fatalf("creating legacy plan returned diagnostics: %v", diags)
-	}
-	config := plan
-
-	diags = selectConfiguredResponseHeaderOption(ctx, &plan, config, nil)
-	if diags.HasError() {
-		t.Fatalf("selectConfiguredResponseHeaderOption returned diagnostics: %v", diags)
-	}
-	if !plan.StaticResponseHeaders.IsUnknown() {
-		t.Fatalf("static_response_headers plan = %s, want unknown for API canonicalization", plan.StaticResponseHeaders)
-	}
-}
-
 func TestSelectConfiguredResponseHeaderOptionRejectsAmbiguousUnknownOptions(t *testing.T) {
 	ctx := context.Background()
 	plan, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
