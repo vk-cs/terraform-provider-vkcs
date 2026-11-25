@@ -480,7 +480,7 @@ resource "vkcs_networking_router_interface" "base" {
 {{.BaseSecurityGroup}}
 
 resource "vkcs_compute_instance" "instance" {
-  count              = 2
+  count              = 1
   depends_on         = [vkcs_networking_router_interface.base]
   name               = "lb-member-${count.index}"
   availability_zone  = "{{.AvailabilityZone}}"
@@ -532,6 +532,11 @@ resource "vkcs_lb_members" "members_1" {
       address       = member.value.access_ip_v4
       protocol_port = 8080
     }
+  }
+
+  member {
+    address       = "192.168.199.21"
+    protocol_port = 8080
   }
 }
 `
