@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -734,14 +735,14 @@ func ResourceResourceSchema(ctx context.Context) schema.Schema {
 								Description:         "Controls the option state.",
 								MarkdownDescription: "Controls the option state.",
 							},
-							"value": schema.ListAttribute{
+							"value": schema.SetAttribute{
 								ElementType:         types.StringType,
 								Optional:            true,
 								Computed:            true,
-								Description:         "List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`. The provider normalizes the list to the CDN API order (newest first).",
-								MarkdownDescription: "List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`. The provider normalizes the list to the CDN API order (newest first).",
-								Validators: []validator.List{
-									listvalidator.ValueStringsAre(stringvalidator.OneOf(resources.ResourceTlsVersionValues()...)),
+								Description:         "Set of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`. Order is not significant.",
+								MarkdownDescription: "Set of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`. Order is not significant.",
+								Validators: []validator.Set{
+									setvalidator.ValueStringsAre(stringvalidator.OneOf(resources.ResourceTlsVersionValues()...)),
 								},
 							},
 						},
@@ -752,8 +753,8 @@ func ResourceResourceSchema(ctx context.Context) schema.Schema {
 						},
 						Optional:            true,
 						Computed:            true,
-						Description:         "Manage the state of the TLS versions option. The option specifies a list of allowed SSL/TLS protocol versions.",
-						MarkdownDescription: "Manage the state of the TLS versions option. The option specifies a list of allowed SSL/TLS protocol versions.",
+						Description:         "Manage the state of the TLS versions option. The option specifies a set of allowed SSL/TLS protocol versions.",
+						MarkdownDescription: "Manage the state of the TLS versions option. The option specifies a set of allowed SSL/TLS protocol versions.",
 						PlanModifiers: []planmodifier.Object{
 							resource_planmodifiers.ResourceOption(),
 						},
@@ -11179,12 +11180,12 @@ func (t TlsVersionsType) ValueFromObject(ctx context.Context, in basetypes.Objec
 		return nil, diags
 	}
 
-	valueVal, ok := valueAttribute.(basetypes.ListValue)
+	valueVal, ok := valueAttribute.(basetypes.SetValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`value expected to be basetypes.ListValue, was: %T`, valueAttribute))
+			fmt.Sprintf(`value expected to be basetypes.SetValue, was: %T`, valueAttribute))
 	}
 
 	if diags.HasError() {
@@ -11289,12 +11290,12 @@ func NewTlsVersionsValue(attributeTypes map[string]attr.Type, attributes map[str
 		return NewTlsVersionsValueUnknown(), diags
 	}
 
-	valueVal, ok := valueAttribute.(basetypes.ListValue)
+	valueVal, ok := valueAttribute.(basetypes.SetValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`value expected to be basetypes.ListValue, was: %T`, valueAttribute))
+			fmt.Sprintf(`value expected to be basetypes.SetValue, was: %T`, valueAttribute))
 	}
 
 	if diags.HasError() {
@@ -11377,7 +11378,7 @@ var _ basetypes.ObjectValuable = TlsVersionsValue{}
 
 type TlsVersionsValue struct {
 	Enabled basetypes.BoolValue `tfsdk:"enabled"`
-	Value   basetypes.ListValue `tfsdk:"value"`
+	Value   basetypes.SetValue  `tfsdk:"value"`
 	state   attr.ValueState
 }
 
@@ -11388,7 +11389,7 @@ func (v TlsVersionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 	var err error
 
 	attrTypes["enabled"] = basetypes.BoolType{}.TerraformType(ctx)
-	attrTypes["value"] = basetypes.ListType{
+	attrTypes["value"] = basetypes.SetType{
 		ElemType: types.StringType,
 	}.TerraformType(ctx)
 
@@ -11443,22 +11444,22 @@ func (v TlsVersionsValue) String() string {
 func (v TlsVersionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var valueVal basetypes.ListValue
+	var valueVal basetypes.SetValue
 	switch {
 	case v.Value.IsUnknown():
-		valueVal = types.ListUnknown(types.StringType)
+		valueVal = types.SetUnknown(types.StringType)
 	case v.Value.IsNull():
-		valueVal = types.ListNull(types.StringType)
+		valueVal = types.SetNull(types.StringType)
 	default:
 		var d diag.Diagnostics
-		valueVal, d = types.ListValue(types.StringType, v.Value.Elements())
+		valueVal, d = types.SetValue(types.StringType, v.Value.Elements())
 		diags.Append(d...)
 	}
 
 	if diags.HasError() {
 		return types.ObjectUnknown(map[string]attr.Type{
 			"enabled": basetypes.BoolType{},
-			"value": basetypes.ListType{
+			"value": basetypes.SetType{
 				ElemType: types.StringType,
 			},
 		}), diags
@@ -11466,7 +11467,7 @@ func (v TlsVersionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVa
 
 	attributeTypes := map[string]attr.Type{
 		"enabled": basetypes.BoolType{},
-		"value": basetypes.ListType{
+		"value": basetypes.SetType{
 			ElemType: types.StringType,
 		},
 	}
@@ -11526,7 +11527,7 @@ func (v TlsVersionsValue) Type(ctx context.Context) attr.Type {
 func (v TlsVersionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"enabled": basetypes.BoolType{},
-		"value": basetypes.ListType{
+		"value": basetypes.SetType{
 			ElemType: types.StringType,
 		},
 	}

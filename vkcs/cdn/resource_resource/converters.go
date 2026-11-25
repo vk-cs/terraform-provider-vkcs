@@ -449,18 +449,17 @@ func (v OptionsValue) ToResourceOptions(ctx context.Context) (*resources.Resourc
 		}
 
 		tlsVersions := tlsVersionsObjV.(TlsVersionsValue)
-		tlsVersions, d = tlsVersions.Canonicalize(ctx)
-		diags.Append(d...)
-		if diags.HasError() {
-			return nil, diags
-		}
-
-		value := make([]resources.ResourceTlsVersion, 0, len(tlsVersions.Value.Elements()))
+		var versions []string
 		if optV := tlsVersions.Value; !optV.IsUnknown() && !optV.IsNull() {
-			diags.Append(optV.ElementsAs(ctx, &value, true)...)
+			diags.Append(optV.ElementsAs(ctx, &versions, true)...)
 			if diags.HasError() {
 				return nil, diags
 			}
+		}
+		orderedVersions := canonicalTLSVersionOrder(versions)
+		value := make([]resources.ResourceTlsVersion, 0, len(orderedVersions))
+		for _, version := range orderedVersions {
+			value = append(value, resources.ResourceTlsVersion(version))
 		}
 
 		result.TlsVersions = &resources.ResourceOptionsTlsVersionsOption{
@@ -906,7 +905,7 @@ func (v OptionsValue) FromResourceOptions(ctx context.Context, opts *resources.R
 		for i, version := range o.Value {
 			values[i] = string(version)
 		}
-		value, d := types.ListValueFrom(ctx, types.StringType, canonicalTLSVersionOrder(values))
+		value, d := types.SetValueFrom(ctx, types.StringType, values)
 		diags.Append(d...)
 		if diags.HasError() {
 			return NewOptionsValueUnknown(), diags
@@ -1038,28 +1037,6 @@ func flattenStaticResponseHeaders(ctx context.Context, headers []resources.Stati
 	value, d := types.ListValue(valueType, result)
 	diags.Append(d...)
 	return value, diags
-}
-
-func (v TlsVersionsValue) Canonicalize(ctx context.Context) (TlsVersionsValue, diag.Diagnostics) {
-	if v.Value.IsNull() || v.Value.IsUnknown() {
-		return v, nil
-	}
-
-	var values []string
-	var diags diag.Diagnostics
-	diags.Append(v.Value.ElementsAs(ctx, &values, true)...)
-	if diags.HasError() {
-		return NewTlsVersionsValueUnknown(), diags
-	}
-
-	value, d := types.ListValueFrom(ctx, types.StringType, canonicalTLSVersionOrder(values))
-	diags.Append(d...)
-	if diags.HasError() {
-		return NewTlsVersionsValueUnknown(), diags
-	}
-
-	v.Value = value
-	return v, diags
 }
 
 func canonicalTLSVersionOrder(values []string) []string {

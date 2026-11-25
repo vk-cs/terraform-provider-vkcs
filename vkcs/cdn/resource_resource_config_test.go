@@ -4,7 +4,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/cdn/v1/resources"
@@ -400,39 +404,160 @@ func TestValidateStaticResponseHeadersAllowsNullAndUnknown(t *testing.T) {
 	}
 }
 
-func TestCanonicalizeTlsVersionsInPlanMatchesAPIOrder(t *testing.T) {
+func TestResourceStateUpgradeV0ConvertsTlsVersionsListToSet(t *testing.T) {
 	ctx := context.Background()
-	options, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
-		TlsVersions: nil,
-	})
-	if diags.HasError() {
-		t.Fatalf("FromResourceOptions returned diagnostics: %v", diags)
-	}
-	values, diags := types.ListValueFrom(ctx, types.StringType, []string{"TLSv1.1", "TLSv1.2"})
+	versionValues, diags := types.ListValueFrom(ctx, types.StringType, []string{"TLSv1.1", "TLSv1.2"})
 	if diags.HasError() {
 		t.Fatalf("types.ListValueFrom returned diagnostics: %v", diags)
 	}
-	tlsVersions, diags := types.ObjectValue(resource_resource.TlsVersionsValue{}.AttributeTypes(ctx), map[string]attr.Value{
-		"value":   values,
-		"enabled": types.BoolValue(true),
+	priorOptions := priorOptionsValueV0(t, ctx, versionValues)
+
+	priorSchema := resourceResourceSchemaV0(ctx)
+	optionsSchema := priorSchema.Attributes["options"].(schema.SingleNestedAttribute)
+	if _, ok := optionsSchema.Attributes["static_response_headers"]; ok {
+		t.Fatal("prior schema version 0 unexpectedly contains static_response_headers")
+	}
+	tlsVersionsSchema := optionsSchema.Attributes["tls_versions"].(schema.SingleNestedAttribute)
+	if _, ok := tlsVersionsSchema.Attributes["value"].(schema.ListAttribute); !ok {
+		t.Fatal("prior schema version 0 does not describe tls_versions.value as a list")
+	}
+	priorState := tfsdk.State{Schema: priorSchema}
+	priorModel := resourceResourceStateV0{
+		Active:             types.BoolValue(true),
+		Cname:              types.StringValue("cdn.example.com"),
+		Id:                 types.Int64Value(123),
+		Options:            priorOptions,
+		OriginGroup:        types.Int64Value(456),
+		OriginProtocol:     types.StringValue("HTTPS"),
+		PresetApplied:      types.BoolValue(false),
+		Region:             types.StringValue("RegionOne"),
+		SecondaryHostnames: types.ListNull(types.StringType),
+		Shielding:          resource_resource.NewShieldingValueNull(),
+		SslCertificate:     resource_resource.NewSslCertificateValueNull(),
+		Status:             types.StringValue("active"),
+		Timeouts: timeouts.Value{Object: types.ObjectNull(map[string]attr.Type{
+			"create": types.StringType,
+			"update": types.StringType,
+		})},
+		VpEnabled: types.BoolValue(false),
+	}
+	if diags := priorState.Set(ctx, &priorModel); diags.HasError() {
+		t.Fatalf("setting prior state returned diagnostics: %v", diags)
+	}
+
+	upgrader, ok := (&resourceResource{}).UpgradeState(ctx)[0]
+	if !ok {
+		t.Fatal("no state upgrader registered for schema version 0")
+	}
+	currentSchema := resource_resource.ResourceResourceSchema(ctx)
+	currentSchema.Version = 1
+	response := resource.UpgradeStateResponse{State: tfsdk.State{Schema: currentSchema}}
+	upgrader.StateUpgrader(ctx, resource.UpgradeStateRequest{State: &priorState}, &response)
+	if response.Diagnostics.HasError() {
+		t.Fatalf("state upgrader returned diagnostics: %v", response.Diagnostics)
+	}
+
+	var got resource_resource.ResourceModel
+	if diags := response.State.Get(ctx, &got); diags.HasError() {
+		t.Fatalf("reading upgraded state returned diagnostics: %v", diags)
+	}
+	if got.Cname.ValueString() != priorModel.Cname.ValueString() || got.Id.ValueInt64() != priorModel.Id.ValueInt64() {
+		t.Fatalf("upgraded resource identity = %q/%d, want %q/%d", got.Cname.ValueString(), got.Id.ValueInt64(), priorModel.Cname.ValueString(), priorModel.Id.ValueInt64())
+	}
+	allowedHttpMethods, diags := resource_resource.AllowedHttpMethodsType{}.ValueFromObject(ctx, got.Options.AllowedHttpMethods)
+	if diags.HasError() {
+		t.Fatalf("decoding preserved HTTP methods returned diagnostics: %v", diags)
+	}
+	var gotMethods []string
+	if diags := allowedHttpMethods.(resource_resource.AllowedHttpMethodsValue).Value.ElementsAs(ctx, &gotMethods, true); diags.HasError() {
+		t.Fatalf("reading preserved HTTP methods returned diagnostics: %v", diags)
+	}
+	if len(gotMethods) != 1 || gotMethods[0] != "GET" {
+		t.Fatalf("upgraded HTTP methods = %v, want [GET]", gotMethods)
+	}
+	tlsVersions, diags := resource_resource.TlsVersionsType{}.ValueFromObject(ctx, got.Options.TlsVersions)
+	if diags.HasError() {
+		t.Fatalf("decoding upgraded TLS option returned diagnostics: %v", diags)
+	}
+	wantVersions, diags := types.SetValueFrom(ctx, types.StringType, []string{"TLSv1.1", "TLSv1.2"})
+	if diags.HasError() {
+		t.Fatalf("building expected TLS version set returned diagnostics: %v", diags)
+	}
+	if !tlsVersions.(resource_resource.TlsVersionsValue).Value.Equal(wantVersions) {
+		t.Fatalf("upgraded TLS versions = %v, want %v", tlsVersions.(resource_resource.TlsVersionsValue).Value, wantVersions)
+	}
+
+	var currentSchemaResponse resource.SchemaResponse
+	(&resourceResource{}).Schema(ctx, resource.SchemaRequest{}, &currentSchemaResponse)
+	if currentSchemaResponse.Schema.Version != 1 {
+		t.Fatalf("current resource schema version = %d, want 1", currentSchemaResponse.Schema.Version)
+	}
+	currentOptionsSchema := currentSchemaResponse.Schema.Attributes["options"].(schema.SingleNestedAttribute)
+	currentTlsSchema := currentOptionsSchema.Attributes["tls_versions"].(schema.SingleNestedAttribute)
+	if _, ok := currentTlsSchema.Attributes["value"].(schema.SetAttribute); !ok {
+		t.Fatal("current schema does not describe tls_versions.value as a set")
+	}
+}
+
+func TestUpgradeTLSVersionsListToSetPreservesNullAndUnknown(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		prior types.List
+		check func(types.Set) bool
+	}{
+		{name: "null", prior: types.ListNull(types.StringType), check: func(value types.Set) bool { return value.IsNull() }},
+		{name: "unknown", prior: types.ListUnknown(types.StringType), check: func(value types.Set) bool { return value.IsUnknown() }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, diags := upgradeTLSVersionsListToSet(tc.prior)
+			if diags.HasError() {
+				t.Fatalf("upgradeTLSVersionsListToSet returned diagnostics: %v", diags)
+			}
+			if !tc.check(got) {
+				t.Fatalf("upgraded set = %v, want %s", got, tc.name)
+			}
+		})
+	}
+}
+
+func priorOptionsValueV0(t *testing.T, ctx context.Context, tlsVersions types.List) types.Object {
+	t.Helper()
+
+	options, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
+		AllowedHttpMethods: &resources.ResourceOptionsAllowedHttpMethodsOption{
+			Enabled: true,
+			Value:   []resources.ResourceAllowedHttpMethod{resources.ResourceAllowedHttpMethodGet},
+		},
 	})
 	if diags.HasError() {
-		t.Fatalf("TlsVersionsValue.ToObjectValue returned diagnostics: %v", diags)
+		t.Fatalf("creating options fixture returned diagnostics: %v", diags)
 	}
-	options.TlsVersions = tlsVersions
-
-	if diags := canonicalizeTlsVersionsInPlan(ctx, &options); diags.HasError() {
-		t.Fatalf("canonicalizeTlsVersionsInPlan returned diagnostics: %v", diags)
-	}
-	tlsVersionsObj, diags := resource_resource.TlsVersionsType{}.ValueFromObject(ctx, options.TlsVersions)
+	optionsObject, diags := options.ToObjectValue(ctx)
 	if diags.HasError() {
-		t.Fatalf("TlsVersionsType.ValueFromObject returned diagnostics: %v", diags)
+		t.Fatalf("converting options fixture returned diagnostics: %v", diags)
 	}
-	var got []string
-	if diags := tlsVersionsObj.(resource_resource.TlsVersionsValue).Value.ElementsAs(ctx, &got, true); diags.HasError() {
-		t.Fatalf("ElementsAs returned diagnostics: %v", diags)
+
+	priorTlsTypes := map[string]attr.Type{
+		"enabled": types.BoolType,
+		"value":   types.ListType{ElemType: types.StringType},
 	}
-	if len(got) != 2 || got[0] != "TLSv1.2" || got[1] != "TLSv1.1" {
-		t.Fatalf("planned TLS versions = %v, want API order [TLSv1.2 TLSv1.1]", got)
+	priorTls, diags := types.ObjectValue(priorTlsTypes, map[string]attr.Value{
+		"enabled": types.BoolValue(true),
+		"value":   tlsVersions,
+	})
+	if diags.HasError() {
+		t.Fatalf("creating prior TLS option returned diagnostics: %v", diags)
 	}
+
+	attributes := optionsObject.Attributes()
+	delete(attributes, "static_response_headers")
+	attributes["tls_versions"] = priorTls
+	priorOptionTypes := resource_resource.OptionsValue{}.AttributeTypes(ctx)
+	delete(priorOptionTypes, "static_response_headers")
+	priorOptionTypes["tls_versions"] = types.ObjectType{AttrTypes: priorTlsTypes}
+	priorOptions, diags := types.ObjectValue(priorOptionTypes, attributes)
+	if diags.HasError() {
+		t.Fatalf("creating prior options object returned diagnostics: %v", diags)
+	}
+	return priorOptions
 }

@@ -25,6 +25,7 @@ var (
 	_ resource.ResourceWithImportState      = (*resourceResource)(nil)
 	_ resource.ResourceWithValidateConfig   = (*resourceResource)(nil)
 	_ resource.ResourceWithModifyPlan       = (*resourceResource)(nil)
+	_ resource.ResourceWithUpgradeState     = (*resourceResource)(nil)
 )
 
 func NewResourceResource() resource.Resource {
@@ -41,6 +42,7 @@ func (r *resourceResource) Metadata(ctx context.Context, req resource.MetadataRe
 
 func (r *resourceResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = resource_resource.ResourceResourceSchema(ctx)
+	resp.Schema.Version = 1
 }
 
 func (r *resourceResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -398,33 +400,7 @@ func (r *resourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 		plan.Options.GzipOn = types.BoolValue(gzipCompression.Enabled.ValueBool())
 	}
 
-	resp.Diagnostics.Append(canonicalizeTlsVersionsInPlan(ctx, &plan.Options)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
-}
-
-func canonicalizeTlsVersionsInPlan(ctx context.Context, options *resource_resource.OptionsValue) diag.Diagnostics {
-	var diags diag.Diagnostics
-	if options == nil || options.IsNull() || options.IsUnknown() || options.TlsVersions.IsNull() || options.TlsVersions.IsUnknown() {
-		return diags
-	}
-
-	tlsVersionsObjV, d := resource_resource.TlsVersionsType{}.ValueFromObject(ctx, options.TlsVersions)
-	diags.Append(d...)
-	if diags.HasError() {
-		return diags
-	}
-	tlsVersions, d := tlsVersionsObjV.(resource_resource.TlsVersionsValue).Canonicalize(ctx)
-	diags.Append(d...)
-	if diags.HasError() {
-		return diags
-	}
-	options.TlsVersions, d = tlsVersions.ToObjectValue(ctx)
-	diags.Append(d...)
-	return diags
 }
 
 func (r *resourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

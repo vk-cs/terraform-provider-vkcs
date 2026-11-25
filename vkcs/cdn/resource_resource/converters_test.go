@@ -223,11 +223,11 @@ func TestStaticHeadersRemainsSupported(t *testing.T) {
 	}
 }
 
-func TestTlsVersionsUseCanonicalAPIOrderInBothDirections(t *testing.T) {
+func TestTlsVersionsUseCanonicalAPIOrderForRequestsAndUnorderedState(t *testing.T) {
 	ctx := context.Background()
-	configuredValues, diags := types.ListValueFrom(ctx, types.StringType, []string{"TLSv1.1", "TLSv1.2"})
+	configuredValues, diags := types.SetValueFrom(ctx, types.StringType, []string{"TLSv1.1", "TLSv1.2"})
 	if diags.HasError() {
-		t.Fatalf("types.ListValueFrom returned diagnostics: %v", diags)
+		t.Fatalf("types.SetValueFrom returned diagnostics: %v", diags)
 	}
 	tlsVersions, diags := (TlsVersionsValue{
 		Value:   configuredValues,
@@ -266,8 +266,12 @@ func TestTlsVersionsUseCanonicalAPIOrderInBothDirections(t *testing.T) {
 	if diags := tlsObject.(TlsVersionsValue).Value.ElementsAs(ctx, &readValues, true); diags.HasError() {
 		t.Fatalf("reading TLS versions returned diagnostics: %v", diags)
 	}
-	if !equalStrings(readValues, []string{"TLSv1.2", "TLSv1.1"}) {
-		t.Fatalf("state TLS versions = %v, want canonical API order [TLSv1.2 TLSv1.1]", readValues)
+	wantState, diags := types.SetValueFrom(ctx, types.StringType, []string{"TLSv1.1", "TLSv1.2"})
+	if diags.HasError() {
+		t.Fatalf("building expected TLS version set returned diagnostics: %v", diags)
+	}
+	if !tlsObject.(TlsVersionsValue).Value.Equal(wantState) {
+		t.Fatalf("state TLS versions = %v, want unordered set %v (elements read as %v)", tlsObject.(TlsVersionsValue).Value, wantState, readValues)
 	}
 }
 
