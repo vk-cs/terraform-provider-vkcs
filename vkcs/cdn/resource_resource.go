@@ -118,13 +118,12 @@ func selectConfiguredResponseHeaderOption(
 	plan *resource_resource.OptionsValue,
 	config resource_resource.OptionsValue,
 	previous *resource_resource.OptionsValue,
-) diag.Diagnostics {
-	var diags diag.Diagnostics
+) {
 	if plan == nil || plan.IsNull() || plan.IsUnknown() || config.IsNull() {
-		return diags
+		return
 	}
 	if config.IsUnknown() {
-		return diags
+		return
 	}
 
 	legacyConfigured := !config.StaticHeaders.IsNull()
@@ -136,12 +135,7 @@ func selectConfiguredResponseHeaderOption(
 			// The CDN API can return the deprecated staticHeaders alias after
 			// receiving static_response_headers. Keep that alias unknown when
 			// the canonical option changes so the API read-back is consistent.
-			legacy, d := resource_resource.NewStaticHeadersValueUnknown().ToObjectValue(ctx)
-			diags.Append(d...)
-			if diags.HasError() {
-				return diags
-			}
-			plan.StaticHeaders = legacy
+			plan.StaticHeaders = types.ObjectUnknown(resource_resource.StaticHeadersValue{}.AttributeTypes(ctx))
 		}
 	}
 
@@ -152,16 +146,9 @@ func selectConfiguredResponseHeaderOption(
 			// after receiving the deprecated staticHeaders field. Keep the plan
 			// unknown when that legacy setting changes so the API's read-back is
 			// consistent with the plan, while preserving known state on no-op plans.
-			response, d := resource_resource.NewStaticResponseHeadersValueUnknown().ToObjectValue(ctx)
-			diags.Append(d...)
-			if diags.HasError() {
-				return diags
-			}
-			plan.StaticResponseHeaders = response
+			plan.StaticResponseHeaders = types.ObjectUnknown(resource_resource.StaticResponseHeadersValue{}.AttributeTypes(ctx))
 		}
 	}
-
-	return diags
 }
 
 func isKnownOption(value types.Object) bool {
@@ -172,36 +159,21 @@ func responseHeaderOptionsForAPIRequest(
 	ctx context.Context,
 	options resource_resource.OptionsValue,
 	config resource_resource.OptionsValue,
-) (resource_resource.OptionsValue, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	if options.IsNull() || options.IsUnknown() || config.IsNull() {
-		return options, diags
-	}
-
-	if config.IsUnknown() {
-		return options, diags
+) resource_resource.OptionsValue {
+	if options.IsNull() || options.IsUnknown() || config.IsNull() || config.IsUnknown() {
+		return options
 	}
 
 	legacyConfigured := !config.StaticHeaders.IsNull()
 	responseConfigured := !config.StaticResponseHeaders.IsNull()
 
 	if legacyConfigured {
-		response, d := resource_resource.NewStaticResponseHeadersValueNull().ToObjectValue(ctx)
-		diags.Append(d...)
-		if diags.HasError() {
-			return options, diags
-		}
-		options.StaticResponseHeaders = response
+		options.StaticResponseHeaders = types.ObjectNull(resource_resource.StaticResponseHeadersValue{}.AttributeTypes(ctx))
 	} else if responseConfigured || isKnownOption(options.StaticResponseHeaders) {
-		legacy, d := resource_resource.NewStaticHeadersValueNull().ToObjectValue(ctx)
-		diags.Append(d...)
-		if diags.HasError() {
-			return options, diags
-		}
-		options.StaticHeaders = legacy
+		options.StaticHeaders = types.ObjectNull(resource_resource.StaticHeadersValue{}.AttributeTypes(ctx))
 	}
 
-	return options, diags
+	return options
 }
 
 func mergeResourceOptions(planned, prior *resources.ResourceOptions) *resources.ResourceOptions {
@@ -310,10 +282,7 @@ func (r *resourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 		previousOptions = &state.Options
 	}
 
-	resp.Diagnostics.Append(selectConfiguredResponseHeaderOption(ctx, &plan.Options, config.Options, previousOptions)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	selectConfiguredResponseHeaderOption(ctx, &plan.Options, config.Options, previousOptions)
 
 	gzipCompression := plan.Options.GzipCompression
 	if !gzipCompression.IsNull() && !gzipCompression.IsUnknown() {
@@ -369,11 +338,7 @@ func (r *resourceResource) Create(ctx context.Context, req resource.CreateReques
 		}
 	}
 
-	requestOptions, diags := responseHeaderOptionsForAPIRequest(ctx, data.Options, config.Options)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	requestOptions := responseHeaderOptionsForAPIRequest(ctx, data.Options, config.Options)
 	opts, diags := requestOptions.ToResourceOptions(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -574,11 +539,7 @@ func (r *resourceResource) Update(ctx context.Context, req resource.UpdateReques
 		}
 	}
 
-	requestOptions, diags := responseHeaderOptionsForAPIRequest(ctx, plan.Options, config.Options)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	requestOptions := responseHeaderOptionsForAPIRequest(ctx, plan.Options, config.Options)
 	plannedOptions, diags := requestOptions.ToResourceOptions(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -588,11 +549,7 @@ func (r *resourceResource) Update(ctx context.Context, req resource.UpdateReques
 	// The CDN update API requires unchanged options too. Optional+computed
 	// attributes can be unknown in the plan (for example beside a nested list),
 	// so fill only missing planned options from prior state.
-	priorRequestOptions, diags := responseHeaderOptionsForAPIRequest(ctx, data.Options, config.Options)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	priorRequestOptions := responseHeaderOptionsForAPIRequest(ctx, data.Options, config.Options)
 	priorOptions, diags := priorRequestOptions.ToResourceOptions(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

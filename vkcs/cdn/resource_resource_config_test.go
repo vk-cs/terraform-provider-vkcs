@@ -39,10 +39,7 @@ func TestSelectConfiguredResponseHeaderOptionAllowsCanonicalLegacyReadBack(t *te
 
 	plan := legacyState
 	plan.StaticResponseHeaders = newConfig.StaticResponseHeaders
-	diags = selectConfiguredResponseHeaderOption(ctx, &plan, newConfig, &legacyState)
-	if diags.HasError() {
-		t.Fatalf("selectConfiguredResponseHeaderOption returned diagnostics: %v", diags)
-	}
+	selectConfiguredResponseHeaderOption(ctx, &plan, newConfig, &legacyState)
 	if !plan.StaticHeaders.IsUnknown() {
 		t.Fatalf("planned static_headers = %s, want unknown while API canonicalizes the new option", plan.StaticHeaders)
 	}
@@ -70,9 +67,7 @@ func TestSelectConfiguredLegacyOptionAllowsCanonicalAPIReadBack(t *testing.T) {
 		t.Fatalf("creating legacy-only options returned diagnostics: %v", diags)
 	}
 	plan := legacyOnly
-	if diags := selectConfiguredResponseHeaderOption(ctx, &plan, legacyOnly, nil); diags.HasError() {
-		t.Fatalf("selectConfiguredResponseHeaderOption returned diagnostics: %v", diags)
-	}
+	selectConfiguredResponseHeaderOption(ctx, &plan, legacyOnly, nil)
 	if !plan.StaticResponseHeaders.IsUnknown() {
 		t.Fatalf("create plan static_response_headers = %s, want unknown for API canonicalization", plan.StaticResponseHeaders)
 	}
@@ -93,9 +88,7 @@ func TestSelectConfiguredLegacyOptionAllowsCanonicalAPIReadBack(t *testing.T) {
 		t.Fatalf("creating API read-back returned diagnostics: %v", diags)
 	}
 	noOpPlan := readBack
-	if diags := selectConfiguredResponseHeaderOption(ctx, &noOpPlan, legacyOnly, &readBack); diags.HasError() {
-		t.Fatalf("selectConfiguredResponseHeaderOption on no-op returned diagnostics: %v", diags)
-	}
+	selectConfiguredResponseHeaderOption(ctx, &noOpPlan, legacyOnly, &readBack)
 	if !noOpPlan.StaticResponseHeaders.Equal(readBack.StaticResponseHeaders) {
 		t.Fatalf("no-op plan static_response_headers = %s, want retained API read-back %s", noOpPlan.StaticResponseHeaders, readBack.StaticResponseHeaders)
 	}
@@ -126,10 +119,7 @@ func TestSelectConfiguredResponseHeaderOptionMakesChangedComputedOptionUnknown(t
 
 	plan := newState
 	plan.StaticHeaders = legacyConfig.StaticHeaders
-	diags = selectConfiguredResponseHeaderOption(ctx, &plan, legacyConfig, &newState)
-	if diags.HasError() {
-		t.Fatalf("selectConfiguredResponseHeaderOption returned diagnostics: %v", diags)
-	}
+	selectConfiguredResponseHeaderOption(ctx, &plan, legacyConfig, &newState)
 	if !plan.StaticResponseHeaders.IsUnknown() {
 		t.Fatalf("planned static_response_headers = %s, want unknown during legacy option change", plan.StaticResponseHeaders)
 	}
@@ -168,10 +158,7 @@ func TestResponseHeaderAPIRequestOmitsCanonicalOptionForLegacyConfig(t *testing.
 		t.Fatalf("creating legacy-only configuration returned diagnostics: %v", diags)
 	}
 
-	requestOptions, diags := responseHeaderOptionsForAPIRequest(ctx, plan, legacyConfig)
-	if diags.HasError() {
-		t.Fatalf("responseHeaderOptionsForAPIRequest returned diagnostics: %v", diags)
-	}
+	requestOptions := responseHeaderOptionsForAPIRequest(ctx, plan, legacyConfig)
 	apiOptions, diags := requestOptions.ToResourceOptions(ctx)
 	if diags.HasError() {
 		t.Fatalf("ToResourceOptions returned diagnostics: %v", diags)
@@ -207,10 +194,7 @@ func TestResponseHeaderAPIRequestOmitsLegacyAliasForNewConfig(t *testing.T) {
 		t.Fatalf("creating new-only configuration returned diagnostics: %v", diags)
 	}
 
-	requestOptions, diags := responseHeaderOptionsForAPIRequest(ctx, plan, newConfig)
-	if diags.HasError() {
-		t.Fatalf("responseHeaderOptionsForAPIRequest returned diagnostics: %v", diags)
-	}
+	requestOptions := responseHeaderOptionsForAPIRequest(ctx, plan, newConfig)
 	apiOptions, diags := requestOptions.ToResourceOptions(ctx)
 	if diags.HasError() {
 		t.Fatalf("ToResourceOptions returned diagnostics: %v", diags)
