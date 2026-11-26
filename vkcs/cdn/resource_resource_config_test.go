@@ -14,62 +14,6 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/cdn/v1/resources"
 )
 
-func TestValidateStaticHeadersConflict(t *testing.T) {
-	ctx := context.Background()
-	legacy := types.ObjectValueMust(resource_resource.StaticHeadersValue{}.AttributeTypes(ctx), map[string]attr.Value{
-		"enabled": types.BoolValue(false),
-		"value":   types.MapValueMust(types.StringType, map[string]attr.Value{}),
-	})
-	current := types.ObjectValueMust(resource_resource.StaticResponseHeadersValue{}.AttributeTypes(ctx), map[string]attr.Value{
-		"enabled": types.BoolValue(false),
-		"value":   types.ListValueMust(resource_resource.ValueValue{}.Type(ctx), []attr.Value{}),
-	})
-
-	diags := validateStaticHeadersConflict(legacy, current)
-	if !diags.HasError() {
-		t.Fatal("expected a diagnostic when both options are configured, even when disabled")
-	}
-}
-
-func TestValidateStaticHeadersConflictAllowsOneOptionOrUnknown(t *testing.T) {
-	ctx := context.Background()
-	legacyTypes := resource_resource.StaticHeadersValue{}.AttributeTypes(ctx)
-	currentTypes := resource_resource.StaticResponseHeadersValue{}.AttributeTypes(ctx)
-
-	for _, tc := range []struct {
-		name    string
-		legacy  types.Object
-		current types.Object
-	}{
-		{
-			name:    "legacy only",
-			legacy:  types.ObjectValueMust(legacyTypes, map[string]attr.Value{"enabled": types.BoolValue(true), "value": types.MapValueMust(types.StringType, map[string]attr.Value{})}),
-			current: types.ObjectNull(currentTypes),
-		},
-		{
-			name:    "new option unknown",
-			legacy:  types.ObjectNull(legacyTypes),
-			current: types.ObjectUnknown(currentTypes),
-		},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			if diags := validateStaticHeadersConflict(tc.legacy, tc.current); diags.HasError() {
-				t.Fatalf("unexpected conflict diagnostic: %v", diags)
-			}
-		})
-	}
-}
-
-func TestValidateStaticHeadersConflictRejectsBothUnknownOptions(t *testing.T) {
-	ctx := context.Background()
-	legacy := types.ObjectUnknown(resource_resource.StaticHeadersValue{}.AttributeTypes(ctx))
-	current := types.ObjectUnknown(resource_resource.StaticResponseHeadersValue{}.AttributeTypes(ctx))
-
-	if diags := validateStaticHeadersConflict(legacy, current); !diags.HasError() {
-		t.Fatal("expected a conflict diagnostic when both configured options are unknown")
-	}
-}
-
 func TestSelectConfiguredResponseHeaderOptionAllowsCanonicalLegacyReadBack(t *testing.T) {
 	ctx := context.Background()
 	legacyState, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
@@ -312,53 +256,6 @@ func TestMergeResourceOptionsPreservesUnplannedOptionsAndPrefersPlan(t *testing.
 	}
 	if merged.StaticResponseHeaders == nil || !merged.StaticResponseHeaders.Enabled || len(merged.StaticResponseHeaders.Value) != 1 || merged.StaticResponseHeaders.Value[0].Name != "X-New" {
 		t.Fatalf("StaticResponseHeaders = %#v, want planned value", merged.StaticResponseHeaders)
-	}
-}
-
-func TestSelectConfiguredResponseHeaderOptionRejectsAmbiguousUnknownOptions(t *testing.T) {
-	ctx := context.Background()
-	plan, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
-		StaticHeaders: &resources.ResourceOptionsStringMapOption{
-			Enabled: true,
-			Value:   map[string]string{"X-Legacy": "legacy"},
-		},
-		StaticResponseHeaders: &resources.ResourceOptionsStaticResponseHeadersOption{
-			Enabled: true,
-			Value: []resources.StaticResponseHeaderValue{
-				{Name: "X-New", Value: []string{"new"}, Always: true},
-			},
-		},
-	})
-	if diags.HasError() {
-		t.Fatalf("creating plan returned diagnostics: %v", diags)
-	}
-	unknownConfig := resource_resource.NewOptionsValueUnknown()
-
-	diags = selectConfiguredResponseHeaderOption(ctx, &plan, unknownConfig, nil)
-	if !diags.HasError() {
-		t.Fatal("expected a conflict diagnostic for ambiguous planned header options")
-	}
-}
-
-func TestValidateStaticResponseHeadersRequiresAlways(t *testing.T) {
-	ctx := context.Background()
-	header, diags := resource_resource.NewValueValue(resource_resource.ValueValue{}.AttributeTypes(ctx), map[string]attr.Value{
-		"name":   types.StringValue("X-Test"),
-		"value":  types.ListValueMust(types.StringType, []attr.Value{types.StringValue("value")}),
-		"always": types.BoolNull(),
-	})
-	if diags.HasError() {
-		t.Fatalf("NewValueValue returned diagnostics: %v", diags)
-	}
-	values := types.ListValueMust(resource_resource.ValueValue{}.Type(ctx), []attr.Value{header})
-	option := types.ObjectValueMust(resource_resource.StaticResponseHeadersValue{}.AttributeTypes(ctx), map[string]attr.Value{
-		"enabled": types.BoolValue(true),
-		"value":   values,
-	})
-
-	diags = validateStaticResponseHeaders(ctx, option)
-	if !diags.HasError() {
-		t.Fatal("expected a diagnostic when always is not specified")
 	}
 }
 

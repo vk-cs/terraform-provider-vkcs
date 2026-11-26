@@ -174,11 +174,11 @@ Specify HTTP-code you need and text or URL if you're going to set up redirection
         - `enabled` optional *boolean* &rarr;  Controls whether the response headers option is enabled.
 
         - `value` optional *object* &rarr;  List of custom HTTP response headers.
-            - `always` optional *boolean* &rarr;  Required for each header. `true` adds it regardless of the HTTP response status code; `false` adds it only for HTTP 200, 201, 204, 206, 301, 302, 303, 304, 307, or 308 responses. The API defines no default.
+            - `always` required *boolean* &rarr;  `true` adds the header regardless of the HTTP response status code; `false` adds it only for HTTP 200, 201, 204, 206, 301, 302, 303, 304, 307, or 308 responses.
 
-            - `name` optional *string* &rarr;  Header name.
+            - `name` required *string* &rarr;  Header name.
 
-            - `value` optional *string* &rarr;  List of values for this header.
+            - `value` required *string* &rarr;  List of values for this header.
 
 
     - `static_request_headers` optional &rarr;  Custom HTTP Headers for a CDN server to add to a request.

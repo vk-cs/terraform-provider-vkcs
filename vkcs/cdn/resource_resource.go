@@ -91,7 +91,6 @@ func (r *resourceResource) ValidateConfig(ctx context.Context, req resource.Vali
 	}
 
 	if !config.Options.IsNull() && !config.Options.IsUnknown() {
-		resp.Diagnostics.Append(validateStaticHeadersConflict(config.Options.StaticHeaders, config.Options.StaticResponseHeaders)...)
 		resp.Diagnostics.Append(validateStaticResponseHeaders(ctx, config.Options.StaticResponseHeaders)...)
 	}
 
@@ -114,20 +113,6 @@ func (r *resourceResource) ValidateConfig(ctx context.Context, req resource.Vali
 	}
 }
 
-func validateStaticHeadersConflict(legacy, current types.Object) diag.Diagnostics {
-	var diags diag.Diagnostics
-	if legacy.IsNull() || current.IsNull() {
-		return diags
-	}
-
-	diags.AddAttributeError(
-		path.Root("options").AtName("static_response_headers"),
-		"Conflicting CDN response header options",
-		"Configure either `options.static_headers` or `options.static_response_headers`, not both.",
-	)
-	return diags
-}
-
 func selectConfiguredResponseHeaderOption(
 	ctx context.Context,
 	plan *resource_resource.OptionsValue,
@@ -139,29 +124,15 @@ func selectConfiguredResponseHeaderOption(
 		return diags
 	}
 	if config.IsUnknown() {
-		if isKnownOption(plan.StaticHeaders) && isKnownOption(plan.StaticResponseHeaders) {
-			diags.AddError(
-				"Conflicting CDN response header options",
-				"The planned state contains both `options.static_headers` and `options.static_response_headers`, but the options configuration is unknown.",
-			)
-		}
 		return diags
 	}
 
 	legacyConfigured := !config.StaticHeaders.IsNull()
 	responseConfigured := !config.StaticResponseHeaders.IsNull()
-	if legacyConfigured && responseConfigured {
-		diags.AddError(
-			"Conflicting CDN response header options",
-			"Configure either `options.static_headers` or `options.static_response_headers`, not both.",
-		)
-		return diags
-	}
 
 	if responseConfigured {
-		responseOptionChanged := previous == nil || !isKnownOption(previous.StaticResponseHeaders) ||
-			!isKnownOption(plan.StaticResponseHeaders) || !plan.StaticResponseHeaders.Equal(previous.StaticResponseHeaders)
-		if responseOptionChanged {
+		if previous == nil || !isKnownOption(previous.StaticResponseHeaders) ||
+			!isKnownOption(plan.StaticResponseHeaders) || !plan.StaticResponseHeaders.Equal(previous.StaticResponseHeaders) {
 			// The CDN API can return the deprecated staticHeaders alias after
 			// receiving static_response_headers. Keep that alias unknown when
 			// the canonical option changes so the API read-back is consistent.
@@ -175,9 +146,8 @@ func selectConfiguredResponseHeaderOption(
 	}
 
 	if legacyConfigured {
-		legacyOptionChanged := previous == nil || !isKnownOption(previous.StaticHeaders) ||
-			!isKnownOption(plan.StaticHeaders) || !plan.StaticHeaders.Equal(previous.StaticHeaders)
-		if legacyOptionChanged {
+		if previous == nil || !isKnownOption(previous.StaticHeaders) ||
+			!isKnownOption(plan.StaticHeaders) || !plan.StaticHeaders.Equal(previous.StaticHeaders) {
 			// The CDN API can return the canonical static_response_headers form
 			// after receiving the deprecated staticHeaders field. Keep the plan
 			// unknown when that legacy setting changes so the API's read-back is
@@ -209,24 +179,11 @@ func responseHeaderOptionsForAPIRequest(
 	}
 
 	if config.IsUnknown() {
-		if isKnownOption(options.StaticHeaders) && isKnownOption(options.StaticResponseHeaders) {
-			diags.AddError(
-				"Conflicting CDN response header options",
-				"The planned state contains both response header options, but their configuration is unknown.",
-			)
-		}
 		return options, diags
 	}
 
 	legacyConfigured := !config.StaticHeaders.IsNull()
 	responseConfigured := !config.StaticResponseHeaders.IsNull()
-	if legacyConfigured && responseConfigured {
-		diags.AddError(
-			"Conflicting CDN response header options",
-			"Configure either `options.static_headers` or `options.static_response_headers`, not both.",
-		)
-		return options, diags
-	}
 
 	if legacyConfigured {
 		response, d := resource_resource.NewStaticResponseHeadersValueNull().ToObjectValue(ctx)
@@ -321,36 +278,6 @@ func validateStaticResponseHeaders(ctx context.Context, value types.Object) diag
 			"Set `value` (an empty list is allowed) or explicitly disable `static_response_headers`.",
 		)
 		return diags
-	}
-
-	var headers []resource_resource.ValueValue
-	diags.Append(option.Value.ElementsAs(ctx, &headers, true)...)
-	if diags.HasError() {
-		return diags
-	}
-
-	for i, header := range headers {
-		if header.Name.IsNull() {
-			diags.AddAttributeError(
-				path.Root("options").AtName("static_response_headers").AtName("value").AtListIndex(i).AtName("name"),
-				"Missing Attribute Value",
-				"Each response header must have a `name`.",
-			)
-		}
-		if header.Value.IsNull() {
-			diags.AddAttributeError(
-				path.Root("options").AtName("static_response_headers").AtName("value").AtListIndex(i).AtName("value"),
-				"Missing Attribute Value",
-				"Each response header must have a `value` list.",
-			)
-		}
-		if header.Always.IsNull() {
-			diags.AddAttributeError(
-				path.Root("options").AtName("static_response_headers").AtName("value").AtListIndex(i).AtName("always"),
-				"Missing Attribute Value",
-				"Each response header must set `always`; the CDN API does not define a default.",
-			)
-		}
 	}
 
 	return diags

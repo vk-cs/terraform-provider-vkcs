@@ -1263,14 +1263,14 @@
                                                             {
                                                                 "name": "name",
                                                                 "string": {
-                                                                    "computed_optional_required": "computed_optional",
+                                                                    "computed_optional_required": "required",
                                                                     "description": "Header name."
                                                                 }
                                                             },
                                                             {
                                                                 "name": "value",
                                                                 "list": {
-                                                                    "computed_optional_required": "computed_optional",
+                                                                    "computed_optional_required": "required",
                                                                     "element_type": {
                                                                         "string": {}
                                                                     },
@@ -1280,12 +1280,27 @@
                                                             {
                                                                 "name": "always",
                                                                 "bool": {
-                                                                    "computed_optional_required": "computed_optional",
+                                                                    "computed_optional_required": "required",
                                                                     "description": "Whether to add the header regardless of the HTTP response status code."
                                                                 }
                                                             }
                                                         ]
                                                     }
+                                                }
+                                            }
+                                        ],
+                                        "validators": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
+                                                        },
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework/path"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "objectvalidator.ConflictsWith(path.MatchRoot(\"options\").AtName(\"static_headers\"))"
                                                 }
                                             }
                                         ],

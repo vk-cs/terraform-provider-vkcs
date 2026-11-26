@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -683,21 +684,18 @@ func ResourceResourceSchema(ctx context.Context) schema.Schema {
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"always": schema.BoolAttribute{
-											Optional:            true,
-											Computed:            true,
+											Required:            true,
 											Description:         "Whether to add the header regardless of the HTTP response status code.",
 											MarkdownDescription: "Whether to add the header regardless of the HTTP response status code.",
 										},
 										"name": schema.StringAttribute{
-											Optional:            true,
-											Computed:            true,
+											Required:            true,
 											Description:         "Header name.",
 											MarkdownDescription: "Header name.",
 										},
 										"value": schema.ListAttribute{
 											ElementType:         types.StringType,
-											Optional:            true,
-											Computed:            true,
+											Required:            true,
 											Description:         "Header values.",
 											MarkdownDescription: "Header values.",
 										},
@@ -725,6 +723,9 @@ func ResourceResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Custom HTTP response headers that the CDN adds to responses for end users.",
 						PlanModifiers: []planmodifier.Object{
 							resource_planmodifiers.ResourceOptionWithState(),
+						},
+						Validators: []validator.Object{
+							objectvalidator.ConflictsWith(path.MatchRoot("options").AtName("static_headers")),
 						},
 					},
 					"tls_versions": schema.SingleNestedAttribute{
