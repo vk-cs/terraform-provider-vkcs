@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 	"text/template"
 	"time"
@@ -30,18 +31,22 @@ var (
 	OsExtNetNameNeutron = os.Getenv("OS_EXT_NET_NAME_NEUTRON")
 	OsAvailabilityZone  = os.Getenv("OS_AVAILABILITY_ZONE")
 	OsVolumeType        = os.Getenv("OS_VOLUME_TYPE")
+	OsDbVolumeType      = util.GetFirstNotEmpty(os.Getenv("OS_DB_VOLUME_TYPE"), OsVolumeType)
+	accTestRunID        = strconv.FormatInt(time.Now().UnixNano(), 36)
 )
 
 var AccTestValues map[string]string = map[string]string{
-	"BaseNetwork":           AccTestBaseNetwork,
+	"BaseNetwork":           AccTestBaseNetwork(),
 	"BaseExtNetwork":        AccTestBaseExtNetwork(),
 	"BaseExtNetworkNeutron": AccTestBaseExtNetworkNeutron(),
 	"BaseImage":             AccTestBaseImage(),
 	"BaseFlavor":            AccTestBaseFlavor(),
 	"BaseNewFlavor":         AccTestBaseNewFlavor(),
 	"BaseSecurityGroup":     AccTestBaseDefaultSG(),
+	"BaseBootVolume":        AccTestBaseBootVolume(),
 	"AvailabilityZone":      OsAvailabilityZone,
 	"VolumeType":            OsVolumeType,
+	"DbVolumeType":          OsDbVolumeType,
 	"FlavorName":            OsFlavorName,
 	"NewFlavorName":         OsNewFlavorName,
 	"ImageName":             OsImageName,
@@ -135,6 +140,18 @@ func AccTestBaseNewFlavor() string {
 `, OsNewFlavorName)
 }
 
+func AccTestBaseBootVolume() string {
+	return fmt.Sprintf(`block_device {
+    uuid                  = data.vkcs_images_image.base.id
+    source_type           = "image"
+    destination_type      = "volume"
+    volume_type           = "%s"
+    volume_size           = 10
+    boot_index            = 0
+    delete_on_termination = true
+  }`, OsVolumeType)
+}
+
 func AccTestBaseImage() string {
 	return fmt.Sprintf(`
 	data "vkcs_images_image" "base" {
@@ -143,21 +160,24 @@ func AccTestBaseImage() string {
 `, OsImageName)
 }
 
-const AccTestBaseNetwork string = `
+func AccTestBaseNetwork() string {
+	return fmt.Sprintf(`
 
 data "vkcs_networking_network" "extnet" {
-	name = "internet"
+	name = "%[1]s"
   }
   
   resource "vkcs_networking_network" "base" {
-	name           = "base-net"
+	name           = "base-net-%[2]s"
 	admin_state_up = true
+	sdn            = data.vkcs_networking_network.extnet.sdn
   }
   
   resource "vkcs_networking_subnet" "base" {
 	name       = "subnet_1"
 	network_id = vkcs_networking_network.base.id
 	cidr       = "192.168.199.0/24"
+	sdn        = data.vkcs_networking_network.extnet.sdn
   }
   
   resource "vkcs_networking_router" "base" {
@@ -165,13 +185,16 @@ data "vkcs_networking_network" "extnet" {
 	name                = "base-router"
 	admin_state_up      = true
 	external_network_id = data.vkcs_networking_network.extnet.id
+	sdn                 = data.vkcs_networking_network.extnet.sdn
   }
   
   resource "vkcs_networking_router_interface" "base" {
 	router_id = vkcs_networking_router.base.id
 	subnet_id = vkcs_networking_subnet.base.id
+	sdn       = data.vkcs_networking_network.extnet.sdn
   }
-`
+`, OsExtNetName, accTestRunID)
+}
 
 func AccTestBaseDefaultSG() string {
 	return fmt.Sprintf(`

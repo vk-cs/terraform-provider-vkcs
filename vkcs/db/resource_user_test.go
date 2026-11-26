@@ -334,10 +334,10 @@ resource "vkcs_db_instance" "base" {
   name        = "tfacc-base"
   flavor_id   = data.vkcs_compute_flavor.base.id
   size        = 10
-  volume_type = "{{.VolumeType}}"
+  volume_type = "{{.DbVolumeType}}"
 
   datastore {
-    version = "13"
+    version = "16"
     type    = "postgresql"
   }
 

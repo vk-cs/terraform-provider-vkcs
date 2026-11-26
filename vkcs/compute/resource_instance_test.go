@@ -1323,7 +1323,7 @@ resource "vkcs_compute_instance" "instance_1" {
 	network {
 	  uuid = vkcs_networking_network.base.id
 	}
-	image_id = data.vkcs_images_image.base.id
+	{{.BaseBootVolume}}
 	flavor_id = data.vkcs_compute_flavor.base.id
   }
 `
@@ -1342,7 +1342,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = data.vkcs_images_image.base.id
     destination_type = "volume"
     volume_size = 10
-    volume_type = "ceph-ssd"
+    volume_type = "{{.VolumeType}}"
     delete_on_termination = true
   }
   network {
@@ -1367,7 +1367,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = data.vkcs_images_image.base.id
     destination_type = "volume"
     volume_size = 10
-    volume_type = "ceph-ssd"
+    volume_type = "{{.VolumeType}}"
     delete_on_termination = true
   }
   network {
@@ -1392,7 +1392,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = data.vkcs_images_image.base.id
     destination_type = "volume"
     volume_size = 10
-    volume_type = "ceph-ssd"
+    volume_type = "{{.VolumeType}}"
     delete_on_termination = true
   }
   network {
@@ -1417,7 +1417,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = data.vkcs_images_image.base.id
     destination_type = "volume"
     volume_size = 10
-    volume_type = "ceph-ssd"
+    volume_type = "{{.VolumeType}}"
     delete_on_termination = true
   }
   network {
@@ -1443,7 +1443,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = data.vkcs_images_image.base.id
     destination_type = "volume"
     volume_size = 10
-    volume_type = "ceph-ssd"
+    volume_type = "{{.VolumeType}}"
     delete_on_termination = true
   }
   network {
@@ -1469,7 +1469,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = data.vkcs_images_image.base.id
     destination_type = "volume"
     volume_size = 10
-    volume_type = "ceph-ssd"
+    volume_type = "{{.VolumeType}}"
     delete_on_termination = true
   }
   network {
@@ -1496,7 +1496,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
   power_state = "active"
 }
@@ -1518,7 +1518,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
   power_state = "active"
 }
@@ -1540,7 +1540,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
   power_state = "shutoff"
 }
@@ -1560,11 +1560,11 @@ resource "vkcs_compute_instance" "instance_1" {
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
-    volume_size = 5
+    volume_size = 10
     boot_index = 0
     destination_type = "volume"
     delete_on_termination = true
-	volume_type = "ceph-ssd"
+	volume_type = "{{.VolumeType}}"
   }
   network {
     uuid = vkcs_networking_network.base.id
@@ -1581,7 +1581,7 @@ const testAccComputeInstanceBootFromVolumeVolume = `
 
 resource "vkcs_blockstorage_volume" "vol_1" {
   name = "vol_1"
-  size = 5
+  size = 10
   image_id = data.vkcs_images_image.base.id
   availability_zone = "{{.AvailabilityZone}}"
   volume_type = "{{.VolumeType}}"
@@ -1620,11 +1620,11 @@ resource "vkcs_compute_instance" "instance_1" {
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
-    volume_size = 5
+    volume_size = 10
     boot_index = 0
     destination_type = "volume"
     delete_on_termination = true
-	volume_type = "ceph-ssd"
+	volume_type = "{{.VolumeType}}"
   }
   network {
     uuid = vkcs_networking_network.base.id
@@ -1647,10 +1647,10 @@ resource "vkcs_compute_instance" "instance_1" {
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
-    volume_size = 4
+    volume_size = 11
     boot_index = 0
     destination_type = "volume"
-    volume_type = "ceph-ssd"
+    volume_type = "{{.VolumeType}}"
     delete_on_termination = true
   }
   network {
@@ -1674,14 +1674,16 @@ resource "vkcs_compute_instance" "instance_1" {
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
-    destination_type = "local"
+    destination_type = "volume"
+    volume_size = 10
+    volume_type = "{{.VolumeType}}"
     boot_index = 0
     delete_on_termination = true
   }
   block_device {
     source_type = "blank"
     destination_type = "volume"
-    volume_type = "ceph-ssd"
+    volume_type = "{{.VolumeType}}"
     volume_size = 1
     boot_index = 1
     delete_on_termination = true
@@ -1689,7 +1691,6 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -1708,7 +1709,9 @@ resource "vkcs_compute_instance" "instance_1" {
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
-    destination_type = "local"
+    destination_type = "volume"
+    volume_size = 10
+    volume_type = "{{.VolumeType}}"
     boot_index = 0
 	delete_on_termination = true
 	device_type = "disk"
@@ -1717,7 +1720,7 @@ resource "vkcs_compute_instance" "instance_1" {
   block_device {
     source_type = "blank"
     destination_type = "volume"
-    volume_type = "ceph-ssd"
+    volume_type = "{{.VolumeType}}"
     volume_size = 1
     boot_index = 1
 	delete_on_termination = true
@@ -1727,7 +1730,6 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -1752,7 +1754,9 @@ resource "vkcs_compute_instance" "instance_1" {
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
-    destination_type = "local"
+    destination_type = "volume"
+    volume_size = 10
+    volume_type = "{{.VolumeType}}"
     boot_index = 0
     delete_on_termination = true
   }
@@ -1766,7 +1770,6 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -1792,13 +1795,14 @@ resource "vkcs_compute_instance" "instance_1" {
   block_device {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
-    destination_type = "local"
+    destination_type = "volume"
+    volume_size = 10
+    volume_type = "{{.VolumeType}}"
     delete_on_termination = true
   }
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -1825,27 +1829,28 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = data.vkcs_images_image.base.id
     source_type = "image"
 	boot_index = 0
-    destination_type = "local"
+    destination_type = "volume"
+    volume_size = 10
+    volume_type = "{{.VolumeType}}"
     delete_on_termination = true
   }
   block_device {
     source_type = "blank"
     destination_type = "volume"
-    volume_type = "ceph-ssd"
+    volume_type = "{{.VolumeType}}"
     volume_size = 1
     delete_on_termination = true
   }
   block_device {
     source_type = "blank"
     destination_type = "volume"
-    volume_type = "ceph-ssd"
+    volume_type = "{{.VolumeType}}"
     volume_size = 1
     delete_on_termination = true
   }
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -1872,7 +1877,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -1884,10 +1889,12 @@ const testAccComputeInstanceAccessIPv4 = `
 {{.BaseSecurityGroup}}
 
 resource "vkcs_networking_network" "network_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "network_1"
 }
 
 resource "vkcs_networking_subnet" "subnet_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "subnet_1"
   network_id = vkcs_networking_network.network_1.id
   cidr = "192.168.1.0/24"
@@ -1911,7 +1918,7 @@ resource "vkcs_compute_instance" "instance_1" {
     fixed_ip_v4 = "192.168.1.100"
     access_network = true
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -1931,7 +1938,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = vkcs_networking_network.base.id
     fixed_ip_v4 = "192.168.199.134"
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -1951,7 +1958,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = vkcs_networking_network.base.id
     fixed_ip_v4 = "192.168.199.135"
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -1971,7 +1978,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -1994,7 +2001,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -2017,7 +2024,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -2037,7 +2044,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -2060,7 +2067,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -2074,7 +2081,7 @@ resource "vkcs_compute_instance" "instance_1" {
   availability_zone = "{{.AvailabilityZone}}"
 
   network_mode = "none"
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -2086,10 +2093,12 @@ const testAccComputeInstanceNetworkNameToID = `
 {{.BaseSecurityGroup}}
 
 resource "vkcs_networking_network" "network_acc_test" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "network_{{.TestName}}_{{.CurrentTime}}"
 }
 
 resource "vkcs_networking_subnet" "subnet_acc_test" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "subnet_acc_test"
   network_id = vkcs_networking_network.network_acc_test.id
   cidr = "192.168.1.0/24"
@@ -2111,7 +2120,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     name = vkcs_networking_network.network_acc_test.name
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -2123,10 +2132,12 @@ const testAccComputeInstanceCrazyNICs = `
 {{.BaseSecurityGroup}}
 
 resource "vkcs_networking_network" "network_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "network_1"
 }
 
 resource "vkcs_networking_subnet" "subnet_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "subnet_1"
   network_id = vkcs_networking_network.network_1.id
   cidr = "192.168.1.0/24"
@@ -2135,10 +2146,12 @@ resource "vkcs_networking_subnet" "subnet_1" {
 }
 
 resource "vkcs_networking_network" "network_2" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "network_2"
 }
 
 resource "vkcs_networking_subnet" "subnet_2" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "subnet_2"
   network_id = vkcs_networking_network.network_2.id
   cidr = "192.168.2.0/24"
@@ -2147,6 +2160,7 @@ resource "vkcs_networking_subnet" "subnet_2" {
 }
 
 resource "vkcs_networking_port" "port_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "port_1"
   network_id = vkcs_networking_network.network_1.id
   admin_state_up = "true"
@@ -2158,6 +2172,7 @@ resource "vkcs_networking_port" "port_1" {
 }
 
 resource "vkcs_networking_port" "port_2" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "port_2"
   network_id = vkcs_networking_network.network_2.id
   admin_state_up = "true"
@@ -2169,6 +2184,7 @@ resource "vkcs_networking_port" "port_2" {
 }
 
 resource "vkcs_networking_port" "port_3" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "port_3"
   network_id = vkcs_networking_network.network_1.id
   admin_state_up = "true"
@@ -2180,6 +2196,7 @@ resource "vkcs_networking_port" "port_3" {
 }
 
 resource "vkcs_networking_port" "port_4" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "port_4"
   network_id = vkcs_networking_network.network_2.id
   admin_state_up = "true"
@@ -2243,7 +2260,7 @@ resource "vkcs_compute_instance" "instance_1" {
     port = vkcs_networking_port.port_4.id
   }
 
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -2264,7 +2281,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid             = data.vkcs_images_image.base.id
     destination_type = "volume"
     volume_size      = 10
-    volume_type      = "ceph-ssd"
+    volume_type      = "{{.VolumeType}}"
     delete_on_termination = true
   }
 
@@ -2300,7 +2317,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid             = data.vkcs_images_image.base.id
     destination_type = "volume"
     volume_size      = 10
-    volume_type      = "ceph-ssd"
+    volume_type      = "{{.VolumeType}}"
     delete_on_termination = true
   }
 
@@ -2335,7 +2352,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid             = data.vkcs_images_image.base.id
     destination_type = "volume"
     volume_size      = 10
-    volume_type      = "ceph-ssd"
+    volume_type      = "{{.VolumeType}}"
     delete_on_termination = true
   }
 
@@ -2370,7 +2387,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = vkcs_networking_network.base.id
   }
   tags = ["tag1", "tag2", "tag3"]
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -2389,7 +2406,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = vkcs_networking_network.base.id
   }
   tags = ["tag1", "tag2", "tag3", "tag4"]
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -2409,7 +2426,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = vkcs_networking_network.base.id
   }
   tags = ["tag2", "tag3"]
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -2428,7 +2445,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -2453,7 +2470,7 @@ resource "vkcs_cloud_monitoring" "basic" {
 
 resource "vkcs_compute_instance" "instance_1" {
   name               = "instance-with-monitoring"
-  image_id           = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id          = data.vkcs_compute_flavor.base.id
   availability_zone  = "{{.AvailabilityZone}}"
   security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
@@ -2539,7 +2556,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid                  = data.vkcs_images_image.windows.id
     destination_type      = "volume"
     volume_size           = 50
-    volume_type           = "ceph-ssd"
+    volume_type           = "{{.VolumeType}}"
     delete_on_termination = true
   }
 
@@ -2569,7 +2586,7 @@ data "vkcs_images_image" "base" {
 
 resource "vkcs_compute_instance" "instance_1" {
   name               = "instance-with-admin-password"
-  image_id           = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id          = data.vkcs_compute_flavor.base.id
   availability_zone  = "{{.AvailabilityZone}}"
   security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]

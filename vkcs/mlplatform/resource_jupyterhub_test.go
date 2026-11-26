@@ -61,16 +61,16 @@ resource "vkcs_mlplatform_jupyterhub" "jupyterhub" {
     availability_zone = "{{.AvailabilityZone}}"
     boot_volume = {
         size = 50
-        volume_type = "ceph-ssd"
+        volume_type = "{{.VolumeType}}"
     }
     data_volumes = [
         {
             size = 60
-            volume_type = "ceph-ssd"
+            volume_type = "{{.VolumeType}}"
         },
         {
             size = 70
-            volume_type = "ceph-ssd"
+            volume_type = "{{.VolumeType}}"
         }
     ]
     networks = [
@@ -93,16 +93,16 @@ resource "vkcs_mlplatform_jupyterhub" "jupyterhub" {
     availability_zone = "{{.AvailabilityZone}}"
     boot_volume = {
         size = 51
-        volume_type = "ceph-ssd"
+        volume_type = "{{.VolumeType}}"
     }
     data_volumes = [
         {
             size = 61
-            volume_type = "ceph-ssd"
+            volume_type = "{{.VolumeType}}"
         },
         {
             size = 71
-            volume_type = "ceph-ssd"
+            volume_type = "{{.VolumeType}}"
         }
     ]
     networks = [

@@ -203,10 +203,10 @@ resource "vkcs_db_instance" "basic" {
   name             = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 8
-  volume_type = "{{.VolumeType}}"
+  volume_type = "{{.DbVolumeType}}"
 
   datastore {
-    version = "13"
+    version = "16"
     type    = "postgresql"
   }
 
@@ -232,10 +232,10 @@ resource "vkcs_db_instance" "basic" {
   name             = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 9
-  volume_type = "{{.VolumeType}}"
+  volume_type = "{{.DbVolumeType}}"
 
   datastore {
-    version = "13"
+    version = "16"
     type    = "postgresql"
   }
 
@@ -263,10 +263,10 @@ resource "vkcs_db_instance" "basic" {
   name = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 10
-  volume_type = "{{.VolumeType}}"
+  volume_type = "{{.DbVolumeType}}"
 
   datastore {
-    version = "13"
+    version = "16"
     type    = "postgresql"
   }
 
@@ -286,10 +286,10 @@ resource "vkcs_db_instance" "basic" {
   name             = "basic_wal"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 8
-  volume_type = "{{.VolumeType}}"
+  volume_type = "{{.DbVolumeType}}"
 
   datastore {
-    version = "13"
+    version = "16"
     type    = "postgresql"
   }
 
@@ -306,7 +306,7 @@ resource "vkcs_db_instance" "basic" {
 
   wal_volume {
 	  size = 8
-	  volume_type = "{{.VolumeType}}"
+	  volume_type = "{{.DbVolumeType}}"
   }
 
   wal_disk_autoexpand {

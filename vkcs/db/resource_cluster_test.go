@@ -217,7 +217,7 @@ const testAccDatabaseClusterBasic = `
 resource "vkcs_db_config_group" "basic" {
   name = "basic"
   datastore {
-    version = "13"
+    version = "16"
     type    = "postgresql"
   }
   values = {
@@ -229,10 +229,10 @@ resource "vkcs_db_cluster" "basic" {
   name         = "basic"
   flavor_id    = data.vkcs_compute_flavor.base.id
   volume_size  = 8
-  volume_type  = "{{.VolumeType}}"
+  volume_type  = "{{.DbVolumeType}}"
   cluster_size = 3
   datastore {
-    version = "13"
+    version = "16"
     type    = "postgresql"
   }
   configuration_id = vkcs_db_config_group.basic.id
@@ -255,7 +255,7 @@ const testAccDatabaseClusterUpdate = `
 resource "vkcs_db_config_group" "basic" {
   name = "basic"
   datastore {
-    version = "13"
+    version = "16"
     type    = "postgresql"
   }
   values = {
@@ -268,10 +268,10 @@ resource "vkcs_db_cluster" "basic" {
   flavor_id                = data.vkcs_compute_flavor.base.id
   cloud_monitoring_enabled = true
   volume_size              = 9
-  volume_type              = "{{.VolumeType}}"
+  volume_type              = "{{.DbVolumeType}}"
   cluster_size             = 3
   datastore {
-    version = "13"
+    version = "16"
     type    = "postgresql"
   }
   configuration_id = vkcs_db_config_group.basic.id
@@ -298,10 +298,10 @@ const testAccDatabaseClusterWal = `
    name      = "basic"
    flavor_id = data.vkcs_compute_flavor.base.id
    volume_size      = 8
-   volume_type = "{{.VolumeType}}"
+   volume_type = "{{.DbVolumeType}}"
    cluster_size = 3
    datastore {
-	version = "13"
+	version = "16"
 	type    = "postgresql"
   }
 
@@ -312,7 +312,7 @@ const testAccDatabaseClusterWal = `
    availability_zone = "{{.AvailabilityZone}}"
    wal_volume {
 	size = 8
-	volume_type = "{{.VolumeType}}"
+	volume_type = "{{.DbVolumeType}}"
    }
 
    wal_disk_autoexpand {
@@ -332,10 +332,10 @@ const testAccDatabaseClusterWalUpdateAutoexpand = `
    name      = "basic"
    flavor_id = data.vkcs_compute_flavor.base.id
    volume_size      = 8
-   volume_type = "{{.VolumeType}}"
+   volume_type = "{{.DbVolumeType}}"
    cluster_size = 3
    datastore {
-	version = "13"
+	version = "16"
 	type    = "postgresql"
   }
 
@@ -346,7 +346,7 @@ const testAccDatabaseClusterWalUpdateAutoexpand = `
    availability_zone = "{{.AvailabilityZone}}"
    wal_volume {
 	size = 8
-	volume_type = "{{.VolumeType}}"
+	volume_type = "{{.DbVolumeType}}"
    }
 
    wal_disk_autoexpand {
@@ -366,17 +366,17 @@ const testAccDatabaseClusterShrinkInitial = `
    name      = "basic"
    flavor_id = data.vkcs_compute_flavor.base.id
    volume_size      = 8
-   volume_type = "ceph-ssd"
+   volume_type = "{{.DbVolumeType}}"
    cluster_size = 4
    datastore {
-	version = "13"
+	version = "16"
 	type    = "postgresql"
   }
    network {
      uuid = vkcs_networking_network.base.id
    }
 	
-   availability_zone = "MS1"
+   availability_zone = "{{.AvailabilityZone}}"
    depends_on = [vkcs_networking_router_interface.base]
  }
 `
@@ -389,17 +389,17 @@ var testAccDatabaseClusterShrinkUpdated = `
    name      = "basic"
    flavor_id = data.vkcs_compute_flavor.base.id
    volume_size      = 8
-   volume_type = "ceph-ssd"
+   volume_type = "{{.DbVolumeType}}"
    cluster_size = 3
    datastore {
-	version = "13"
+	version = "16"
 	type    = "postgresql"
   }
    network {
      uuid = vkcs_networking_network.base.id
    }
 	
-   availability_zone = "MS1"
+   availability_zone = "{{.AvailabilityZone}}"
    depends_on = [vkcs_networking_router_interface.base]
  }
 `

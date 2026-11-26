@@ -173,16 +173,19 @@ const testAccNetworkingPortSecGroupAssociatePreTest = `
 
 resource "vkcs_networking_secgroup" "default_1" {
   name = "default_1"
+  sdn = data.vkcs_networking_network.extnet.sdn
 }
 
 resource "vkcs_networking_secgroup" "default_2" {
   name = "default_2"
+  sdn = data.vkcs_networking_network.extnet.sdn
 }
 
 resource "vkcs_networking_port" "hidden_port_1" {
   name = "hidden_port"
   admin_state_up = true
   network_id = vkcs_networking_network.base.id
+  sdn = data.vkcs_networking_network.extnet.sdn
   security_group_ids = [vkcs_networking_secgroup.default_1.id, vkcs_networking_secgroup.default_2.id]
 }
 `
@@ -192,20 +195,24 @@ const testAccNetworkingPortSecGroupAssociate = `
 
 resource "vkcs_networking_secgroup" "secgroup_1" {
   name = "secgroup_1"
+  sdn = data.vkcs_networking_network.extnet.sdn
   description = "terraform security group acceptance test"
 }
 
 resource "vkcs_networking_secgroup" "secgroup_2" {
   name = "secgroup_2"
+  sdn = data.vkcs_networking_network.extnet.sdn
   description = "terraform security group acceptance test"
 }
 
 data "vkcs_networking_secgroup" "default_1" {
   name = "default_1"
+  sdn = data.vkcs_networking_network.extnet.sdn
 }
 
 data "vkcs_networking_secgroup" "default_2" {
   name = "default_2"
+  sdn = data.vkcs_networking_network.extnet.sdn
 }
 
 data "vkcs_networking_port" "hidden_port_1" {
