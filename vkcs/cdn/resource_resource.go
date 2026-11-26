@@ -296,11 +296,17 @@ func (r *resourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 
 		plan.Options.GzipOn = types.BoolValue(gzipCompression.Enabled.ValueBool())
 	}
-	if plan.Options.Equal(originalOptions) {
-		return
+	// Write only the plan attributes modified above. Setting the whole model
+	// would turn unrelated optional+computed attributes into unknown values.
+	if !plan.Options.StaticHeaders.Equal(originalOptions.StaticHeaders) {
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("options").AtName("static_headers"), plan.Options.StaticHeaders)...)
 	}
-
-	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+	if !plan.Options.StaticResponseHeaders.Equal(originalOptions.StaticResponseHeaders) {
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("options").AtName("static_response_headers"), plan.Options.StaticResponseHeaders)...)
+	}
+	if !plan.Options.GzipOn.Equal(originalOptions.GzipOn) {
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("options").AtName("gzip_on"), plan.Options.GzipOn)...)
+	}
 }
 
 func (r *resourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
