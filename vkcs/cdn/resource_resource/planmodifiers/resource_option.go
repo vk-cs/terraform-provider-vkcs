@@ -12,15 +12,15 @@ import (
 var _ planmodifier.Object = resourceOptionPlanModifier{}
 
 func ResourceOption() planmodifier.Object {
-	return resourceOptionPlanModifier{}
+	return resourceOptionWithStatePlanModifier{}
 }
 
-// ResourceOptionWithState preserves prior state when an omitted optional+computed
-// object is marked unknown by the framework. This is needed for nested list
-// attributes, which can otherwise cause a non-empty plan after apply (framework
-// issue #898). The resource option behavior is then applied to known plans.
+// ResourceOptionWithState preserves prior state for omitted optional+computed
+// objects and nested attributes marked unknown by the framework. This prevents
+// spurious plans for nested collections (framework issue #898) while retaining
+// the normal resource option behavior.
 func ResourceOptionWithState() planmodifier.Object {
-	return resourceOptionWithStatePlanModifier{}
+	return ResourceOption()
 }
 
 type resourceOptionWithStatePlanModifier struct{}
@@ -37,6 +37,40 @@ func (m resourceOptionWithStatePlanModifier) PlanModifyObject(ctx context.Contex
 	if req.ConfigValue.IsNull() && req.PlanValue.IsUnknown() {
 		resp.PlanValue = req.StateValue
 		return
+	}
+	if req.ConfigValue.IsUnknown() || req.PlanValue.IsNull() || req.PlanValue.IsUnknown() || req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+		resourceOptionPlanModifier{}.PlanModifyObject(ctx, req, resp)
+		return
+	}
+
+	planAttributes := req.PlanValue.Attributes()
+	configurationAttributes := req.ConfigValue.Attributes()
+	stateAttributes := req.StateValue.Attributes()
+	changed := false
+
+	for name, planValue := range planAttributes {
+		if name == "enabled" || !planValue.IsUnknown() {
+			continue
+		}
+
+		configurationValue, ok := configurationAttributes[name]
+		if !ok || !configurationValue.IsNull() {
+			continue
+		}
+
+		if stateValue, ok := stateAttributes[name]; ok {
+			planAttributes[name] = stateValue
+			changed = true
+		}
+	}
+
+	if changed {
+		planValue, diags := types.ObjectValue(req.PlanValue.AttributeTypes(ctx), planAttributes)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		req.PlanValue = planValue
 	}
 
 	resourceOptionPlanModifier{}.PlanModifyObject(ctx, req, resp)
