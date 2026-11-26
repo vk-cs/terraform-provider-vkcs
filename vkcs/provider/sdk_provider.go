@@ -260,7 +260,6 @@ func SDKProviderBase() *sdkschema.Provider {
 			"vkcs_lb_listener":                        lb.ResourceListener(),
 			"vkcs_lb_loadbalancer":                    lb.ResourceLoadBalancer(),
 			"vkcs_lb_member":                          lb.ResourceMember(),
-			"vkcs_lb_members":                         lb.ResourceMembers(),
 			"vkcs_lb_monitor":                         lb.ResourceMonitor(),
 			"vkcs_lb_pool":                            lb.ResourcePool(),
 			"vkcs_vpnaas_endpoint_group":              vpnaas.ResourceEndpointGroup(),

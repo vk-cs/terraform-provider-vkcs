@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util"
 
 	"github.com/gophercloud/gophercloud"
@@ -586,56 +585,4 @@ func flattenLBPoolPersistence(p pools.SessionPersistence) []map[string]interface
 			"cookie_name": p.CookieName,
 		},
 	}
-}
-
-func FlattenLBMembers(members []pools.Member) []map[string]interface{} {
-	m := make([]map[string]interface{}, len(members))
-
-	for i, member := range members {
-		m[i] = map[string]interface{}{
-			"name":           member.Name,
-			"weight":         member.Weight,
-			"admin_state_up": member.AdminStateUp,
-			"subnet_id":      member.SubnetID,
-			"address":        member.Address,
-			"protocol_port":  member.ProtocolPort,
-			"id":             member.ID,
-			"backup":         member.Backup,
-		}
-	}
-
-	return m
-}
-
-func expandLBMembers(members *schema.Set, lbClient *gophercloud.ServiceClient) []pools.BatchUpdateMemberOpts {
-	var m []pools.BatchUpdateMemberOpts
-
-	if members != nil {
-		for _, raw := range members.List() {
-			rawMap := raw.(map[string]interface{})
-			name := rawMap["name"].(string)
-			subnetID := rawMap["subnet_id"].(string)
-			weight := rawMap["weight"].(int)
-			adminStateUp := rawMap["admin_state_up"].(bool)
-
-			member := pools.BatchUpdateMemberOpts{
-				Address:      rawMap["address"].(string),
-				ProtocolPort: rawMap["protocol_port"].(int),
-				Name:         &name,
-				SubnetID:     &subnetID,
-				Weight:       &weight,
-				AdminStateUp: &adminStateUp,
-			}
-
-			// backup requires octavia minor version 2.1. Only set when specified
-			if val, ok := rawMap["backup"]; ok {
-				backup := val.(bool)
-				member.Backup = &backup
-			}
-
-			m = append(m, member)
-		}
-	}
-
-	return m
 }

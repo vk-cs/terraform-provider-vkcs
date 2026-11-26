@@ -4,68 +4,36 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/acctest"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/clients"
-	"github.com/vk-cs/terraform-provider-vkcs/vkcs/lb"
-
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/util/errutil"
 )
 
-func testAccCheckLBMembersComputeHash(members *[]pools.Member, weight int, address string, idx *int) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		membersResource := lb.ResourceMembers().Schema["member"].Elem.(*schema.Resource)
-		f := schema.HashResource(membersResource)
-
-		for _, m := range lb.FlattenLBMembers(*members) {
-			if m["address"] == address && m["weight"] == weight {
-				*idx = f(m)
-				break
-			}
-		}
-
-		return nil
-	}
-}
-
-// func testCheckResourceAttrWithIndexesAddr(name, format string, idx *int, value string) resource.TestCheckFunc {
-// 	return func(s *terraform.State) error {
-// 		return resource.TestCheckResourceAttr(name, fmt.Sprintf(format, *idx), value)(s)
-// 	}
-// }
-
-// func testCheckResourceAttrSetWithIndexesAddr(name, format string, idx *int) resource.TestCheckFunc {
-// 	return func(s *terraform.State) error {
-// 		return resource.TestCheckResourceAttrSet(name, fmt.Sprintf(format, *idx))(s)
-// 	}
-// }
-
 func TestAccLBMembers_basic(t *testing.T) {
 	var members []pools.Member
-	var idx1 int
-	var idx2 int
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: acctest.AccTestProviders,
-		CheckDestroy:      testAccCheckLBMembersDestroy,
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckLBMembersDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: TestAccLbMembersConfigBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBMembersExists("vkcs_lb_members.members_1", &members),
 					resource.TestCheckResourceAttr("vkcs_lb_members.members_1", "member.#", "2"),
-					testAccCheckLBMembersComputeHash(&members, 0, "192.168.199.110", &idx1),
-					testAccCheckLBMembersComputeHash(&members, 1, "192.168.199.111", &idx2),
-					// checks for TypeSet are currently not supported by SDK2
-					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx1, "0"),
-					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx2, "1"),
-					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.backup", &idx1, "false"),
-					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.backup", &idx2, "true"),
-					// testCheckResourceAttrSetWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx1),
-					// testCheckResourceAttrSetWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx2),
+					resource.TestCheckTypeSetElemNestedAttrs("vkcs_lb_members.members_1", "member.*", map[string]string{
+						"address": "192.168.199.110",
+						"weight":  "0",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("vkcs_lb_members.members_1", "member.*", map[string]string{
+						"address": "192.168.199.111",
+						"weight":  "1",
+						"backup":  "true",
+					}),
 				),
 			},
 			{
@@ -73,15 +41,16 @@ func TestAccLBMembers_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBMembersExists("vkcs_lb_members.members_1", &members),
 					resource.TestCheckResourceAttr("vkcs_lb_members.members_1", "member.#", "2"),
-					testAccCheckLBMembersComputeHash(&members, 10, "192.168.199.110", &idx1),
-					testAccCheckLBMembersComputeHash(&members, 15, "192.168.199.111", &idx2),
-					// checks for TypeSet are currently not supported by SDK2
-					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx1, "10"),
-					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx2, "15"),
-					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.backup", &idx1, "true"),
-					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.backup", &idx2, "false"),
-					// testCheckResourceAttrSetWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx1),
-					// testCheckResourceAttrSetWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx2),
+					resource.TestCheckTypeSetElemNestedAttrs("vkcs_lb_members.members_1", "member.*", map[string]string{
+						"address": "192.168.199.110",
+						"weight":  "10",
+						"backup":  "true",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("vkcs_lb_members.members_1", "member.*", map[string]string{
+						"address": "192.168.199.111",
+						"weight":  "15",
+						"backup":  "false",
+					}),
 				),
 			},
 			{
@@ -89,13 +58,14 @@ func TestAccLBMembers_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBMembersExists("vkcs_lb_members.members_1", &members),
 					resource.TestCheckResourceAttr("vkcs_lb_members.members_1", "member.#", "2"),
-					testAccCheckLBMembersComputeHash(&members, 10, "192.168.199.110", &idx1),
-					testAccCheckLBMembersComputeHash(&members, 15, "192.168.199.111", &idx2),
-					// checks for TypeSet are currently not supported by SDK2
-					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx1, "10"),
-					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.weight", &idx2, "15"),
-					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx1, ""),
-					// testCheckResourceAttrWithIndexesAddr("vkcs_lb_members.members_1", "member.%d.subnet_id", &idx2, ""),
+					resource.TestCheckTypeSetElemNestedAttrs("vkcs_lb_members.members_1", "member.*", map[string]string{
+						"address": "192.168.199.110",
+						"weight":  "10",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("vkcs_lb_members.members_1", "member.*", map[string]string{
+						"address": "192.168.199.111",
+						"weight":  "15",
+					}),
 				),
 			},
 			{
@@ -109,9 +79,86 @@ func TestAccLBMembers_basic(t *testing.T) {
 	})
 }
 
+func TestAccLBMembers_replaceInstance(t *testing.T) {
+	var members []pools.Member
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckLBMembersDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccLbMembersConfigInstances, map[string]string{"UserData": "rev-1"}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLBMembersExists("vkcs_lb_members.members_1", &members),
+					resource.TestCheckResourceAttr("vkcs_lb_members.members_1", "member.#", "2"),
+					resource.TestCheckTypeSetElemNestedAttrs("vkcs_lb_members.members_1", "member.*", map[string]string{
+						"address":       "192.168.199.20",
+						"protocol_port": "8080",
+					}),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccLbMembersConfigInstances, map[string]string{"UserData": "rev-2"}),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("vkcs_compute_instance.instance[0]", plancheck.ResourceActionReplace),
+						plancheck.ExpectResourceAction("vkcs_lb_members.members_1", plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLBMembersExists("vkcs_lb_members.members_1", &members),
+					resource.TestCheckResourceAttr("vkcs_lb_members.members_1", "member.#", "2"),
+					resource.TestCheckTypeSetElemNestedAttrs("vkcs_lb_members.members_1", "member.*", map[string]string{
+						"address":       "192.168.199.20",
+						"protocol_port": "8080",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("vkcs_lb_members.members_1", "member.*", map[string]string{
+						"address":       "192.168.199.21",
+						"protocol_port": "8080",
+					}),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLBMembers_migrateToFramework(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		CheckDestroy: testAccCheckLBMembersDestroy,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"vkcs": {
+						VersionConstraint: "0.19.0",
+						Source:            "vk-cs/vkcs",
+					},
+				},
+				Config: TestAccLbMembersConfigBasic,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_lb_members.members_1", "member.#", "2"),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+				Config:                   TestAccLbMembersConfigBasic,
+				PlanOnly:                 true,
+			},
+		},
+	})
+}
+
+func testAccLBMembersClient() (clients.Config, error) {
+	opts := clients.ConfigOpts{}
+	return opts.LoadAndValidate()
+}
+
 func testAccCheckLBMembersDestroy(s *terraform.State) error {
-	config := acctest.AccTestProvider.Meta().(clients.Config)
-	lbClient, err := config.LoadBalancerV2Client(acctest.OsRegionName)
+	config, err := testAccLBMembersClient()
+	if err != nil {
+		return err
+	}
+	lbClient, err := config.LoadBalancerV2Client(config.GetRegion())
 	if err != nil {
 		return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 	}
@@ -155,8 +202,11 @@ func testAccCheckLBMembersExists(n string, members *[]pools.Member) resource.Tes
 			return fmt.Errorf("No ID is set")
 		}
 
-		config := acctest.AccTestProvider.Meta().(clients.Config)
-		lbClient, err := config.LoadBalancerV2Client(acctest.OsRegionName)
+		config, err := testAccLBMembersClient()
+		if err != nil {
+			return err
+		}
+		lbClient, err := config.LoadBalancerV2Client(config.GetRegion())
 		if err != nil {
 			return fmt.Errorf("Error creating VKCS load balancing client: %s", err)
 		}
@@ -390,6 +440,103 @@ resource "vkcs_lb_members" "members_1" {
     create = "10m"
     update = "10m"
     delete = "10m"
+  }
+}
+`
+
+const testAccLbMembersConfigInstances = `
+data "vkcs_networking_network" "extnet" {
+  name = "{{.ExtNetName}}"
+}
+
+resource "vkcs_networking_network" "base" {
+  name           = "lb-members-net"
+  admin_state_up = true
+  sdn            = data.vkcs_networking_network.extnet.sdn
+}
+
+resource "vkcs_networking_subnet" "base" {
+  name       = "lb-members-subnet"
+  network_id = vkcs_networking_network.base.id
+  cidr       = "192.168.199.0/24"
+  sdn        = data.vkcs_networking_network.extnet.sdn
+}
+
+resource "vkcs_networking_router" "base" {
+  name                = "lb-members-router"
+  admin_state_up      = true
+  external_network_id = data.vkcs_networking_network.extnet.id
+  sdn                 = data.vkcs_networking_network.extnet.sdn
+}
+
+resource "vkcs_networking_router_interface" "base" {
+  router_id = vkcs_networking_router.base.id
+  subnet_id = vkcs_networking_subnet.base.id
+  sdn       = data.vkcs_networking_network.extnet.sdn
+}
+
+{{.BaseImage}}
+{{.BaseFlavor}}
+{{.BaseSecurityGroup}}
+
+resource "vkcs_compute_instance" "instance" {
+  count              = 1
+  depends_on         = [vkcs_networking_router_interface.base]
+  name               = "lb-member-${count.index}"
+  availability_zone  = "{{.AvailabilityZone}}"
+  security_group_ids = [data.vkcs_networking_secgroup.default_secgroup.id]
+  flavor_id          = data.vkcs_compute_flavor.base.id
+  user_data          = count.index == 0 ? "{{.UserData}}" : "static"
+
+  block_device {
+    uuid                  = data.vkcs_images_image.base.id
+    source_type           = "image"
+    destination_type      = "volume"
+    volume_type           = "{{.VolumeType}}"
+    volume_size           = 10
+    boot_index            = 0
+    delete_on_termination = true
+  }
+
+  network {
+    uuid        = vkcs_networking_network.base.id
+    fixed_ip_v4 = "192.168.199.2${count.index}"
+  }
+}
+
+resource "vkcs_lb_loadbalancer" "loadbalancer_1" {
+  name          = "loadbalancer_1"
+  vip_subnet_id = vkcs_networking_subnet.base.id
+}
+
+resource "vkcs_lb_listener" "listener_1" {
+  name            = "listener_1"
+  protocol        = "HTTP"
+  protocol_port   = 8080
+  loadbalancer_id = vkcs_lb_loadbalancer.loadbalancer_1.id
+}
+
+resource "vkcs_lb_pool" "pool_1" {
+  name        = "pool_1"
+  protocol    = "HTTP"
+  lb_method   = "ROUND_ROBIN"
+  listener_id = vkcs_lb_listener.listener_1.id
+}
+
+resource "vkcs_lb_members" "members_1" {
+  pool_id = vkcs_lb_pool.pool_1.id
+
+  dynamic "member" {
+    for_each = vkcs_compute_instance.instance
+    content {
+      address       = member.value.access_ip_v4
+      protocol_port = 8080
+    }
+  }
+
+  member {
+    address       = "192.168.199.21"
+    protocol_port = 8080
   }
 }
 `

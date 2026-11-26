@@ -25,6 +25,7 @@ import (
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/keymanager"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kms"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/kubernetes"
+	"github.com/vk-cs/terraform-provider-vkcs/vkcs/lb"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/mlplatform"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/monitoring"
 	"github.com/vk-cs/terraform-provider-vkcs/vkcs/networking"
@@ -386,6 +387,7 @@ func (p *vkcsProvider) Resources(_ context.Context) []func() resource.Resource {
 		kubernetes.NewKubernetesNodeGroupV2Resource,
 		kubernetes.NewSecurityPolicyResource,
 		kubernetes.NewSecurityPolicyV2Resource,
+		lb.NewMembersResource,
 		mlplatform.NewJupyterHubResource,
 		mlplatform.NewMLFlowResource,
 		mlplatform.NewMLFlowDeployResource,
