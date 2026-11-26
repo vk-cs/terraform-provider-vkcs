@@ -271,6 +271,7 @@ func (r *resourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	originalOptions := plan.Options
 
 	var previousOptions *resource_resource.OptionsValue
 	if !req.State.Raw.IsNull() {
@@ -294,6 +295,9 @@ func (r *resourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 		gzipCompression := gzipCompressionObjV.(resource_resource.GzipCompressionValue)
 
 		plan.Options.GzipOn = types.BoolValue(gzipCompression.Enabled.ValueBool())
+	}
+	if plan.Options.Equal(originalOptions) {
+		return
 	}
 
 	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
