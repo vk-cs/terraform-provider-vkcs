@@ -35,6 +35,8 @@ func TestAccCDNResourceResource_full(t *testing.T) {
 	nameSuffix := acctest.GenerateNameSuffix()
 	baseName := "tfacc-resource-base-" + nameSuffix
 	cname := "tfacc-full-" + nameSuffix + ".vk.com"
+	secondaryHostname1 := "tfacc-full-cdn1-" + nameSuffix + ".vk.com"
+	secondaryHostname2 := "tfacc-full-cdn2-" + nameSuffix + ".vk.com"
 
 	ogBaseConfig := acctest.AccTestRenderConfig(testAccCDNResourceResourceOriginGroupBase, map[string]string{"Name": baseName})
 	sslCertificateBaseConfig := acctest.AccTestRenderConfig(testAccCDNResourceResourceSslCertificateBase, map[string]string{"Name": baseName, "Certificate": sslCert, "PrivateKey": sslPrivateKey})
@@ -44,7 +46,14 @@ func TestAccCDNResourceResource_full(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccCDNResourceResourceFull, map[string]string{"Cname": cname, "TestAccCDNResourceResourceOriginGroupBase": ogBaseConfig, "TestAccCDNResourceResourceShieldingPopBase": testAccCDNResourceResourceShieldingPopBase, "TestAccCDNResourceResourceSslCertificateBase": sslCertificateBaseConfig}),
+				Config: acctest.AccTestRenderConfig(testAccCDNResourceResourceFull, map[string]string{
+					"Cname":              cname,
+					"SecondaryHostname1": secondaryHostname1,
+					"SecondaryHostname2": secondaryHostname2,
+					"TestAccCDNResourceResourceOriginGroupBase":    ogBaseConfig,
+					"TestAccCDNResourceResourceShieldingPopBase":   testAccCDNResourceResourceShieldingPopBase,
+					"TestAccCDNResourceResourceSslCertificateBase": sslCertificateBaseConfig,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "cname", cname),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "active", "true"),
@@ -89,7 +98,7 @@ func TestAccCDNResourceResource_full(t *testing.T) {
 					resource.TestCheckTypeSetElemAttr("vkcs_cdn_resource.full", "options.tls_versions.value.*", "TLSv1.1"),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.full", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "origin_protocol", "MATCH"),
-					acctest.TestCheckResourceListAttr("vkcs_cdn_resource.full", "secondary_hostnames", []string{"cdn1.vk.com", "cdn2.vk.com"}),
+					acctest.TestCheckResourceListAttr("vkcs_cdn_resource.full", "secondary_hostnames", []string{secondaryHostname1, secondaryHostname2}),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "ssl_certificate.type", "own"),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.full", "ssl_certificate.id", "vkcs_cdn_ssl_certificate.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "shielding.enabled", "true"),
@@ -531,7 +540,7 @@ resource "vkcs_cdn_resource" "full" {
   }
   origin_group        = vkcs_cdn_origin_group.base.id
   origin_protocol     = "MATCH"
-  secondary_hostnames = ["cdn1.vk.com", "cdn2.vk.com"]
+  secondary_hostnames = ["{{ .SecondaryHostname1 }}", "{{ .SecondaryHostname2 }}"]
   ssl_certificate = {
     type = "own"
     id   = vkcs_cdn_ssl_certificate.base.id

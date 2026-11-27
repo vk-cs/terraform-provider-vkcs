@@ -285,6 +285,133 @@ func TestValidateStaticResponseHeadersAllowsNullAndUnknown(t *testing.T) {
 	}
 }
 
+func TestPreserveUnconfiguredOptionsUsesPriorStateForUnknownOption(t *testing.T) {
+	ctx := context.Background()
+	previous, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
+		GzipCompression: &resources.ResourceOptionsStringListOption{
+			Enabled: false,
+			Value:   []string{"text/html", "application/json"},
+		},
+	})
+	if diags.HasError() {
+		t.Fatalf("creating prior options returned diagnostics: %v", diags)
+	}
+	configured, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
+		AllowedHttpMethods: &resources.ResourceOptionsAllowedHttpMethodsOption{
+			Enabled: true,
+			Value:   []resources.ResourceAllowedHttpMethod{resources.ResourceAllowedHttpMethodGet},
+		},
+	})
+	if diags.HasError() {
+		t.Fatalf("creating configured options returned diagnostics: %v", diags)
+	}
+	plan := configured
+	plan.GzipCompression, diags = resource_resource.NewGzipCompressionValueUnknown().ToObjectValue(ctx)
+	if diags.HasError() {
+		t.Fatalf("creating unknown planned gzip option returned diagnostics: %v", diags)
+	}
+	plan.BrowserCacheSettings, diags = resource_resource.NewBrowserCacheSettingsValueUnknown().ToObjectValue(ctx)
+	if diags.HasError() {
+		t.Fatalf("creating unknown planned browser cache option returned diagnostics: %v", diags)
+	}
+
+	if diags := preserveUnconfiguredOptions(ctx, &plan, configured, previous); diags.HasError() {
+		t.Fatalf("preserveUnconfiguredOptions returned diagnostics: %v", diags)
+	}
+	if !plan.GzipCompression.Equal(previous.GzipCompression) {
+		t.Fatalf("planned gzip option = %s, want prior state %s", plan.GzipCompression, previous.GzipCompression)
+	}
+	if !plan.BrowserCacheSettings.IsNull() {
+		t.Fatalf("planned browser cache option = %s, want the prior null value", plan.BrowserCacheSettings)
+	}
+}
+
+func TestPlanDisabledShieldingUsesZeroPopID(t *testing.T) {
+	ctx := context.Background()
+	configurationObject, diags := types.ObjectValue(resource_resource.ShieldingValue{}.AttributeTypes(ctx), map[string]attr.Value{
+		"enabled": types.BoolValue(false),
+		"pop_id":  types.Int64Unknown(),
+	})
+	if diags.HasError() {
+		t.Fatalf("creating disabled shielding config returned diagnostics: %v", diags)
+	}
+	configurationValue, diags := resource_resource.ShieldingType{}.ValueFromObject(ctx, configurationObject)
+	if diags.HasError() {
+		t.Fatalf("decoding disabled shielding config returned diagnostics: %v", diags)
+	}
+	configuration := configurationValue.(resource_resource.ShieldingValue)
+	plan := configuration
+
+	if !planDisabledShieldingPopID(&plan, configuration) {
+		t.Fatal("disabled shielding plan was not normalized")
+	}
+	if plan.PopId.ValueInt64() != 0 {
+		t.Fatalf("planned shielding pop_id = %d, want 0", plan.PopId.ValueInt64())
+	}
+}
+
+func TestPreserveEdgeCacheDefaultDoesNotRestoreConflictingPriorValue(t *testing.T) {
+	ctx := context.Background()
+	attributeTypes := resource_resource.EdgeCacheSettingsValue{}.AttributeTypes(ctx)
+	config := types.ObjectValueMust(attributeTypes, map[string]attr.Value{
+		"custom_values": types.MapNull(types.StringType),
+		"default":       types.StringValue("10m"),
+		"enabled":       types.BoolValue(true),
+		"value":         types.StringNull(),
+	})
+	plan := types.ObjectValueMust(attributeTypes, map[string]attr.Value{
+		"custom_values": types.MapUnknown(types.StringType),
+		"default":       types.StringValue("10m"),
+		"enabled":       types.BoolValue(true),
+		"value":         types.StringUnknown(),
+	})
+	previous := types.ObjectValueMust(attributeTypes, map[string]attr.Value{
+		"custom_values": types.MapNull(types.StringType),
+		"default":       types.StringNull(),
+		"enabled":       types.BoolValue(true),
+		"value":         types.StringValue("10m"),
+	})
+
+	got, _, diags := preserveEdgeCacheSettingsValue(ctx, config, plan, previous)
+	if diags.HasError() {
+		t.Fatalf("preserveEdgeCacheSettingsValue returned diagnostics: %v", diags)
+	}
+	if !got.(types.Object).Attributes()["value"].IsUnknown() {
+		t.Fatalf("planned edge cache value = %s, want unknown instead of prior value", got.(types.Object).Attributes()["value"])
+	}
+}
+
+func TestPreserveEdgeCacheValueRetainsEmptyPriorDefault(t *testing.T) {
+	ctx := context.Background()
+	attributeTypes := resource_resource.EdgeCacheSettingsValue{}.AttributeTypes(ctx)
+	config := types.ObjectValueMust(attributeTypes, map[string]attr.Value{
+		"custom_values": types.MapNull(types.StringType),
+		"default":       types.StringNull(),
+		"enabled":       types.BoolValue(true),
+		"value":         types.StringValue("10m"),
+	})
+	plan := types.ObjectValueMust(attributeTypes, map[string]attr.Value{
+		"custom_values": types.MapUnknown(types.StringType),
+		"default":       types.StringUnknown(),
+		"enabled":       types.BoolValue(true),
+		"value":         types.StringValue("10m"),
+	})
+	previous := types.ObjectValueMust(attributeTypes, map[string]attr.Value{
+		"custom_values": types.MapNull(types.StringType),
+		"default":       types.StringValue(""),
+		"enabled":       types.BoolValue(true),
+		"value":         types.StringValue("old-value"),
+	})
+
+	got, _, diags := preserveEdgeCacheSettingsValue(ctx, config, plan, previous)
+	if diags.HasError() {
+		t.Fatalf("preserveEdgeCacheSettingsValue returned diagnostics: %v", diags)
+	}
+	if gotDefault := got.(types.Object).Attributes()["default"].(types.String); gotDefault.IsNull() || gotDefault.ValueString() != "" {
+		t.Fatalf("planned edge cache default = %s, want prior empty value", gotDefault)
+	}
+}
+
 func TestResourceStateUpgradeV0ConvertsTlsVersionsListToSet(t *testing.T) {
 	ctx := context.Background()
 	versionValues, diags := types.ListValueFrom(ctx, types.StringType, []string{"TLSv1.1", "TLSv1.2"})

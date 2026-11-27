@@ -12,15 +12,15 @@ import (
 var _ planmodifier.Object = resourceOptionPlanModifier{}
 
 func ResourceOption() planmodifier.Object {
-	return resourceOptionWithStatePlanModifier{}
+	return resourceOptionPlanModifier{}
 }
 
-// ResourceOptionWithState preserves prior state for omitted optional+computed
-// objects and nested attributes marked unknown by the framework. This prevents
-// spurious plans for nested collections (framework issue #898) while retaining
-// the normal resource option behavior.
+// ResourceOptionWithState preserves the prior value when the entire
+// optional+computed option is omitted. If no prior value exists, an omitted
+// null plan remains unknown so the provider can populate API defaults after
+// create.
 func ResourceOptionWithState() planmodifier.Object {
-	return ResourceOption()
+	return resourceOptionWithStatePlanModifier{}
 }
 
 type resourceOptionWithStatePlanModifier struct{}
@@ -34,45 +34,19 @@ func (m resourceOptionWithStatePlanModifier) MarkdownDescription(ctx context.Con
 }
 
 func (m resourceOptionWithStatePlanModifier) PlanModifyObject(ctx context.Context, req planmodifier.ObjectRequest, resp *planmodifier.ObjectResponse) {
-	if req.ConfigValue.IsNull() && req.PlanValue.IsUnknown() {
-		resp.PlanValue = req.StateValue
-		return
-	}
-	if req.ConfigValue.IsUnknown() || req.PlanValue.IsNull() || req.PlanValue.IsUnknown() || req.StateValue.IsNull() || req.StateValue.IsUnknown() {
-		resourceOptionPlanModifier{}.PlanModifyObject(ctx, req, resp)
-		return
-	}
-
-	planAttributes := req.PlanValue.Attributes()
-	configurationAttributes := req.ConfigValue.Attributes()
-	stateAttributes := req.StateValue.Attributes()
-	changed := false
-
-	for name, planValue := range planAttributes {
-		if name == "enabled" || !planValue.IsUnknown() {
-			continue
-		}
-
-		configurationValue, ok := configurationAttributes[name]
-		if !ok || !configurationValue.IsNull() {
-			continue
-		}
-
-		if stateValue, ok := stateAttributes[name]; ok {
-			planAttributes[name] = stateValue
-			changed = true
-		}
-	}
-
-	if changed {
-		planValue, diags := types.ObjectValue(req.PlanValue.AttributeTypes(ctx), planAttributes)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
+	if req.ConfigValue.IsNull() {
+		if req.StateValue.IsNull() {
+			if req.PlanValue.IsNull() {
+				resp.PlanValue = types.ObjectUnknown(req.PlanValue.AttributeTypes(ctx))
+			}
 			return
 		}
-		req.PlanValue = planValue
-	}
 
+		if req.PlanValue.IsNull() || req.PlanValue.IsUnknown() {
+			resp.PlanValue = req.StateValue
+			return
+		}
+	}
 	resourceOptionPlanModifier{}.PlanModifyObject(ctx, req, resp)
 }
 

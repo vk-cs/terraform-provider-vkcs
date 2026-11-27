@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -151,6 +152,276 @@ func selectConfiguredResponseHeaderOption(
 	}
 }
 
+// preserveUnconfiguredOptions restores prior API values for omitted fields
+// during no-op planning, preventing computed option defaults from producing a
+// perpetual update.
+func preserveUnconfiguredOptions(
+	ctx context.Context,
+	plan *resource_resource.OptionsValue,
+	config resource_resource.OptionsValue,
+	previous resource_resource.OptionsValue,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if plan == nil || config.IsUnknown() {
+		return diags
+	}
+	if config.IsNull() {
+		if plan.IsNull() || plan.IsUnknown() {
+			*plan = previous
+		}
+		return diags
+	}
+	if plan.IsNull() || plan.IsUnknown() || previous.IsNull() || previous.IsUnknown() {
+		return diags
+	}
+
+	configValue, d := config.ToObjectValue(ctx)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+	planValue, d := plan.ToObjectValue(ctx)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+	previousValue, d := previous.ToObjectValue(ctx)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+
+	mergedValue, changed, d := preserveUnconfiguredObjectAttributes(ctx, configValue, planValue, previousValue)
+	diags.Append(d...)
+	if diags.HasError() || !changed {
+		return diags
+	}
+
+	mergedOptions, d := resource_resource.OptionsType{}.ValueFromObject(ctx, mergedValue)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+	*plan = mergedOptions.(resource_resource.OptionsValue)
+	return diags
+}
+
+func preserveUnconfiguredShielding(ctx context.Context, plan *resource_resource.ShieldingValue, config, previous resource_resource.ShieldingValue) diag.Diagnostics {
+	if config.IsNull() && (plan.IsNull() || plan.IsUnknown()) {
+		*plan = previous
+		return nil
+	}
+	if config.IsNull() || config.IsUnknown() || plan.IsNull() || plan.IsUnknown() || previous.IsNull() || previous.IsUnknown() {
+		return nil
+	}
+
+	configObject, diags := config.ToObjectValue(ctx)
+	if diags.HasError() {
+		return diags
+	}
+	planObject, diags := plan.ToObjectValue(ctx)
+	if diags.HasError() {
+		return diags
+	}
+	previousObject, diags := previous.ToObjectValue(ctx)
+	if diags.HasError() {
+		return diags
+	}
+	mergedObject, changed, diags := preserveUnconfiguredObjectAttributes(ctx, configObject, planObject, previousObject)
+	if diags.HasError() || !changed {
+		return diags
+	}
+	mergedValue, diags := resource_resource.ShieldingType{}.ValueFromObject(ctx, mergedObject)
+	if diags.HasError() {
+		return diags
+	}
+	*plan = mergedValue.(resource_resource.ShieldingValue)
+	return diags
+}
+
+func preserveUnconfiguredSslCertificate(ctx context.Context, plan *resource_resource.SslCertificateValue, config, previous resource_resource.SslCertificateValue) diag.Diagnostics {
+	if config.IsNull() && (plan.IsNull() || plan.IsUnknown()) {
+		*plan = previous
+		return nil
+	}
+	if config.IsNull() || config.IsUnknown() || plan.IsNull() || plan.IsUnknown() || previous.IsNull() || previous.IsUnknown() {
+		return nil
+	}
+
+	configObject, diags := config.ToObjectValue(ctx)
+	if diags.HasError() {
+		return diags
+	}
+	planObject, diags := plan.ToObjectValue(ctx)
+	if diags.HasError() {
+		return diags
+	}
+	previousObject, diags := previous.ToObjectValue(ctx)
+	if diags.HasError() {
+		return diags
+	}
+	mergedObject, changed, diags := preserveUnconfiguredObjectAttributes(ctx, configObject, planObject, previousObject)
+	if diags.HasError() {
+		return diags
+	}
+	attributes := mergedObject.Attributes()
+	previousAttributes := previousObject.Attributes()
+	status, statusExists := attributes["status"]
+	previousStatus, previousStatusExists := previousAttributes["status"]
+	if statusExists && previousStatusExists && (status.IsNull() || status.IsUnknown()) && !previousStatus.IsNull() && !previousStatus.IsUnknown() {
+		attributes["status"] = previousStatus
+		changed = true
+	}
+	if !changed {
+		return diags
+	}
+	mergedObject, diags = types.ObjectValue(mergedObject.AttributeTypes(ctx), attributes)
+	if diags.HasError() {
+		return diags
+	}
+	mergedValue, diags := resource_resource.SslCertificateType{}.ValueFromObject(ctx, mergedObject)
+	if diags.HasError() {
+		return diags
+	}
+	*plan = mergedValue.(resource_resource.SslCertificateValue)
+	return diags
+}
+
+func preserveUnconfiguredObjectAttributes(
+	ctx context.Context,
+	config types.Object,
+	plan types.Object,
+	previous types.Object,
+) (types.Object, bool, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	if config.IsNull() || config.IsUnknown() || plan.IsNull() || plan.IsUnknown() || previous.IsNull() || previous.IsUnknown() {
+		return plan, false, diags
+	}
+
+	configAttributes := config.Attributes()
+	planAttributes := plan.Attributes()
+	previousAttributes := previous.Attributes()
+	changed := false
+
+	for name, planValue := range planAttributes {
+		configValue, ok := configAttributes[name]
+		if !ok {
+			continue
+		}
+		previousValue, ok := previousAttributes[name]
+		if !ok {
+			continue
+		}
+
+		preserve := preserveUnconfiguredValue
+		if name == "edge_cache_settings" {
+			preserve = preserveEdgeCacheSettingsValue
+		}
+		preservedValue, valueChanged, d := preserve(ctx, configValue, planValue, previousValue)
+		diags.Append(d...)
+		if diags.HasError() {
+			return plan, false, diags
+		}
+		if valueChanged {
+			planAttributes[name] = preservedValue
+			changed = true
+		}
+	}
+
+	if !changed {
+		return plan, false, diags
+	}
+
+	merged, d := types.ObjectValue(plan.AttributeTypes(ctx), planAttributes)
+	diags.Append(d...)
+	return merged, true, diags
+}
+
+func preserveEdgeCacheSettingsValue(ctx context.Context, config, plan, previous attr.Value) (attr.Value, bool, diag.Diagnostics) {
+	if config.IsNull() && (plan.IsNull() || plan.IsUnknown()) {
+		return previous, true, nil
+	}
+	if config.IsUnknown() || plan.IsNull() || plan.IsUnknown() || previous.IsNull() || previous.IsUnknown() {
+		return plan, false, nil
+	}
+
+	configObject, configIsObject := config.(types.Object)
+	planObject, planIsObject := plan.(types.Object)
+	previousObject, previousIsObject := previous.(types.Object)
+	if !configIsObject || !planIsObject || !previousIsObject {
+		return plan, false, nil
+	}
+
+	configAttributes := configObject.Attributes()
+	planAttributes := planObject.Attributes()
+	previousAttributes := previousObject.Attributes()
+	defaultValue, defaultExists := configAttributes["default"]
+	valueValue, valueExists := configAttributes["value"]
+	defaultConfigured := defaultExists && !defaultValue.IsNull() && !defaultValue.IsUnknown()
+	valueConfigured := valueExists && !valueValue.IsNull() && !valueValue.IsUnknown()
+	changed := false
+
+	for name, planValue := range planAttributes {
+		configValue, ok := configAttributes[name]
+		if !ok {
+			continue
+		}
+		previousValue, ok := previousAttributes[name]
+		if !ok {
+			continue
+		}
+		// Edge cache API input rejects a non-empty `value` alongside a configured
+		// `default` (and vice versa). Do not restore that stale counterpart.
+		if name == "value" && defaultConfigured && edgeCacheStringIsSet(previousValue) {
+			continue
+		}
+		if name == "default" && valueConfigured && edgeCacheStringIsSet(previousValue) {
+			continue
+		}
+		preservedValue, valueChanged, diags := preserveUnconfiguredValue(ctx, configValue, planValue, previousValue)
+		if diags.HasError() {
+			return plan, false, diags
+		}
+		if valueChanged {
+			planAttributes[name] = preservedValue
+			changed = true
+		}
+	}
+
+	if !changed {
+		return plan, false, nil
+	}
+	value, diags := types.ObjectValue(planObject.AttributeTypes(ctx), planAttributes)
+	return value, true, diags
+}
+
+func edgeCacheStringIsSet(value attr.Value) bool {
+	stringValue, ok := value.(types.String)
+	return ok && !stringValue.IsNull() && !stringValue.IsUnknown() && stringValue.ValueString() != ""
+}
+
+func preserveUnconfiguredValue(ctx context.Context, config, plan, previous attr.Value) (attr.Value, bool, diag.Diagnostics) {
+	if config.IsNull() && (plan.IsNull() || plan.IsUnknown()) {
+		return previous, true, nil
+	}
+	if config.IsUnknown() || plan.IsNull() || plan.IsUnknown() || previous.IsNull() || previous.IsUnknown() {
+		return plan, false, nil
+	}
+
+	configObject, configIsObject := config.(types.Object)
+	planObject, planIsObject := plan.(types.Object)
+	previousObject, previousIsObject := previous.(types.Object)
+	if !configIsObject || !planIsObject || !previousIsObject {
+		return plan, false, nil
+	}
+
+	merged, changed, diags := preserveUnconfiguredObjectAttributes(ctx, configObject, planObject, previousObject)
+	if diags.HasError() || !changed {
+		return plan, changed, diags
+	}
+	return merged, true, diags
+}
+
 func isKnownOption(value types.Object) bool {
 	return !value.IsNull() && !value.IsUnknown()
 }
@@ -274,6 +545,7 @@ func (r *resourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 	originalOptions := plan.Options
 
 	var previousOptions *resource_resource.OptionsValue
+	var previousState *resource_resource.ResourceModel
 	if !req.State.Raw.IsNull() {
 		var state resource_resource.ResourceModel
 		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -281,6 +553,40 @@ func (r *resourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 			return
 		}
 		previousOptions = &state.Options
+		previousState = &state
+	}
+
+	if previousState != nil {
+		configuredChanges, diags := hasConfiguredResourceChanges(ctx, &config, previousState)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		// Reuse API-computed state only for a no-op plan. On a real update,
+		// fields such as resource status and SSL status may change after apply.
+		if !configuredChanges {
+			resp.Diagnostics.Append(preserveUnconfiguredRootValues(ctx, resp, plan, &config, previousState)...)
+			previousPlanShielding := plan.Shielding
+			resp.Diagnostics.Append(preserveUnconfiguredShielding(ctx, &plan.Shielding, config.Shielding, previousState.Shielding)...)
+			if !plan.Shielding.Equal(previousPlanShielding) {
+				resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("shielding"), plan.Shielding)...)
+			}
+			previousPlanSslCertificate := plan.SslCertificate
+			resp.Diagnostics.Append(preserveUnconfiguredSslCertificate(ctx, &plan.SslCertificate, config.SslCertificate, previousState.SslCertificate)...)
+			if !plan.SslCertificate.Equal(previousPlanSslCertificate) {
+				resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("ssl_certificate"), plan.SslCertificate)...)
+			}
+			resp.Diagnostics.Append(preserveUnconfiguredOptions(ctx, &plan.Options, config.Options, previousState.Options)...)
+		}
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if planDisabledShieldingPopID(&plan.Shielding, config.Shielding) {
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("shielding"), plan.Shielding)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	selectConfiguredResponseHeaderOption(ctx, &plan.Options, config.Options, previousOptions)
@@ -296,17 +602,179 @@ func (r *resourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 
 		plan.Options.GzipOn = types.BoolValue(gzipCompression.Enabled.ValueBool())
 	}
-	// Write only the plan attributes modified above. Setting the whole model
-	// would turn unrelated optional+computed attributes into unknown values.
-	if !plan.Options.StaticHeaders.Equal(originalOptions.StaticHeaders) {
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("options").AtName("static_headers"), plan.Options.StaticHeaders)...)
+	if !plan.Options.Equal(originalOptions) {
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("options"), plan.Options)...)
 	}
-	if !plan.Options.StaticResponseHeaders.Equal(originalOptions.StaticResponseHeaders) {
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("options").AtName("static_response_headers"), plan.Options.StaticResponseHeaders)...)
+}
+
+func hasConfiguredResourceChanges(ctx context.Context, config, previous *resource_resource.ResourceModel) (bool, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	if config == nil || previous == nil {
+		return false, diags
 	}
-	if !plan.Options.GzipOn.Equal(originalOptions.GzipOn) {
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("options").AtName("gzip_on"), plan.Options.GzipOn)...)
+
+	for _, changed := range map[string]bool{
+		"cname":               configuredValueChanged(config.Cname, previous.Cname),
+		"origin_group":        configuredValueChanged(config.OriginGroup, previous.OriginGroup),
+		"active":              configuredValueChanged(config.Active, previous.Active),
+		"origin_protocol":     configuredValueChanged(config.OriginProtocol, previous.OriginProtocol),
+		"region":              configuredValueChanged(config.Region, previous.Region),
+		"secondary_hostnames": configuredValueChanged(config.SecondaryHostnames, previous.SecondaryHostnames),
+	} {
+		if changed {
+			return true, diags
+		}
 	}
+
+	if !config.Options.IsNull() && !config.Options.IsUnknown() {
+		configOptions, d := config.Options.ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return false, diags
+		}
+		previousOptions, d := previous.Options.ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return false, diags
+		}
+		for name, configValue := range configOptions.Attributes() {
+			previousValue, ok := previousOptions.Attributes()[name]
+			if ok && configuredValueChanged(configValue, previousValue) {
+				return true, diags
+			}
+		}
+	}
+
+	if !config.Shielding.IsNull() && !config.Shielding.IsUnknown() {
+		configShielding, d := config.Shielding.ToObjectValue(ctx)
+		diags.Append(d...)
+		previousShielding, d := previous.Shielding.ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return false, diags
+		}
+		if configuredValueChanged(configShielding, previousShielding) {
+			return true, diags
+		}
+	}
+
+	if !config.SslCertificate.IsNull() && !config.SslCertificate.IsUnknown() {
+		configSslCertificate, d := config.SslCertificate.ToObjectValue(ctx)
+		diags.Append(d...)
+		previousSslCertificate, d := previous.SslCertificate.ToObjectValue(ctx)
+		diags.Append(d...)
+		if diags.HasError() {
+			return false, diags
+		}
+		if configuredValueChanged(configSslCertificate, previousSslCertificate) {
+			return true, diags
+		}
+	}
+
+	return false, diags
+}
+
+func configuredValueChanged(config, previous attr.Value) bool {
+	if config.IsNull() || config.IsUnknown() {
+		return false
+	}
+	if previous.IsNull() || previous.IsUnknown() {
+		return true
+	}
+
+	configObject, configIsObject := config.(types.Object)
+	previousObject, previousIsObject := previous.(types.Object)
+	if !configIsObject || !previousIsObject {
+		return !config.Equal(previous)
+	}
+
+	configAttributes := configObject.Attributes()
+	previousAttributes := previousObject.Attributes()
+	for name, configValue := range configAttributes {
+		previousValue, ok := previousAttributes[name]
+		if !ok || configuredValueChanged(configValue, previousValue) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func planDisabledShieldingPopID(plan *resource_resource.ShieldingValue, config resource_resource.ShieldingValue) bool {
+	if plan == nil || config.IsNull() || config.IsUnknown() || config.Enabled.IsNull() || config.Enabled.IsUnknown() || config.Enabled.ValueBool() {
+		return false
+	}
+	if plan.IsNull() || plan.IsUnknown() {
+		*plan = config
+	}
+	plan.Enabled = types.BoolValue(false)
+	plan.PopId = types.Int64Value(0)
+	return true
+}
+
+func preserveUnconfiguredRootValues(
+	ctx context.Context,
+	resp *resource.ModifyPlanResponse,
+	plan, config, previous *resource_resource.ResourceModel,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if plan == nil || config == nil || previous == nil {
+		return diags
+	}
+
+	if preserveUnconfiguredRootValue(&plan.Active, config.Active, previous.Active) {
+		diags.Append(resp.Plan.SetAttribute(ctx, path.Root("active"), plan.Active)...)
+	}
+	if preserveUnknownRootValue(&plan.Id, previous.Id) {
+		diags.Append(resp.Plan.SetAttribute(ctx, path.Root("id"), plan.Id)...)
+	}
+	if preserveUnconfiguredRootValue(&plan.OriginProtocol, config.OriginProtocol, previous.OriginProtocol) {
+		diags.Append(resp.Plan.SetAttribute(ctx, path.Root("origin_protocol"), plan.OriginProtocol)...)
+	}
+	if preserveUnknownRootValue(&plan.PresetApplied, previous.PresetApplied) {
+		diags.Append(resp.Plan.SetAttribute(ctx, path.Root("preset_applied"), plan.PresetApplied)...)
+	}
+	if preserveUnconfiguredRootValue(&plan.Region, config.Region, previous.Region) {
+		diags.Append(resp.Plan.SetAttribute(ctx, path.Root("region"), plan.Region)...)
+	}
+	if preserveUnconfiguredRootValue(&plan.SecondaryHostnames, config.SecondaryHostnames, previous.SecondaryHostnames) {
+		diags.Append(resp.Plan.SetAttribute(ctx, path.Root("secondary_hostnames"), plan.SecondaryHostnames)...)
+	}
+	if preserveUnconfiguredRootValue(&plan.Shielding, config.Shielding, previous.Shielding) {
+		diags.Append(resp.Plan.SetAttribute(ctx, path.Root("shielding"), plan.Shielding)...)
+	}
+	if preserveUnconfiguredRootValue(&plan.SslCertificate, config.SslCertificate, previous.SslCertificate) {
+		diags.Append(resp.Plan.SetAttribute(ctx, path.Root("ssl_certificate"), plan.SslCertificate)...)
+	}
+	if preserveUnknownRootValue(&plan.Status, previous.Status) {
+		diags.Append(resp.Plan.SetAttribute(ctx, path.Root("status"), plan.Status)...)
+	}
+	if preserveUnknownRootValue(&plan.VpEnabled, previous.VpEnabled) {
+		diags.Append(resp.Plan.SetAttribute(ctx, path.Root("vp_enabled"), plan.VpEnabled)...)
+	}
+
+	return diags
+}
+
+type nullableUnknownValue interface {
+	IsNull() bool
+	IsUnknown() bool
+}
+
+func preserveUnconfiguredRootValue[T nullableUnknownValue](plan *T, config, previous T) bool {
+	if config.IsNull() && ((*plan).IsNull() || (*plan).IsUnknown()) {
+		*plan = previous
+		return true
+	}
+	return false
+}
+
+func preserveUnknownRootValue[T nullableUnknownValue](plan *T, previous T) bool {
+	if (*plan).IsNull() || (*plan).IsUnknown() {
+		*plan = previous
+		return true
+	}
+	return false
 }
 
 func (r *resourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

@@ -31,7 +31,7 @@ func TestResourceOptionWithStatePreservesKnownPriorState(t *testing.T) {
 	}
 }
 
-func TestResourceOptionWithStatePreservesNullPriorState(t *testing.T) {
+func TestResourceOptionWithStateLeavesValueUnknownWithoutPriorState(t *testing.T) {
 	ctx := context.Background()
 	attributeTypes := map[string]attr.Type{
 		"enabled": types.BoolType,
@@ -39,15 +39,15 @@ func TestResourceOptionWithStatePreservesNullPriorState(t *testing.T) {
 	state := types.ObjectNull(attributeTypes)
 	request := planmodifier.ObjectRequest{
 		ConfigValue: types.ObjectNull(attributeTypes),
-		PlanValue:   types.ObjectUnknown(attributeTypes),
+		PlanValue:   types.ObjectNull(attributeTypes),
 		StateValue:  state,
 	}
 	response := planmodifier.ObjectResponse{PlanValue: request.PlanValue}
 
 	ResourceOptionWithState().PlanModifyObject(ctx, request, &response)
 
-	if !response.PlanValue.Equal(state) {
-		t.Fatalf("planned value = %s, want null prior state %s", response.PlanValue, state)
+	if !response.PlanValue.IsUnknown() {
+		t.Fatalf("planned value = %s, want unknown so the provider can populate computed values", response.PlanValue)
 	}
 }
 
@@ -72,37 +72,5 @@ func TestResourceOptionWithStateDoesNotReplaceUnknownConfiguration(t *testing.T)
 
 	if !response.PlanValue.Equal(plan) {
 		t.Fatalf("planned value = %s, want unresolved plan %s", response.PlanValue, plan)
-	}
-}
-
-func TestResourceOptionPreservesOmittedNestedPriorState(t *testing.T) {
-	ctx := context.Background()
-	attributeTypes := map[string]attr.Type{
-		"enabled": types.BoolType,
-		"value":   types.StringType,
-	}
-	configuration := types.ObjectValueMust(attributeTypes, map[string]attr.Value{
-		"enabled": types.BoolValue(true),
-		"value":   types.StringNull(),
-	})
-	plan := types.ObjectValueMust(attributeTypes, map[string]attr.Value{
-		"enabled": types.BoolValue(true),
-		"value":   types.StringUnknown(),
-	})
-	state := types.ObjectValueMust(attributeTypes, map[string]attr.Value{
-		"enabled": types.BoolValue(true),
-		"value":   types.StringValue("existing"),
-	})
-	request := planmodifier.ObjectRequest{
-		ConfigValue: configuration,
-		PlanValue:   plan,
-		StateValue:  state,
-	}
-	response := planmodifier.ObjectResponse{PlanValue: plan}
-
-	ResourceOption().PlanModifyObject(ctx, request, &response)
-
-	if !response.PlanValue.Equal(state) {
-		t.Fatalf("planned value = %s, want prior state %s", response.PlanValue, state)
 	}
 }
