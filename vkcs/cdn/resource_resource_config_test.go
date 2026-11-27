@@ -326,6 +326,28 @@ func TestPreserveUnconfiguredOptionsUsesPriorStateForUnknownOption(t *testing.T)
 	}
 }
 
+func TestPreserveUnconfiguredOptionsUsesPriorStateWhenOptionsAreOmitted(t *testing.T) {
+	ctx := context.Background()
+	previous, diags := (resource_resource.OptionsValue{}).FromResourceOptions(ctx, &resources.ResourceOptions{
+		AllowedHttpMethods: &resources.ResourceOptionsAllowedHttpMethodsOption{
+			Enabled: true,
+			Value:   []resources.ResourceAllowedHttpMethod{resources.ResourceAllowedHttpMethodGet},
+		},
+	})
+	if diags.HasError() {
+		t.Fatalf("creating prior options returned diagnostics: %v", diags)
+	}
+	plan := resource_resource.NewOptionsValueUnknown()
+	config := resource_resource.NewOptionsValueNull()
+
+	if diags := preserveUnconfiguredOptions(ctx, &plan, config, previous); diags.HasError() {
+		t.Fatalf("preserveUnconfiguredOptions returned diagnostics: %v", diags)
+	}
+	if !plan.Equal(previous) {
+		t.Fatalf("planned options = %s, want prior state %s", plan, previous)
+	}
+}
+
 func TestPlanDisabledShieldingUsesZeroPopID(t *testing.T) {
 	ctx := context.Background()
 	configurationObject, diags := types.ObjectValue(resource_resource.ShieldingValue{}.AttributeTypes(ctx), map[string]attr.Value{
@@ -347,6 +369,33 @@ func TestPlanDisabledShieldingUsesZeroPopID(t *testing.T) {
 	}
 	if plan.PopId.ValueInt64() != 0 {
 		t.Fatalf("planned shielding pop_id = %d, want 0", plan.PopId.ValueInt64())
+	}
+}
+
+func TestConfiguredSslCertificateChangeTreatsUnknownIDAsChange(t *testing.T) {
+	ctx := context.Background()
+	attributeTypes := resource_resource.SslCertificateValue{}.AttributeTypes(ctx)
+	previous := types.ObjectValueMust(attributeTypes, map[string]attr.Value{
+		"id":     types.Int64Value(123),
+		"status": types.StringValue("ready"),
+		"type":   types.StringValue("own"),
+	})
+	configWithUnknownID := types.ObjectValueMust(attributeTypes, map[string]attr.Value{
+		"id":     types.Int64Unknown(),
+		"status": types.StringUnknown(),
+		"type":   types.StringValue("own"),
+	})
+	configWithKnownID := types.ObjectValueMust(attributeTypes, map[string]attr.Value{
+		"id":     types.Int64Value(123),
+		"status": types.StringUnknown(),
+		"type":   types.StringValue("own"),
+	})
+
+	if !configuredObjectChanged(configWithUnknownID, previous, "status") {
+		t.Fatal("unknown configured certificate ID should prevent prior state from being reused")
+	}
+	if configuredObjectChanged(configWithKnownID, previous, "status") {
+		t.Fatal("unknown computed certificate status should not count as a configuration change")
 	}
 }
 

@@ -166,9 +166,7 @@ func preserveUnconfiguredOptions(
 		return diags
 	}
 	if config.IsNull() {
-		if plan.IsNull() || plan.IsUnknown() {
-			*plan = previous
-		}
+		*plan = previous
 		return diags
 	}
 	if plan.IsNull() || plan.IsUnknown() || previous.IsNull() || previous.IsUnknown() {
@@ -626,7 +624,10 @@ func hasConfiguredResourceChanges(ctx context.Context, config, previous *resourc
 		}
 	}
 
-	if !config.Options.IsNull() && !config.Options.IsUnknown() {
+	if config.Options.IsUnknown() {
+		return true, diags
+	}
+	if !config.Options.IsNull() {
 		configOptions, d := config.Options.ToObjectValue(ctx)
 		diags.Append(d...)
 		if diags.HasError() {
@@ -645,7 +646,10 @@ func hasConfiguredResourceChanges(ctx context.Context, config, previous *resourc
 		}
 	}
 
-	if !config.Shielding.IsNull() && !config.Shielding.IsUnknown() {
+	if config.Shielding.IsUnknown() {
+		return true, diags
+	}
+	if !config.Shielding.IsNull() {
 		configShielding, d := config.Shielding.ToObjectValue(ctx)
 		diags.Append(d...)
 		previousShielding, d := previous.Shielding.ToObjectValue(ctx)
@@ -653,12 +657,15 @@ func hasConfiguredResourceChanges(ctx context.Context, config, previous *resourc
 		if diags.HasError() {
 			return false, diags
 		}
-		if configuredValueChanged(configShielding, previousShielding) {
+		if configuredObjectChanged(configShielding, previousShielding, "pop_id") {
 			return true, diags
 		}
 	}
 
-	if !config.SslCertificate.IsNull() && !config.SslCertificate.IsUnknown() {
+	if config.SslCertificate.IsUnknown() {
+		return true, diags
+	}
+	if !config.SslCertificate.IsNull() {
 		configSslCertificate, d := config.SslCertificate.ToObjectValue(ctx)
 		diags.Append(d...)
 		previousSslCertificate, d := previous.SslCertificate.ToObjectValue(ctx)
@@ -666,7 +673,7 @@ func hasConfiguredResourceChanges(ctx context.Context, config, previous *resourc
 		if diags.HasError() {
 			return false, diags
 		}
-		if configuredValueChanged(configSslCertificate, previousSslCertificate) {
+		if configuredObjectChanged(configSslCertificate, previousSslCertificate, "status") {
 			return true, diags
 		}
 	}
@@ -675,8 +682,11 @@ func hasConfiguredResourceChanges(ctx context.Context, config, previous *resourc
 }
 
 func configuredValueChanged(config, previous attr.Value) bool {
-	if config.IsNull() || config.IsUnknown() {
+	if config.IsNull() {
 		return false
+	}
+	if config.IsUnknown() {
+		return true
 	}
 	if previous.IsNull() || previous.IsUnknown() {
 		return true
@@ -687,10 +697,20 @@ func configuredValueChanged(config, previous attr.Value) bool {
 	if !configIsObject || !previousIsObject {
 		return !config.Equal(previous)
 	}
+	return configuredObjectChanged(configObject, previousObject)
+}
 
-	configAttributes := configObject.Attributes()
-	previousAttributes := previousObject.Attributes()
+func configuredObjectChanged(config, previous types.Object, ignoreUnknownNames ...string) bool {
+	ignoreUnknown := make(map[string]struct{}, len(ignoreUnknownNames))
+	for _, name := range ignoreUnknownNames {
+		ignoreUnknown[name] = struct{}{}
+	}
+	configAttributes := config.Attributes()
+	previousAttributes := previous.Attributes()
 	for name, configValue := range configAttributes {
+		if _, ignored := ignoreUnknown[name]; ignored && configValue.IsUnknown() {
+			continue
+		}
 		previousValue, ok := previousAttributes[name]
 		if !ok || configuredValueChanged(configValue, previousValue) {
 			return true
