@@ -6,7 +6,7 @@ description: |-
 ---
 
 # VKCS Provider's changelog
-#### v0.19.1 (unreleased)
+#### v0.19.1
 - Add `extra_security_groups` argument to `vkcs_kubernetes_node_group_v2` resource and attribute to `vkcs_kubernetes_node_group_v2` data source.
 - Add import for KMS resources
 - Fix: reuse of the cached image file of vkcs_images_image when compression_format or archiving_format is changed.
