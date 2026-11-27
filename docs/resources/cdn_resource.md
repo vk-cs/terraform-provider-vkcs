@@ -164,10 +164,21 @@ Specify HTTP-code you need and text or URL if you're going to set up redirection
         - `value` optional *string* &rarr;  The list of errors to which the option is applied.
 
 
-    - `static_headers` optional &rarr;  Custom HTTP Headers that a CDN server adds to a response.
+    - `static_headers` optional &rarr;  Deprecated. Use `static_response_headers` instead. Retained for compatibility with existing configurations.
         - `enabled` optional *boolean* &rarr;  Controls the option state.
 
         - `value` optional *map of* *string* &rarr;  A map of static headers in the format "header_name": "header_value".
+
+
+    - `static_response_headers` optional &rarr;  Manage custom HTTP response headers added by the CDN to responses for end users. Up to 50 headers can be specified.
+        - `enabled` optional *boolean* &rarr;  Controls whether the response headers option is enabled.
+
+        - `value` optional *object* &rarr;  List of custom HTTP response headers.
+            - `always` required *boolean* &rarr;  `true` adds the header regardless of the HTTP response status code; `false` adds it only for HTTP 200, 201, 204, 206, 301, 302, 303, 304, 307, or 308 responses.
+
+            - `name` required *string* &rarr;  Header name.
+
+            - `value` required *string* &rarr;  List of values for this header.
 
 
     - `static_request_headers` optional &rarr;  Custom HTTP Headers for a CDN server to add to a request.
@@ -176,10 +187,10 @@ Specify HTTP-code you need and text or URL if you're going to set up redirection
         - `value` optional *map of* *string* &rarr;  A map of static headers in the format "header_name": "header_value".
 
 
-    - `tls_versions` optional &rarr;  Manage the state of the TLS versions option. The option specifies a list of allowed SSL/TLS protocol versions.
+    - `tls_versions` optional &rarr;  Manage the state of the TLS versions option. The option specifies a set of allowed SSL/TLS protocol versions.
         - `enabled` optional *boolean* &rarr;  Controls the option state.
 
-        - `value` optional *string* &rarr;  List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`.
+        - `value` optional *string* &rarr;  Set of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`. Order is not significant.
 
 
 

@@ -15,6 +15,41 @@ func ResourceOption() planmodifier.Object {
 	return resourceOptionPlanModifier{}
 }
 
+// ResourceOptionWithState preserves the prior value when the entire
+// optional+computed option is omitted. If no prior value exists, an omitted
+// null plan remains unknown so the provider can populate API defaults after
+// create.
+func ResourceOptionWithState() planmodifier.Object {
+	return resourceOptionWithStatePlanModifier{}
+}
+
+type resourceOptionWithStatePlanModifier struct{}
+
+func (m resourceOptionWithStatePlanModifier) Description(ctx context.Context) string {
+	return "Preserves the prior state for an omitted CDN resource option."
+}
+
+func (m resourceOptionWithStatePlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (m resourceOptionWithStatePlanModifier) PlanModifyObject(ctx context.Context, req planmodifier.ObjectRequest, resp *planmodifier.ObjectResponse) {
+	if req.ConfigValue.IsNull() {
+		if req.StateValue.IsNull() {
+			if req.PlanValue.IsNull() {
+				resp.PlanValue = types.ObjectUnknown(req.PlanValue.AttributeTypes(ctx))
+			}
+			return
+		}
+
+		if req.PlanValue.IsNull() || req.PlanValue.IsUnknown() {
+			resp.PlanValue = req.StateValue
+			return
+		}
+	}
+	resourceOptionPlanModifier{}.PlanModifyObject(ctx, req, resp)
+}
+
 type resourceOptionPlanModifier struct{}
 
 func (m resourceOptionPlanModifier) Description(_ context.Context) string {

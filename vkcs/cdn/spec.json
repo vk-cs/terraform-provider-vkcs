@@ -1203,6 +1203,7 @@
                                 {
                                     "name": "static_headers",
                                     "single_nested": {
+                                        "deprecation_message": "static_headers is deprecated. Use static_response_headers instead.",
                                         "computed_optional_required": "computed_optional",
                                         "description": "Custom HTTP Headers that a CDN server adds to a response.",
                                         "attributes": [
@@ -1234,6 +1235,85 @@
                                                         }
                                                     ],
                                                     "schema_definition": "resource_planmodifiers.ResourceOption()"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "static_response_headers",
+                                    "single_nested": {
+                                        "computed_optional_required": "computed_optional",
+                                        "description": "Custom HTTP response headers that the CDN adds to responses for end users.",
+                                        "attributes": [
+                                            {
+                                                "name": "enabled",
+                                                "bool": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Controls whether the response headers option is enabled."
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "list_nested": {
+                                                    "computed_optional_required": "computed_optional",
+                                                    "description": "Up to 50 custom HTTP response headers.",
+                                                    "nested_object": {
+                                                        "attributes": [
+                                                            {
+                                                                "name": "name",
+                                                                "string": {
+                                                                    "computed_optional_required": "required",
+                                                                    "description": "Header name."
+                                                                }
+                                                            },
+                                                            {
+                                                                "name": "value",
+                                                                "list": {
+                                                                    "computed_optional_required": "required",
+                                                                    "element_type": {
+                                                                        "string": {}
+                                                                    },
+                                                                    "description": "Header values."
+                                                                }
+                                                            },
+                                                            {
+                                                                "name": "always",
+                                                                "bool": {
+                                                                    "computed_optional_required": "required",
+                                                                    "description": "Whether to add the header regardless of the HTTP response status code."
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "validators": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
+                                                        },
+                                                        {
+                                                            "path": "github.com/hashicorp/terraform-plugin-framework/path"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "objectvalidator.ConflictsWith(path.MatchRoot(\"options\").AtName(\"static_headers\"))"
+                                                }
+                                            }
+                                        ],
+                                        "plan_modifiers": [
+                                            {
+                                                "custom": {
+                                                    "imports": [
+                                                        {
+                                                            "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/cdn/resource_resource/planmodifiers",
+                                                            "alias": "resource_planmodifiers"
+                                                        }
+                                                    ],
+                                                    "schema_definition": "resource_planmodifiers.ResourceOptionWithState()"
                                                 }
                                             }
                                         ]
@@ -1340,22 +1420,22 @@
                                     "name": "tls_versions",
                                     "single_nested": {
                                         "computed_optional_required": "computed_optional",
-                                        "description": "Manage the state of the TLS versions option. The option specifies a list of allowed SSL/TLS protocol versions.",
+                                        "description": "Manage the state of the TLS versions option. The option specifies a set of allowed SSL/TLS protocol versions.",
                                         "attributes": [
                                             {
                                                 "name": "value",
-                                                "list": {
+                                                "set": {
                                                     "element_type": {
                                                         "string": {}
                                                     },
-                                                    "description": "List of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`.",
+                                                    "description": "Set of allowed SSL/TLS protocol versions. Allowed values: `SSLv3`, `TLSv1`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`. Order is not significant.",
                                                     "computed_optional_required": "computed_optional",
                                                     "validators": [
                                                         {
                                                             "custom": {
                                                                 "imports": [
                                                                     {
-                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+                                                                        "path": "github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
                                                                     },
                                                                     {
                                                                         "path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -1364,7 +1444,7 @@
                                                                         "path": "github.com/vk-cs/terraform-provider-vkcs/vkcs/internal/services/cdn/v1/resources"
                                                                     }
                                                                 ],
-                                                                "schema_definition": "listvalidator.ValueStringsAre(stringvalidator.OneOf(resources.ResourceTlsVersionValues()...))"
+                                                                "schema_definition": "setvalidator.ValueStringsAre(stringvalidator.OneOf(resources.ResourceTlsVersionValues()...))"
                                                             }
                                                         }
                                                     ]

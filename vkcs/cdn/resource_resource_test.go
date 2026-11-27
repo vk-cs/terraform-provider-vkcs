@@ -35,6 +35,8 @@ func TestAccCDNResourceResource_full(t *testing.T) {
 	nameSuffix := acctest.GenerateNameSuffix()
 	baseName := "tfacc-resource-base-" + nameSuffix
 	cname := "tfacc-full-" + nameSuffix + ".vk.com"
+	secondaryHostname1 := "tfacc-full-cdn1-" + nameSuffix + ".vk.com"
+	secondaryHostname2 := "tfacc-full-cdn2-" + nameSuffix + ".vk.com"
 
 	ogBaseConfig := acctest.AccTestRenderConfig(testAccCDNResourceResourceOriginGroupBase, map[string]string{"Name": baseName})
 	sslCertificateBaseConfig := acctest.AccTestRenderConfig(testAccCDNResourceResourceSslCertificateBase, map[string]string{"Name": baseName, "Certificate": sslCert, "PrivateKey": sslPrivateKey})
@@ -44,7 +46,14 @@ func TestAccCDNResourceResource_full(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccCDNResourceResourceFull, map[string]string{"Cname": cname, "TestAccCDNResourceResourceOriginGroupBase": ogBaseConfig, "TestAccCDNResourceResourceShieldingPopBase": testAccCDNResourceResourceShieldingPopBase, "TestAccCDNResourceResourceSslCertificateBase": sslCertificateBaseConfig}),
+				Config: acctest.AccTestRenderConfig(testAccCDNResourceResourceFull, map[string]string{
+					"Cname":              cname,
+					"SecondaryHostname1": secondaryHostname1,
+					"SecondaryHostname2": secondaryHostname2,
+					"TestAccCDNResourceResourceOriginGroupBase":    ogBaseConfig,
+					"TestAccCDNResourceResourceShieldingPopBase":   testAccCDNResourceResourceShieldingPopBase,
+					"TestAccCDNResourceResourceSslCertificateBase": sslCertificateBaseConfig,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "cname", cname),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "active", "true"),
@@ -85,11 +94,11 @@ func TestAccCDNResourceResource_full(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.secure_key.type", "0"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.tls_versions.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.tls_versions.value.#", "2"),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.tls_versions.value.0", "TLSv1.1"),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "options.tls_versions.value.1", "TLSv1.2"),
+					resource.TestCheckTypeSetElemAttr("vkcs_cdn_resource.full", "options.tls_versions.value.*", "TLSv1.2"),
+					resource.TestCheckTypeSetElemAttr("vkcs_cdn_resource.full", "options.tls_versions.value.*", "TLSv1.1"),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.full", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "origin_protocol", "MATCH"),
-					acctest.TestCheckResourceListAttr("vkcs_cdn_resource.full", "secondary_hostnames", []string{"cdn1.vk.com", "cdn2.vk.com"}),
+					acctest.TestCheckResourceListAttr("vkcs_cdn_resource.full", "secondary_hostnames", []string{secondaryHostname1, secondaryHostname2}),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "ssl_certificate.type", "own"),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.full", "ssl_certificate.id", "vkcs_cdn_ssl_certificate.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.full", "shielding.enabled", "true"),
@@ -97,6 +106,80 @@ func TestAccCDNResourceResource_full(t *testing.T) {
 				),
 			},
 			acctest.ImportStep("vkcs_cdn_resource.full"),
+		},
+	})
+}
+
+func TestAccCDNResourceResource_staticResponseHeaders(t *testing.T) {
+	nameSuffix := acctest.GenerateNameSuffix()
+	baseName := "tfacc-resource-static-response-headers-" + nameSuffix
+	cname := "tfacc-static-response-headers-" + nameSuffix + ".vk.com"
+	originGroupConfig := acctest.AccTestRenderConfig(testAccCDNResourceResourceOriginGroupBase, map[string]string{"Name": baseName})
+	initialHeaders := `[
+    { name = "X-Multi", value = ["first", "second"], always = false },
+    { name = "X-Always", value = ["third"], always = true }
+  ]`
+	updatedHeaders := `[
+    { name = "X-Multi", value = ["updated"], always = true },
+    { name = "X-New", value = ["fourth", "fifth"], always = false }
+  ]`
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
+		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AccTestRenderConfig(testAccCDNResourceResourceLegacyStaticHeaders, map[string]string{
+					"Cname": cname, "TestAccCDNResourceResourceOriginGroupBase": originGroupConfig,
+				}),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("vkcs_cdn_resource.headers", "options.static_headers.enabled", "true"),
+					acctest.TestCheckResourceMapAttr("vkcs_cdn_resource.headers", "options.static_headers.value", map[string]string{"X-Multi": "first"}),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccCDNResourceResourceStaticResponseHeaders, map[string]string{
+					"Cname": cname, "Headers": initialHeaders, "TestAccCDNResourceResourceOriginGroupBase": originGroupConfig,
+				}),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectResourceAction("vkcs_cdn_resource.headers", plancheck.ResourceActionUpdate)},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					acctest.TestCheckResourceAttrDeepEqual("vkcs_cdn_resource.headers", "options.static_response_headers.value", []map[string]any{
+						{"name": "X-Multi", "value": []string{"first", "second"}, "always": false},
+						{"name": "X-Always", "value": []string{"third"}, "always": true},
+					}),
+				),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccCDNResourceResourceStaticResponseHeaders, map[string]string{
+					"Cname": cname, "Headers": updatedHeaders, "TestAccCDNResourceResourceOriginGroupBase": originGroupConfig,
+				}),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectResourceAction("vkcs_cdn_resource.headers", plancheck.ResourceActionUpdate)},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Check: acctest.TestCheckResourceAttrDeepEqual("vkcs_cdn_resource.headers", "options.static_response_headers.value", []map[string]any{
+					{"name": "X-Multi", "value": []string{"updated"}, "always": true},
+					{"name": "X-New", "value": []string{"fourth", "fifth"}, "always": false},
+				}),
+			},
+			{
+				Config: acctest.AccTestRenderConfig(testAccCDNResourceResourceStaticResponseHeadersOmitted, map[string]string{
+					"Cname": cname, "TestAccCDNResourceResourceOriginGroupBase": originGroupConfig,
+				}),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Check: acctest.TestCheckResourceAttrDeepEqual("vkcs_cdn_resource.headers", "options.static_response_headers.value", []map[string]any{
+					{"name": "X-Multi", "value": []string{"updated"}, "always": true},
+					{"name": "X-New", "value": []string{"fourth", "fifth"}, "always": false},
+				}),
+			},
 		},
 	})
 }
@@ -155,8 +238,8 @@ func TestAccCDNResourceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.type", "0"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.enabled", "true"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.value.#", "2"),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.value.0", "TLSv1.1"),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.value.1", "TLSv1.2"),
+					resource.TestCheckTypeSetElemAttr("vkcs_cdn_resource.update", "options.tls_versions.value.*", "TLSv1.2"),
+					resource.TestCheckTypeSetElemAttr("vkcs_cdn_resource.update", "options.tls_versions.value.*", "TLSv1.1"),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.update", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "origin_protocol", "HTTP"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "shielding.enabled", "true"),
@@ -216,8 +299,8 @@ func TestAccCDNResourceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.secure_key.type", "2"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.enabled", "false"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.value.#", "2"),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.value.0", "TLSv1.2"),
-					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "options.tls_versions.value.1", "TLSv1.3"),
+					resource.TestCheckTypeSetElemAttr("vkcs_cdn_resource.update", "options.tls_versions.value.*", "TLSv1.3"),
+					resource.TestCheckTypeSetElemAttr("vkcs_cdn_resource.update", "options.tls_versions.value.*", "TLSv1.2"),
 					resource.TestCheckResourceAttrPair("vkcs_cdn_resource.update", "origin_group", "vkcs_cdn_origin_group.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "origin_protocol", "HTTPS"),
 					resource.TestCheckResourceAttr("vkcs_cdn_resource.update", "shielding.enabled", "false"),
@@ -329,6 +412,54 @@ resource "vkcs_cdn_resource" "basic" {
 }
 `
 
+const testAccCDNResourceResourceStaticResponseHeaders = `
+{{ .TestAccCDNResourceResourceOriginGroupBase }}
+
+resource "vkcs_cdn_resource" "headers" {
+  cname        = "{{ .Cname }}"
+  origin_group = vkcs_cdn_origin_group.base.id
+  options = {
+    allowed_http_methods = {
+      enabled = true
+      value   = ["GET", "HEAD"]
+    }
+    static_response_headers = {
+      enabled = true
+      value   = {{ .Headers }}
+    }
+  }
+}
+`
+
+const testAccCDNResourceResourceLegacyStaticHeaders = `
+{{ .TestAccCDNResourceResourceOriginGroupBase }}
+
+resource "vkcs_cdn_resource" "headers" {
+  cname        = "{{ .Cname }}"
+  origin_group = vkcs_cdn_origin_group.base.id
+  options = {
+    allowed_http_methods = {
+      enabled = true
+      value   = ["GET", "HEAD"]
+    }
+    static_headers = {
+      value = {
+        "X-Multi" = "first"
+      }
+    }
+  }
+}
+`
+
+const testAccCDNResourceResourceStaticResponseHeadersOmitted = `
+{{ .TestAccCDNResourceResourceOriginGroupBase }}
+
+resource "vkcs_cdn_resource" "headers" {
+  cname        = "{{ .Cname }}"
+  origin_group = vkcs_cdn_origin_group.base.id
+}
+`
+
 const testAccCDNResourceResourceFull = `
 {{ .TestAccCDNResourceResourceOriginGroupBase }}
 {{ .TestAccCDNResourceResourceShieldingPopBase }}
@@ -409,7 +540,7 @@ resource "vkcs_cdn_resource" "full" {
   }
   origin_group        = vkcs_cdn_origin_group.base.id
   origin_protocol     = "MATCH"
-  secondary_hostnames = ["cdn1.vk.com", "cdn2.vk.com"]
+  secondary_hostnames = ["{{ .SecondaryHostname1 }}", "{{ .SecondaryHostname2 }}"]
   ssl_certificate = {
     type = "own"
     id   = vkcs_cdn_ssl_certificate.base.id
