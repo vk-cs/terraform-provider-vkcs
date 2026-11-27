@@ -84,7 +84,7 @@ resource "vkcs_compute_instance" "instance_1" {
     uuid = vkcs_networking_network.base.id
   }
 
-  image_id  = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 

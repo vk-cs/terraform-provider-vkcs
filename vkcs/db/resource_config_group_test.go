@@ -103,7 +103,7 @@ var testAccDatabaseConfigGroupResource = `
 resource "vkcs_db_config_group" "basic" {
 	name = "basic"
 	datastore {
-		version = "13"
+		version = "16"
 		type = "postgresql"
 	}
 	values = {
@@ -119,7 +119,7 @@ const testAccDatabaseConfigGroupBasic = `
 resource "vkcs_db_config_group" "basic" {
 	name = "basic"
 	datastore {
-		version = "13"
+		version = "16"
 		type = "postgresql"
 	}
 	values = {
@@ -131,10 +131,10 @@ resource "vkcs_db_instance" "basic" {
   name             = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 8
-  volume_type = "{{.VolumeType}}"
+  volume_type = "{{.DbVolumeType}}"
   configuration_id = vkcs_db_config_group.basic.id
   datastore {
-    version = "13"
+    version = "16"
     type    = "postgresql"
   }
 
@@ -159,7 +159,7 @@ const testAccDatabaseConfigGroupUpdate = `
 resource "vkcs_db_config_group" "basic" {
 	name = "basic"
 	datastore {
-		version = "13"
+		version = "16"
 		type = "postgresql"
 	}
 	values = {
@@ -171,10 +171,10 @@ resource "vkcs_db_instance" "basic" {
   name             = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 8
-  volume_type = "{{.VolumeType}}"
+  volume_type = "{{.DbVolumeType}}"
   configuration_id = vkcs_db_config_group.basic.id
   datastore {
-    version = "13"
+    version = "16"
     type    = "postgresql"
   }
 

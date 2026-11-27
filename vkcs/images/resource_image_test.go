@@ -116,7 +116,7 @@ func TestAccImagesImage_properties(t *testing.T) {
 		CheckDestroy:      testAccCheckImagesImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccImagesImageBasic,
+				Config: testAccImagesImageCirros,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImagesImageExists("vkcs_images_image.image_1", &image1),
 				),
@@ -294,41 +294,44 @@ resource "vkcs_images_image" "image_1" {
   archiving_format   = "tar"
 
   timeouts {
-    create = "10m"
+    create = "90m"
   }
+}
+`
+
+const testAccImagesImageCirros = `
+resource "vkcs_images_image" "image_1" {
+  name               = "Centos TerraformAccTest"
+  image_source_url   = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
+  container_format   = "bare"
+  disk_format        = "raw"
 }
 `
 
 const testAccImagesImageName1 = `
 resource "vkcs_images_image" "image_1" {
   name               = "Centos TerraformAccTest"
-  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  image_source_url   = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
   container_format   = "bare"
   disk_format        = "raw"
-  compression_format = "gzip"
-  archiving_format   = "tar"
 }
 `
 
 const testAccImagesImageName2 = `
 resource "vkcs_images_image" "image_1" {
   name               = "TerraformAccTest Centos"
-  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  image_source_url   = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
   container_format   = "bare"
   disk_format        = "raw"
-  compression_format = "gzip"
-  archiving_format   = "tar"
 }
 `
 
 const testAccImagesImageTags1 = `
 resource "vkcs_images_image" "image_1" {
   name               = "Centos TerraformAccTest"
-  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  image_source_url   = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
   container_format   = "bare"
   disk_format        = "raw"
-  compression_format = "gzip"
-  archiving_format   = "tar"
 
   tags = ["foo", "bar"]
 }
@@ -337,11 +340,9 @@ resource "vkcs_images_image" "image_1" {
 const testAccImagesImageTags2 = `
 resource "vkcs_images_image" "image_1" {
   name               = "Centos TerraformAccTest"
-  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  image_source_url   = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
   container_format   = "bare"
   disk_format        = "raw"
-  compression_format = "gzip"
-  archiving_format   = "tar"
 
   tags = ["foo", "bar", "baz"]
 }
@@ -350,11 +351,9 @@ resource "vkcs_images_image" "image_1" {
 const testAccImagesImageTags3 = `
 resource "vkcs_images_image" "image_1" {
   name               = "Centos TerraformAccTest"
-  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  image_source_url   = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
   container_format   = "bare"
   disk_format        = "raw"
-  compression_format = "gzip"
-  archiving_format   = "tar"
 
   tags = ["foo", "baz"]
 }
@@ -363,11 +362,9 @@ resource "vkcs_images_image" "image_1" {
 const testAccImagesImageProperties1 = `
 resource "vkcs_images_image" "image_1" {
   name               = "Centos TerraformAccTest"
-  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  image_source_url   = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
   container_format   = "bare"
   disk_format        = "raw"
-  compression_format = "gzip"
-  archiving_format   = "tar"
 
   properties = {
     foo = "bar"
@@ -379,11 +376,9 @@ resource "vkcs_images_image" "image_1" {
 const testAccImagesImageProperties2 = `
 resource "vkcs_images_image" "image_1" {
   name               = "Centos TerraformAccTest"
-  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  image_source_url   = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
   container_format   = "bare"
   disk_format        = "raw"
-  compression_format = "gzip"
-  archiving_format   = "tar"
 
   properties = {
     foo = "bar"
@@ -394,11 +389,9 @@ resource "vkcs_images_image" "image_1" {
 const testAccImagesImageProperties3 = `
 resource "vkcs_images_image" "image_1" {
   name               = "Centos TerraformAccTest"
-  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  image_source_url   = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
   container_format   = "bare"
   disk_format        = "raw"
-  compression_format = "gzip"
-  archiving_format   = "tar"
 
   properties = {
     foo = "baz"
@@ -409,11 +402,9 @@ resource "vkcs_images_image" "image_1" {
 const testAccImagesImageProperties4 = `
 resource "vkcs_images_image" "image_1" {
   name               = "Centos TerraformAccTest"
-  image_source_url   = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.raw.tar.gz"
+  image_source_url   = "http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img"
   container_format   = "bare"
   disk_format        = "raw"
-  compression_format = "gzip"
-  archiving_format   = "tar"
 
   properties = {
     foo = "baz"

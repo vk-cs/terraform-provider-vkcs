@@ -52,7 +52,7 @@ func TestAccDatabaseClusterWithShards_update_big(t *testing.T) {
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.update", "shard.0.network.0.uuid",
 						"vkcs_networking_network.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "shard.0.volume_size", "8"),
-					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "shard.0.volume_type", "ceph-ssd"),
+					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "shard.0.volume_type", acctest.OsDbVolumeType),
 				),
 			},
 			{
@@ -66,7 +66,7 @@ func TestAccDatabaseClusterWithShards_update_big(t *testing.T) {
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.update", "shard.0.flavor_id",
 						"data.vkcs_compute_flavor.new_flavor", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "shard.0.volume_size", "10"),
-					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "shard.0.volume_type", "ceph-ssd"),
+					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.update", "shard.0.volume_type", acctest.OsDbVolumeType),
 				),
 			},
 		},
@@ -91,7 +91,7 @@ func TestAccDatabaseClusterWithShards_resize_big(t *testing.T) {
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.resize", "shard.0.flavor_id",
 						"data.vkcs_compute_flavor.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.volume_size", "8"),
-					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.volume_type", "ceph-ssd"),
+					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.volume_type", acctest.OsDbVolumeType),
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.resize", "shard.0.network.0.uuid",
 						"vkcs_networking_network.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.instances.#", "1"),
@@ -107,7 +107,7 @@ func TestAccDatabaseClusterWithShards_resize_big(t *testing.T) {
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.resize", "shard.0.flavor_id",
 						"data.vkcs_compute_flavor.new_flavor", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.volume_size", "10"),
-					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.volume_type", "ceph-ssd"),
+					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.volume_type", acctest.OsDbVolumeType),
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.resize", "shard.0.network.0.uuid",
 						"vkcs_networking_network.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.instances.#", "3"),
@@ -116,7 +116,7 @@ func TestAccDatabaseClusterWithShards_resize_big(t *testing.T) {
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.resize", "shard.1.flavor_id",
 						"data.vkcs_compute_flavor.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.1.volume_size", "8"),
-					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.1.volume_type", "ceph-ssd"),
+					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.1.volume_type", acctest.OsDbVolumeType),
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.resize", "shard.1.network.0.uuid",
 						"vkcs_networking_network.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.1.instances.#", "1"),
@@ -132,7 +132,7 @@ func TestAccDatabaseClusterWithShards_resize_big(t *testing.T) {
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.resize", "shard.0.flavor_id",
 						"data.vkcs_compute_flavor.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.volume_size", "10"),
-					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.volume_type", "ceph-ssd"),
+					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.volume_type", acctest.OsDbVolumeType),
 					resource.TestCheckResourceAttrPair("vkcs_db_cluster_with_shards.resize", "shard.0.network.0.uuid",
 						"vkcs_networking_network.base", "id"),
 					resource.TestCheckResourceAttr("vkcs_db_cluster_with_shards.resize", "shard.0.instances.#", "1"),
@@ -180,7 +180,7 @@ resource "vkcs_db_cluster_with_shards" "basic" {
     shard_id    = "shard0"
     flavor_id   = data.vkcs_compute_flavor.base.id
     volume_size = 8
-    volume_type = "ceph-ssd"
+    volume_type = "{{.DbVolumeType}}"
     network {
       uuid = vkcs_networking_network.base.id
     }
@@ -222,7 +222,7 @@ resource "vkcs_db_cluster_with_shards" "update" {
 	shard_id = "shard0"
 	flavor_id = data.vkcs_compute_flavor.base.id
 	volume_size = 8
-	volume_type = "ceph-ssd"
+	volume_type = "{{.DbVolumeType}}"
 	network {
 	  uuid = vkcs_networking_network.base.id
 	}
@@ -238,7 +238,7 @@ const testAccDatabaseClusterWithShardsUpdateUpdated = `
 {{.BaseFlavor}}
 
 data "vkcs_compute_flavor" "new_flavor" {
-  name = "Standard-4-8-80"
+  name = "{{.NewFlavorName}}"
 }
 
 resource "vkcs_db_config_group" "basic" {
@@ -273,7 +273,7 @@ resource "vkcs_db_cluster_with_shards" "update" {
     shard_id    = "shard0"
     flavor_id   = data.vkcs_compute_flavor.new_flavor.id
     volume_size = 10
-    volume_type = "ceph-ssd"
+    volume_type = "{{.DbVolumeType}}"
     network {
       uuid = vkcs_networking_network.base.id
     }
@@ -305,7 +305,7 @@ resource "vkcs_db_cluster_with_shards" "resize" {
 	shard_id = "shard0"
 	flavor_id = data.vkcs_compute_flavor.base.id
 	volume_size = 8
-	volume_type = "ceph-ssd"
+	volume_type = "{{.DbVolumeType}}"
 	network {
 	  uuid = vkcs_networking_network.base.id
 	}
@@ -321,7 +321,7 @@ const testAccDatabaseClusterWithShardsResizeGrow = `
 {{.BaseFlavor}}
 
 data "vkcs_compute_flavor" "new_flavor" {
-	name = "Standard-4-8-80"
+	name = "{{.NewFlavorName}}"
 }
 
 resource "vkcs_db_cluster_with_shards" "resize" {
@@ -337,7 +337,7 @@ resource "vkcs_db_cluster_with_shards" "resize" {
 	shard_id = "shard0"
 	flavor_id = data.vkcs_compute_flavor.new_flavor.id
 	volume_size = 10
-	volume_type = "ceph-ssd"
+	volume_type = "{{.DbVolumeType}}"
 	network {
 	  uuid = vkcs_networking_network.base.id
 	}
@@ -349,7 +349,7 @@ resource "vkcs_db_cluster_with_shards" "resize" {
 	shard_id = "shard1"
 	flavor_id = data.vkcs_compute_flavor.base.id
 	volume_size = 8
-	volume_type = "ceph-ssd"
+	volume_type = "{{.DbVolumeType}}"
 	network {
 	  uuid = vkcs_networking_network.base.id
 	}
@@ -377,7 +377,7 @@ resource "vkcs_db_cluster_with_shards" "resize" {
 	shard_id = "shard0"
 	flavor_id = data.vkcs_compute_flavor.base.id
 	volume_size = 10
-	volume_type = "ceph-ssd"
+	volume_type = "{{.DbVolumeType}}"
 	network {
 	  uuid = vkcs_networking_network.base.id
 	}

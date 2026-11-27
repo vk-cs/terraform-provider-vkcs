@@ -239,11 +239,12 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   pool = "{{.ExtNetName}}"
 }
 
@@ -266,11 +267,12 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   pool = "{{.ExtNetName}}"
   description = "test"
 }
@@ -294,11 +296,12 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
+	sdn = data.vkcs_networking_network.extnet.sdn
 	pool = "{{.ExtNetName}}"
 }
 
@@ -322,15 +325,17 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   pool = "{{.ExtNetName}}"
 }
 
 resource "vkcs_networking_floatingip" "fip_2" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   pool = "{{.ExtNetName}}"
 }
 
@@ -353,15 +358,17 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   pool = "{{.ExtNetName}}"
 }
 
 resource "vkcs_networking_floatingip" "fip_2" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   pool = "{{.ExtNetName}}"
 }
 
@@ -384,11 +391,12 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 
 resource "vkcs_networking_floatingip" "fip_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   pool = "{{.ExtNetName}}"
 }
 

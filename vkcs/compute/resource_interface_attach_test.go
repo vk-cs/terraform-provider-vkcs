@@ -133,6 +133,7 @@ const testAccComputeInterfaceAttachBasic = `
 {{.BaseSecurityGroup}}
 
 resource "vkcs_networking_port" "port_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   depends_on = ["vkcs_networking_subnet.base"]
 
   name = "port_1"
@@ -148,7 +149,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 
@@ -165,10 +166,12 @@ const testAccComputeInterfaceAttachIP = `
 {{.BaseSecurityGroup}}
 
 resource "vkcs_networking_network" "network_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "network_1"
 }
 
 resource "vkcs_networking_subnet" "subnet_1" {
+  sdn = data.vkcs_networking_network.extnet.sdn
   name = "subnet_1"
   network_id = vkcs_networking_network.network_1.id
   cidr = "192.168.1.0/24"
@@ -184,7 +187,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 

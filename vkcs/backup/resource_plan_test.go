@@ -183,7 +183,7 @@ resource "vkcs_compute_instance" "base_instance" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id  = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.base.id
 }
 `
@@ -258,7 +258,7 @@ resource "vkcs_blockstorage_volume" "bootable" {
   }
   size              = 10
   availability_zone = "{{.AvailabilityZone}}"
-  volume_type       = "ceph-ssd"
+  volume_type       = "{{.VolumeType}}"
   image_id          = data.vkcs_images_image.base.id
 }
 
@@ -270,7 +270,7 @@ resource "vkcs_blockstorage_volume" "data" {
   }
   size              = 1
   availability_zone = "{{.AvailabilityZone}}"
-  volume_type       = "ceph-ssd"
+  volume_type       = "{{.VolumeType}}"
 }
 
 resource "vkcs_compute_instance" "base_instance" {
@@ -364,7 +364,7 @@ const testAccBackupPlanOrderIndependentBase = `
 {{.BaseSecurityGroup}}
 
 data "vkcs_compute_flavor" "small" {
-		name = "Basic-1-2-20"
+		name = "{{.FlavorName}}"
 }
 
 resource "vkcs_compute_instance" "instance_1" {
@@ -378,7 +378,7 @@ resource "vkcs_compute_instance" "instance_1" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id  = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.small.id
 }
 
@@ -393,7 +393,7 @@ resource "vkcs_compute_instance" "instance_2" {
   network {
     uuid = vkcs_networking_network.base.id
   }
-  image_id  = data.vkcs_images_image.base.id
+  {{.BaseBootVolume}}
   flavor_id = data.vkcs_compute_flavor.small.id
 }
 `

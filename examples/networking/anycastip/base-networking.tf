@@ -1,10 +1,12 @@
 # Create networks
 resource "vkcs_networking_network" "app" {
+  sdn         = data.vkcs_networking_network.extnet.sdn
   name        = "app-tf-example"
   description = "Application network"
 }
 
 resource "vkcs_networking_subnet" "app" {
+  sdn        = data.vkcs_networking_network.extnet.sdn
   name       = "app-tf-example"
   network_id = vkcs_networking_network.app.id
   cidr       = "192.168.199.0/24"
@@ -17,6 +19,7 @@ data "vkcs_networking_network" "extnet" {
 
 # Create a router to connect networks
 resource "vkcs_networking_router" "router" {
+  sdn  = data.vkcs_networking_network.extnet.sdn
   name = "router-tf-example"
   # Connect router to Internet
   external_network_id = data.vkcs_networking_network.extnet.id
@@ -24,6 +27,7 @@ resource "vkcs_networking_router" "router" {
 
 # Connect networks to the router
 resource "vkcs_networking_router_interface" "app" {
+  sdn       = data.vkcs_networking_network.extnet.sdn
   router_id = vkcs_networking_router.router.id
   subnet_id = vkcs_networking_subnet.app.id
 }

@@ -132,10 +132,10 @@ resource "vkcs_db_instance" "basic" {
   name = "basic"
   flavor_id = data.vkcs_compute_flavor.base.id
   size = 10
-  volume_type = "{{.VolumeType}}"
+  volume_type = "{{.DbVolumeType}}"
 
   datastore {
-    version = "13"
+    version = "16"
     type    = "postgresql"
   }
 
