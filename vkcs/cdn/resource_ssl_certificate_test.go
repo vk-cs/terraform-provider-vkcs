@@ -8,14 +8,17 @@ import (
 )
 
 func TestAccCDNSslCertificateResource_basic(t *testing.T) {
+	name := "tfacc-ssl-certificate-basic-" + acctest.GenerateNameSuffix()
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccCDNSslCertificateResourceBasic, map[string]string{"Certificate": sslCert, "PrivateKey": sslPrivateKey}),
+				Config: acctest.AccTestRenderConfig(testAccCDNSslCertificateResourceBasic, map[string]string{
+					"Name": name, "Certificate": sslCert, "PrivateKey": sslPrivateKey,
+				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("vkcs_cdn_ssl_certificate.basic", "name", "tfacc-ssl-certificate-basic"),
+					resource.TestCheckResourceAttr("vkcs_cdn_ssl_certificate.basic", "name", name),
 					resource.TestCheckResourceAttrSet("vkcs_cdn_ssl_certificate.basic", "certificate"),
 					resource.TestCheckResourceAttrSet("vkcs_cdn_ssl_certificate.basic", "private_key"),
 					resource.TestCheckResourceAttrSet("vkcs_cdn_ssl_certificate.basic", "issuer"),
@@ -30,23 +33,28 @@ func TestAccCDNSslCertificateResource_basic(t *testing.T) {
 }
 
 func TestAccCDNSslCertificateResource_update(t *testing.T) {
+	nameSuffix := acctest.GenerateNameSuffix()
+	oldName := "tfacc-ssl-certificate-update-old-" + nameSuffix
+	newName := "tfacc-ssl-certificate-update-new-" + nameSuffix
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.AccTestPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.AccTestProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AccTestRenderConfig(testAccCDNSslCertificateResourceUpdate, map[string]string{"Certificate": sslCert, "PrivateKey": sslPrivateKey,
-					"Name": "tfacc-ssl-certificate-update-old"}),
+				Config: acctest.AccTestRenderConfig(testAccCDNSslCertificateResourceUpdate, map[string]string{
+					"Certificate": sslCert, "PrivateKey": sslPrivateKey, "Name": oldName,
+				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("vkcs_cdn_ssl_certificate.update", "name", "tfacc-ssl-certificate-update-old"),
+					resource.TestCheckResourceAttr("vkcs_cdn_ssl_certificate.update", "name", oldName),
 				),
 			},
 			acctest.ImportStep("vkcs_cdn_ssl_certificate.update", "certificate", "private_key"),
 			{
-				Config: acctest.AccTestRenderConfig(testAccCDNSslCertificateResourceUpdate, map[string]string{"Certificate": sslCert, "PrivateKey": sslPrivateKey,
-					"Name": "tfacc-ssl-certificate-update-new"}),
+				Config: acctest.AccTestRenderConfig(testAccCDNSslCertificateResourceUpdate, map[string]string{
+					"Certificate": sslCert, "PrivateKey": sslPrivateKey, "Name": newName,
+				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("vkcs_cdn_ssl_certificate.update", "name", "tfacc-ssl-certificate-update-new"),
+					resource.TestCheckResourceAttr("vkcs_cdn_ssl_certificate.update", "name", newName),
 				),
 			},
 			acctest.ImportStep("vkcs_cdn_ssl_certificate.update", "certificate", "private_key"),
@@ -142,7 +150,7 @@ WcDW/RNZpfcNMb0+ZdPgl7nCrCY7
 
 const testAccCDNSslCertificateResourceBasic = `
 resource "vkcs_cdn_ssl_certificate" "basic" {
-  name        = "tfacc-ssl-certificate-basic"
+  name        = "{{ .Name }}"
   certificate = <<EOT
 {{ .Certificate }}
 EOT
